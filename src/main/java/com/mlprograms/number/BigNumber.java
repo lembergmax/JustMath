@@ -127,8 +127,33 @@ public class BigNumber {
 		this.hasDecimal = other.hasDecimal;
 	}
 
-	public BigNumber formatToLocale(Locale targetLocale) {
-		return new BigNumber(this, targetLocale);
+	public BigNumber add(BigNumber other) {
+		return BigNumberArithmetic.add(this, other);
+	}
+
+	public BigNumber subtract(BigNumber other) {
+		return BigNumberArithmetic.subtract(this, other);
+	}
+
+	public BigNumber multiplyBy(BigNumber other) {
+		return BigNumberArithmetic.multiply(this, other);
+	}
+
+	public BigNumber divideBy(BigNumber other) {
+		return BigNumberArithmetic.divide(this, other);
+	}
+
+	/**
+	 * Returns the string representation of this number with thousand separators
+	 * according to the specified locale.
+	 *
+	 * @param locale
+	 * 	the locale for grouping and decimal separators
+	 *
+	 * @return formatted string with grouping separators
+	 */
+	public String addGroupingSeparators(Locale locale) {
+		return new BigNumberParser().format(this, locale);
 	}
 
 	public boolean hasDecimal() {
@@ -144,7 +169,7 @@ public class BigNumber {
 	@Override
 	public String toString() {
 		String sign = isNegative ? "-" : "";
-		String decimalPart = hasDecimal ? "." + valueAfterDecimal : "";
+		String decimalPart = (hasDecimal && !"0".equals(valueAfterDecimal)) ? "." + valueAfterDecimal : "";
 		return sign + valueBeforeDecimal + decimalPart;
 	}
 
