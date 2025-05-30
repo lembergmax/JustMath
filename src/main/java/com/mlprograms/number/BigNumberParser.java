@@ -88,82 +88,70 @@ public class BigNumberParser {
 	}
 
 	/**
-	 * Formats a {@link BigNumber} into a string according to the specified locale.
-	 * <p>
-	 * This method adds grouping separators and uses the locale-specific decimal separator.
+	 * Formats a BigNumber as a string using locale-specific grouping and decimal separators.
 	 *
 	 * @param number
-	 * 	the {@link BigNumber} to format
+	 * 	the BigNumber to format
 	 * @param locale
-	 * 	the locale defining grouping and decimal separators
+	 * 	the target locale
 	 *
-	 * @return the formatted string representation of the number
+	 * @return formatted string with grouping and locale decimal separator
 	 */
 	public String format(BigNumber number, Locale locale) {
-		Objects.requireNonNull(number, "BigNumber must not be null");
-		Objects.requireNonNull(locale, "Locale must not be null");
-
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 		char decimalSeparator = symbols.getDecimalSeparator();
-		StringBuilder groupedBeforeDecimal = getGroupedBeforeDecimal(number, symbols);
+		char groupingSeparator = symbols.getGroupingSeparator();
 
-		StringBuilder formattedNumber = new StringBuilder();
+		StringBuilder groupedBeforeDecimal = getGroupedBeforeDecimal(number.getValueBeforeDecimal(), groupingSeparator);
 
+		StringBuilder result = new StringBuilder();
 		if (number.isNegative()) {
-			formattedNumber.append("-");
+			result.append("-");
 		}
-		formattedNumber.append(groupedBeforeDecimal);
+		result.append(groupedBeforeDecimal);
 
 		if (number.hasDecimal()) {
-			formattedNumber.append(decimalSeparator).append(number.getValueAfterDecimal());
+			result.append(decimalSeparator).append(number.getValueAfterDecimal());
 		}
-
-		return formattedNumber.toString();
+		return result.toString();
 	}
 
 	/**
-	 * Groups the integer part of a {@link BigNumber} using the locale-specific grouping separator.
-	 * <p>
-	 * Inserts grouping separators (e.g., commas or periods) every three digits from right to left,
-	 * according to the provided {@link DecimalFormatSymbols}.
+	 * Inserts grouping separators every 3 digits from right to left for the integer part.
 	 *
-	 * @param number
-	 * 	the {@link BigNumber} whose integer part will be grouped
-	 * @param symbols
-	 * 	the {@link DecimalFormatSymbols} defining the grouping separator
+	 * @param integerPart
+	 * 	the string of digits before decimal
+	 * @param groupingSeparator
+	 * 	the grouping separator character (e.g. ',' or '.')
 	 *
-	 * @return a {@link StringBuilder} containing the grouped integer part
+	 * @return string with grouping separators inserted
 	 */
-	private StringBuilder getGroupedBeforeDecimal(BigNumber number, DecimalFormatSymbols symbols) {
-		char groupingSeparator = symbols.getGroupingSeparator();
+	private StringBuilder getGroupedBeforeDecimal(String integerPart, char groupingSeparator) {
+		StringBuilder grouped = new StringBuilder();
 
-		StringBuilder groupedBeforeDecimal = new StringBuilder();
-
-		String integerPart = number.getValueBeforeDecimal();
-		int length = integerPart.length();
-
-		// Insert grouping separators every 3 digits from right to left
+		int len = integerPart.length();
 		int count = 0;
-		for (int i = length - 1; i >= 0; i--) {
-			groupedBeforeDecimal.insert(0, integerPart.charAt(i));
+		for (int i = len - 1; i >= 0; i--) {
+			grouped.insert(0, integerPart.charAt(i));
 			count++;
 			if (count == 3 && i != 0) {
-				groupedBeforeDecimal.insert(0, groupingSeparator);
+				grouped.insert(0, groupingSeparator);
 				count = 0;
 			}
 		}
-		return groupedBeforeDecimal;
+		return grouped;
 	}
 
+
 	/**
-	 * Removes all grouping separators according to the locale from the input string.
+	 * Removes all grouping separators from the input string according to the locale.
 	 *
 	 * @param value
-	 * 	the input numeric string
+	 * 	the raw number string
 	 * @param locale
-	 * 	the locale defining the grouping separator
+	 * 	the locale specifying the grouping separator
 	 *
-	 * @return normalized string with grouping separators removed
+	 * @return the input string without grouping separators
 	 */
 	private String normalize(String value, Locale locale) {
 		char groupingSeparator = DecimalFormatSymbols.getInstance(locale).getGroupingSeparator();
