@@ -1,4 +1,4 @@
-package com.mlprograms.number;
+package com.mlprograms.justmath.number;
 
 import java.text.NumberFormat;
 import java.text.ParsePosition;
