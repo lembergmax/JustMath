@@ -1,4 +1,4 @@
-package com.mlprograms.number;
+package com.mlprograms.justmath.number;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -14,6 +14,8 @@ import java.util.Objects;
  */
 @Getter
 public class BigNumber {
+
+	private final BigNumberArithmetic arithmetic = new BigNumberArithmetic();
 
 	/**
 	 * The locale defining grouping and decimal separators used by this number.
@@ -128,32 +130,95 @@ public class BigNumber {
 	}
 
 	public BigNumber add(BigNumber other) {
-		return BigNumberArithmetic.add(this, other);
+		return arithmetic.add(other);
 	}
 
 	public BigNumber subtract(BigNumber other) {
-		return BigNumberArithmetic.subtract(this, other);
+		return arithmetic.subtract(other);
 	}
 
-	public BigNumber multiplyBy(BigNumber other) {
-		return BigNumberArithmetic.multiply(this, other);
+	public BigNumber multiply(BigNumber other) {
+		return arithmetic.multiply(other);
 	}
 
-	public BigNumber divideBy(BigNumber other) {
-		return BigNumberArithmetic.divide(this, other);
+	public BigNumber divide(BigNumber other) {
+		return arithmetic.divide(other);
 	}
 
-	/**
-	 * Returns the string representation of this number with thousand separators
-	 * according to the specified locale.
-	 *
-	 * @param locale
-	 * 	the locale for grouping and decimal separators
-	 *
-	 * @return formatted string with grouping separators
-	 */
-	public String addGroupingSeparators(Locale locale) {
-		return new BigNumberParser().format(this, locale);
+	public BigNumber powerOf(BigNumber exponent) {
+		return arithmetic.pow(this, exponent);
+	}
+
+	public BigNumber root() {
+		return arithmetic.root(this);
+	}
+
+	public BigNumber thirdRoot() {
+		return arithmetic.thirdRoot(this);
+	}
+
+	public BigNumber factorial() {
+		return arithmetic.factorial(this);
+	}
+
+	public BigNumber sin() {
+		return arithmetic.sin(this);
+	}
+
+	public BigNumber cos() {
+		return arithmetic.cos(this);
+	}
+
+	public BigNumber tan() {
+		return arithmetic.tan(this);
+	}
+
+	public BigNumber sinh() {
+		return arithmetic.sinh(this);
+	}
+
+	public BigNumber cosh() {
+		return arithmetic.cosh(this);
+	}
+
+	public BigNumber tanh() {
+		return arithmetic.tanh(this);
+	}
+
+	public BigNumber asin() {
+		return arithmetic.asin(this);
+	}
+
+	public BigNumber acos() {
+		return arithmetic.acos(this);
+	}
+
+	public BigNumber atan() {
+		return arithmetic.atan(this);
+	}
+
+	public BigNumber asinh() {
+		return arithmetic.asinh(this);
+	}
+
+	public BigNumber acosh() {
+		return arithmetic.acosh(this);
+	}
+
+	public BigNumber atanh() {
+		return arithmetic.atanh(this);
+	}
+
+	public BigNumber log10() {
+		return arithmetic.log10(this);
+	}
+
+	public BigNumber ln() {
+		return arithmetic.ln(this);
+	}
+
+	public BigNumber logBase(int base) {
+		return arithmetic.logBase(this, base);
 	}
 
 	public boolean hasDecimal() {
