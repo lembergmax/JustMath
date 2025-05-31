@@ -1,6 +1,6 @@
-package com.mlprograms.number;
+package com.mlprograms.justmath.number;
 
-import com.mlprograms.locales.LocalesConfig;
+import com.mlprograms.justmath.locales.LocalesConfig;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
