@@ -39,7 +39,7 @@ public class CalculatorEngine {
 	 *
 	 * @return result as string, rounded if necessary
 	 */
-	public BigNumber calculate(String expression) {
+	public BigNumber evaluate(String expression) {
 		try {
 			// Tokenize the input string
 			List<Token> tokens = Tokenizer.tokenize(expression);

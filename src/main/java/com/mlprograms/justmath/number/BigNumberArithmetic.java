@@ -22,7 +22,7 @@ public final class BigNumberArithmetic {
 	 */
 	public BigNumber add(BigNumber other) {
 		String expression = this + "+" + other.toString();
-		BigNumber result = calculatorEngine.calculate(expression);
+		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
 
@@ -36,7 +36,7 @@ public final class BigNumberArithmetic {
 	 */
 	public BigNumber subtract(BigNumber other) {
 		String expression = this + "-" + other.toString();
-		BigNumber result = calculatorEngine.calculate(expression);
+		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
 
@@ -50,7 +50,7 @@ public final class BigNumberArithmetic {
 	 */
 	public BigNumber multiply(BigNumber other) {
 		String expression = this + "*" + other.toString();
-		BigNumber result = calculatorEngine.calculate(expression);
+		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
 
@@ -67,7 +67,7 @@ public final class BigNumberArithmetic {
 	 */
 	public BigNumber divide(BigNumber other) {
 		String expression = this + "/" + other.toString();
-		BigNumber result = calculatorEngine.calculate(expression);
+		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
 
@@ -83,7 +83,7 @@ public final class BigNumberArithmetic {
 	 * @return result of base ^ exponent
 	 */
 	BigNumber pow(BigNumber base, BigNumber exponent) {
-		BigNumber result = calculatorEngine.calculate(base.toString() + "^" + exponent.toString());
+		BigNumber result = calculatorEngine.evaluate(base.toString() + "^" + exponent.toString());
 		return new BigNumber(result, base.getLocale());
 	}
 
@@ -96,7 +96,7 @@ public final class BigNumberArithmetic {
 	 * @return square root of number
 	 */
 	BigNumber root(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("√(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("√(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -109,7 +109,7 @@ public final class BigNumberArithmetic {
 	 * @return cube root of number
 	 */
 	BigNumber thirdRoot(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("³√(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("³√(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -122,7 +122,7 @@ public final class BigNumberArithmetic {
 	 * @return factorial of number
 	 */
 	BigNumber factorial(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate(number.toString() + "!");
+		BigNumber result = calculatorEngine.evaluate(number.toString() + "!");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -135,7 +135,7 @@ public final class BigNumberArithmetic {
 	 * @return sine of number
 	 */
 	BigNumber sin(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("sin(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("sin(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -148,7 +148,7 @@ public final class BigNumberArithmetic {
 	 * @return cosine of number
 	 */
 	BigNumber cos(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("cos(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("cos(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -161,7 +161,7 @@ public final class BigNumberArithmetic {
 	 * @return tangent of number
 	 */
 	BigNumber tan(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("tan(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("tan(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -174,7 +174,7 @@ public final class BigNumberArithmetic {
 	 * @return sinh(number)
 	 */
 	BigNumber sinh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("sinh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("sinh(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -187,7 +187,7 @@ public final class BigNumberArithmetic {
 	 * @return cosh(number)
 	 */
 	BigNumber cosh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("cosh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("cosh(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -200,7 +200,7 @@ public final class BigNumberArithmetic {
 	 * @return tanh(number)
 	 */
 	BigNumber tanh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("tanh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("tanh(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -213,7 +213,7 @@ public final class BigNumberArithmetic {
 	 * @return asin(number)
 	 */
 	BigNumber asin(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("sin⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("sin⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -226,7 +226,7 @@ public final class BigNumberArithmetic {
 	 * @return acos(number)
 	 */
 	BigNumber acos(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("cos⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("cos⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -239,7 +239,7 @@ public final class BigNumberArithmetic {
 	 * @return atan(number)
 	 */
 	BigNumber atan(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("tan⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("tan⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -252,7 +252,7 @@ public final class BigNumberArithmetic {
 	 * @return asinh(number)
 	 */
 	BigNumber asinh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("sinh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("sinh⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -265,7 +265,7 @@ public final class BigNumberArithmetic {
 	 * @return acosh(number)
 	 */
 	BigNumber acosh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("cosh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("cosh⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -278,7 +278,7 @@ public final class BigNumberArithmetic {
 	 * @return atanh(number)
 	 */
 	BigNumber atanh(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("tanh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("tanh⁻¹(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -291,7 +291,7 @@ public final class BigNumberArithmetic {
 	 * @return log10(number)
 	 */
 	BigNumber log10(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("log(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("log(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -304,7 +304,7 @@ public final class BigNumberArithmetic {
 	 * @return ln(number)
 	 */
 	BigNumber ln(BigNumber number) {
-		BigNumber result = calculatorEngine.calculate("ln(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("ln(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -319,7 +319,7 @@ public final class BigNumberArithmetic {
 	 * @return log_base(number)
 	 */
 	BigNumber logBase(BigNumber number, int base) {
-		BigNumber result = calculatorEngine.calculate("log" + base + "(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate("log" + base + "(" + number.toString() + ")");
 		return new BigNumber(result, number.getLocale());
 	}
 
