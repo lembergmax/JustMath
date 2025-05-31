@@ -28,6 +28,6 @@ public final class Values {
 	 * Global mathematical precision for internal BigDecimal operations.
 	 * Set high enough to ensure exact intermediate calculations.
 	 */
-	public static MathContext MATH_CONTEXT = new MathContext(10000, RoundingMode.HALF_UP);
+	public static MathContext MATH_CONTEXT = new MathContext(100, RoundingMode.HALF_UP);
 
 }
