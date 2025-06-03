@@ -1,14 +1,17 @@
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-
 	public static void main(String[] args) {
+		//TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
+		// to see how IntelliJ IDEA suggests fixing it.
+		System.out.printf("Hello and welcome!");
 
-		CalculatorEngine calculatorEngine = new CalculatorEngine(1);
-		System.out.println(calculatorEngine.evaluate("((2.5 + sqrt(16) * (3 - 1)^2) / (4.2 - 1.1))^2 + (5 - 6 / 2 + 3^2 - (1.5 + 2.5 / 5)) * (7 + sqrt(49)) / 2^3 - sqrt(81) + 0.5^(2 + 1)"));
-
+		for (int i = 1; i <= 5; i++) {
+			//TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
+			// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
+			System.out.println("i = " + i);
+		}
 	}
-
 }
