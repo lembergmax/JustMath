@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber;
+package com.mlprograms.justmath.bignumber.internal;
 
 import java.text.NumberFormat;
 import java.text.ParsePosition;

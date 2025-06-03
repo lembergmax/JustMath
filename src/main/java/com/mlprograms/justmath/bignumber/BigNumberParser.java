@@ -1,11 +1,12 @@
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.locales.LocalesConfig;
+import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
+import com.mlprograms.justmath.bignumber.internal.NumberChecker;
+import lombok.NonNull;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * Utility class responsible for parsing numeric strings into {@link BigNumber} instances,
@@ -29,10 +30,10 @@ public class BigNumberParser {
 	 *
 	 * @return the parsed {@link BigNumber}
 	 */
-	BigNumber parse(String input, Locale locale) {
+	BigNumber parse(@NonNull String input, @NonNull Locale locale) {
 		Objects.requireNonNull(locale, "Locale must not be null");
 
-		if (input == null || input.isBlank() || !NumberChecker.isNumber(input, locale)) {
+		if (input.isBlank() || !NumberChecker.isNumber(input, locale)) {
 			return defaultBigNumber();
 		}
 
@@ -52,8 +53,8 @@ public class BigNumberParser {
 	 *
 	 * @return parsed {@link BigNumber} or default zero BigNumber if parsing fails
 	 */
-	BigNumber parseAutoDetect(String input) {
-		if (input == null || input.isBlank()) {
+	BigNumber parseAutoDetect(@NonNull String input) {
+		if (input.isBlank()) {
 			return defaultBigNumber();
 		}
 
@@ -62,59 +63,43 @@ public class BigNumberParser {
 				return parse(input, locale);
 			}
 		}
-
-		// Fallback to zero
 		return defaultBigNumber();
 	}
 
-
 	/**
-	 * Parses a number string from one locale and returns it as a string formatted for another locale.
-	 * <p>
-	 * Example: parseAndFormat("1.234,56", Locale.GERMANY, Locale.US) returns "1234.56"
-	 *
-	 * @param input
-	 * 	the raw numeric string to parse
-	 * @param fromLocale
-	 * 	the locale of the input string
-	 * @param targetLocale
-	 * 	the locale to format the output string
-	 *
-	 * @return a numeric string formatted for the target locale
-	 */
-	String parseAndFormat(String input, Locale fromLocale, Locale targetLocale) {
-		BigNumber number = parse(input, fromLocale);
-		return format(number, targetLocale);
-	}
-
-	/**
-	 * Formats a BigNumber as a string using locale-specific grouping and decimal separators.
+	 * Formats a BigNumber to the targetLocale.
 	 *
 	 * @param number
 	 * 	the BigNumber to format
-	 * @param locale
-	 * 	the target locale
+	 * @param targetLocale
+	 * 	the target targetLocale
 	 *
-	 * @return formatted string with grouping and locale decimal separator
+	 * @return formatted string with grouping and targetLocale decimal separator
 	 */
-	public String format(BigNumber number, Locale locale) {
-		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-		char decimalSeparator = symbols.getDecimalSeparator();
+	BigNumber format(@NonNull BigNumber number, @NonNull Locale targetLocale) {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(targetLocale);
 		char groupingSeparator = symbols.getGroupingSeparator();
+		char decimalSeparator = symbols.getDecimalSeparator();
 
-		StringBuilder groupedBeforeDecimal = getGroupedBeforeDecimal(number.getValueBeforeDecimal(), groupingSeparator);
+		String beforeDecimal = number.getValueBeforeDecimal();
+		String afterDecimal = number.getValueAfterDecimal();
+		boolean isNegative = number.isNegative();
 
-		StringBuilder result = new StringBuilder();
-		if (number.isNegative()) {
-			result.append("-");
+		StringBuilder groupedBeforeDecimal = getGroupedBeforeDecimal(beforeDecimal, groupingSeparator);
+
+		StringBuilder formattedNumber = new StringBuilder();
+		if (isNegative) {
+			formattedNumber.append("-");
 		}
-		result.append(groupedBeforeDecimal);
 
-		if (number.hasDecimal()) {
-			result.append(decimalSeparator).append(number.getValueAfterDecimal());
+		formattedNumber.append(groupedBeforeDecimal);
+		if (!afterDecimal.equals("0") && !afterDecimal.isEmpty()) {
+			formattedNumber.append(decimalSeparator).append(afterDecimal);
 		}
-		return result.toString();
+
+		return parse(formattedNumber.toString(), targetLocale);
 	}
+
 
 	/**
 	 * Inserts grouping separators every 3 digits from right to left for the integer part.
@@ -126,7 +111,7 @@ public class BigNumberParser {
 	 *
 	 * @return string with grouping separators inserted
 	 */
-	private StringBuilder getGroupedBeforeDecimal(String integerPart, char groupingSeparator) {
+	StringBuilder getGroupedBeforeDecimal(@NonNull String integerPart, char groupingSeparator) {
 		StringBuilder grouped = new StringBuilder();
 
 		int len = integerPart.length();
@@ -142,52 +127,46 @@ public class BigNumberParser {
 		return grouped;
 	}
 
-
 	/**
-	 * Removes all grouping separators from the input string according to the locale.
-	 *
-	 * @param value
-	 * 	the raw number string
-	 * @param locale
-	 * 	the locale specifying the grouping separator
-	 *
-	 * @return the input string without grouping separators
+	 * Normalizes the input by removing grouping separators
+	 * and converting the decimal separator to '.' (US format).
 	 */
-	private String normalize(String value, Locale locale) {
-		char groupingSeparator = DecimalFormatSymbols.getInstance(locale).getGroupingSeparator();
-		return value.replace(String.valueOf(groupingSeparator), "");
+	private String normalize(String value, Locale fromLocale) {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(fromLocale);
+		char groupingSeparator = symbols.getGroupingSeparator();
+		char decimalSeparator = symbols.getDecimalSeparator();
+
+		String noGrouping = value.replace(String.valueOf(groupingSeparator), "");
+
+		return noGrouping.replace(decimalSeparator, '.');
 	}
 
 	/**
-	 * Extracts sign, integer part, and fractional part from a normalized string.
+	 * Extracts the integer and fractional parts from a normalized numeric string,
+	 * determines if the value is negative, and constructs a {@link BigNumber} instance.
 	 *
-	 * @param value
-	 * 	the numeric string without grouping separators
-	 * @param locale
-	 * 	the locale defining the decimal separator
+	 * @param normalizedValue
+	 * 	the numeric string in normalized (US) format, possibly starting with '-'
+	 * @param originalLocale
+	 * 	the locale to associate with the resulting BigNumber
 	 *
-	 * @return a {@link BigNumber} object with parsed parts
+	 * @return a BigNumber representing the parsed value, with correct sign and parts
 	 */
-	private BigNumber extractParts(String value, Locale locale) {
-		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-		char decimalSeparator = symbols.getDecimalSeparator();
-
-		boolean isNegative = value.startsWith("-");
+	private BigNumber extractParts(String normalizedValue, Locale originalLocale) {
+		boolean isNegative = normalizedValue.startsWith("-");
 		if (isNegative) {
-			value = value.substring(1);
+			normalizedValue = normalizedValue.substring(1);
 		}
 
-		String[] parts = value.split(Pattern.quote(String.valueOf(decimalSeparator)), 2);
+		String[] parts = normalizedValue.split("\\.", 2);
 		String beforeDecimal = parts[ 0 ];
 		String afterDecimal = (parts.length > 1) ? parts[ 1 ] : "0";
-		boolean hasDecimal = parts.length > 1;
 
 		return BigNumber.builder()
-			       .locale(locale)
+			       .currentLocale(originalLocale)
 			       .valueBeforeDecimal(beforeDecimal)
 			       .valueAfterDecimal(afterDecimal)
 			       .isNegative(isNegative)
-			       .hasDecimal(hasDecimal)
 			       .build();
 	}
 
@@ -198,11 +177,10 @@ public class BigNumberParser {
 	 */
 	private BigNumber defaultBigNumber() {
 		return BigNumber.builder()
-			       .locale(Locale.US)
+			       .currentLocale(Locale.US)
 			       .valueBeforeDecimal("0")
 			       .valueAfterDecimal("0")
 			       .isNegative(false)
-			       .hasDecimal(true)
 			       .build();
 	}
 

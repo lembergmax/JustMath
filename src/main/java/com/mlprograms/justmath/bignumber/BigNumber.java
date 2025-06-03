@@ -1,9 +1,12 @@
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.api.CalculatorEngine;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
+import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -15,214 +18,442 @@ import java.util.Objects;
 @Getter
 public class BigNumber {
 
-	private final BigNumberArithmetic arithmetic = new BigNumberArithmetic();
-
+	/**
+	 * Shared instance of the parser used to convert input strings into BigNumber objects.
+	 * This static parser ensures consistent parsing logic across all BigNumber instances.
+	 */
+	private static final BigNumberParser bigNumberParser = new BigNumberParser();
 	/**
 	 * The locale defining grouping and decimal separators used by this number.
 	 */
 	private final Locale locale;
-
 	/**
 	 * The numeric value before the decimal separator.
 	 */
 	private final String valueBeforeDecimal;
-
 	/**
 	 * The numeric value after the decimal separator. Defaults to "0" if absent.
 	 */
 	private final String valueAfterDecimal;
-
 	/**
 	 * Indicates whether the number is negative.
 	 */
 	private final boolean isNegative;
-
 	/**
-	 * Indicates whether the number contains a decimal separator.
+	 * Shared instance of the CalculatorEngine used for performing arithmetic operations.
+	 * This static engine allows all BigNumber instances to use the same precision settings.
 	 */
-	private final boolean hasDecimal;
+	private CalculatorEngine calculatorEngine;
 
 	/**
 	 * Private builder constructor used internally.
 	 */
-	@Builder(access = AccessLevel.PROTECTED)
-	private BigNumber(Locale locale, String valueBeforeDecimal, String valueAfterDecimal,
-	                  boolean isNegative, boolean hasDecimal) {
-		this.locale = Objects.requireNonNull(locale, "Locale must not be null");
-		this.valueBeforeDecimal = Objects.requireNonNull(valueBeforeDecimal);
-		this.valueAfterDecimal = Objects.requireNonNull(valueAfterDecimal);
+	@Builder(access = AccessLevel.PUBLIC)
+	private BigNumber(@NonNull Locale currentLocale, @NonNull String valueBeforeDecimal, @NonNull String valueAfterDecimal,
+	                  boolean isNegative) {
+		this.locale = currentLocale;
+		this.valueBeforeDecimal = valueBeforeDecimal;
+		this.valueAfterDecimal = valueAfterDecimal;
 		this.isNegative = isNegative;
-		this.hasDecimal = hasDecimal;
-	}
-
-	/**
-	 * Constructs a BigNumber by parsing the given number string using the specified locale.
-	 *
-	 * @param number
-	 * 	the input numeric string
-	 * @param locale
-	 * 	the locale specifying grouping and decimal separators
-	 */
-	public BigNumber(String number, Locale locale) {
-		this(new BigNumberParser().parse(number, locale));
+		this.calculatorEngine = new CalculatorEngine();
 	}
 
 	/**
 	 * Constructs a BigNumber by auto-detecting the locale of the input string.
-	 *
-	 * @param number
-	 * 	the input numeric string
 	 */
-	public BigNumber(String number) {
-		this(new BigNumberParser().parseAutoDetect(number));
+	public BigNumber(@NonNull String number) {
+		this(bigNumberParser.parseAutoDetect(number));
+	}
+
+	/**
+	 * Constructs a BigNumber by parsing the given number string using the specified currentLocale.
+	 */
+	public BigNumber(@NonNull String number, @NonNull Locale currentLocale) {
+		this(bigNumberParser.parse(number, currentLocale));
+	}
+
+	/**
+	 * Constructs a BigNumber by converting an existing BigNumber to a different locale.
+	 */
+	public BigNumber(@NonNull BigNumber number, @NonNull Locale targetLocale) {
+		this(bigNumberParser.parse(number.toString(), targetLocale));
 	}
 
 	/**
 	 * Constructs a BigNumber by parsing the input string using a source locale
 	 * and converting it to the target locale.
-	 *
-	 * @param input
-	 * 	the input numeric string
-	 * @param fromLocale
-	 * 	the locale of the input string
-	 * @param targetLocale
-	 * 	the locale to convert/format the number to
 	 */
-	public BigNumber(String input, Locale fromLocale, Locale targetLocale) {
-		BigNumber parsed = new BigNumberParser().parse(input, fromLocale);
-		BigNumber formatted = new BigNumberParser().parse(parsed.toString(), targetLocale);
-		this.locale = formatted.locale;
-		this.valueBeforeDecimal = formatted.valueBeforeDecimal;
-		this.valueAfterDecimal = formatted.valueAfterDecimal;
-		this.isNegative = formatted.isNegative;
-		this.hasDecimal = formatted.hasDecimal;
-	}
-
-	/**
-	 * Constructs a BigNumber by converting an existing BigNumber to a different locale.
-	 *
-	 * @param number
-	 * 	the original BigNumber instance
-	 * @param locale
-	 * 	the target locale for conversion
-	 */
-	public BigNumber(BigNumber number, Locale locale) {
-		BigNumber converted = new BigNumberParser().parse(number.toString(), locale);
-		this.locale = converted.locale;
-		this.valueBeforeDecimal = converted.valueBeforeDecimal;
-		this.valueAfterDecimal = converted.valueAfterDecimal;
-		this.isNegative = converted.isNegative;
-		this.hasDecimal = converted.hasDecimal;
+	public BigNumber(@NonNull String input, @NonNull Locale fromLocale, @NonNull Locale targetLocale) {
+		this(bigNumberParser.parse(bigNumberParser.parse(input, fromLocale).toString(), targetLocale));
 	}
 
 	/**
 	 * Copy constructor.
-	 *
-	 * @param other
-	 * 	the BigNumber instance to copy
 	 */
-	public BigNumber(BigNumber other) {
+	public BigNumber(@NonNull BigNumber other) {
 		this.locale = other.locale;
 		this.valueBeforeDecimal = other.valueBeforeDecimal;
 		this.valueAfterDecimal = other.valueAfterDecimal;
 		this.isNegative = other.isNegative;
-		this.hasDecimal = other.hasDecimal;
+		this.calculatorEngine = other.getCalculatorEngine();
 	}
 
+	/**
+	 * Adds this BigNumber to another BigNumber using CalculatorEngine.
+	 *
+	 * @param other
+	 * 	the number to add
+	 *
+	 * @return the sum as a new BigNumber
+	 */
 	public BigNumber add(BigNumber other) {
-		return arithmetic.add(other);
+		String expression = this + "+" + other.toString();
+		BigNumber result = calculatorEngine.evaluate(expression);
+		return new BigNumber(result);
 	}
 
+	/**
+	 * Subtracts another BigNumber from this BigNumber using CalculatorEngine.
+	 *
+	 * @param other
+	 * 	the number to subtract
+	 *
+	 * @return the difference as a new BigNumber
+	 */
 	public BigNumber subtract(BigNumber other) {
-		return arithmetic.subtract(other);
+		String expression = this + "-" + other.toString();
+		BigNumber result = calculatorEngine.evaluate(expression);
+		return new BigNumber(result);
 	}
 
+	/**
+	 * Multiplies this BigNumber with another BigNumber using CalculatorEngine.
+	 *
+	 * @param other
+	 * 	the number to multiply with
+	 *
+	 * @return the product as a new BigNumber
+	 */
 	public BigNumber multiply(BigNumber other) {
-		return arithmetic.multiply(other);
+		String expression = this + "*" + other.toString();
+		BigNumber result = calculatorEngine.evaluate(expression);
+		return new BigNumber(result);
 	}
 
+	/**
+	 * Divides this BigNumber by another BigNumber using CalculatorEngine.
+	 *
+	 * @param other
+	 * 	the number to divide by
+	 *
+	 * @return the quotient as a new BigNumber
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs
+	 */
 	public BigNumber divide(BigNumber other) {
-		return arithmetic.divide(other);
+		String expression = this + "/" + other.toString();
+		BigNumber result = calculatorEngine.evaluate(expression);
+		return new BigNumber(result);
 	}
 
-	public BigNumber powerOf(BigNumber exponent) {
-		return arithmetic.pow(this, exponent);
+
+	/**
+	 * Raises a BigNumber to the power of another BigNumber.
+	 *
+	 * @param base
+	 * 	the base BigNumber
+	 * @param exponent
+	 * 	the exponent BigNumber
+	 *
+	 * @return result of base ^ exponent
+	 */
+	public BigNumber pow(BigNumber base, BigNumber exponent) {
+		BigNumber result = calculatorEngine.evaluate(base.toString() + "^" + exponent.toString());
+		return new BigNumber(result, base.getLocale());
 	}
 
-	public BigNumber root() {
-		return arithmetic.root(this);
+	/**
+	 * Computes the square root of a BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return square root of number
+	 */
+	public BigNumber root(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("√(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber thirdRoot() {
-		return arithmetic.thirdRoot(this);
+	/**
+	 * Computes the cube root of a BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return cube root of number
+	 */
+	public BigNumber thirdRoot(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("³√(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber factorial() {
-		return arithmetic.factorial(this);
+	/**
+	 * Computes the factorial of a BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return factorial of number
+	 */
+	public BigNumber factorial(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate(number.toString() + "!");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber sin() {
-		return arithmetic.sin(this);
+	/**
+	 * Computes the sine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return sine of number
+	 */
+	public BigNumber sin(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("sin(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber cos() {
-		return arithmetic.cos(this);
+	/**
+	 * Computes the cosine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return cosine of number
+	 */
+	public BigNumber cos(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("cos(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber tan() {
-		return arithmetic.tan(this);
+	/**
+	 * Computes the tangent of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return tangent of number
+	 */
+	public BigNumber tan(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("tan(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber sinh() {
-		return arithmetic.sinh(this);
+	/**
+	 * Computes the hyperbolic sine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return sinh(number)
+	 */
+	public BigNumber sinh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("sinh(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber cosh() {
-		return arithmetic.cosh(this);
+	/**
+	 * Computes the hyperbolic cosine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return cosh(number)
+	 */
+	public BigNumber cosh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("cosh(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber tanh() {
-		return arithmetic.tanh(this);
+	/**
+	 * Computes the hyperbolic tangent of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return tanh(number)
+	 */
+	public BigNumber tanh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("tanh(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber asin() {
-		return arithmetic.asin(this);
+	/**
+	 * Computes the inverse sine (arcsin) of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return asin(number)
+	 */
+	public BigNumber asin(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("sin⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber acos() {
-		return arithmetic.acos(this);
+	/**
+	 * Computes the inverse cosine (arccos) of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return acos(number)
+	 */
+	public BigNumber acos(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("cos⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber atan() {
-		return arithmetic.atan(this);
+	/**
+	 * Computes the inverse tangent (arctan) of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return atan(number)
+	 */
+	public BigNumber atan(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("tan⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber asinh() {
-		return arithmetic.asinh(this);
+	/**
+	 * Computes the inverse hyperbolic sine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return asinh(number)
+	 */
+	public BigNumber asinh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("sinh⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber acosh() {
-		return arithmetic.acosh(this);
+	/**
+	 * Computes the inverse hyperbolic cosine of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return acosh(number)
+	 */
+	public BigNumber acosh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("cosh⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber atanh() {
-		return arithmetic.atanh(this);
+	/**
+	 * Computes the inverse hyperbolic tangent of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return atanh(number)
+	 */
+	public BigNumber atanh(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("tanh⁻¹(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber log10() {
-		return arithmetic.log10(this);
+	/**
+	 * Computes the base-10 logarithm of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return log10(number)
+	 */
+	public BigNumber log10(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("log(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber ln() {
-		return arithmetic.ln(this);
+	/**
+	 * Computes the natural logarithm (base e) of the given BigNumber.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 *
+	 * @return ln(number)
+	 */
+	public BigNumber ln(BigNumber number) {
+		BigNumber result = calculatorEngine.evaluate("ln(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public BigNumber logBase(int base) {
-		return arithmetic.logBase(this, base);
+	/**
+	 * Computes the logarithm of the given number to a specified base.
+	 *
+	 * @param number
+	 * 	the input BigNumber
+	 * @param base
+	 * 	the base of the logarithm
+	 *
+	 * @return log_base(number)
+	 */
+	public BigNumber logBase(BigNumber number, int base) {
+		BigNumber result = calculatorEngine.evaluate("log" + base + "(" + number.toString() + ")");
+		return new BigNumber(result, number.getLocale());
 	}
 
-	public boolean hasDecimal() {
-		return hasDecimal;
+	/**
+	 * Parses this BigNumber into a new targetLocale and mutates the current object.
+	 *
+	 * @param targetLocale
+	 * 	the new targetLocale to apply
+	 */
+	public BigNumber formatToLocale(@NonNull Locale targetLocale) {
+		return bigNumberParser.format(this, targetLocale);
+	}
+
+	public BigNumber formatWithGrouping() {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+		char groupingSeparator = symbols.getGroupingSeparator();
+
+		return BigNumber.builder()
+			       .currentLocale(this.locale)
+			       .valueBeforeDecimal(bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator).toString())
+			       .valueAfterDecimal(this.valueAfterDecimal)
+			       .isNegative(this.isNegative)
+			       .build();
+	}
+
+	/**
+	 * Sets the precision for the division in the CalculatorEngine used by this BigNumber. But be careful, because this
+	 * will overwrite
+	 * the current CalculatorEngine instance.
+	 *
+	 * @param precision
+	 * 	the number of decimal places to use in calculations
+	 */
+	public void setCalculatorEngineDivisionPrecision(int precision) {
+		this.calculatorEngine = new CalculatorEngine(precision);
+	}
+
+	/**
+	 * Sets the CalculatorEngine instance for this BigNumber.
+	 *
+	 * @param calculatorEngine
+	 * 	the CalculatorEngine to use; must not be null
+	 *
+	 * @throws NullPointerException
+	 * 	if calculatorEngine is null
+	 */
+	public void setCalculatorEngine(CalculatorEngine calculatorEngine) {
+		this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "CalculatorEngine must not be null");
 	}
 
 	/**
@@ -233,9 +464,11 @@ public class BigNumber {
 	 */
 	@Override
 	public String toString() {
-		String sign = isNegative ? "-" : "";
-		String decimalPart = (hasDecimal && !"0".equals(valueAfterDecimal)) ? "." + valueAfterDecimal : "";
-		return sign + valueBeforeDecimal + decimalPart;
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+		char decimalSeparator = symbols.getDecimalSeparator();
+
+		String localized = valueBeforeDecimal + decimalSeparator + valueAfterDecimal;
+		return isNegative ? "-" + localized : localized;
 	}
 
 }

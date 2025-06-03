@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.token;
+package com.mlprograms.justmath.calculator.internal.token;
 
 /**
  * Represents a lexical token extracted from a mathematical expression.

@@ -1,7 +1,4 @@
-package com.mlprograms.justmath.calculator;
-
-import java.math.MathContext;
-import java.math.RoundingMode;
+package com.mlprograms.justmath.util;
 
 /**
  * Constants.java
@@ -417,15 +414,5 @@ public final class Values {
 		                               "31409115573328018297798873659091665961240202177855" +
 		                               "88548761761619893707943800566633648843650891448055" +
 		                               "71039765214696027662583599051987042300179465536788";
-	/**
-	 * Trigonometric mode: "Deg" for degrees, "Rad" for radians.
-	 * This can be switched globally by changing the constant value.
-	 */
-	public static TrigonometricMode MODE = TrigonometricMode.DEG;
-	/**
-	 * Global mathematical precision for internal BigDecimal operations.
-	 * Set high enough to ensure exact intermediate calculations.
-	 */
-	public static MathContext MATH_CONTEXT = new MathContext(1000, RoundingMode.HALF_UP);
 
 }
