@@ -1,11 +1,11 @@
 package com.mlprograms.justmath.calculator.internal;
 
 import com.mlprograms.justmath.calculator.MathFunctions;
-import com.mlprograms.justmath.util.Values;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -17,7 +17,28 @@ import java.util.List;
 @NoArgsConstructor
 public class Evaluator {
 
-	private static final MathFunctions mathFunctions = new MathFunctions();
+	/**
+	 * Math context specifying the precision and rounding mode for calculations.
+	 */
+	private MathContext mathContext;
+
+	/**
+	 * Provides mathematical functions (e.g., trigonometric, logarithmic) used in evaluation.
+	 */
+	private MathFunctions mathFunctions;
+
+	/**
+	 * Constructs an Evaluator with the specified math context and trigonometric mode.
+	 *
+	 * @param mathContext
+	 * 	the MathContext specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the mode for trigonometric calculations (e.g., degrees or radians)
+	 */
+	public Evaluator(MathContext mathContext, TrigonometricMode trigonometricMode) {
+		this.mathContext = mathContext;
+		this.mathFunctions = new MathFunctions(mathContext, trigonometricMode);
+	}
 
 	/**
 	 * Applies the specified operator to the operands on the stack.
@@ -47,7 +68,7 @@ public class Evaluator {
 				if (b.compareTo(BigDecimal.ZERO) == 0) {
 					throw new ArithmeticException("Division by zero");
 				}
-				stack.push(a.divide(b, Values.MATH_CONTEXT));
+				stack.push(a.divide(b, mathContext));
 			}
 			case "^" -> {
 				BigDecimal exponent = stack.pop();
@@ -114,11 +135,8 @@ public class Evaluator {
 		for (Token token : rpnTokens) {
 			switch (token.type()) {
 				case NUMBER -> stack.push(new BigDecimal(token.value()));
-
 				case OPERATOR -> applyOperator(token.value(), stack);
-
 				case FUNCTION -> applyFunction(token.value(), stack);
-
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
 		}
