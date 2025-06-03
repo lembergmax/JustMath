@@ -15,6 +15,7 @@ import java.util.List;
 public class CalculatorEngine {
 
 	private static final Tokenizer tokenizer = new Tokenizer();
+	private static final Evaluator evaluator = new Evaluator();
 
 	public CalculatorEngine() {
 		this(1000, TrigonometricMode.DEG);
@@ -50,7 +51,7 @@ public class CalculatorEngine {
 			List<Token> postfix = Parser.toPostfix(tokens);
 
 			// Evaluate the postfix expression to a BigDecimal result
-			return new BigNumber(Evaluator.evaluate(postfix).toString());
+			return new BigNumber(evaluator.evaluate(postfix).toString());
 		} catch (Exception e) {
 			throw new RuntimeException("Error: " + e.getMessage());
 		}

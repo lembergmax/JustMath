@@ -1,5 +1,7 @@
 package com.mlprograms.justmath.calculator;
 
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -9,37 +11,8 @@ import java.util.List;
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
  * Supports full precision using BigDecimal.
  */
+@NoArgsConstructor
 public class Evaluator {
-
-	/**
-	 * Evaluates a postfix token list.
-	 *
-	 * @param rpnTokens
-	 * 	the list of tokens in postfix order
-	 *
-	 * @return final result as BigDecimal
-	 */
-	public static BigDecimal evaluate(List<Token> rpnTokens) {
-		Deque<BigDecimal> stack = new ArrayDeque<>();
-
-		for (Token token : rpnTokens) {
-			switch (token.type()) {
-				case NUMBER -> stack.push(new BigDecimal(token.value()));
-
-				case OPERATOR -> applyOperator(token.value(), stack);
-
-				case FUNCTION -> applyFunction(token.value(), stack);
-
-				default -> throw new IllegalArgumentException("Unexpected token: " + token);
-			}
-		}
-
-		if (stack.size() != 1) {
-			throw new IllegalStateException("Invalid expression: stack size != 1");
-		}
-
-		return stack.pop();
-	}
 
 	/**
 	 * Applies the specified operator to the operands on the stack.
@@ -54,7 +27,7 @@ public class Evaluator {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	private static void applyOperator(String op, Deque<BigDecimal> stack) {
+	private void applyOperator(String op, Deque<BigDecimal> stack) {
 		switch (op) {
 			case "+" -> stack.push(stack.pop().add(stack.pop()));
 			case "-" -> {
@@ -99,7 +72,7 @@ public class Evaluator {
 	 * @throws IllegalArgumentException
 	 * 	if the function is unknown
 	 */
-	private static void applyFunction(String func, Deque<BigDecimal> stack) {
+	private void applyFunction(String func, Deque<BigDecimal> stack) {
 		BigDecimal arg = stack.pop();
 		switch (func) {
 			case "sin" -> stack.push(MathFunctions.sin(arg));
@@ -120,6 +93,36 @@ public class Evaluator {
 			case "cbrt" -> stack.push(MathFunctions.cbrt(arg));
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
+	}
+
+	/**
+	 * Evaluates a postfix token list.
+	 *
+	 * @param rpnTokens
+	 * 	the list of tokens in postfix order
+	 *
+	 * @return final result as BigDecimal
+	 */
+	public BigDecimal evaluate(List<Token> rpnTokens) {
+		Deque<BigDecimal> stack = new ArrayDeque<>();
+
+		for (Token token : rpnTokens) {
+			switch (token.type()) {
+				case NUMBER -> stack.push(new BigDecimal(token.value()));
+
+				case OPERATOR -> applyOperator(token.value(), stack);
+
+				case FUNCTION -> applyFunction(token.value(), stack);
+
+				default -> throw new IllegalArgumentException("Unexpected token: " + token);
+			}
+		}
+
+		if (stack.size() != 1) {
+			throw new IllegalStateException("Invalid expression: stack size != 1");
+		}
+
+		return stack.pop();
 	}
 
 }
