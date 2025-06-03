@@ -1,5 +1,7 @@
 package com.mlprograms.justmath.calculator;
 
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,16 +10,17 @@ import java.util.Set;
  * Tokenizer class for breaking down a mathematical expression string into tokens.
  * Handles numbers, operators, parentheses, functions, and constants.
  */
+@NoArgsConstructor
 public class Tokenizer {
 
 	// Supported operators and functions
-	private static final Set<String> FUNCTIONS = Set.of(
+	private final Set<String> FUNCTIONS = Set.of(
 		"sin", "cos", "tan", "asin", "acos", "atan",
 		"sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
 		"log", "ln", "sqrt", "cbrt", "!", "^"
 	);
 
-	private static final Set<Character> OPERATORS = Set.of('+', '-', '*', '/', '^', '!', '√');
+	private final Set<Character> OPERATORS = Set.of('+', '-', '*', '/', '^', '!', '√');
 
 	/**
 	 * Tokenizes the input expression into a list of tokens.
@@ -30,7 +33,7 @@ public class Tokenizer {
 	 * @throws IllegalArgumentException
 	 * 	if the expression contains invalid characters
 	 */
-	public static List<Token> tokenize(String input) {
+	public List<Token> tokenize(String input) {
 		List<Token> tokens = new ArrayList<>();
 		String normalized = input.replaceAll("\\s+", ""); // remove whitespace
 		int i = 0;

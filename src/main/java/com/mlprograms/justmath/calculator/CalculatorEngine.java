@@ -14,6 +14,8 @@ import java.util.List;
  */
 public class CalculatorEngine {
 
+	private static final Tokenizer tokenizer = new Tokenizer();
+
 	public CalculatorEngine() {
 		this(1000, TrigonometricMode.DEG);
 	}
@@ -42,7 +44,7 @@ public class CalculatorEngine {
 	public static BigNumber evaluate(String expression) {
 		try {
 			// Tokenize the input string
-			List<Token> tokens = Tokenizer.tokenize(expression);
+			List<Token> tokens = tokenizer.tokenize(expression);
 
 			// Parse to postfix notation using shunting yard algorithm
 			List<Token> postfix = Parser.toPostfix(tokens);
