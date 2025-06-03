@@ -39,9 +39,7 @@ public class Parser {
 		for (Token token : tokens) {
 			switch (token.type()) {
 				case NUMBER -> output.add(token);
-
 				case FUNCTION -> operatorStack.push(token);
-
 				case OPERATOR -> {
 					while (!operatorStack.isEmpty()) {
 						Token top = operatorStack.peek();
@@ -56,9 +54,7 @@ public class Parser {
 					}
 					operatorStack.push(token);
 				}
-
 				case LEFT_PAREN -> operatorStack.push(token);
-
 				case RIGHT_PAREN -> {
 					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
 						output.add(operatorStack.pop());
