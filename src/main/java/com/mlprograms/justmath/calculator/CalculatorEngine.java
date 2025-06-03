@@ -1,6 +1,6 @@
 package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.number.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
 import java.math.MathContext;
 import java.math.RoundingMode;

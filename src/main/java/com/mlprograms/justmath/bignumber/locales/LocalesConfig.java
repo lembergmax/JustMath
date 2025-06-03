@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.locales;
+package com.mlprograms.justmath.bignumber.locales;
 
 import java.util.Locale;
 

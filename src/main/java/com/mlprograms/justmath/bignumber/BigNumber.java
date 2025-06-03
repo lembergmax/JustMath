@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.number;
+package com.mlprograms.justmath.bignumber;
 
 import lombok.AccessLevel;
 import lombok.Builder;
