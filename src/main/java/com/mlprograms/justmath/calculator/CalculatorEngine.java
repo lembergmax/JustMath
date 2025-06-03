@@ -18,16 +18,16 @@ public class CalculatorEngine {
 		this(1000, TrigonometricMode.DEG);
 	}
 
-	public CalculatorEngine(int precision) {
-		this(precision, TrigonometricMode.DEG);
+	public CalculatorEngine(int divisionPrecision) {
+		this(divisionPrecision, TrigonometricMode.DEG);
 	}
 
 	public CalculatorEngine(TrigonometricMode mode) {
 		this(1000, mode);
 	}
 
-	public CalculatorEngine(int precision, TrigonometricMode mode) {
-		Values.MATH_CONTEXT = new MathContext(precision, RoundingMode.HALF_UP);
+	public CalculatorEngine(int divisionPrecision, TrigonometricMode mode) {
+		Values.MATH_CONTEXT = new MathContext(divisionPrecision, RoundingMode.HALF_UP);
 		Values.MODE = mode;
 	}
 
