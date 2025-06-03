@@ -23,12 +23,12 @@ public class Evaluator {
 		Deque<BigDecimal> stack = new ArrayDeque<>();
 
 		for (Token token : rpnTokens) {
-			switch (token.getType()) {
-				case NUMBER -> stack.push(new BigDecimal(token.getValue(), Values.MATH_CONTEXT));
+			switch (token.type()) {
+				case NUMBER -> stack.push(new BigDecimal(token.value()));
 
-				case OPERATOR -> applyOperator(token.getValue(), stack);
+				case OPERATOR -> applyOperator(token.value(), stack);
 
-				case FUNCTION -> applyFunction(token.getValue(), stack);
+				case FUNCTION -> applyFunction(token.value(), stack);
 
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
@@ -56,13 +56,13 @@ public class Evaluator {
 	 */
 	private static void applyOperator(String op, Deque<BigDecimal> stack) {
 		switch (op) {
-			case "+" -> stack.push(stack.pop().add(stack.pop(), Values.MATH_CONTEXT));
+			case "+" -> stack.push(stack.pop().add(stack.pop()));
 			case "-" -> {
 				BigDecimal b = stack.pop();
 				BigDecimal a = stack.pop();
-				stack.push(a.subtract(b, Values.MATH_CONTEXT));
+				stack.push(a.subtract(b));
 			}
-			case "*" -> stack.push(stack.pop().multiply(stack.pop(), Values.MATH_CONTEXT));
+			case "*" -> stack.push(stack.pop().multiply(stack.pop()));
 			case "/" -> {
 				BigDecimal b = stack.pop();
 				BigDecimal a = stack.pop();
