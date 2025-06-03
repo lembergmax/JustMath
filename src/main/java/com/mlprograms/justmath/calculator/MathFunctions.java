@@ -1,18 +1,31 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.util.Values;
+import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 /**
  * Utility class for advanced mathematical functions using BigDecimal.
  * Provides high-precision implementations of pow, sqrt, factorial, log, sin, cos, etc.
  */
+@AllArgsConstructor
 public class MathFunctions {
 
+	/**
+	 * Constant representing the value 2 as BigDecimal.
+	 */
 	private final BigDecimal TWO = new BigDecimal("2");
+	/**
+	 * Constant representing the value 3 as BigDecimal.
+	 */
 	private final BigDecimal THREE = new BigDecimal("3");
+	/**
+	 * Reference to the CalculatorEngine used for advanced calculations.
+	 */
+	private final MathContext mathContext;
+	private final TrigonometricMode trigonometricMode;
 
 	/**
 	 * Computes base raised to the power of exponent.
@@ -44,12 +57,12 @@ public class MathFunctions {
 		if (value.compareTo(BigDecimal.ZERO) < 0)
 			throw new ArithmeticException("Square root of negative number");
 
-		BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()), Values.MATH_CONTEXT);
+		BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()), mathContext);
 		BigDecimal prev;
 
 		do {
 			prev = x;
-			x = x.add(value.divide(x, Values.MATH_CONTEXT)).divide(TWO, Values.MATH_CONTEXT);
+			x = x.add(value.divide(x, mathContext)).divide(TWO, mathContext);
 		} while (!x.equals(prev));
 
 		return x;
@@ -64,12 +77,12 @@ public class MathFunctions {
 	 * @return ∛value
 	 */
 	public BigDecimal cbrt(BigDecimal value) {
-		BigDecimal x = new BigDecimal(Math.cbrt(value.doubleValue()), Values.MATH_CONTEXT);
+		BigDecimal x = new BigDecimal(Math.cbrt(value.doubleValue()), mathContext);
 		BigDecimal prev;
 		do {
 			prev = x;
-			x = TWO.multiply(x).add(value.divide(x.multiply(x), Values.MATH_CONTEXT))
-				    .divide(THREE, Values.MATH_CONTEXT);
+			x = TWO.multiply(x).add(value.divide(x.multiply(x), mathContext))
+				    .divide(THREE, mathContext);
 		} while (!x.equals(prev));
 
 		return x;
@@ -284,7 +297,7 @@ public class MathFunctions {
 	 * @return angle in radians
 	 */
 	private double toRadians(BigDecimal x) {
-		if (Values.MODE == TrigonometricMode.DEG) {
+		if (trigonometricMode == TrigonometricMode.DEG) {
 			return Math.toRadians(x.doubleValue());
 		} else {
 			return x.doubleValue();
@@ -300,7 +313,7 @@ public class MathFunctions {
 	 * @return converted angle as BigDecimal
 	 */
 	private BigDecimal fromRadians(double radians) {
-		if (Values.MODE == TrigonometricMode.DEG) {
+		if (trigonometricMode == TrigonometricMode.DEG) {
 			return new BigDecimal(Math.toDegrees(radians));
 		} else {
 			return new BigDecimal(radians);
