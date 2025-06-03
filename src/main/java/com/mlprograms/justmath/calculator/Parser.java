@@ -33,7 +33,7 @@ public class Parser {
 		Deque<Token> operatorStack = new ArrayDeque<>();
 
 		for (Token token : tokens) {
-			switch (token.getType()) {
+			switch (token.type()) {
 				case NUMBER -> output.add(token);
 
 				case FUNCTION -> operatorStack.push(token);
@@ -41,8 +41,8 @@ public class Parser {
 				case OPERATOR -> {
 					while (!operatorStack.isEmpty()) {
 						Token top = operatorStack.peek();
-						if ((top.getType() == Token.Type.FUNCTION) ||
-							    (top.getType() == Token.Type.OPERATOR &&
+						if ((top.type() == Token.Type.FUNCTION) ||
+							    (top.type() == Token.Type.OPERATOR &&
 								     (hasHigherPrecedence(top, token) ||
 									      (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
 							output.add(operatorStack.pop());
@@ -56,14 +56,14 @@ public class Parser {
 				case LEFT_PAREN -> operatorStack.push(token);
 
 				case RIGHT_PAREN -> {
-					while (!operatorStack.isEmpty() && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
+					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
 						output.add(operatorStack.pop());
 					}
 					if (operatorStack.isEmpty()) {
 						throw new IllegalArgumentException("Mismatched parentheses");
 					}
 					operatorStack.pop(); // Remove '('
-					if (!operatorStack.isEmpty() && operatorStack.peek().getType() == Token.Type.FUNCTION) {
+					if (!operatorStack.isEmpty() && operatorStack.peek().type() == Token.Type.FUNCTION) {
 						output.add(operatorStack.pop()); // function call after parentheses
 					}
 				}
@@ -72,7 +72,7 @@ public class Parser {
 
 		while (!operatorStack.isEmpty()) {
 			Token top = operatorStack.pop();
-			if (top.getType() == Token.Type.LEFT_PAREN || top.getType() == Token.Type.RIGHT_PAREN) {
+			if (top.type() == Token.Type.LEFT_PAREN || top.type() == Token.Type.RIGHT_PAREN) {
 				throw new IllegalArgumentException("Mismatched parentheses");
 			}
 			output.add(top);
@@ -118,7 +118,7 @@ public class Parser {
 	 * @return the precedence value, or 0 if not found
 	 */
 	private static int getPrecedence(Token token) {
-		return PRECEDENCE.getOrDefault(token.getValue(), 0);
+		return PRECEDENCE.getOrDefault(token.value(), 0);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class Parser {
 	 * @return true if the operator is right-associative
 	 */
 	private static boolean isRightAssociative(Token token) {
-		return RIGHT_ASSOCIATIVE.contains(token.getValue());
+		return RIGHT_ASSOCIATIVE.contains(token.value());
 	}
 }
 
