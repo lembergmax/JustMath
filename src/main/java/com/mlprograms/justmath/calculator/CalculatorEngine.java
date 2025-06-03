@@ -16,6 +16,7 @@ public class CalculatorEngine {
 
 	private static final Tokenizer tokenizer = new Tokenizer();
 	private static final Evaluator evaluator = new Evaluator();
+	private static final Parser parser = new Parser();
 
 	public CalculatorEngine() {
 		this(1000, TrigonometricMode.DEG);
@@ -48,7 +49,7 @@ public class CalculatorEngine {
 			List<Token> tokens = tokenizer.tokenize(expression);
 
 			// Parse to postfix notation using shunting yard algorithm
-			List<Token> postfix = Parser.toPostfix(tokens);
+			List<Token> postfix = parser.toPostfix(tokens);
 
 			// Evaluate the postfix expression to a BigDecimal result
 			return new BigNumber(evaluator.evaluate(postfix).toString());
