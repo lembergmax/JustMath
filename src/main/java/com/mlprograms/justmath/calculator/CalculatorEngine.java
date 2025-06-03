@@ -1,6 +1,8 @@
 package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.number.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.token.Token;
+import com.mlprograms.justmath.calculator.token.Tokenizer;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -13,6 +15,10 @@ import java.util.List;
  * Converts the input to tokens, parses them to postfix (RPN), and evaluates the result.
  */
 public class CalculatorEngine {
+
+	private static final Tokenizer tokenizer = new Tokenizer();
+	private static final Evaluator evaluator = new Evaluator();
+	private static final Parser parser = new Parser();
 
 	public CalculatorEngine() {
 		this(1000, TrigonometricMode.DEG);
@@ -42,13 +48,13 @@ public class CalculatorEngine {
 	public static BigNumber evaluate(String expression) {
 		try {
 			// Tokenize the input string
-			List<Token> tokens = Tokenizer.tokenize(expression);
+			List<Token> tokens = tokenizer.tokenize(expression);
 
 			// Parse to postfix notation using shunting yard algorithm
-			List<Token> postfix = Parser.toPostfix(tokens);
+			List<Token> postfix = parser.toPostfix(tokens);
 
 			// Evaluate the postfix expression to a BigDecimal result
-			return new BigNumber(Evaluator.evaluate(postfix).toString());
+			return new BigNumber(evaluator.evaluate(postfix).toString());
 		} catch (Exception e) {
 			throw new RuntimeException("Error: " + e.getMessage());
 		}

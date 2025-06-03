@@ -8,8 +8,8 @@ import java.math.BigDecimal;
  */
 public class MathFunctions {
 
-	private static final BigDecimal TWO = new BigDecimal("2");
-	private static final BigDecimal THREE = new BigDecimal("3");
+	private final BigDecimal TWO = new BigDecimal("2");
+	private final BigDecimal THREE = new BigDecimal("3");
 
 	/**
 	 * Computes base raised to the power of exponent.
@@ -21,7 +21,7 @@ public class MathFunctions {
 	 *
 	 * @return base ^ exponent
 	 */
-	public static BigDecimal pow(BigDecimal base, BigDecimal exponent) {
+	public BigDecimal pow(BigDecimal base, BigDecimal exponent) {
 		if (exponent.scale() == 0) {
 			return base.pow(exponent.intValueExact());
 		}
@@ -37,7 +37,7 @@ public class MathFunctions {
 	 *
 	 * @return √value
 	 */
-	public static BigDecimal sqrt(BigDecimal value) {
+	public BigDecimal sqrt(BigDecimal value) {
 		if (value.compareTo(BigDecimal.ZERO) < 0)
 			throw new ArithmeticException("Square root of negative number");
 
@@ -60,7 +60,7 @@ public class MathFunctions {
 	 *
 	 * @return ∛value
 	 */
-	public static BigDecimal cbrt(BigDecimal value) {
+	public BigDecimal cbrt(BigDecimal value) {
 		BigDecimal x = new BigDecimal(Math.cbrt(value.doubleValue()), Values.MATH_CONTEXT);
 		BigDecimal prev;
 		do {
@@ -80,7 +80,7 @@ public class MathFunctions {
 	 *
 	 * @return n!
 	 */
-	public static BigDecimal factorial(BigDecimal n) {
+	public BigDecimal factorial(BigDecimal n) {
 		if (n.scale() > 0 || n.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ArithmeticException("Factorial is only defined for non-negative integers");
 		}
@@ -100,7 +100,7 @@ public class MathFunctions {
 	 *
 	 * @return ln(x)
 	 */
-	public static BigDecimal ln(BigDecimal x) {
+	public BigDecimal ln(BigDecimal x) {
 		if (x.compareTo(BigDecimal.ZERO) <= 0)
 			throw new ArithmeticException("ln(x) undefined for x <= 0");
 		return new BigDecimal(Math.log(x.doubleValue()));
@@ -114,7 +114,7 @@ public class MathFunctions {
 	 *
 	 * @return log₁₀(x)
 	 */
-	public static BigDecimal log10(BigDecimal x) {
+	public BigDecimal log10(BigDecimal x) {
 		if (x.compareTo(BigDecimal.ZERO) <= 0)
 			throw new ArithmeticException("log(x) undefined for x <= 0");
 		return new BigDecimal(Math.log10(x.doubleValue()));
@@ -128,7 +128,7 @@ public class MathFunctions {
 	 *
 	 * @return sin(x)
 	 */
-	public static BigDecimal sin(BigDecimal x) {
+	public BigDecimal sin(BigDecimal x) {
 		double radians = toRadians(x);
 		return new BigDecimal(Math.sin(radians));
 	}
@@ -141,7 +141,7 @@ public class MathFunctions {
 	 *
 	 * @return cos(x)
 	 */
-	public static BigDecimal cos(BigDecimal x) {
+	public BigDecimal cos(BigDecimal x) {
 		double radians = toRadians(x);
 		return new BigDecimal(Math.cos(radians));
 	}
@@ -154,7 +154,7 @@ public class MathFunctions {
 	 *
 	 * @return tan(x)
 	 */
-	public static BigDecimal tan(BigDecimal x) {
+	public BigDecimal tan(BigDecimal x) {
 		double radians = toRadians(x);
 		return new BigDecimal(Math.tan(radians));
 	}
@@ -167,7 +167,7 @@ public class MathFunctions {
 	 *
 	 * @return asin(x)
 	 */
-	public static BigDecimal asin(BigDecimal x) {
+	public BigDecimal asin(BigDecimal x) {
 		return fromRadians(Math.asin(x.doubleValue()));
 	}
 
@@ -179,7 +179,7 @@ public class MathFunctions {
 	 *
 	 * @return acos(x)
 	 */
-	public static BigDecimal acos(BigDecimal x) {
+	public BigDecimal acos(BigDecimal x) {
 		return fromRadians(Math.acos(x.doubleValue()));
 	}
 
@@ -191,7 +191,7 @@ public class MathFunctions {
 	 *
 	 * @return atan(x)
 	 */
-	public static BigDecimal atan(BigDecimal x) {
+	public BigDecimal atan(BigDecimal x) {
 		return fromRadians(Math.atan(x.doubleValue()));
 	}
 
@@ -203,7 +203,7 @@ public class MathFunctions {
 	 *
 	 * @return sinh(x)
 	 */
-	public static BigDecimal sinh(BigDecimal x) {
+	public BigDecimal sinh(BigDecimal x) {
 		return new BigDecimal(Math.sinh(x.doubleValue()));
 	}
 
@@ -215,7 +215,7 @@ public class MathFunctions {
 	 *
 	 * @return cosh(x)
 	 */
-	public static BigDecimal cosh(BigDecimal x) {
+	public BigDecimal cosh(BigDecimal x) {
 		return new BigDecimal(Math.cosh(x.doubleValue()));
 	}
 
@@ -227,7 +227,7 @@ public class MathFunctions {
 	 *
 	 * @return tanh(x)
 	 */
-	public static BigDecimal tanh(BigDecimal x) {
+	public BigDecimal tanh(BigDecimal x) {
 		return new BigDecimal(Math.tanh(x.doubleValue()));
 	}
 
@@ -239,7 +239,7 @@ public class MathFunctions {
 	 *
 	 * @return asinh(x)
 	 */
-	public static BigDecimal asinh(BigDecimal x) {
+	public BigDecimal asinh(BigDecimal x) {
 		return new BigDecimal(Math.log(x.add(sqrt(x.multiply(x).add(BigDecimal.ONE))).doubleValue()));
 	}
 
@@ -251,7 +251,7 @@ public class MathFunctions {
 	 *
 	 * @return acosh(x)
 	 */
-	public static BigDecimal acosh(BigDecimal x) {
+	public BigDecimal acosh(BigDecimal x) {
 		if (x.compareTo(BigDecimal.ONE) < 0)
 			throw new ArithmeticException("acosh undefined for x < 1");
 		return new BigDecimal(Math.log(x.add(sqrt(x.multiply(x).subtract(BigDecimal.ONE))).doubleValue()));
@@ -265,7 +265,7 @@ public class MathFunctions {
 	 *
 	 * @return atanh(x)
 	 */
-	public static BigDecimal atanh(BigDecimal x) {
+	public BigDecimal atanh(BigDecimal x) {
 		if (x.abs().compareTo(BigDecimal.ONE) >= 0)
 			throw new ArithmeticException("atanh undefined for |x| ≥ 1");
 		double d = x.doubleValue();
@@ -280,7 +280,7 @@ public class MathFunctions {
 	 *
 	 * @return angle in radians
 	 */
-	private static double toRadians(BigDecimal x) {
+	private double toRadians(BigDecimal x) {
 		if (Values.MODE == TrigonometricMode.DEG) {
 			return Math.toRadians(x.doubleValue());
 		} else {
@@ -296,7 +296,7 @@ public class MathFunctions {
 	 *
 	 * @return converted angle as BigDecimal
 	 */
-	private static BigDecimal fromRadians(double radians) {
+	private BigDecimal fromRadians(double radians) {
 		if (Values.MODE == TrigonometricMode.DEG) {
 			return new BigDecimal(Math.toDegrees(radians));
 		} else {

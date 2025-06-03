@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator;
+package com.mlprograms.justmath.calculator.token;
 
 /**
  * Represents a lexical token extracted from a mathematical expression.
@@ -11,7 +11,7 @@ package com.mlprograms.justmath.calculator;
  * 	-- GETTER --
  * 	Returns the string value of this token.
  */
-public record Token(com.mlprograms.justmath.calculator.Token.Type type, String value) {
+public record Token(Token.Type type, String value) {
 
 	/**
 	 * Returns a string representation of this token.

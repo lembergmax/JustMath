@@ -1,14 +1,18 @@
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.token.Token;
+import lombok.NoArgsConstructor;
+
 import java.util.*;
 
 /**
  * Converts a list of tokens from infix notation to postfix (Reverse Polish Notation).
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
+@NoArgsConstructor
 public class Parser {
 
-	private static final Map<String, Integer> PRECEDENCE = Map.of(
+	private final Map<String, Integer> PRECEDENCE = Map.of(
 		"+", 2,
 		"-", 2,
 		"*", 3,
@@ -18,7 +22,7 @@ public class Parser {
 		"√", 4
 	);
 
-	private static final Set<String> RIGHT_ASSOCIATIVE = Set.of("^");
+	private final Set<String> RIGHT_ASSOCIATIVE = Set.of("^");
 
 	/**
 	 * Converts a list of infix tokens into a postfix list.
@@ -28,7 +32,7 @@ public class Parser {
 	 *
 	 * @return the list of tokens in postfix (RPN) order
 	 */
-	public static List<Token> toPostfix(List<Token> tokens) {
+	public List<Token> toPostfix(List<Token> tokens) {
 		List<Token> output = new ArrayList<>();
 		Deque<Token> operatorStack = new ArrayDeque<>();
 
@@ -91,7 +95,7 @@ public class Parser {
 	 *
 	 * @return true if op1 has higher precedence than op2
 	 */
-	private static boolean hasHigherPrecedence(Token op1, Token op2) {
+	private boolean hasHigherPrecedence(Token op1, Token op2) {
 		return getPrecedence(op1) > getPrecedence(op2);
 	}
 
@@ -105,7 +109,7 @@ public class Parser {
 	 *
 	 * @return true if both operators have equal precedence
 	 */
-	private static boolean hasEqualPrecedence(Token op1, Token op2) {
+	private boolean hasEqualPrecedence(Token op1, Token op2) {
 		return getPrecedence(op1) == getPrecedence(op2);
 	}
 
@@ -117,7 +121,7 @@ public class Parser {
 	 *
 	 * @return the precedence value, or 0 if not found
 	 */
-	private static int getPrecedence(Token token) {
+	private int getPrecedence(Token token) {
 		return PRECEDENCE.getOrDefault(token.value(), 0);
 	}
 
@@ -129,7 +133,7 @@ public class Parser {
 	 *
 	 * @return true if the operator is right-associative
 	 */
-	private static boolean isRightAssociative(Token token) {
+	private boolean isRightAssociative(Token token) {
 		return RIGHT_ASSOCIATIVE.contains(token.value());
 	}
 }
