@@ -1,6 +1,8 @@
-package com.mlprograms.justmath.calculator;
+package com.mlprograms.justmath.calculator.internal;
 
-import com.mlprograms.justmath.calculator.token.Token;
+import com.mlprograms.justmath.calculator.MathFunctions;
+import com.mlprograms.justmath.util.Values;
+import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;

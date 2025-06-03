@@ -1,6 +1,7 @@
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.api.BigNumber;
+import com.mlprograms.justmath.api.CalculatorEngine;
 
 /**
  * Utility class that performs arithmetic operations on BigNumber instances.

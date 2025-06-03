@@ -1,4 +1,6 @@
-package com.mlprograms.justmath.calculator;
+package com.mlprograms.justmath.util;
+
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.math.RoundingMode;

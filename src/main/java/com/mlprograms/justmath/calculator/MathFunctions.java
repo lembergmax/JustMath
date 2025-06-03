@@ -1,5 +1,8 @@
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.util.Values;
+
 import java.math.BigDecimal;
 
 /**

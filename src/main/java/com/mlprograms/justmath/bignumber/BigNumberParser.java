@@ -1,6 +1,8 @@
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.locales.LocalesConfig;
+import com.mlprograms.justmath.api.BigNumber;
+import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
+import com.mlprograms.justmath.bignumber.internal.NumberChecker;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;

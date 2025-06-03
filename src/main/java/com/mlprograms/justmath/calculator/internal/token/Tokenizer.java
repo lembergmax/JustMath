@@ -1,6 +1,6 @@
-package com.mlprograms.justmath.calculator.token;
+package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.calculator.Values;
+import com.mlprograms.justmath.util.Values;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;

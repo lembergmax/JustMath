@@ -1,5 +1,7 @@
-package com.mlprograms.justmath.bignumber;
+package com.mlprograms.justmath.api;
 
+import com.mlprograms.justmath.bignumber.BigNumberArithmetic;
+import com.mlprograms.justmath.bignumber.BigNumberParser;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,7 +47,7 @@ public class BigNumber {
 	/**
 	 * Private builder constructor used internally.
 	 */
-	@Builder(access = AccessLevel.PROTECTED)
+	@Builder(access = AccessLevel.PUBLIC)
 	private BigNumber(Locale locale, String valueBeforeDecimal, String valueAfterDecimal,
 	                  boolean isNegative, boolean hasDecimal) {
 		this.locale = Objects.requireNonNull(locale, "Locale must not be null");
