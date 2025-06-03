@@ -1,5 +1,6 @@
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.token.Token;
 import lombok.NoArgsConstructor;
 
 import java.util.*;
