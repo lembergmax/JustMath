@@ -1,14 +1,16 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
+import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
+
+import java.util.Optional;
+
 /**
  * Represents a lexical token extracted from a mathematical expression.
  * Tokens can be numbers, operators, functions, parentheses, or special symbols.
  *
  * @param type
- * 	-- GETTER --
  * 	Returns the type of this token.
  * @param value
- * 	-- GETTER --
  * 	Returns the string value of this token.
  */
 public record Token(Token.Type type, String value) {
@@ -24,6 +26,24 @@ public record Token(Token.Type type, String value) {
 	}
 
 	/**
+	 * Checks if this token corresponds to a known ArithmeticOperator.
+	 *
+	 * @return true if value matches an operator in ArithmeticOperator
+	 */
+	public boolean isRecognizedOperator() {
+		return ArithmeticOperator.findByOperator(value).isPresent();
+	}
+
+	/**
+	 * Returns the matching ArithmeticOperator if available.
+	 *
+	 * @return Optional of ArithmeticOperator
+	 */
+	public Optional<ArithmeticOperator> asArithmeticOperator() {
+		return ArithmeticOperator.findByOperator(value);
+	}
+
+	/**
 	 * Enumeration of token types.
 	 */
 	public enum Type {
@@ -35,5 +55,3 @@ public record Token(Token.Type type, String value) {
 	}
 
 }
-
-
