@@ -162,14 +162,14 @@ public class Evaluator {
 	 * 	if the operator or function is unknown
 	 */
 	private void applyArithmetic(Token token, Deque<BigDecimal> stack) {
-		String symbol = token.value();
-		ArithmeticOperator op = ArithmeticOperator.findByOperator(symbol)
-			                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + symbol));
+		String tokenValue = token.value();
+		ArithmeticOperator arithmeticOperator = ArithmeticOperator.findByOperator(tokenValue)
+			                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + tokenValue));
 
-		if (op.isFunction()) {
-			applyFunction(op, stack);
+		if (arithmeticOperator.isFunction()) {
+			applyFunction(arithmeticOperator, stack);
 		} else {
-			applyOperator(op, stack);
+			applyOperator(arithmeticOperator, stack);
 		}
 	}
 
