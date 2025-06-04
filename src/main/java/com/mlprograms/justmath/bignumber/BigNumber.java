@@ -372,6 +372,15 @@ public class BigNumber {
 		return bigNumberParser.format(this, targetLocale);
 	}
 
+	/**
+	 * Returns a new BigNumber with grouping separators applied to the integer part,
+	 * according to the current locale's grouping separator.
+	 * <br><br>
+	 * If you want to set format the number in a specific locale, use {@link #formatToLocale(Locale)} first and then this
+	 * method.
+	 *
+	 * @return a BigNumber with grouped valueBeforeDecimal
+	 */
 	public BigNumber formatWithGrouping() {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 		char groupingSeparator = symbols.getGroupingSeparator();
