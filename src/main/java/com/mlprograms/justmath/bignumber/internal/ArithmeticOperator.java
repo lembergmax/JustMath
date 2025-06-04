@@ -9,44 +9,37 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum ArithmeticOperator {
 
-	LEFT_PARENTHESIS("(", false, 0, false),
-	RIGHT_PARENTHESIS(")", false, 0, false),
-
-	ADD("+", false, 2, false),
-	SUBTRACT("-", false, 2, false),
-	MULTIPLY("*", false, 3, false),
-	DIVIDE("/", false, 3, false),
-	POWER("^", false, 4, true),
-
-	ROOT_S("√", true, 4, false),
-	ROOT_T("sqrt", true, 4, false),
-	CUBIC_ROOT_S("³√", true, 4, false),
-	CUBIC_ROOT_T("cbrt", true, 4, false),
-
-	FACTORIAL("!", true, 5, false),
-
-	SIN("sin", true, 6, false),
-	COS("cos", true, 6, false),
-	TAN("tan", true, 6, false),
-	SINH("sinh", true, 6, false),
-	COSH("cosh", true, 6, false),
-	TANH("tanh", true, 6, false),
-
-	ASIN("sin⁻¹", true, 6, false),
-	ACOS("cos⁻¹", true, 6, false),
-	ATAN("tan⁻¹", true, 6, false),
-	ASINH("sinh⁻¹", true, 6, false),
-	ACOSH("cosh⁻¹", true, 6, false),
-	ATANH("tanh⁻¹", true, 6, false),
-
-	LOG10("log", true, 6, false),
-	LN("ln", true, 6, false),
-	LOG_BASE("log", true, 6, false);
+	LEFT_PARENTHESIS("(", false, 0),
+	RIGHT_PARENTHESIS(")", false, 0),
+	ADD("+", false, 2),
+	SUBTRACT("-", false, 2),
+	MULTIPLY("*", false, 3),
+	DIVIDE("/", false, 3),
+	POWER("^", false, 4),
+	ROOT_S("√", true, 4),
+	ROOT_T("sqrt", true, 4),
+	CUBIC_ROOT_S("³√", true, 4),
+	CUBIC_ROOT_T("cbrt", true, 4),
+	FACTORIAL("!", true, 5),
+	SIN("sin", true, 6),
+	COS("cos", true, 6),
+	TAN("tan", true, 6),
+	SINH("sinh", true, 6),
+	COSH("cosh", true, 6),
+	TANH("tanh", true, 6),
+	ASIN("sin⁻¹", true, 6),
+	ACOS("cos⁻¹", true, 6),
+	ATAN("tan⁻¹", true, 6),
+	ASINH("sinh⁻¹", true, 6),
+	ACOSH("cosh⁻¹", true, 6),
+	ATANH("tanh⁻¹", true, 6),
+	LOG10("log", true, 6),
+	LN("ln", true, 6),
+	LOG_BASE("log", true, 6);
 
 	private final String operator;
 	private final boolean isFunction;
 	private final int precedence;
-	private final boolean rightAssociative;
 
 	/**
 	 * Finds an {@link ArithmeticOperator} by its operator string.
@@ -63,30 +56,6 @@ public enum ArithmeticOperator {
 			}
 		}
 		return Optional.empty();
-	}
-
-	/**
-	 * Returns the precedence of the operator represented by the given symbol.
-	 *
-	 * @param symbol
-	 * 	the operator symbol to look up
-	 *
-	 * @return the precedence value, or 0 if the symbol is not found
-	 */
-	public static int getPrecedence(String symbol) {
-		return findByOperator(symbol).map(ArithmeticOperator::getPrecedence).orElse(0);
-	}
-
-	/**
-	 * Determines if the operator represented by the given symbol is right-associative.
-	 *
-	 * @param symbol
-	 * 	the operator symbol to look up
-	 *
-	 * @return true if the operator is right-associative, false otherwise
-	 */
-	public static boolean isRightAssociative(String symbol) {
-		return findByOperator(symbol).map(ArithmeticOperator::isRightAssociative).orElse(false);
 	}
 
 }
