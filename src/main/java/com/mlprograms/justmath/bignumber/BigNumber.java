@@ -172,194 +172,233 @@ public class BigNumber {
 	 * @param exponent
 	 * 	the exponent BigNumber
 	 *
-	 * @return result of base ^ exponent
+	 * @return base ^ exponent
 	 */
 	public BigNumber pow(BigNumber base, BigNumber exponent) {
-		BigNumber result = calculatorEngine.evaluate(base.toString() + POWER.getOperator() + exponent.toString());
-		return new BigNumber(result, base.locale);
+		String expression = base + POWER.getOperator() + exponent;
+		return evaluate(expression, base.locale);
 	}
 
 	/**
-	 * Computes the square root of a BigNumber.
+	 * Computes the square root of this BigNumber.
 	 *
-	 * @return square root of number
+	 * @return √number
 	 */
 	public BigNumber root() {
-		BigNumber result = calculatorEngine.evaluate(ROOT.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
+		return evaluateUnary(ROOT_T.getOperator());
 	}
 
 	/**
-	 * Computes the cube root of a BigNumber.
+	 * Computes the cube root of this BigNumber.
 	 *
-	 * @return cube root of number
+	 * @return ∛number
 	 */
 	public BigNumber thirdRoot() {
-		BigNumber result = calculatorEngine.evaluate(CUBIC_ROOT.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
+		return evaluateUnary(CUBIC_ROOT_T.getOperator());
 	}
 
 	/**
-	 * Computes the factorial of a BigNumber.
+	 * Computes the factorial of this BigNumber.
 	 *
-	 * @return factorial of number
+	 * @return number!
 	 */
 	public BigNumber factorial() {
-		BigNumber result = calculatorEngine.evaluate(this + FACTORIAL.getOperator());
-		return new BigNumber(result, locale);
+		return evaluate(this + FACTORIAL.getOperator(), locale);
 	}
 
 	/**
-	 * Computes the sine of the given BigNumber.
-	 *
-	 * @return sine of number
-	 */
-	public BigNumber sin() {
-		BigNumber result = calculatorEngine.evaluate(SIN.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the cosine of the given BigNumber.
-	 *
-	 * @return cosine of number
-	 */
-	public BigNumber cos() {
-		BigNumber result = calculatorEngine.evaluate(COS.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the tangent of the given BigNumber.
-	 *
-	 * @return tangent of number
-	 */
-	public BigNumber tan() {
-		BigNumber result = calculatorEngine.evaluate(TAN.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the hyperbolic sine of the given BigNumber.
-	 *
-	 * @return sinh(number)
-	 */
-	public BigNumber sinh() {
-		BigNumber result = calculatorEngine.evaluate(SINH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the hyperbolic cosine of the given BigNumber.
-	 *
-	 * @return cosh(number)
-	 */
-	public BigNumber cosh() {
-		BigNumber result = calculatorEngine.evaluate(COSH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the hyperbolic tangent of the given BigNumber.
-	 *
-	 * @return tanh(number)
-	 */
-	public BigNumber tanh() {
-		BigNumber result = calculatorEngine.evaluate(TANH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse sine (arcsin) of the given BigNumber.
-	 *
-	 * @return asin(number)
-	 */
-	public BigNumber asin() {
-		BigNumber result = calculatorEngine.evaluate(ASIN.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse cosine (arccos) of the given BigNumber.
-	 *
-	 * @return acos(number)
-	 */
-	public BigNumber acos() {
-		BigNumber result = calculatorEngine.evaluate(ACOS.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse tangent (arctan) of the given BigNumber.
-	 *
-	 * @return atan(number)
-	 */
-	public BigNumber atan() {
-		BigNumber result = calculatorEngine.evaluate(ATAN.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse hyperbolic sine of the given BigNumber.
-	 *
-	 * @return asinh(number)
-	 */
-	public BigNumber asinh() {
-		BigNumber result = calculatorEngine.evaluate(ASINH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse hyperbolic cosine of the given BigNumber.
-	 *
-	 * @return acosh(number)
-	 */
-	public BigNumber acosh() {
-		BigNumber result = calculatorEngine.evaluate(ACOSH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the inverse hyperbolic tangent of the given BigNumber.
-	 *
-	 * @return atanh(number)
-	 */
-	public BigNumber atanh() {
-		BigNumber result = calculatorEngine.evaluate(ATANH.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Computes the base-10 logarithm of the given BigNumber.
-	 *
-	 * @return log10(number)
+	 * Computes the base-10 logarithm.
 	 */
 	public BigNumber log10() {
-		BigNumber result = calculatorEngine.evaluate(LOG10.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
+		return evaluateUnary(LOG10.getOperator());
 	}
 
 	/**
-	 * Computes the natural logarithm (base e) of the given BigNumber.
-	 *
-	 * @return ln(number)
+	 * Computes the natural logarithm (base e).
 	 */
 	public BigNumber ln() {
-		BigNumber result = calculatorEngine.evaluate(LN.getOperator() + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
-		return new BigNumber(result, locale);
+		return evaluateUnary(LN.getOperator());
 	}
 
 	/**
-	 * Computes the logarithm of the given number to a specified base.
+	 * Computes log base-N of this BigNumber.
 	 *
 	 * @param base
-	 * 	the base of the logarithm
+	 * 	logarithmic base
 	 *
 	 * @return log_base(number)
 	 */
 	public BigNumber logBase(int base) {
-		BigNumber result = calculatorEngine.evaluate(LOG_BASE.getOperator() + base + LEFT_PARENTHESIS.getOperator() + this + RIGHT_PARENTHESIS.getOperator());
+		String expression = LOG_BASE.getOperator() + base + wrapInParentheses(this.toString());
+		return evaluate(expression, locale);
+	}
+
+	/**
+	 * Computes the sine of this BigNumber.
+	 *
+	 * @return sin(number)
+	 */
+	public BigNumber sin() {
+		return evaluateUnary(SIN.getOperator());
+	}
+
+	/**
+	 * Computes the cosine of this BigNumber.
+	 *
+	 * @return cos(number)
+	 */
+	public BigNumber cos() {
+		return evaluateUnary(COS.getOperator());
+	}
+
+	/**
+	 * Computes the tangent of this BigNumber.
+	 *
+	 * @return tan(number)
+	 */
+	public BigNumber tan() {
+		return evaluateUnary(TAN.getOperator());
+	}
+
+	/**
+	 * Computes the hyperbolic sine of this BigNumber.
+	 *
+	 * @return sinh(number)
+	 */
+	public BigNumber sinh() {
+		return evaluateUnary(SINH.getOperator());
+	}
+
+	/**
+	 * Computes the hyperbolic cosine of this BigNumber.
+	 *
+	 * @return cosh(number)
+	 */
+	public BigNumber cosh() {
+		return evaluateUnary(COSH.getOperator());
+	}
+
+	/**
+	 * Computes the hyperbolic tangent of this BigNumber.
+	 *
+	 * @return tanh(number)
+	 */
+	public BigNumber tanh() {
+		return evaluateUnary(TANH.getOperator());
+	}
+
+	/**
+	 * Computes the arcsine (inverse sine) of this BigNumber.
+	 *
+	 * @return asin(number)
+	 */
+	public BigNumber asin() {
+		return evaluateUnary(ASIN.getOperator());
+	}
+
+	/**
+	 * Computes the arccosine (inverse cosine) of this BigNumber.
+	 *
+	 * @return acos(number)
+	 */
+	public BigNumber acos() {
+		return evaluateUnary(ACOS.getOperator());
+	}
+
+	/**
+	 * Computes the arctangent (inverse tangent) of this BigNumber.
+	 *
+	 * @return atan(number)
+	 */
+	public BigNumber atan() {
+		return evaluateUnary(ATAN.getOperator());
+	}
+
+	/**
+	 * Computes the inverse hyperbolic sine of this BigNumber.
+	 *
+	 * @return asinh(number)
+	 */
+	public BigNumber asinh() {
+		return evaluateUnary(ASINH.getOperator());
+	}
+
+	/**
+	 * Computes the inverse hyperbolic cosine of this BigNumber.
+	 *
+	 * @return acosh(number)
+	 */
+	public BigNumber acosh() {
+		return evaluateUnary(ACOSH.getOperator());
+	}
+
+	/**
+	 * Computes the inverse hyperbolic tangent of this BigNumber.
+	 *
+	 * @return atanh(number)
+	 */
+	public BigNumber atanh() {
+		return evaluateUnary(ATANH.getOperator());
+	}
+
+	/**
+	 * Evaluates the given mathematical expression using the current CalculatorEngine,
+	 * and returns a new BigNumber in the specified locale.
+	 *
+	 * @param expression
+	 * 	the mathematical expression to evaluate
+	 * @param locale
+	 * 	the locale to use for the resulting BigNumber
+	 *
+	 * @return a new BigNumber representing the result in the given locale
+	 */
+	private BigNumber evaluate(String expression, Locale locale) {
+		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result, locale);
+	}
+
+	/**
+	 * Evaluates a unary operation (such as sin, cos, log) on this BigNumber.
+	 *
+	 * @param operator
+	 * 	the unary operator to apply
+	 *
+	 * @return a new BigNumber representing the result
+	 */
+	private BigNumber evaluateUnary(String operator) {
+		String expression = operator + wrapInParentheses(toString());
+		return evaluate(expression, locale);
+	}
+
+	/**
+	 * Evaluates a binary operation (such as addition, subtraction, multiplication, or division)
+	 * between two BigNumber instances using the specified operator.
+	 *
+	 * @param left
+	 * 	the left operand BigNumber
+	 * @param right
+	 * 	the right operand BigNumber
+	 * @param operator
+	 * 	the binary operator to apply (e.g., "+", "-", "*", "/")
+	 *
+	 * @return a new BigNumber representing the result of the operation
+	 */
+	private BigNumber evaluateBinary(BigNumber left, BigNumber right, String operator) {
+		String expression = left + operator + right.toString();
+		BigNumber result = calculatorEngine.evaluate(expression);
+		return new BigNumber(result);
+	}
+
+	/**
+	 * Wraps the given string in parentheses using the operator constants.
+	 *
+	 * @param s
+	 * 	the string to wrap
+	 *
+	 * @return the string wrapped in parentheses
+	 */
+	private String wrapInParentheses(String s) {
+		return LEFT_PARENTHESIS.getOperator() + s + RIGHT_PARENTHESIS.getOperator();
 	}
 
 	/**
