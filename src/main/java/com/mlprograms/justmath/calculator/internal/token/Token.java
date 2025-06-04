@@ -26,15 +26,6 @@ public record Token(Token.Type type, String value) {
 	}
 
 	/**
-	 * Checks if this token corresponds to a known ArithmeticOperator.
-	 *
-	 * @return true if value matches an operator in ArithmeticOperator
-	 */
-	public boolean isRecognizedOperator() {
-		return ArithmeticOperator.findByOperator(value).isPresent();
-	}
-
-	/**
 	 * Returns the matching ArithmeticOperator if available.
 	 *
 	 * @return Optional of ArithmeticOperator
