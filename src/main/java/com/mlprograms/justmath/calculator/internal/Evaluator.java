@@ -11,7 +11,6 @@ import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
@@ -56,16 +55,16 @@ public class Evaluator {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	private void applyOperator(String op, Deque<BigDecimal> stack) {
+	private void applyOperator(ArithmeticOperator op, Deque<BigDecimal> stack) {
 		switch (op) {
-			case "+" -> stack.push(stack.pop().add(stack.pop()));
-			case "-" -> {
+			case ADD -> stack.push(stack.pop().add(stack.pop()));
+			case SUBTRACT -> {
 				BigDecimal b = stack.pop();
 				BigDecimal a = stack.pop();
 				stack.push(a.subtract(b));
 			}
-			case "*" -> stack.push(stack.pop().multiply(stack.pop()));
-			case "/" -> {
+			case MULTIPLY -> stack.push(stack.pop().multiply(stack.pop()));
+			case DIVIDE -> {
 				BigDecimal b = stack.pop();
 				BigDecimal a = stack.pop();
 				if (b.compareTo(BigDecimal.ZERO) == 0) {
@@ -73,18 +72,14 @@ public class Evaluator {
 				}
 				stack.push(a.divide(b, mathContext));
 			}
-			case "^" -> {
+			case POWER -> {
 				BigDecimal exponent = stack.pop();
 				BigDecimal base = stack.pop();
 				stack.push(mathFunctions.pow(base, exponent));
 			}
-			case "!" -> {
+			case FACTORIAL -> {
 				BigDecimal value = stack.pop();
 				stack.push(mathFunctions.factorial(value));
-			}
-			case "√" -> {
-				BigDecimal value = stack.pop();
-				stack.push(mathFunctions.sqrt(value));
 			}
 			default -> throw new IllegalArgumentException("Unknown operator: " + op);
 		}
@@ -118,19 +113,24 @@ public class Evaluator {
 			case ATANH -> stack.push(mathFunctions.atanh(arg));
 			case LOG10 -> stack.push(mathFunctions.log10(arg));
 			case LN -> stack.push(mathFunctions.ln(arg));
-			case ROOT -> stack.push(mathFunctions.sqrt(arg));
-			case CUBIC_ROOT -> stack.push(mathFunctions.cbrt(arg));
+			case ROOT_S, ROOT_T -> stack.push(mathFunctions.sqrt(arg));
+			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(mathFunctions.cbrt(arg));
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
 	}
 
 	/**
-	 * Evaluates a postfix token list.
+	 * Evaluates a postfix (Reverse Polish Notation) token list.
 	 *
 	 * @param rpnTokens
 	 * 	the list of tokens in postfix order
 	 *
-	 * @return final result as BigDecimal
+	 * @return the final result as a BigDecimal
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if an unknown token or operator is encountered
+	 * @throws IllegalStateException
+	 * 	if the final stack size is not 1
 	 */
 	public BigDecimal evaluate(List<Token> rpnTokens) {
 		Deque<BigDecimal> stack = new ArrayDeque<>();
@@ -138,23 +138,39 @@ public class Evaluator {
 		for (Token token : rpnTokens) {
 			switch (token.type()) {
 				case NUMBER -> stack.push(new BigDecimal(token.value()));
-				case OPERATOR -> applyOperator(token.value(), stack);
-				case FUNCTION -> {
-					Optional<ArithmeticOperator> arithmeticOperator = ArithmeticOperator.findByOperator(token.value());
-					if (arithmeticOperator.isEmpty()) {
-						throw new IllegalArgumentException("Unknown function: " + token.value());
-					}
-					applyFunction(arithmeticOperator.get(), stack);
-				}
+				case OPERATOR, FUNCTION -> applyArithmetic(token, stack);
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
 		}
 
 		if (stack.size() != 1) {
-			throw new IllegalStateException("Invalid expression: stack size != 1");
+			throw new IllegalStateException("Invalid expression: expected a single result, but found " + stack.size());
 		}
 
 		return stack.pop();
+	}
+
+	/**
+	 * Applies an arithmetic operator or function to the stack based on the given token.
+	 *
+	 * @param token
+	 * 	the token representing an operator or function
+	 * @param stack
+	 * 	the stack containing operands as BigDecimal values
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the operator or function is unknown
+	 */
+	private void applyArithmetic(Token token, Deque<BigDecimal> stack) {
+		String symbol = token.value();
+		ArithmeticOperator op = ArithmeticOperator.findByOperator(symbol)
+			                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + symbol));
+
+		if (op.isFunction()) {
+			applyFunction(op, stack);
+		} else {
+			applyOperator(op, stack);
+		}
 	}
 
 }
