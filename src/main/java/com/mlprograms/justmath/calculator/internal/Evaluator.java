@@ -1,14 +1,17 @@
 package com.mlprograms.justmath.calculator.internal;
 
+import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
 import com.mlprograms.justmath.calculator.MathFunctions;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
@@ -98,25 +101,25 @@ public class Evaluator {
 	 * @throws IllegalArgumentException
 	 * 	if the function is unknown
 	 */
-	private void applyFunction(String func, Deque<BigDecimal> stack) {
+	private void applyFunction(@NonNull ArithmeticOperator func, Deque<BigDecimal> stack) {
 		BigDecimal arg = stack.pop();
 		switch (func) {
-			case "sin" -> stack.push(mathFunctions.sin(arg));
-			case "cos" -> stack.push(mathFunctions.cos(arg));
-			case "tan" -> stack.push(mathFunctions.tan(arg));
-			case "asin" -> stack.push(mathFunctions.asin(arg));
-			case "acos" -> stack.push(mathFunctions.acos(arg));
-			case "atan" -> stack.push(mathFunctions.atan(arg));
-			case "sinh" -> stack.push(mathFunctions.sinh(arg));
-			case "cosh" -> stack.push(mathFunctions.cosh(arg));
-			case "tanh" -> stack.push(mathFunctions.tanh(arg));
-			case "asinh" -> stack.push(mathFunctions.asinh(arg));
-			case "acosh" -> stack.push(mathFunctions.acosh(arg));
-			case "atanh" -> stack.push(mathFunctions.atanh(arg));
-			case "log" -> stack.push(mathFunctions.log10(arg));
-			case "ln" -> stack.push(mathFunctions.ln(arg));
-			case "sqrt" -> stack.push(mathFunctions.sqrt(arg));
-			case "cbrt" -> stack.push(mathFunctions.cbrt(arg));
+			case SIN -> stack.push(mathFunctions.sin(arg));
+			case COS -> stack.push(mathFunctions.cos(arg));
+			case TAN -> stack.push(mathFunctions.tan(arg));
+			case ASIN -> stack.push(mathFunctions.asin(arg));
+			case ACOS -> stack.push(mathFunctions.acos(arg));
+			case ATAN -> stack.push(mathFunctions.atan(arg));
+			case SINH -> stack.push(mathFunctions.sinh(arg));
+			case COSH -> stack.push(mathFunctions.cosh(arg));
+			case TANH -> stack.push(mathFunctions.tanh(arg));
+			case ASINH -> stack.push(mathFunctions.asinh(arg));
+			case ACOSH -> stack.push(mathFunctions.acosh(arg));
+			case ATANH -> stack.push(mathFunctions.atanh(arg));
+			case LOG10 -> stack.push(mathFunctions.log10(arg));
+			case LN -> stack.push(mathFunctions.ln(arg));
+			case ROOT -> stack.push(mathFunctions.sqrt(arg));
+			case CUBIC_ROOT -> stack.push(mathFunctions.cbrt(arg));
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
 	}
@@ -136,7 +139,13 @@ public class Evaluator {
 			switch (token.type()) {
 				case NUMBER -> stack.push(new BigDecimal(token.value()));
 				case OPERATOR -> applyOperator(token.value(), stack);
-				case FUNCTION -> applyFunction(token.value(), stack);
+				case FUNCTION -> {
+					Optional<ArithmeticOperator> arithmeticOperator = ArithmeticOperator.findByOperator(token.value());
+					if (arithmeticOperator.isEmpty()) {
+						throw new IllegalArgumentException("Unknown function: " + token.value());
+					}
+					applyFunction(arithmeticOperator.get(), stack);
+				}
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
 		}
