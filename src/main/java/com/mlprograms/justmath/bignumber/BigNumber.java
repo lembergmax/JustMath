@@ -1,6 +1,7 @@
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.api.CalculatorEngine;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +9,8 @@ import lombok.NonNull;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Objects;
+
+import static com.mlprograms.justmath.bignumber.internal.ArithmeticOperator.*;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -44,6 +46,11 @@ public class BigNumber {
 	 * This static engine allows all BigNumber instances to use the same precision settings.
 	 */
 	private CalculatorEngine calculatorEngine;
+	/**
+	 * The trigonometric mode (e.g., DEG, RAD, GRAD) used for trigonometric calculations.
+	 * Defaults to DEG (degrees).
+	 */
+	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
 
 	/**
 	 * Private builder constructor used internally.
@@ -55,7 +62,7 @@ public class BigNumber {
 		this.valueBeforeDecimal = valueBeforeDecimal;
 		this.valueAfterDecimal = valueAfterDecimal;
 		this.isNegative = isNegative;
-		this.calculatorEngine = new CalculatorEngine();
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -107,7 +114,7 @@ public class BigNumber {
 	 * @return the sum as a new BigNumber
 	 */
 	public BigNumber add(BigNumber other) {
-		String expression = this + "+" + other.toString();
+		String expression = this + ADD.getOperator() + other.toString();
 		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
@@ -121,7 +128,7 @@ public class BigNumber {
 	 * @return the difference as a new BigNumber
 	 */
 	public BigNumber subtract(BigNumber other) {
-		String expression = this + "-" + other.toString();
+		String expression = this + SUBTRACT.getOperator() + other.toString();
 		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
@@ -135,7 +142,7 @@ public class BigNumber {
 	 * @return the product as a new BigNumber
 	 */
 	public BigNumber multiply(BigNumber other) {
-		String expression = this + "*" + other.toString();
+		String expression = this + MULTIPLY.getOperator() + other.toString();
 		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
@@ -152,7 +159,7 @@ public class BigNumber {
 	 * 	if division by zero occurs
 	 */
 	public BigNumber divide(BigNumber other) {
-		String expression = this + "/" + other.toString();
+		String expression = this + DIVIDE.getOperator() + other.toString();
 		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result);
 	}
@@ -169,7 +176,7 @@ public class BigNumber {
 	 * @return result of base ^ exponent
 	 */
 	public BigNumber pow(BigNumber base, BigNumber exponent) {
-		BigNumber result = calculatorEngine.evaluate(base.toString() + "^" + exponent.toString());
+		BigNumber result = calculatorEngine.evaluate(base.toString() + POWER.getOperator() + exponent.toString());
 		return new BigNumber(result, base.getLocale());
 	}
 
@@ -182,7 +189,7 @@ public class BigNumber {
 	 * @return square root of number
 	 */
 	public BigNumber root(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("√(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ROOT.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -195,7 +202,7 @@ public class BigNumber {
 	 * @return cube root of number
 	 */
 	public BigNumber thirdRoot(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("³√(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(CUBIC_ROOT.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -208,7 +215,7 @@ public class BigNumber {
 	 * @return factorial of number
 	 */
 	public BigNumber factorial(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate(number.toString() + "!");
+		BigNumber result = calculatorEngine.evaluate(number.toString() + FACTORIAL.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -221,7 +228,7 @@ public class BigNumber {
 	 * @return sine of number
 	 */
 	public BigNumber sin(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("sin(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(SIN.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -234,7 +241,7 @@ public class BigNumber {
 	 * @return cosine of number
 	 */
 	public BigNumber cos(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("cos(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(COS.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -247,7 +254,7 @@ public class BigNumber {
 	 * @return tangent of number
 	 */
 	public BigNumber tan(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("tan(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(TAN.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -260,7 +267,7 @@ public class BigNumber {
 	 * @return sinh(number)
 	 */
 	public BigNumber sinh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("sinh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(SINH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -273,7 +280,7 @@ public class BigNumber {
 	 * @return cosh(number)
 	 */
 	public BigNumber cosh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("cosh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(COSH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -286,7 +293,7 @@ public class BigNumber {
 	 * @return tanh(number)
 	 */
 	public BigNumber tanh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("tanh(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(TANH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -299,7 +306,7 @@ public class BigNumber {
 	 * @return asin(number)
 	 */
 	public BigNumber asin(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("sin⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ASIN.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -312,7 +319,7 @@ public class BigNumber {
 	 * @return acos(number)
 	 */
 	public BigNumber acos(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("cos⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ACOS.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -325,7 +332,7 @@ public class BigNumber {
 	 * @return atan(number)
 	 */
 	public BigNumber atan(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("tan⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ATAN.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -338,7 +345,7 @@ public class BigNumber {
 	 * @return asinh(number)
 	 */
 	public BigNumber asinh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("sinh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ASINH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -351,7 +358,7 @@ public class BigNumber {
 	 * @return acosh(number)
 	 */
 	public BigNumber acosh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("cosh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ACOSH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -364,7 +371,7 @@ public class BigNumber {
 	 * @return atanh(number)
 	 */
 	public BigNumber atanh(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("tanh⁻¹(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(ATANH.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -377,7 +384,7 @@ public class BigNumber {
 	 * @return log10(number)
 	 */
 	public BigNumber log10(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("log(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(LOG10.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -390,7 +397,7 @@ public class BigNumber {
 	 * @return ln(number)
 	 */
 	public BigNumber ln(BigNumber number) {
-		BigNumber result = calculatorEngine.evaluate("ln(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(LN.getOperator() + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -405,7 +412,7 @@ public class BigNumber {
 	 * @return log_base(number)
 	 */
 	public BigNumber logBase(BigNumber number, int base) {
-		BigNumber result = calculatorEngine.evaluate("log" + base + "(" + number.toString() + ")");
+		BigNumber result = calculatorEngine.evaluate(LOG_BASE.getOperator() + base + LEFT_PARENTHESIS.getOperator() + number.toString() + RIGHT_PARENTHESIS.getOperator());
 		return new BigNumber(result, number.getLocale());
 	}
 
@@ -452,8 +459,18 @@ public class BigNumber {
 	 * @throws NullPointerException
 	 * 	if calculatorEngine is null
 	 */
-	public void setCalculatorEngine(CalculatorEngine calculatorEngine) {
-		this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "CalculatorEngine must not be null");
+	public void setCalculatorEngine(@NonNull CalculatorEngine calculatorEngine) {
+		this.calculatorEngine = calculatorEngine;
+	}
+
+	/**
+	 * Sets the trigonometric mode for this BigNumber instance.
+	 *
+	 * @param trigonometricMode
+	 * 	the trigonometric mode to set (e.g., DEG, RAD, GRAD)
+	 */
+	public void setTrigonometricMode(@NonNull TrigonometricMode trigonometricMode) {
+		this.trigonometricMode = trigonometricMode;
 	}
 
 	/**
