@@ -115,6 +115,7 @@ public class Evaluator {
 			case LN -> stack.push(mathFunctions.ln(arg));
 			case ROOT_S, ROOT_T -> stack.push(mathFunctions.sqrt(arg));
 			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(mathFunctions.cbrt(arg));
+			case FACTORIAL -> stack.push(mathFunctions.factorial(arg));
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
 	}
@@ -164,7 +165,7 @@ public class Evaluator {
 	private void applyArithmetic(Token token, Deque<BigDecimal> stack) {
 		String tokenValue = token.value();
 		ArithmeticOperator arithmeticOperator = ArithmeticOperator.findByOperator(tokenValue)
-			                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + tokenValue));
+			                                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + tokenValue));
 
 		if (arithmeticOperator.isFunction()) {
 			applyFunction(arithmeticOperator, stack);
