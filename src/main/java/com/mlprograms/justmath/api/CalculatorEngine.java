@@ -116,7 +116,7 @@ public class CalculatorEngine {
 			// Evaluate the postfix expression to a BigDecimal result
 			return new BigNumber(evaluator.evaluate(postfix).toString());
 		} catch (Exception e) {
-			throw new RuntimeException("Error: " + e.getMessage());
+			throw new RuntimeException(e.getMessage());
 		}
 	}
 
