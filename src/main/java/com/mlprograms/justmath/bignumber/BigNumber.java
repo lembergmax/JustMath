@@ -24,18 +24,22 @@ public class BigNumber {
 	 * Shared instance of the parser used to convert input strings into BigNumber objects.
 	 * This static parser ensures consistent parsing logic across all BigNumber instances.
 	 */
+	@NonNull
 	private static final BigNumberParser bigNumberParser = new BigNumberParser();
 	/**
 	 * The locale defining grouping and decimal separators used by this number.
 	 */
+	@NonNull
 	private final Locale locale;
 	/**
 	 * The numeric value before the decimal separator.
 	 */
+	@NonNull
 	private final String valueBeforeDecimal;
 	/**
 	 * The numeric value after the decimal separator. Defaults to "0" if absent.
 	 */
+	@NonNull
 	private final String valueAfterDecimal;
 	/**
 	 * Indicates whether the number is negative.
@@ -45,11 +49,13 @@ public class BigNumber {
 	 * Shared instance of the CalculatorEngine used for performing arithmetic operations.
 	 * This static engine allows all BigNumber instances to use the same precision settings.
 	 */
+	@NonNull
 	private CalculatorEngine calculatorEngine;
 	/**
 	 * The trigonometric mode (e.g., DEG, RAD, GRAD) used for trigonometric calculations.
 	 * Defaults to DEG (degrees).
 	 */
+	@NonNull
 	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
 
 	/**
@@ -104,6 +110,11 @@ public class BigNumber {
 		this.isNegative = other.isNegative;
 		this.calculatorEngine = other.getCalculatorEngine();
 	}
+
+	// TODO: Mache das so, dass Addition, Subtraction, Multiplication and Division in dieser Klasse berechnet werden und
+	//  nicht in der CalculatorEngine, dadurch kann BigNumber in der CalculatorEngine verwendet werden, ohne dass
+	//  es irgendwelche Genauigkeitsprobleme oder die Zahlen in andere Notationen (durch die BigDecimal Klasse)
+	//  formatiert werden gibt.
 
 	/**
 	 * Adds this BigNumber to another BigNumber using CalculatorEngine.
@@ -476,9 +487,17 @@ public class BigNumber {
 	@Override
 	public String toString() {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-		char decimalSeparator = symbols.getDecimalSeparator();
+		String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
+		String newValueAfterDecimal;
 
-		String localized = valueBeforeDecimal + decimalSeparator + valueAfterDecimal;
+		if (valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0")) {
+			newValueAfterDecimal = "";
+			decimalSeparator = "";
+		} else {
+			newValueAfterDecimal = valueAfterDecimal;
+		}
+
+		String localized = valueBeforeDecimal + decimalSeparator + newValueAfterDecimal;
 		return isNegative ? "-" + localized : localized;
 	}
 
