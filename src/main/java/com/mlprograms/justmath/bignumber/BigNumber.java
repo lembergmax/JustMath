@@ -708,7 +708,12 @@ public class BigNumber implements Comparable<BigNumber> {
 
 	@Override
 	public float floatValue() {
-		return Float.parseFloat(valueBeforeDecimal) * (isNegative ? -1 : 1);
+		try {
+			java.math.BigDecimal bd = new java.math.BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+			return bd.floatValue();
+		} catch (NumberFormatException e) {
+			return isNegative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+		}
 	}
 
 	@Override
