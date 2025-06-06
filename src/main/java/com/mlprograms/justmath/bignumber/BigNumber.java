@@ -340,7 +340,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if base is negative or zero
 	 */
 	public BigNumber logBase(BigNumber base) {
-		if (base.isNegative() || base.equals(BigNumbers.ZERO)) {
+		if (base.isNegative() || base.isEqualsTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Base must be positive and non-zero.");
 		}
 
@@ -574,7 +574,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
 		}
 
-		if (k.equals(BigNumbers.ZERO) || k.equals(this)) {
+		if (k.isEqualsTo(BigNumbers.ZERO) || k.isEqualsTo(this)) {
 			return BigNumbers.ONE;
 		}
 
