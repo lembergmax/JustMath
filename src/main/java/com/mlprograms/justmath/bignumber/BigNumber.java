@@ -713,7 +713,12 @@ public class BigNumber implements Comparable<BigNumber> {
 
 	@Override
 	public double doubleValue() {
-		return Double.parseDouble(valueBeforeDecimal) * (isNegative ? -1 : 1);
+		try {
+			java.math.BigDecimal bd = new java.math.BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+			return bd.doubleValue();
+		} catch (NumberFormatException e) {
+			return isNegative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+		}
 	}
 
 	/**
