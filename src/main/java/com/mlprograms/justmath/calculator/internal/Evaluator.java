@@ -20,23 +20,6 @@ import java.util.List;
 public class Evaluator {
 
 	/**
-	 * Math context specifying the precision and rounding mode for calculations.
-	 */
-	private MathContext mathContext;
-
-	/**
-	 * Constructs an Evaluator with the specified math context and trigonometric mode.
-	 *
-	 * @param mathContext
-	 * 	the MathContext specifying precision and rounding mode
-	 * @param trigonometricMode
-	 * 	the mode for trigonometric calculations (e.g., degrees or radians)
-	 */
-	public Evaluator(MathContext mathContext, TrigonometricMode trigonometricMode) {
-		this.mathContext = mathContext;
-	}
-
-	/**
 	 * Applies the specified operator to the operands on the stack.
 	 *
 	 * @param op
