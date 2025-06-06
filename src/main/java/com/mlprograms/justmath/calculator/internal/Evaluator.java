@@ -1,12 +1,12 @@
 package com.mlprograms.justmath.calculator.internal;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
-import com.mlprograms.justmath.calculator.MathFunctions;
+import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -25,11 +25,6 @@ public class Evaluator {
 	private MathContext mathContext;
 
 	/**
-	 * Provides mathematical functions (e.g., trigonometric, logarithmic) used in evaluation.
-	 */
-	private MathFunctions mathFunctions;
-
-	/**
 	 * Constructs an Evaluator with the specified math context and trigonometric mode.
 	 *
 	 * @param mathContext
@@ -39,7 +34,6 @@ public class Evaluator {
 	 */
 	public Evaluator(MathContext mathContext, TrigonometricMode trigonometricMode) {
 		this.mathContext = mathContext;
-		this.mathFunctions = new MathFunctions(mathContext, trigonometricMode);
 	}
 
 	/**
@@ -55,31 +49,27 @@ public class Evaluator {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	private void applyOperator(ArithmeticOperator op, Deque<BigDecimal> stack) {
+	private void applyOperator(ArithmeticOperator op, Deque<BigNumber> stack) {
 		switch (op) {
 			case ADD -> stack.push(stack.pop().add(stack.pop()));
 			case SUBTRACT -> {
-				BigDecimal b = stack.pop();
-				BigDecimal a = stack.pop();
+				BigNumber b = stack.pop();
+				BigNumber a = stack.pop();
 				stack.push(a.subtract(b));
 			}
 			case MULTIPLY -> stack.push(stack.pop().multiply(stack.pop()));
 			case DIVIDE -> {
-				BigDecimal b = stack.pop();
-				BigDecimal a = stack.pop();
-				if (b.compareTo(BigDecimal.ZERO) == 0) {
+				BigNumber b = stack.pop();
+				BigNumber a = stack.pop();
+				if (b.compareTo(BigNumbers.ZERO) == 0) {
 					throw new ArithmeticException("Division by zero");
 				}
-				stack.push(a.divide(b, mathContext));
+				stack.push(a.divide(b));
 			}
 			case POWER -> {
-				BigDecimal exponent = stack.pop();
-				BigDecimal base = stack.pop();
-				stack.push(mathFunctions.pow(base, exponent));
-			}
-			case FACTORIAL -> {
-				BigDecimal value = stack.pop();
-				stack.push(mathFunctions.factorial(value));
+				BigNumber exponent = stack.pop();
+				BigNumber base = stack.pop();
+				stack.push(base.pow(exponent));
 			}
 			default -> throw new IllegalArgumentException("Unknown operator: " + op);
 		}
@@ -96,26 +86,42 @@ public class Evaluator {
 	 * @throws IllegalArgumentException
 	 * 	if the function is unknown
 	 */
-	private void applyFunction(@NonNull ArithmeticOperator func, Deque<BigDecimal> stack) {
-		BigDecimal arg = stack.pop();
+	private void applyFunction(@NonNull ArithmeticOperator func, Deque<BigNumber> stack) {
+		BigNumber arg = stack.pop();
 		switch (func) {
-			case SIN -> stack.push(mathFunctions.sin(arg));
-			case COS -> stack.push(mathFunctions.cos(arg));
-			case TAN -> stack.push(mathFunctions.tan(arg));
-			case ASIN -> stack.push(mathFunctions.asin(arg));
-			case ACOS -> stack.push(mathFunctions.acos(arg));
-			case ATAN -> stack.push(mathFunctions.atan(arg));
-			case SINH -> stack.push(mathFunctions.sinh(arg));
-			case COSH -> stack.push(mathFunctions.cosh(arg));
-			case TANH -> stack.push(mathFunctions.tanh(arg));
-			case ASINH -> stack.push(mathFunctions.asinh(arg));
-			case ACOSH -> stack.push(mathFunctions.acosh(arg));
-			case ATANH -> stack.push(mathFunctions.atanh(arg));
-			case LOG10 -> stack.push(mathFunctions.log10(arg));
-			case LN -> stack.push(mathFunctions.ln(arg));
-			case ROOT_S, ROOT_T -> stack.push(mathFunctions.sqrt(arg));
-			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(mathFunctions.cbrt(arg));
-			case FACTORIAL -> stack.push(mathFunctions.factorial(arg));
+			case SIN -> stack.push(arg.sin());
+			case COS -> stack.push(arg.cos());
+			case TAN -> stack.push(arg.tan());
+			case COT -> stack.push(arg.cot());
+			case SINH -> stack.push(arg.sinh());
+			case COSH -> stack.push(arg.cosh());
+			case TANH -> stack.push(arg.tanh());
+			case COTH -> stack.push(arg.coth());
+			case ASIN_S, ASIN_T -> stack.push(arg.asin());
+			case ACOS_S, ACOS_T -> stack.push(arg.acos());
+			case ATAN_S, ATAN_T -> stack.push(arg.atan());
+			case ACOT_S, ACOT_T -> stack.push(arg.acot());
+			case ASINH_S, ASINH_T -> stack.push(arg.asinh());
+			case ACOSH_S, ACOSH_T -> stack.push(arg.acosh());
+			case ATANH_S, ATANH_T -> stack.push(arg.atanh());
+			case ACOTH_S, ACOTH_T -> stack.push(arg.acoth());
+			case LOG10 -> stack.push(arg.log10());
+			case LN -> stack.push(arg.ln());
+			case LOG_BASE -> {
+				BigNumber base = stack.pop(); // logBase(x, base)
+				stack.push(arg.logBase(base));
+			}
+			case ROOT_S, ROOT_T -> stack.push(arg.squareRoot());
+			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(arg.cubicRoot());
+			case NTH_ROOT -> {
+				BigNumber n = stack.pop();
+				stack.push(arg.nthRoot(n));
+			}
+			case FACTORIAL -> stack.push(arg.factorial());
+			case ATAN2 -> {
+				BigNumber y = stack.pop(); // atan2(x, y)
+				stack.push(arg.atan2(y));
+			}
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
 	}
@@ -133,12 +139,12 @@ public class Evaluator {
 	 * @throws IllegalStateException
 	 * 	if the final stack size is not 1
 	 */
-	public BigDecimal evaluate(List<Token> rpnTokens) {
-		Deque<BigDecimal> stack = new ArrayDeque<>();
+	public BigNumber evaluate(List<Token> rpnTokens) {
+		Deque<BigNumber> stack = new ArrayDeque<>();
 
 		for (Token token : rpnTokens) {
 			switch (token.type()) {
-				case NUMBER -> stack.push(new BigDecimal(token.value()));
+				case NUMBER -> stack.push(new BigNumber(token.value()));
 				case OPERATOR, FUNCTION -> applyArithmetic(token, stack);
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
@@ -162,7 +168,7 @@ public class Evaluator {
 	 * @throws IllegalArgumentException
 	 * 	if the operator or function is unknown
 	 */
-	private void applyArithmetic(Token token, Deque<BigDecimal> stack) {
+	private void applyArithmetic(Token token, Deque<BigNumber> stack) {
 		String tokenValue = token.value();
 		ArithmeticOperator arithmeticOperator = ArithmeticOperator.findByOperator(tokenValue)
 			                                        .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + tokenValue));
