@@ -1,7 +1,7 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.api.CalculatorEngine;
+import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Builder;
