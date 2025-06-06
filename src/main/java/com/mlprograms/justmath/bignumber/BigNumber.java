@@ -1,16 +1,17 @@
 package com.mlprograms.justmath.bignumber;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.api.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-
-import static com.mlprograms.justmath.bignumber.internal.ArithmeticOperator.*;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -18,13 +19,12 @@ import static com.mlprograms.justmath.bignumber.internal.ArithmeticOperator.*;
  * Use the constructors which internally rely on {@link BigNumberParser} to parse input strings.
  */
 @Getter
-public class BigNumber {
+public class BigNumber implements Comparable<BigNumber> {
 
 	/**
 	 * Shared instance of the parser used to convert input strings into BigNumber objects.
 	 * This static parser ensures consistent parsing logic across all BigNumber instances.
 	 */
-	@NonNull
 	private static final BigNumberParser bigNumberParser = new BigNumberParser();
 	/**
 	 * The locale defining grouping and decimal separators used by this number.
@@ -57,359 +57,214 @@ public class BigNumber {
 	 */
 	@NonNull
 	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
+	// TODO: write javadoc
+	@NonNull
+	private MathContext mathContext = new MathContext(1000);
 
-	/**
-	 * Private builder constructor used internally.
-	 */
-	@Builder(access = AccessLevel.PUBLIC)
-	private BigNumber(@NonNull Locale currentLocale, @NonNull String valueBeforeDecimal, @NonNull String valueAfterDecimal,
-	                  boolean isNegative) {
-		this.locale = currentLocale;
-		this.valueBeforeDecimal = valueBeforeDecimal;
-		this.valueAfterDecimal = valueAfterDecimal;
-		this.isNegative = isNegative;
-		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
-	}
-
-	/**
-	 * Constructs a BigNumber by auto-detecting the locale of the input string.
-	 */
 	public BigNumber(@NonNull String number) {
 		this(bigNumberParser.parseAutoDetect(number));
 	}
 
-	/**
-	 * Constructs a BigNumber by parsing the given number string using the specified currentLocale.
-	 */
-	public BigNumber(@NonNull String number, @NonNull Locale currentLocale) {
-		this(bigNumberParser.parse(number, currentLocale));
+	public BigNumber(@NonNull String number, @NonNull Locale locale) {
+		this(bigNumberParser.parse(number, locale));
 	}
 
-	/**
-	 * Constructs a BigNumber by converting an existing BigNumber to a different locale.
-	 */
-	public BigNumber(@NonNull BigNumber number, @NonNull Locale targetLocale) {
-		this(bigNumberParser.parse(number.toString(), targetLocale));
+	public BigNumber(@NonNull String number, @NonNull MathContext mathContext) {
+		this(bigNumberParser.parseAutoDetect(number), mathContext);
 	}
 
-	/**
-	 * Constructs a BigNumber by parsing the input string using a source locale
-	 * and converting it to the target locale.
-	 */
-	public BigNumber(@NonNull String input, @NonNull Locale fromLocale, @NonNull Locale targetLocale) {
-		this(bigNumberParser.parse(bigNumberParser.parse(input, fromLocale).toString(), targetLocale));
+	public BigNumber(@NonNull String number, @NonNull Locale locale, @NonNull MathContext mathContext) {
+		this(bigNumberParser.parse(number, locale), mathContext);
 	}
 
-	/**
-	 * Copy constructor.
-	 */
+	public BigNumber(@NonNull String number, @NonNull Locale fromLocale, @NonNull Locale toLocale) {
+		this(bigNumberParser.parse(bigNumberParser.parse(number, fromLocale).toString(), toLocale));
+	}
+
+	public BigNumber(@NonNull String number, @NonNull Locale fromLocale, @NonNull Locale toLocale, @NonNull MathContext mathContext) {
+		this(bigNumberParser.parse(bigNumberParser.parse(number, fromLocale).toString(), toLocale), mathContext);
+	}
+
 	public BigNumber(@NonNull BigNumber other) {
 		this.locale = other.locale;
 		this.valueBeforeDecimal = other.valueBeforeDecimal;
 		this.valueAfterDecimal = other.valueAfterDecimal;
 		this.isNegative = other.isNegative;
-		this.calculatorEngine = other.getCalculatorEngine();
+		this.calculatorEngine = other.calculatorEngine;
+		this.trigonometricMode = other.trigonometricMode;
+		this.mathContext = other.mathContext;
 	}
 
-	// TODO: Mache das so, dass Addition, Subtraction, Multiplication and Division in dieser Klasse berechnet werden und
-	//  nicht in der CalculatorEngine, dadurch kann BigNumber in der CalculatorEngine verwendet werden, ohne dass
-	//  es irgendwelche Genauigkeitsprobleme oder die Zahlen in andere Notationen (durch die BigDecimal Klasse)
-	//  formatiert werden gibt.
+	public BigNumber(@NonNull BigNumber other, @NonNull MathContext mathContext) {
+		this(other);
+		this.mathContext = mathContext;
+	}
 
-	/**
-	 * Adds this BigNumber to another BigNumber using CalculatorEngine.
-	 *
-	 * @param other
-	 * 	the number to add
-	 *
-	 * @return the sum as a new BigNumber
-	 */
+	public BigNumber(@NonNull BigNumber other, @NonNull Locale newLocale) {
+		this(bigNumberParser.parse(other.toString(), newLocale));
+	}
+
+	public BigNumber(@NonNull BigNumber other, @NonNull Locale newLocale, @NonNull MathContext mathContext) {
+		this(bigNumberParser.parse(other.toString(), newLocale), mathContext);
+	}
+
+	public BigNumber(@NonNull Locale locale, @NonNull String valueBeforeDecimal, @NonNull String valueAfterDecimal,
+	                 boolean isNegative, @NonNull MathContext mathContext) {
+		this.locale = locale;
+		this.valueBeforeDecimal = valueBeforeDecimal;
+		this.valueAfterDecimal = valueAfterDecimal;
+		this.isNegative = isNegative;
+		this.mathContext = mathContext;
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+	}
+
+	@Builder
+	public BigNumber(@NonNull Locale locale, @NonNull String valueBeforeDecimal, @NonNull String valueAfterDecimal,
+	                 boolean isNegative, MathContext mathContext, TrigonometricMode trigonometricMode) {
+		this.locale = locale;
+		this.valueBeforeDecimal = valueBeforeDecimal;
+		this.valueAfterDecimal = valueAfterDecimal;
+		this.isNegative = isNegative;
+		if (mathContext != null) this.mathContext = mathContext;
+		if (trigonometricMode != null) this.trigonometricMode = trigonometricMode;
+		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+	}
+
 	public BigNumber add(BigNumber other) {
-		String expression = this + ADD.getOperator() + other.toString();
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result);
+		return new BigNumber(toBigDecimal().add(other.toBigDecimal()).toPlainString());
 	}
 
-	/**
-	 * Subtracts another BigNumber from this BigNumber using CalculatorEngine.
-	 *
-	 * @param other
-	 * 	the number to subtract
-	 *
-	 * @return the difference as a new BigNumber
-	 */
 	public BigNumber subtract(BigNumber other) {
-		String expression = this + SUBTRACT.getOperator() + other.toString();
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result);
+		BigDecimal bigDecimal = new BigDecimal(other.toString());
+		return new BigNumber(toBigDecimal().subtract(bigDecimal).toPlainString());
 	}
 
-	/**
-	 * Multiplies this BigNumber with another BigNumber using CalculatorEngine.
-	 *
-	 * @param other
-	 * 	the number to multiply with
-	 *
-	 * @return the product as a new BigNumber
-	 */
 	public BigNumber multiply(BigNumber other) {
-		String expression = this + MULTIPLY.getOperator() + other.toString();
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result);
+		BigDecimal bigDecimal = new BigDecimal(other.toString());
+		return new BigNumber(toBigDecimal().multiply(bigDecimal).toPlainString());
 	}
 
-	/**
-	 * Divides this BigNumber by another BigNumber using CalculatorEngine.
-	 *
-	 * @param other
-	 * 	the number to divide by
-	 *
-	 * @return the quotient as a new BigNumber
-	 *
-	 * @throws ArithmeticException
-	 * 	if division by zero occurs
-	 */
 	public BigNumber divide(BigNumber other) {
-		String expression = this + DIVIDE.getOperator() + other.toString();
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result);
+		BigDecimal bigDecimal = new BigDecimal(other.toString());
+		return new BigNumber(toBigDecimal().divide(bigDecimal, getMathContext()).toPlainString());
 	}
 
-	/**
-	 * Raises a BigNumber to the power of another BigNumber.
-	 *
-	 * @param base
-	 * 	the base BigNumber
-	 * @param exponent
-	 * 	the exponent BigNumber
-	 *
-	 * @return base ^ exponent
-	 */
-	public BigNumber pow(BigNumber base, BigNumber exponent) {
-		String expression = base + POWER.getOperator() + exponent;
-		return evaluate(expression, base.locale);
+	public BigNumber pow(BigNumber exponent) {
+		return new BigNumber(BigDecimalMath.pow(toBigDecimal(), new BigDecimal(exponent.toString()), getMathContext()).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the square root of this BigNumber.
-	 *
-	 * @return √number
-	 */
-	public BigNumber root() {
-		return evaluateUnary(ROOT_T.getOperator());
+	public BigNumber squareRoot() {
+		return new BigNumber(BigDecimalMath.root(toBigDecimal(), BigDecimal.TWO, mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the cube root of this BigNumber.
-	 *
-	 * @return ∛number
-	 */
-	public BigNumber thirdRoot() {
-		return evaluateUnary(CUBIC_ROOT_T.getOperator());
+	public BigNumber cubicRoot() {
+		return new BigNumber(BigDecimalMath.root(toBigDecimal(), new BigDecimal("3"), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the factorial of this BigNumber.
-	 *
-	 * @return number!
-	 */
+	public BigNumber nthRoot(BigNumber n) {
+		if (n.isNegative()) {
+			throw new IllegalArgumentException("Cannot calculate nth root with negative n.");
+		}
+		return new BigNumber(BigDecimalMath.root(toBigDecimal(), n.toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
 	public BigNumber factorial() {
-		return evaluate(this + FACTORIAL.getOperator(), locale);
+		return new BigNumber(BigDecimalMath.factorial(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the base-10 logarithm.
-	 */
+	public BigNumber log2() {
+		return new BigNumber(BigDecimalMath.log2(toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
 	public BigNumber log10() {
-		return evaluateUnary(LOG10.getOperator());
+		return new BigNumber(BigDecimalMath.log10(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the natural logarithm (base e).
-	 */
 	public BigNumber ln() {
-		return evaluateUnary(LN.getOperator());
+		return new BigNumber(BigDecimalMath.log(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes log base-N of this BigNumber.
-	 *
-	 * @param base
-	 * 	logarithmic base
-	 *
-	 * @return log_base(number)
-	 */
-	public BigNumber logBase(int base) {
-		String expression = LOG_BASE.getOperator() + base + wrapInParentheses(this.toString());
-		return evaluate(expression, locale);
+	public BigNumber logBase(BigNumber base) {
+		if (base.isNegative() || base.equals(BigNumbers.ZERO)) {
+			throw new IllegalArgumentException("Base must be positive and non-zero.");
+		}
+
+		BigDecimal logBase = BigDecimalMath.log(toBigDecimal(), mathContext);
+		BigDecimal logOfBase = BigDecimalMath.log(base.toBigDecimal(), mathContext);
+		return new BigNumber(logBase.divide(logOfBase, mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the sine of this BigNumber.
-	 *
-	 * @return sin(number)
-	 */
 	public BigNumber sin() {
-		return evaluateUnary(SIN.getOperator());
+		return new BigNumber(BigDecimalMath.sin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the cosine of this BigNumber.
-	 *
-	 * @return cos(number)
-	 */
 	public BigNumber cos() {
-		return evaluateUnary(COS.getOperator());
+		return new BigNumber(BigDecimalMath.cos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the tangent of this BigNumber.
-	 *
-	 * @return tan(number)
-	 */
 	public BigNumber tan() {
-		return evaluateUnary(TAN.getOperator());
+		return new BigNumber(BigDecimalMath.tan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the hyperbolic sine of this BigNumber.
-	 *
-	 * @return sinh(number)
-	 */
 	public BigNumber sinh() {
-		return evaluateUnary(SINH.getOperator());
+		return new BigNumber(BigDecimalMath.sinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the hyperbolic cosine of this BigNumber.
-	 *
-	 * @return cosh(number)
-	 */
 	public BigNumber cosh() {
-		return evaluateUnary(COSH.getOperator());
+		return new BigNumber(BigDecimalMath.cosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the hyperbolic tangent of this BigNumber.
-	 *
-	 * @return tanh(number)
-	 */
 	public BigNumber tanh() {
-		return evaluateUnary(TANH.getOperator());
+		return new BigNumber(BigDecimalMath.tanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the arcsine (inverse sine) of this BigNumber.
-	 *
-	 * @return asin(number)
-	 */
 	public BigNumber asin() {
-		return evaluateUnary(ASIN.getOperator());
+		return new BigNumber(BigDecimalMath.asin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the arccosine (inverse cosine) of this BigNumber.
-	 *
-	 * @return acos(number)
-	 */
 	public BigNumber acos() {
-		return evaluateUnary(ACOS.getOperator());
+		return new BigNumber(BigDecimalMath.acos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the arctangent (inverse tangent) of this BigNumber.
-	 *
-	 * @return atan(number)
-	 */
 	public BigNumber atan() {
-		return evaluateUnary(ATAN.getOperator());
+		return new BigNumber(BigDecimalMath.atan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the inverse hyperbolic sine of this BigNumber.
-	 *
-	 * @return asinh(number)
-	 */
 	public BigNumber asinh() {
-		return evaluateUnary(ASINH.getOperator());
+		return new BigNumber(BigDecimalMath.asinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the inverse hyperbolic cosine of this BigNumber.
-	 *
-	 * @return acosh(number)
-	 */
 	public BigNumber acosh() {
-		return evaluateUnary(ACOSH.getOperator());
+		return new BigNumber(BigDecimalMath.acosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Computes the inverse hyperbolic tangent of this BigNumber.
-	 *
-	 * @return atanh(number)
-	 */
 	public BigNumber atanh() {
-		return evaluateUnary(ATANH.getOperator());
+		return new BigNumber(BigDecimalMath.atanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	/**
-	 * Evaluates the given mathematical expression using the current CalculatorEngine,
-	 * and returns a new BigNumber in the specified locale.
-	 *
-	 * @param expression
-	 * 	the mathematical expression to evaluate
-	 * @param locale
-	 * 	the locale to use for the resulting BigNumber
-	 *
-	 * @return a new BigNumber representing the result in the given locale
-	 */
+	public BigNumber atan2(BigNumber other) {
+		return new BigNumber(BigDecimalMath.atan2(toBigDecimal(), other.toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
+	public BigNumber cot() {
+		return new BigNumber(BigDecimalMath.cot(toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
+	public BigNumber acot() {
+		return new BigNumber(BigDecimalMath.acot(toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
+	public BigNumber acoth() {
+		return new BigNumber(BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
+	public BigNumber coth() {
+		return new BigNumber(BigDecimalMath.coth(toBigDecimal(), mathContext).toPlainString(), locale);
+	}
+
 	private BigNumber evaluate(String expression, Locale locale) {
 		BigNumber result = calculatorEngine.evaluate(expression);
 		return new BigNumber(result, locale);
-	}
-
-	/**
-	 * Evaluates a unary operation (such as sin, cos, log) on this BigNumber.
-	 *
-	 * @param operator
-	 * 	the unary operator to apply
-	 *
-	 * @return a new BigNumber representing the result
-	 */
-	private BigNumber evaluateUnary(String operator) {
-		String expression = operator + wrapInParentheses(toString());
-		return evaluate(expression, locale);
-	}
-
-	/**
-	 * Evaluates a binary operation (such as addition, subtraction, multiplication, or division)
-	 * between two BigNumber instances using the specified operator.
-	 *
-	 * @param left
-	 * 	the left operand BigNumber
-	 * @param right
-	 * 	the right operand BigNumber
-	 * @param operator
-	 * 	the binary operator to apply (e.g., "+", "-", "*", "/")
-	 *
-	 * @return a new BigNumber representing the result of the operation
-	 */
-	private BigNumber evaluateBinary(BigNumber left, BigNumber right, String operator) {
-		String expression = left + operator + right.toString();
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result);
-	}
-
-	/**
-	 * Wraps the given string in parentheses using the operator constants.
-	 *
-	 * @param s
-	 * 	the string to wrap
-	 *
-	 * @return the string wrapped in parentheses
-	 */
-	private String wrapInParentheses(String s) {
-		return LEFT_PARENTHESIS.getOperator() + s + RIGHT_PARENTHESIS.getOperator();
 	}
 
 	/**
@@ -436,7 +291,7 @@ public class BigNumber {
 		char groupingSeparator = symbols.getGroupingSeparator();
 
 		return BigNumber.builder()
-			       .currentLocale(this.locale)
+			       .locale(this.locale)
 			       .valueBeforeDecimal(bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator).toString())
 			       .valueAfterDecimal(this.valueAfterDecimal)
 			       .isNegative(this.isNegative)
@@ -479,6 +334,18 @@ public class BigNumber {
 	}
 
 	/**
+	 * Converts this BigNumber to a BigDecimal using its string representation.
+	 * <p>
+	 * Note: The conversion uses the current locale's formatting, so ensure the string
+	 * representation is compatible with BigDecimal parsing (typically US/standard format).
+	 *
+	 * @return a BigDecimal representation of this BigNumber
+	 */
+	private BigDecimal toBigDecimal() {
+		return new BigDecimal(this.toString());
+	}
+
+	/**
 	 * Returns the string representation of this number in standard US format,
 	 * using '.' as decimal separator and no grouping separators.
 	 *
@@ -499,6 +366,11 @@ public class BigNumber {
 
 		String localized = valueBeforeDecimal + decimalSeparator + newValueAfterDecimal;
 		return isNegative ? "-" + localized : localized;
+	}
+
+	@Override
+	public int compareTo(BigNumber other) {
+		return this.toBigDecimal().compareTo(other.toBigDecimal());
 	}
 
 }
