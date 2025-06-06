@@ -58,7 +58,12 @@ public enum ArithmeticOperator {
 	LN("ln", true, 6),
 	LOG_BASE("logbase", true, 6),
 
-	ATAN2("atan2", true, 6); // TODO: two arguments
+	ATAN2("atan2", true, 6),
+
+	PERMUTATION_S("nPr", false, 6),
+	PERMUTATION_T("perm", true, 6),
+	COMBINATION_S("nCr", false, 6),
+	COMBINATION_T("comb", true, 6);
 
 	private final String operator;
 	private final boolean isFunction;
