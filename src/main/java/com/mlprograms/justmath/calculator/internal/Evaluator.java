@@ -20,6 +20,29 @@ import java.util.List;
 public class Evaluator {
 
 	/**
+	 * Math context specifying the precision and rounding mode for calculations.
+	 */
+	private MathContext mathContext;
+
+	/**
+	 * The mode used for trigonometric calculations (e.g., degrees or radians).
+	 */
+	private TrigonometricMode trigonometricMode;
+
+	/**
+	 * Constructs an Evaluator with the specified math context and trigonometric mode.
+	 *
+	 * @param mathContext
+	 * 	the MathContext specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the mode for trigonometric calculations (e.g., degrees or radians)
+	 */
+	public Evaluator(MathContext mathContext, TrigonometricMode trigonometricMode) {
+		this.mathContext = mathContext;
+		this.trigonometricMode = trigonometricMode;
+	}
+
+	/**
 	 * Applies the specified operator to the operands on the stack.
 	 *
 	 * @param op
@@ -53,6 +76,16 @@ public class Evaluator {
 				BigNumber exponent = stack.pop();
 				BigNumber base = stack.pop();
 				stack.push(base.pow(exponent));
+			}
+			case PERMUTATION_S -> {
+				BigNumber k = stack.pop();
+				BigNumber n = stack.pop();
+				stack.push(n.permutation(k));
+			}
+			case COMBINATION_S -> {
+				BigNumber k = stack.pop();
+				BigNumber n = stack.pop();
+				stack.push(n.combination(k));
 			}
 			default -> throw new IllegalArgumentException("Unknown operator: " + op);
 		}
@@ -102,8 +135,16 @@ public class Evaluator {
 			}
 			case FACTORIAL -> stack.push(arg.factorial());
 			case ATAN2 -> {
-				BigNumber y = stack.pop(); // atan2(x, y)
+				BigNumber y = stack.pop();
 				stack.push(arg.atan2(y));
+			}
+			case PERMUTATION_T -> {
+				BigNumber n = stack.pop();
+				stack.push(n.permutation(arg));
+			}
+			case COMBINATION_T -> {
+				BigNumber n = stack.pop();
+				stack.push(n.combination(arg));
 			}
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
