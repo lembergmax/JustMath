@@ -703,7 +703,14 @@ public class BigNumber implements Comparable<BigNumber> {
 
 	@Override
 	public long longValue() {
-		return Long.parseLong(valueBeforeDecimal) * (isNegative ? -1 : 1);
+		String numStr = valueBeforeDecimal.length() > 19 ? valueBeforeDecimal.substring(0, 19) : valueBeforeDecimal;
+		long result;
+		try {
+			result = Long.parseLong(numStr);
+		} catch (NumberFormatException e) {
+			result = Long.MAX_VALUE;
+		}
+		return isNegative ? -result : result;
 	}
 
 	@Override
