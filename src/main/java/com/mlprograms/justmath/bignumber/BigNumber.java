@@ -130,37 +130,101 @@ public class BigNumber implements Comparable<BigNumber> {
 		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
 	}
 
+	/**
+	 * Adds the given BigNumber to this BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to add
+	 *
+	 * @return a new BigNumber representing the sum
+	 */
 	public BigNumber add(BigNumber other) {
 		return new BigNumber(toBigDecimal().add(other.toBigDecimal()).toPlainString());
 	}
 
+	/**
+	 * Subtracts the given BigNumber from this BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to subtract
+	 *
+	 * @return a new BigNumber representing the difference
+	 */
 	public BigNumber subtract(BigNumber other) {
 		BigDecimal bigDecimal = new BigDecimal(other.toString());
 		return new BigNumber(toBigDecimal().subtract(bigDecimal).toPlainString());
 	}
 
+	/**
+	 * Multiplies this BigNumber by the given BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to multiply by
+	 *
+	 * @return a new BigNumber representing the product
+	 */
 	public BigNumber multiply(BigNumber other) {
 		BigDecimal bigDecimal = new BigDecimal(other.toString());
 		return new BigNumber(toBigDecimal().multiply(bigDecimal).toPlainString());
 	}
 
+	/**
+	 * Divides this BigNumber by the given BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber divisor
+	 *
+	 * @return a new BigNumber representing the quotient
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs
+	 */
 	public BigNumber divide(BigNumber other) {
 		BigDecimal bigDecimal = new BigDecimal(other.toString());
 		return new BigNumber(toBigDecimal().divide(bigDecimal, getMathContext()).toPlainString());
 	}
 
+	/**
+	 * Raises this BigNumber to the power of the given exponent.
+	 *
+	 * @param exponent
+	 * 	the exponent as a BigNumber
+	 *
+	 * @return a new BigNumber representing the result
+	 */
 	public BigNumber pow(BigNumber exponent) {
 		return new BigNumber(BigDecimalMath.pow(toBigDecimal(), new BigDecimal(exponent.toString()), getMathContext()).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the square root of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the square root
+	 */
 	public BigNumber squareRoot() {
 		return new BigNumber(BigDecimalMath.root(toBigDecimal(), BigDecimal.TWO, mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the cubic root of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the cubic root
+	 */
 	public BigNumber cubicRoot() {
 		return new BigNumber(BigDecimalMath.root(toBigDecimal(), new BigDecimal("3"), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the nth root of this BigNumber.
+	 *
+	 * @param n
+	 * 	the root degree as a BigNumber; must be non-negative
+	 *
+	 * @return a new BigNumber representing the nth root
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if n is negative
+	 */
 	public BigNumber nthRoot(BigNumber n) {
 		if (n.isNegative()) {
 			throw new IllegalArgumentException("Cannot calculate nth root with negative n.");
@@ -168,22 +232,53 @@ public class BigNumber implements Comparable<BigNumber> {
 		return new BigNumber(BigDecimalMath.root(toBigDecimal(), n.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the factorial of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the factorial
+	 */
 	public BigNumber factorial() {
 		return new BigNumber(BigDecimalMath.factorial(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the base-2 logarithm of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the log base 2
+	 */
 	public BigNumber log2() {
 		return new BigNumber(BigDecimalMath.log2(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the base-10 logarithm of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the log base 10
+	 */
 	public BigNumber log10() {
 		return new BigNumber(BigDecimalMath.log10(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the natural logarithm (ln) of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the natural logarithm
+	 */
 	public BigNumber ln() {
 		return new BigNumber(BigDecimalMath.log(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the logarithm of this BigNumber with a given base.
+	 *
+	 * @param base
+	 * 	the logarithm base; must be positive and non-zero
+	 *
+	 * @return a new BigNumber representing the logarithm with the given base
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if base is negative or zero
+	 */
 	public BigNumber logBase(BigNumber base) {
 		if (base.isNegative() || base.equals(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Base must be positive and non-zero.");
@@ -194,78 +289,162 @@ public class BigNumber implements Comparable<BigNumber> {
 		return new BigNumber(logBase.divide(logOfBase, mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the sine of this BigNumber (angle in radians).
+	 *
+	 * @return a new BigNumber representing the sine
+	 */
 	public BigNumber sin() {
 		return new BigNumber(BigDecimalMath.sin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the cosine of this BigNumber (angle in radians).
+	 *
+	 * @return a new BigNumber representing the cosine
+	 */
 	public BigNumber cos() {
 		return new BigNumber(BigDecimalMath.cos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the tangent of this BigNumber (angle in radians).
+	 *
+	 * @return a new BigNumber representing the tangent
+	 */
 	public BigNumber tan() {
 		return new BigNumber(BigDecimalMath.tan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the hyperbolic sine of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the hyperbolic sine
+	 */
 	public BigNumber sinh() {
 		return new BigNumber(BigDecimalMath.sinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the hyperbolic cosine of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the hyperbolic cosine
+	 */
 	public BigNumber cosh() {
 		return new BigNumber(BigDecimalMath.cosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the hyperbolic tangent of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the hyperbolic tangent
+	 */
 	public BigNumber tanh() {
 		return new BigNumber(BigDecimalMath.tanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the arcsine (inverse sine) of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the arcsine
+	 */
 	public BigNumber asin() {
 		return new BigNumber(BigDecimalMath.asin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the arccosine (inverse cosine) of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the arccosine
+	 */
 	public BigNumber acos() {
 		return new BigNumber(BigDecimalMath.acos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the arctangent (inverse tangent) of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the arctangent
+	 */
 	public BigNumber atan() {
 		return new BigNumber(BigDecimalMath.atan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the inverse hyperbolic sine of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the inverse hyperbolic sine
+	 */
 	public BigNumber asinh() {
 		return new BigNumber(BigDecimalMath.asinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the inverse hyperbolic cosine of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the inverse hyperbolic cosine
+	 */
 	public BigNumber acosh() {
 		return new BigNumber(BigDecimalMath.acosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the inverse hyperbolic tangent of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the inverse hyperbolic tangent
+	 */
 	public BigNumber atanh() {
 		return new BigNumber(BigDecimalMath.atanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the arctangent of this BigNumber and another BigNumber (y/x).
+	 *
+	 * @param other
+	 * 	the other BigNumber (x-value)
+	 *
+	 * @return a new BigNumber representing the arctangent of y/x
+	 */
 	public BigNumber atan2(BigNumber other) {
 		return new BigNumber(BigDecimalMath.atan2(toBigDecimal(), other.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the cotangent of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the cotangent
+	 */
 	public BigNumber cot() {
 		return new BigNumber(BigDecimalMath.cot(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the arccotangent (inverse cotangent) of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the arccotangent
+	 */
 	public BigNumber acot() {
 		return new BigNumber(BigDecimalMath.acot(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the inverse hyperbolic cotangent of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the inverse hyperbolic cotangent
+	 */
 	public BigNumber acoth() {
 		return new BigNumber(BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
+	/**
+	 * Calculates the hyperbolic cotangent of this BigNumber.
+	 *
+	 * @return a new BigNumber representing the hyperbolic cotangent
+	 */
 	public BigNumber coth() {
 		return new BigNumber(BigDecimalMath.coth(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
-	private BigNumber evaluate(String expression, Locale locale) {
-		BigNumber result = calculatorEngine.evaluate(expression);
-		return new BigNumber(result, locale);
-	}
 
 	/**
 	 * Parses this BigNumber into a new targetLocale and mutates the current object.
@@ -327,7 +506,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	 * Sets the trigonometric mode for this BigNumber instance.
 	 *
 	 * @param trigonometricMode
-	 * 	the trigonometric mode to set (e.g., DEG, RAD, GRAD)
+	 * 	the trigonometric mode to set (e.g., DEG, RAD)
 	 */
 	public void setTrigonometricMode(@NonNull TrigonometricMode trigonometricMode) {
 		this.trigonometricMode = trigonometricMode;
