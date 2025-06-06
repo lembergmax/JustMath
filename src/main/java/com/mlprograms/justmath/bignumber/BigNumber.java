@@ -698,7 +698,14 @@ public class BigNumber implements Comparable<BigNumber> {
 
 	@Override
 	public int intValue() {
-		return Integer.parseInt(valueBeforeDecimal) * (isNegative ? -1 : 1);
+		String numStr = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
+		int result;
+		try {
+			result = Integer.parseInt(numStr);
+		} catch (NumberFormatException e) {
+			result = Integer.MAX_VALUE;
+		}
+		return isNegative ? -result : result;
 	}
 
 	@Override
