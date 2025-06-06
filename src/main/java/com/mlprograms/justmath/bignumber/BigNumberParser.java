@@ -8,6 +8,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+
 /**
  * Utility class responsible for parsing numeric strings into {@link BigNumber} instances,
  * considering locale-specific grouping and decimal separators.
@@ -163,7 +165,7 @@ public class BigNumberParser {
 		String afterDecimal = (parts.length > 1) ? parts[ 1 ] : "0";
 
 		return BigNumber.builder()
-			       .currentLocale(originalLocale)
+			       .locale(originalLocale)
 			       .valueBeforeDecimal(beforeDecimal)
 			       .valueAfterDecimal(afterDecimal)
 			       .isNegative(isNegative)
@@ -176,12 +178,7 @@ public class BigNumberParser {
 	 * @return BigNumber with zero values
 	 */
 	private BigNumber defaultBigNumber() {
-		return BigNumber.builder()
-			       .currentLocale(Locale.US)
-			       .valueBeforeDecimal("0")
-			       .valueAfterDecimal("0")
-			       .isNegative(false)
-			       .build();
+		return ZERO;
 	}
 
 }
