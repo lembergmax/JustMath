@@ -114,7 +114,7 @@ public class CalculatorEngine {
 			List<Token> postfix = parser.toPostfix(tokens);
 
 			// Evaluate the postfix expression to a BigDecimal result
-			return new BigNumber(evaluator.evaluate(postfix).toString());
+			return evaluator.evaluate(postfix);
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
