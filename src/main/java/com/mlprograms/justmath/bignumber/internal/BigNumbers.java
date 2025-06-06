@@ -8,4 +8,6 @@ public class BigNumbers {
 	public static final BigNumber ONE = new BigNumber("1");
 	public static final BigNumber ZERO = new BigNumber("0");
 
+	public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180");
+
 }
