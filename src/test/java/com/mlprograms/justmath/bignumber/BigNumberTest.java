@@ -29,7 +29,7 @@ public class BigNumberTest {
 		bigNumber2 = new BigNumber("0.000000000000002", Locale.US);
 
 		result = bigNumber1.add(bigNumber2);
-		assertEquals("0,000000000000003", result.toString());
+		assertEquals("0.000000000000003", result.toString());
 	}
 
 }
