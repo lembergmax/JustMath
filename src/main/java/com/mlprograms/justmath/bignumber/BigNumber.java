@@ -696,16 +696,7 @@ public class BigNumber implements Comparable<BigNumber> {
 		return this.toBigDecimal().compareTo(other.toBigDecimal()) > 0;
 	}
 
-	/**
-	 * Returns the integer value of the part before the decimal separator.
-	 * <p>
-	 * Note: This does not round or parse the full number, only the integer part before the decimal.
-	 *
-	 * @return the integer value of valueBeforeDecimal
-	 *
-	 * @throws NumberFormatException
-	 * 	if valueBeforeDecimal is not a valid integer
-	 */
+	@Override
 	public int intValue() {
 		return Integer.parseInt(valueBeforeDecimal);
 	}
