@@ -698,7 +698,22 @@ public class BigNumber implements Comparable<BigNumber> {
 
 	@Override
 	public int intValue() {
-		return Integer.parseInt(valueBeforeDecimal);
+		return Integer.parseInt(valueBeforeDecimal) * (isNegative ? -1 : 1);
+	}
+
+	@Override
+	public long longValue() {
+		return Long.parseLong(valueBeforeDecimal) * (isNegative ? -1 : 1);
+	}
+
+	@Override
+	public float floatValue() {
+		return Float.parseFloat(valueBeforeDecimal) * (isNegative ? -1 : 1);
+	}
+
+	@Override
+	public double doubleValue() {
+		return Double.parseDouble(valueBeforeDecimal) * (isNegative ? -1 : 1);
 	}
 
 	/**
