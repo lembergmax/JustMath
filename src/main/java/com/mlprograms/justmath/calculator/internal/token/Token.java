@@ -42,7 +42,8 @@ public record Token(Token.Type type, String value) {
 		OPERATOR,
 		FUNCTION,
 		LEFT_PAREN,
-		RIGHT_PAREN
+		RIGHT_PAREN,
+		SEMICOLON
 	}
 
 }
