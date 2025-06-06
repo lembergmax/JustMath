@@ -60,10 +60,8 @@ public class Parser {
 					while (!operatorStack.isEmpty()) {
 						Token top = operatorStack.peek();
 
-						if ((top.type() == Token.Type.FUNCTION)
-							    || (top.type() == Token.Type.OPERATOR
-								        && (hasHigherPrecedence(top, token)
-									            || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
+						if ((top.type() == Token.Type.FUNCTION) || (top.type() == Token.Type.OPERATOR && (hasHigherPrecedence(top, token)
+							                                                                                  || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
 							output.add(operatorStack.pop());
 						} else {
 							break;
@@ -83,6 +81,14 @@ public class Parser {
 					// If there's a function before the '(', pop it
 					if (!operatorStack.isEmpty() && operatorStack.peek().type() == Token.Type.FUNCTION) {
 						output.add(operatorStack.pop());
+					}
+				}
+				case SEMICOLON -> {
+					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
+						output.add(operatorStack.pop());
+					}
+					if (operatorStack.isEmpty()) {
+						throw new IllegalArgumentException("Misplaced semicolon or mismatched parentheses");
 					}
 				}
 			}
