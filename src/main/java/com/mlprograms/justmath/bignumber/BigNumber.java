@@ -649,6 +649,98 @@ public class BigNumber implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Compares this BigNumber to another for equality.
+	 *
+	 * @param other
+	 * 	the BigNumber to compare with
+	 *
+	 * @return true if both numbers are equal, false otherwise
+	 */
+	public boolean equals(BigNumber other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.toBigDecimal().compareTo(other.toBigDecimal()) == 0;
+	}
+
+	/**
+	 * Checks if this BigNumber is less than the specified BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to compare with
+	 *
+	 * @return true if this is less than other, false otherwise
+	 */
+	public boolean isLessThan(BigNumber other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.toBigDecimal().compareTo(other.toBigDecimal()) < 0;
+	}
+
+	/**
+	 * Checks if this BigNumber is greater than the specified BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to compare with
+	 *
+	 * @return true if this is greater than other, false otherwise
+	 */
+	public boolean isGreaterThan(BigNumber other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.toBigDecimal().compareTo(other.toBigDecimal()) > 0;
+	}
+
+	/**
+	 * Returns the integer value of the part before the decimal separator.
+	 * <p>
+	 * Note: This does not round or parse the full number, only the integer part before the decimal.
+	 *
+	 * @return the integer value of valueBeforeDecimal
+	 *
+	 * @throws NumberFormatException
+	 * 	if valueBeforeDecimal is not a valid integer
+	 */
+	public int intValue() {
+		return Integer.parseInt(valueBeforeDecimal);
+	}
+
+	/**
+	 * Returns the minimum of this BigNumber and the specified other BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to compare with
+	 *
+	 * @return the smaller of this and other; if other is null, returns this
+	 */
+	public BigNumber min(BigNumber other) {
+		if (other == null) {
+			return this;
+		}
+		return this.isLessThan(other) ? this : other;
+	}
+
+	/**
+	 * Returns the maximum of this BigNumber and the specified other BigNumber.
+	 *
+	 * @param other
+	 * 	the BigNumber to compare with
+	 *
+	 * @return the greater of this and other; if other is null, returns this
+	 */
+	public BigNumber max(BigNumber other) {
+		if (other == null) {
+			return this;
+		}
+		return this.isGreaterThan(other) ? this : other;
+	}
+
+	/**
 	 * Returns the string representation of this number in standard US format,
 	 * using '.' as decimal separator and no grouping separators.
 	 *
