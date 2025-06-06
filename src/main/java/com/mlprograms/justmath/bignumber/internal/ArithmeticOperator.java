@@ -11,6 +11,7 @@ public enum ArithmeticOperator {
 
 	LEFT_PARENTHESIS("(", false, 0),
 	RIGHT_PARENTHESIS(")", false, 0),
+	SEMICOLON(";", false, 0),
 
 	ADD("+", false, 2),
 	SUBTRACT("-", false, 2),
