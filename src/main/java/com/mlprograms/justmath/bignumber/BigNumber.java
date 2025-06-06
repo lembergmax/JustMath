@@ -290,161 +290,168 @@ public class BigNumber implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Calculates the sine of this BigNumber (angle in radians).
+	 * Returns the sine of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the sine
+	 * @return the sine of this number, in radians
 	 */
 	public BigNumber sin() {
 		return new BigNumber(BigDecimalMath.sin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the cosine of this BigNumber (angle in radians).
+	 * Returns the cosine of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the cosine
+	 * @return the cosine of this number, in radians
 	 */
 	public BigNumber cos() {
 		return new BigNumber(BigDecimalMath.cos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the tangent of this BigNumber (angle in radians).
+	 * Returns the tangent of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the tangent
+	 * @return the tangent of this number, in radians
 	 */
 	public BigNumber tan() {
 		return new BigNumber(BigDecimalMath.tan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the hyperbolic sine of this BigNumber.
+	 * Returns the hyperbolic sine of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the hyperbolic sine
+	 * @return the sinh in radians
 	 */
 	public BigNumber sinh() {
 		return new BigNumber(BigDecimalMath.sinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the hyperbolic cosine of this BigNumber.
+	 * Returns the hyperbolic cosine of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the hyperbolic cosine
+	 * @return the cosh in radians
 	 */
 	public BigNumber cosh() {
 		return new BigNumber(BigDecimalMath.cosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the hyperbolic tangent of this BigNumber.
+	 * Returns the hyperbolic tangent of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the hyperbolic tangent
+	 * @return the tanh in radians
 	 */
 	public BigNumber tanh() {
 		return new BigNumber(BigDecimalMath.tanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the arcsine (inverse sine) of this BigNumber.
+	 * Returns the inverse sine (arcsin) of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the arcsine
+	 * @return the arcsin in radians
 	 */
 	public BigNumber asin() {
 		return new BigNumber(BigDecimalMath.asin(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the arccosine (inverse cosine) of this BigNumber.
+	 * Returns the inverse cosine (arccos) of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the arccosine
+	 * @return the arccos in radians
 	 */
 	public BigNumber acos() {
 		return new BigNumber(BigDecimalMath.acos(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the arctangent (inverse tangent) of this BigNumber.
+	 * Returns the inverse tangent (arctan) of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the arctangent
+	 * @return the arctan in radians
 	 */
 	public BigNumber atan() {
 		return new BigNumber(BigDecimalMath.atan(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the inverse hyperbolic sine of this BigNumber.
+	 * Returns the inverse hyperbolic sine of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the inverse hyperbolic sine
+	 * @return the asinh in radians
 	 */
 	public BigNumber asinh() {
 		return new BigNumber(BigDecimalMath.asinh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the inverse hyperbolic cosine of this BigNumber.
+	 * Returns the inverse hyperbolic cosine of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the inverse hyperbolic cosine
+	 * @return the acosh in radians
 	 */
 	public BigNumber acosh() {
 		return new BigNumber(BigDecimalMath.acosh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the inverse hyperbolic tangent of this BigNumber.
+	 * Returns the inverse hyperbolic tangent of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the inverse hyperbolic tangent
+	 * @return the atanh in radians
 	 */
 	public BigNumber atanh() {
 		return new BigNumber(BigDecimalMath.atanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the arctangent of this BigNumber and another BigNumber (y/x).
+	 * Returns the angle (in radians) between the positive x-axis and the point (this, other).
 	 *
 	 * @param other
-	 * 	the other BigNumber (x-value)
+	 * 	the y-coordinate
 	 *
-	 * @return a new BigNumber representing the arctangent of y/x
+	 * @return the angle in radians
 	 */
 	public BigNumber atan2(BigNumber other) {
 		return new BigNumber(BigDecimalMath.atan2(toBigDecimal(), other.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the cotangent of this BigNumber.
+	 * Returns the cotangent of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the cotangent
+	 * @return the cotangent of this number, in radians
 	 */
 	public BigNumber cot() {
 		return new BigNumber(BigDecimalMath.cot(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the arccotangent (inverse cotangent) of this BigNumber.
+	 * Returns the inverse cotangent (arccot) of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the arccotangent
+	 * @return the arccot in radians
 	 */
 	public BigNumber acot() {
 		return new BigNumber(BigDecimalMath.acot(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the inverse hyperbolic cotangent of this BigNumber.
+	 * Returns the inverse hyperbolic cotangent of this number.
+	 * The result is in radians.
 	 *
-	 * @return a new BigNumber representing the inverse hyperbolic cotangent
+	 * @return the acoth in radians
 	 */
 	public BigNumber acoth() {
 		return new BigNumber(BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Calculates the hyperbolic cotangent of this BigNumber.
+	 * Returns the hyperbolic cotangent of this number (interpreted as radians).
 	 *
-	 * @return a new BigNumber representing the hyperbolic cotangent
+	 * @return the coth in radians
 	 */
 	public BigNumber coth() {
 		return new BigNumber(BigDecimalMath.coth(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
-
 
 	/**
 	 * Parses this BigNumber into a new targetLocale and mutates the current object.
@@ -522,6 +529,30 @@ public class BigNumber implements Comparable<BigNumber> {
 	 */
 	private BigDecimal toBigDecimal() {
 		return new BigDecimal(this.toString());
+	}
+
+	/**
+	 * Converts this BigNumber from radians to degrees.
+	 *
+	 * @return a new BigNumber representing the value in degrees
+	 */
+	public BigNumber toDegrees() {
+		return new BigNumber(
+			BigDecimalMath.toDegrees(toBigDecimal(), mathContext).toPlainString(),
+			locale, mathContext
+		);
+	}
+
+	/**
+	 * Converts this BigNumber from degrees to radians.
+	 *
+	 * @return a new BigNumber representing the value in radians
+	 */
+	public BigNumber toRadians() {
+		return new BigNumber(
+			BigDecimalMath.toRadians(toBigDecimal(), mathContext).toPlainString(),
+			locale, mathContext
+		);
 	}
 
 	/**
