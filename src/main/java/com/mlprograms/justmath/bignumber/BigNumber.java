@@ -764,7 +764,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return true if both numbers are equal, false otherwise
 	 */
-	public boolean equals(BigNumber other) {
+	public boolean isEqualsTo(BigNumber other) {
 		if (other == null) {
 			return false;
 		}
