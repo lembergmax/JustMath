@@ -53,6 +53,12 @@ public class Tokenizer {
 				continue;
 			}
 
+			if (isSemicolon(currentChar)) {
+				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(currentChar)));
+				index++;
+				continue;
+			}
+
 			if (isLeftParenthesis(currentChar)) {
 				tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(currentChar)));
 				index++;
@@ -107,6 +113,13 @@ public class Tokenizer {
 	 */
 	private boolean isRightParenthesis(char c) {
 		return String.valueOf(c).equals(ArithmeticOperator.RIGHT_PARENTHESIS.getOperator());
+	}
+
+	/**
+	 * Returns true if the character is a semicolon.
+	 */
+	private boolean isSemicolon(char c) {
+		return String.valueOf(c).equals(ArithmeticOperator.SEMICOLON.getOperator());
 	}
 
 	/**
