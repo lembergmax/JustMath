@@ -1,8 +1,8 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -57,7 +59,9 @@ public class BigNumber implements Comparable<BigNumber> {
 	 */
 	@NonNull
 	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
-	// TODO: write javadoc
+	/**
+	 * The MathContext used for arithmetic operations, defaulting to a precision of 1000 digits.
+	 */
 	@NonNull
 	private MathContext mathContext = new MathContext(1000);
 
@@ -128,6 +132,62 @@ public class BigNumber implements Comparable<BigNumber> {
 		if (mathContext != null) this.mathContext = mathContext;
 		if (trigonometricMode != null) this.trigonometricMode = trigonometricMode;
 		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+	}
+
+	public BigNumber(@NonNull BigDecimal bigDecimal, @NonNull Locale locale) {
+		this(bigDecimal.toPlainString(), locale);
+	}
+
+	public BigNumber(@NonNull Locale locale, @NonNull String valueBeforeDecimal, @NonNull String valueAfterDecimal,
+	                 boolean isNegative, @NonNull TrigonometricMode trigonometricMode) {
+		this.locale = locale;
+		this.valueBeforeDecimal = valueBeforeDecimal;
+		this.valueAfterDecimal = valueAfterDecimal;
+		this.isNegative = isNegative;
+		this.trigonometricMode = trigonometricMode;
+		this.mathContext = new MathContext(1000);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+	}
+
+	public BigNumber(@NonNull BigNumber other, @NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
+		this.locale = other.locale;
+		this.valueBeforeDecimal = other.valueBeforeDecimal;
+		this.valueAfterDecimal = other.valueAfterDecimal;
+		this.isNegative = other.isNegative;
+		this.mathContext = mathContext;
+		this.trigonometricMode = trigonometricMode;
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+	}
+
+	public BigNumber(@NonNull String number, @NonNull Locale locale, @NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
+		this(bigNumberParser.parse(number, locale), mathContext, trigonometricMode);
+	}
+
+	public BigNumber(@NonNull BigNumber other, @NonNull Locale newLocale, @NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
+		this(bigNumberParser.parse(other.toString(), newLocale), mathContext, trigonometricMode);
+	}
+
+	public BigNumber(@NonNull Locale locale) {
+		this.locale = locale;
+		this.valueBeforeDecimal = "0";
+		this.valueAfterDecimal = "0";
+		this.isNegative = false;
+		this.mathContext = new MathContext(1000);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+	}
+
+	public BigNumber(@NonNull BigDecimal bigDecimal) {
+		this(bigDecimal, Locale.getDefault());
+	}
+
+	public BigNumber(@NonNull BigNumber other, boolean newSign) {
+		this.locale = other.locale;
+		this.valueBeforeDecimal = other.valueBeforeDecimal;
+		this.valueAfterDecimal = other.valueAfterDecimal;
+		this.isNegative = newSign;
+		this.calculatorEngine = other.calculatorEngine;
+		this.trigonometricMode = other.trigonometricMode;
+		this.mathContext = other.mathContext;
 	}
 
 	/**
@@ -290,36 +350,54 @@ public class BigNumber implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Returns the sine of this number (interpreted as radians).
+	 * Returns the sine of this number.
+	 * <p>
+	 * If the trigonometric mode is DEG, interprets this value as degrees and converts to radians.
+	 * If the mode is RAD, interprets this value directly as radians.
 	 *
-	 * @return the sine of this number, in radians
+	 * @return the sine of this number
 	 */
 	public BigNumber sin() {
-		return new BigNumber(BigDecimalMath.sin(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal radians = trigonometricMode == TrigonometricMode.DEG ?
+			                     toBigDecimal().multiply(BigDecimalMath.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext) :
+			                     toBigDecimal();
+		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Returns the cosine of this number (interpreted as radians).
+	 * Returns the cosine of this number.
+	 * <p>
+	 * If the trigonometric mode is DEG, interprets this value as degrees and converts to radians.
+	 * If the mode is RAD, interprets this value directly as radians.
 	 *
-	 * @return the cosine of this number, in radians
+	 * @return the cosine of this number
 	 */
 	public BigNumber cos() {
-		return new BigNumber(BigDecimalMath.cos(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal radians = trigonometricMode == TrigonometricMode.DEG ?
+			                     toBigDecimal().multiply(BigDecimalMath.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext) :
+			                     toBigDecimal();
+		return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Returns the tangent of this number (interpreted as radians).
+	 * Returns the tangent of this number.
+	 * <p>
+	 * If the trigonometric mode is DEG, interprets this value as degrees and converts to radians.
+	 * If the mode is RAD, interprets this value directly as radians.
 	 *
-	 * @return the tangent of this number, in radians
+	 * @return the tangent of this number
 	 */
 	public BigNumber tan() {
-		return new BigNumber(BigDecimalMath.tan(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal radians = trigonometricMode == TrigonometricMode.DEG ?
+			                     toBigDecimal().multiply(BigDecimalMath.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext) :
+			                     toBigDecimal();
+		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale);
 	}
 
 	/**
 	 * Returns the hyperbolic sine of this number (interpreted as radians).
 	 *
-	 * @return the sinh in radians
+	 * @return the hyperbolic sine of this number in radians
 	 */
 	public BigNumber sinh() {
 		return new BigNumber(BigDecimalMath.sinh(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -328,7 +406,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	/**
 	 * Returns the hyperbolic cosine of this number (interpreted as radians).
 	 *
-	 * @return the cosh in radians
+	 * @return the hyperbolic cosine of this number in radians
 	 */
 	public BigNumber cosh() {
 		return new BigNumber(BigDecimalMath.cosh(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -337,47 +415,62 @@ public class BigNumber implements Comparable<BigNumber> {
 	/**
 	 * Returns the hyperbolic tangent of this number (interpreted as radians).
 	 *
-	 * @return the tanh in radians
+	 * @return the hyperbolic tangent of this number in radians
 	 */
 	public BigNumber tanh() {
 		return new BigNumber(BigDecimalMath.tanh(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
-	 * Returns the inverse sine (arcsin) of this number.
-	 * The result is in radians.
+	 * Returns the arcsine (inverse sine) of this number.
+	 * <p>
+	 * The returned value is in degrees if trigonometric mode is DEG, otherwise in radians.
 	 *
-	 * @return the arcsin in radians
+	 * @return the arcsine of this number in the current trigonometric mode
 	 */
 	public BigNumber asin() {
-		return new BigNumber(BigDecimalMath.asin(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal result = BigDecimalMath.asin(toBigDecimal(), mathContext);
+		if (trigonometricMode == TrigonometricMode.DEG) {
+			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal()).divide(BigDecimalMath.pi(mathContext), mathContext);
+		}
+		return new BigNumber(result.toPlainString(), locale);
 	}
 
 	/**
-	 * Returns the inverse cosine (arccos) of this number.
-	 * The result is in radians.
+	 * Returns the arccosine (inverse cosine) of this number.
+	 * <p>
+	 * The returned value is in degrees if trigonometric mode is DEG, otherwise in radians.
 	 *
-	 * @return the arccos in radians
+	 * @return the arccosine of this number in the current trigonometric mode
 	 */
 	public BigNumber acos() {
-		return new BigNumber(BigDecimalMath.acos(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal result = BigDecimalMath.acos(toBigDecimal(), mathContext);
+		if (trigonometricMode == TrigonometricMode.DEG) {
+			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal()).divide(BigDecimalMath.pi(mathContext), mathContext);
+		}
+		return new BigNumber(result.toPlainString(), locale);
 	}
 
 	/**
-	 * Returns the inverse tangent (arctan) of this number.
-	 * The result is in radians.
+	 * Returns the arctangent (inverse tangent) of this number.
+	 * <p>
+	 * The returned value is in degrees if trigonometric mode is DEG, otherwise in radians.
 	 *
-	 * @return the arctan in radians
+	 * @return the arctangent of this number in the current trigonometric mode
 	 */
 	public BigNumber atan() {
-		return new BigNumber(BigDecimalMath.atan(toBigDecimal(), mathContext).toPlainString(), locale);
+		BigDecimal result = BigDecimalMath.atan(toBigDecimal(), mathContext);
+		if (trigonometricMode == TrigonometricMode.DEG) {
+			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal()).divide(BigDecimalMath.pi(mathContext), mathContext);
+		}
+		return new BigNumber(result.toPlainString(), locale);
 	}
 
 	/**
 	 * Returns the inverse hyperbolic sine of this number.
 	 * The result is in radians.
 	 *
-	 * @return the asinh in radians
+	 * @return the inverse hyperbolic sine (asinh) in radians
 	 */
 	public BigNumber asinh() {
 		return new BigNumber(BigDecimalMath.asinh(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -387,7 +480,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	 * Returns the inverse hyperbolic cosine of this number.
 	 * The result is in radians.
 	 *
-	 * @return the acosh in radians
+	 * @return the inverse hyperbolic cosine (acosh) in radians
 	 */
 	public BigNumber acosh() {
 		return new BigNumber(BigDecimalMath.acosh(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -397,7 +490,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	 * Returns the inverse hyperbolic tangent of this number.
 	 * The result is in radians.
 	 *
-	 * @return the atanh in radians
+	 * @return the inverse hyperbolic tangent (atanh) in radians
 	 */
 	public BigNumber atanh() {
 		return new BigNumber(BigDecimalMath.atanh(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -418,7 +511,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	/**
 	 * Returns the cotangent of this number (interpreted as radians).
 	 *
-	 * @return the cotangent of this number, in radians
+	 * @return the cotangent of this number in radians
 	 */
 	public BigNumber cot() {
 		return new BigNumber(BigDecimalMath.cot(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -428,7 +521,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	 * Returns the inverse cotangent (arccot) of this number.
 	 * The result is in radians.
 	 *
-	 * @return the arccot in radians
+	 * @return the inverse cotangent (arccot) in radians
 	 */
 	public BigNumber acot() {
 		return new BigNumber(BigDecimalMath.acot(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -438,7 +531,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	 * Returns the inverse hyperbolic cotangent of this number.
 	 * The result is in radians.
 	 *
-	 * @return the acoth in radians
+	 * @return the inverse hyperbolic cotangent (acoth) in radians
 	 */
 	public BigNumber acoth() {
 		return new BigNumber(BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(), locale);
@@ -447,7 +540,7 @@ public class BigNumber implements Comparable<BigNumber> {
 	/**
 	 * Returns the hyperbolic cotangent of this number (interpreted as radians).
 	 *
-	 * @return the coth in radians
+	 * @return the hyperbolic cotangent (coth) in radians
 	 */
 	public BigNumber coth() {
 		return new BigNumber(BigDecimalMath.coth(toBigDecimal(), mathContext).toPlainString(), locale);
