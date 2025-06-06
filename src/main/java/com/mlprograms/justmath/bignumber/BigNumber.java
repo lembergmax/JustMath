@@ -21,7 +21,7 @@ import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_
  * Use the constructors which internally rely on {@link BigNumberParser} to parse input strings.
  */
 @Getter
-public class BigNumber implements Comparable<BigNumber> {
+public class BigNumber extends Number implements Comparable<BigNumber> {
 
 	/**
 	 * Shared instance of the parser used to convert input strings into BigNumber objects.
@@ -547,6 +547,114 @@ public class BigNumber implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Calculates the combination, also known as "n choose k".
+	 * <p>
+	 * The combination is a mathematical expression that represents the number of ways to choose
+	 * k items from a set of n items without regard to order. It's denoted as nCr or (n k) and is calculated as:
+	 * <p>
+	 * nCr = n! / (k! * (n-k)!)
+	 * <p>
+	 * This method uses an optimized approach to avoid calculating factorials directly, which can lead to overflow
+	 * for large values of n.
+	 *
+	 * @param k
+	 * 	The number of items to choose (0 <= k <= n).
+	 *
+	 * @return The combination nCr.
+	 *
+	 * @throws IllegalArgumentException
+	 * 	If k is greater than n (invalid input).
+	 */
+	public BigNumber combination(BigNumber k) {
+		if (hasDecimals() || k.hasDecimals()) {
+			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
+		}
+
+		if (k.compareTo(this) > 0) {
+			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
+		}
+
+		if (k.equals(BigNumbers.ZERO) || k.equals(this)) {
+			return BigNumbers.ONE;
+		}
+
+		k = k.min(subtract(k));
+		BigNumber c = BigNumbers.ONE;
+		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(k); i = i.add(BigNumbers.ONE)) {
+			c = c.multiply(subtract(i)).divide(i.add(BigNumbers.ONE));
+		}
+
+		return c;
+	}
+
+	/**
+	 * Calculates the number of permutations (k-permutations) of n (the current object) items taken k at a time.
+	 * <p>
+	 * A permutation is an arrangement of objects in a specific order. The number of k-permutations of n items,
+	 * denoted as nPk or P(n, k), is the number of ways to select and order k items from a set of n items.
+	 * <p>
+	 * Mathematically, nPk is calculated as:
+	 * nPk = n! / (n-k)!
+	 *
+	 * @param k
+	 * 	The number of items to choose and order (0 <= k <= n).
+	 *
+	 * @return The number of k-permutations of n items.
+	 *
+	 * @throws IllegalArgumentException
+	 * 	If k is greater than n.
+	 */
+	public BigNumber permutation(BigNumber k) {
+		if (hasDecimals() || k.hasDecimals()) {
+			throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
+		}
+
+		if (k.compareTo(this) > 0) {
+			throw new IllegalArgumentException("Cannot calculate permutations: k cannot be greater than n.");
+		}
+
+		BigNumber nFactorial = factorial();
+		BigNumber nMinusKFactorial = subtract(k).factorial();
+		return nFactorial.divide(nMinusKFactorial);
+	}
+
+	/**
+	 * Converts polar coordinates to Cartesian coordinates.
+	 * Assumes this BigNumber is the radius (r) and theta is the angle.
+	 * The angle theta is interpreted according to its trigonometric mode (DEG or RAD).
+	 *
+	 * @param theta
+	 * 	the angle in degrees or radians as a BigNumber
+	 *
+	 * @return a BigNumberCoordinate representing the Cartesian coordinates (x, y)
+	 */
+	public BigNumberCoordinate polarToCartesianCoordinates(BigNumber theta) {
+		BigNumber x = multiply(theta.cos());
+		BigNumber y = multiply(theta.sin());
+		return new BigNumberCoordinate(x, y);
+	}
+
+	/**
+	 * Converts Cartesian coordinates (this, y) to polar coordinates.
+	 * Assumes this BigNumber is the x-coordinate and y is the y-coordinate.
+	 * The returned BigNumberCoordinate contains:
+	 * - r: the distance from the origin to the point (x, y)
+	 * - theta: the angle in degrees between the positive x-axis and the point (x, y)
+	 *
+	 * @param y
+	 * 	the y-coordinate as a BigNumber
+	 *
+	 * @return a BigNumberCoordinate representing the polar coordinates (r, theta in degrees)
+	 */
+	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y) {
+		BigNumber r = pow(BigNumbers.TWO).add(y.pow(BigNumbers.TWO)).squareRoot();
+		BigNumber theta = y.atan2(this);
+		BigNumber thetaDeg = theta.toDegrees();
+
+		return new BigNumberCoordinate(r, thetaDeg);
+	}
+
+	/**
 	 * Parses this BigNumber into a new targetLocale and mutates the current object.
 	 *
 	 * @param targetLocale
@@ -768,6 +876,15 @@ public class BigNumber implements Comparable<BigNumber> {
 			return this;
 		}
 		return this.isGreaterThan(other) ? this : other;
+	}
+
+	/**
+	 * Checks if this BigNumber has a non-zero and non-empty decimal part.
+	 *
+	 * @return true if there are decimals, false otherwise
+	 */
+	public boolean hasDecimals() {
+		return !valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty();
 	}
 
 	/**
