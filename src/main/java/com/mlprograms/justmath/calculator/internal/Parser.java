@@ -25,7 +25,7 @@ public class Parser {
 	 * @return true if the operator is right-associative, false otherwise
 	 */
 	private static boolean isRightAssociativeOperator(ArithmeticOperator operator) {
-		return operator == ArithmeticOperator.POWER;
+		return operator == ArithmeticOperator.POWER_O;
 	}
 
 	/**
