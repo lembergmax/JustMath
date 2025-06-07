@@ -14,6 +14,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -489,6 +490,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if division by zero occurs
 	 */
 	public BigNumber divide(BigNumber other, MathContext mathContext) {
+		if (other.compareTo(BigNumbers.ZERO) == 0) {
+			throw new ArithmeticException("Division by zero");
+		}
+
 		BigDecimal bigDecimal = new BigDecimal(other.toString());
 		return new BigNumber(toBigDecimal().divide(bigDecimal, mathContext).toPlainString());
 	}
@@ -1636,6 +1641,40 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Computes the modulo (remainder) of this number divided by the specified {@link BigNumber}.
+	 *
+	 * <p>This implementation uses integer subtraction and returns the result as a new {@code BigNumber}.</p>
+	 *
+	 * @param other
+	 * 	the divisor (must not be zero or negative)
+	 *
+	 * @return a new {@code BigNumber} representing {@code this % other}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the divisor is zero or if either number is negative
+	 */
+	public BigNumber modulo(BigNumber other) {
+		if (other.isEqualsTo(ZERO)) {
+			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
+		}
+
+		if (isNegative() || other.isNegative()) {
+			throw new IllegalArgumentException("Modulo operation requires both numbers to be non-negative.");
+		}
+
+		BigNumber remainder = clone();
+
+		while (remainder.isGreaterThanOrEqualsTo(other)) {
+			remainder = remainder.subtract(other);
+		}
+
+		return remainder;
+	}
+
+	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max), LCM, GCD
+	// TODO: polar and cartesian coordinates in 3d
+
+	/**
 	 * Converts Cartesian coordinates to polar coordinates.
 	 * <p>
 	 * This object represents the x-coordinate, and the parameter {@code y} is the y-coordinate.
@@ -1948,6 +1987,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	@Override
 	public int compareTo(BigNumber other) {
 		return this.toBigDecimal().compareTo(other.toBigDecimal());
+	}
+
+	/**
+	 * Creates and returns a copy of this BigNumber.
+	 *
+	 * @return a new BigNumber instance with the same value and properties as this one
+	 */
+	public BigNumber clone() {
+		return new BigNumber(this);
 	}
 
 }
