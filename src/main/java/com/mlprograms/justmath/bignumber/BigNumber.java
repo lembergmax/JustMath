@@ -998,13 +998,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing cosh(this)
 	 */
-	/**
-	 * * Computes the hyperbolic cosine of this number using the default {@link MathContext} and {@link Locale}.
-	 * *
-	 * * <p>This is a convenience method that delegates to {@link #cosh(MathContext, Locale)}.</p>
-	 * *
-	 * * @return a new {@code BigNumber} representing cosh(this)
-	 */
 	public BigNumber cosh() {
 		return cosh(mathContext, locale);
 	}
