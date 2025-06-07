@@ -11,6 +11,7 @@ import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
@@ -19,6 +20,10 @@ import java.util.List;
 @NoArgsConstructor
 public class Evaluator {
 
+	/**
+	 * Locale used for all calculations to ensure consistent number formatting and parsing.
+	 */
+	private final Locale CALCULATION_LOCALE = Locale.US;
 	/**
 	 * Math context specifying the precision and rounding mode for calculations.
 	 */
@@ -70,22 +75,22 @@ public class Evaluator {
 				if (b.compareTo(BigNumbers.ZERO) == 0) {
 					throw new ArithmeticException("Division by zero");
 				}
-				stack.push(a.divide(b));
+				stack.push(a.divide(b, mathContext));
 			}
 			case POWER -> {
 				BigNumber exponent = stack.pop();
 				BigNumber base = stack.pop();
-				stack.push(base.pow(exponent));
+				stack.push(base.pow(exponent, mathContext, CALCULATION_LOCALE));
 			}
 			case PERMUTATION_S -> {
 				BigNumber k = stack.pop();
 				BigNumber n = stack.pop();
-				stack.push(n.permutation(k));
+				stack.push(n.permutation(k, mathContext, CALCULATION_LOCALE));
 			}
 			case COMBINATION_S -> {
 				BigNumber k = stack.pop();
 				BigNumber n = stack.pop();
-				stack.push(n.combination(k));
+				stack.push(n.combination(k, mathContext));
 			}
 			default -> throw new IllegalArgumentException("Unknown operator: " + op);
 		}
@@ -105,46 +110,47 @@ public class Evaluator {
 	private void applyFunction(@NonNull ArithmeticOperator func, Deque<BigNumber> stack) {
 		BigNumber arg = stack.pop();
 		switch (func) {
-			case SIN -> stack.push(arg.sin());
-			case COS -> stack.push(arg.cos());
-			case TAN -> stack.push(arg.tan());
-			case COT -> stack.push(arg.cot());
-			case SINH -> stack.push(arg.sinh());
-			case COSH -> stack.push(arg.cosh());
-			case TANH -> stack.push(arg.tanh());
-			case COTH -> stack.push(arg.coth());
-			case ASIN_S, ASIN_T -> stack.push(arg.asin());
-			case ACOS_S, ACOS_T -> stack.push(arg.acos());
-			case ATAN_S, ATAN_T -> stack.push(arg.atan());
-			case ACOT_S, ACOT_T -> stack.push(arg.acot());
-			case ASINH_S, ASINH_T -> stack.push(arg.asinh());
-			case ACOSH_S, ACOSH_T -> stack.push(arg.acosh());
-			case ATANH_S, ATANH_T -> stack.push(arg.atanh());
-			case ACOTH_S, ACOTH_T -> stack.push(arg.acoth());
-			case LOG10 -> stack.push(arg.log10());
-			case LN -> stack.push(arg.ln());
+			case SIN -> stack.push(arg.sin(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case COS -> stack.push(arg.cos(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case TAN -> stack.push(arg.tan(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case COT -> stack.push(arg.cot(mathContext, CALCULATION_LOCALE));
+			case SINH -> stack.push(arg.sinh(mathContext, CALCULATION_LOCALE));
+			case COSH -> stack.push(arg.cosh(mathContext, CALCULATION_LOCALE));
+			case TANH -> stack.push(arg.tanh(mathContext, CALCULATION_LOCALE));
+			case COTH -> stack.push(arg.coth(mathContext, CALCULATION_LOCALE));
+			case ASIN_S, ASIN_T -> stack.push(arg.asin(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case ACOS_S, ACOS_T -> stack.push(arg.acos(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case ATAN_S, ATAN_T -> stack.push(arg.atan(mathContext, trigonometricMode, CALCULATION_LOCALE));
+			case ACOT_S, ACOT_T -> stack.push(arg.acot(mathContext, CALCULATION_LOCALE));
+			case ASINH_S, ASINH_T -> stack.push(arg.asinh(mathContext, CALCULATION_LOCALE));
+			case ACOSH_S, ACOSH_T -> stack.push(arg.acosh(mathContext, CALCULATION_LOCALE));
+			case ATANH_S, ATANH_T -> stack.push(arg.atanh(mathContext, CALCULATION_LOCALE));
+			case ACOTH_S, ACOTH_T -> stack.push(arg.acoth(mathContext, CALCULATION_LOCALE));
+			case LOG10 -> stack.push(arg.log10(mathContext, CALCULATION_LOCALE));
+			case LOG2 -> stack.push(arg.log2(mathContext, CALCULATION_LOCALE));
+			case LN -> stack.push(arg.ln(mathContext, CALCULATION_LOCALE));
 			case LOG_BASE -> {
-				BigNumber base = stack.pop(); // logBase(x, base)
-				stack.push(arg.logBase(base));
+				BigNumber base = stack.pop(); // logBase(base, x)
+				stack.push(arg.logBase(base, mathContext, CALCULATION_LOCALE));
 			}
-			case ROOT_S, ROOT_T -> stack.push(arg.squareRoot());
-			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(arg.cubicRoot());
+			case ROOT_S, ROOT_T -> stack.push(arg.squareRoot(mathContext, CALCULATION_LOCALE));
+			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(arg.cubicRoot(mathContext, CALCULATION_LOCALE));
 			case NTH_ROOT -> {
 				BigNumber n = stack.pop();
-				stack.push(arg.nthRoot(n));
+				stack.push(arg.nthRoot(n, mathContext, CALCULATION_LOCALE));
 			}
-			case FACTORIAL -> stack.push(arg.factorial());
+			case FACTORIAL -> stack.push(arg.factorial(mathContext, CALCULATION_LOCALE));
 			case ATAN2 -> {
 				BigNumber y = stack.pop();
-				stack.push(arg.atan2(y));
+				stack.push(arg.atan2(y, mathContext, CALCULATION_LOCALE));
 			}
 			case PERMUTATION_T -> {
 				BigNumber n = stack.pop();
-				stack.push(n.permutation(arg));
+				stack.push(n.permutation(arg, mathContext, CALCULATION_LOCALE));
 			}
 			case COMBINATION_T -> {
 				BigNumber n = stack.pop();
-				stack.push(n.combination(arg));
+				stack.push(n.combination(arg, mathContext));
 			}
 			default -> throw new IllegalArgumentException("Unknown function: " + func);
 		}
