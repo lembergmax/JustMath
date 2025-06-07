@@ -55,6 +55,7 @@ public enum ArithmeticOperator {
 	ACOTH_S("coth⁻¹", true, 6),
 	ACOTH_T("acoth", true, 6),
 
+	LOG2("log2", true, 6),
 	LOG10("log", true, 6),
 	LN("ln", true, 6),
 	LOG_BASE("logbase", true, 6),
