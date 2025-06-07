@@ -795,7 +795,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code base} is zero or negative
 	 */
 	public BigNumber logBase(BigNumber base, MathContext mathContext, Locale locale) {
-		if (base.isNegative() || base.isEqualsTo(BigNumbers.ZERO)) {
+		if (base.isNegative() || base.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Base must be positive and non-zero.");
 		}
 		BigDecimal lnThis = BigDecimalMath.log(toBigDecimal(), mathContext);
@@ -1511,7 +1511,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
 		}
 
-		if (k.isEqualsTo(BigNumbers.ZERO) || k.isEqualsTo(this)) {
+		if (k.isEqualTo(BigNumbers.ZERO) || k.isEqualTo(this)) {
 			return BigNumbers.ONE;
 		}
 
@@ -1654,7 +1654,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if the divisor is zero or if either number is negative
 	 */
 	public BigNumber modulo(BigNumber other) {
-		if (other.isEqualsTo(ZERO)) {
+		if (other.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
 		}
 
@@ -1664,15 +1664,81 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
 		BigNumber remainder = clone();
 
-		while (remainder.isGreaterThanOrEqualsTo(other)) {
+		while (remainder.isGreaterThanOrEqualTo(other)) {
 			remainder = remainder.subtract(other);
 		}
 
 		return remainder;
 	}
 
-	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max), LCM, GCD
+	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max)
 	// TODO: polar and cartesian coordinates in 3d
+
+	/**
+	 * Computes the greatest common divisor (GCD) of this BigNumber and another.
+	 * <p>
+	 * Uses the Euclidean algorithm to find the largest positive BigNumber that divides
+	 * both this and the other BigNumber without leaving a remainder.
+	 * </p>
+	 *
+	 * @param other
+	 * 	the other BigNumber to compute the GCD with
+	 *
+	 * @return the greatest common divisor of this and other
+	 */
+	public BigNumber gcd(BigNumber other) {
+		BigNumber a = clone();
+		BigNumber b = other.clone();
+
+		while (b.isGreaterThan(ZERO)) {
+			BigNumber temp = b;
+			b = a.modulo(b);
+			a = temp;
+		}
+		return a;
+	}
+
+	/**
+	 * Computes the least common multiple (LCM) of this BigNumber and another
+	 * using the default MathContext.
+	 * <p>
+	 * This method delegates the calculation to {@link #lcm(BigNumber, MathContext)}
+	 * using the instance's default MathContext.
+	 * </p>
+	 *
+	 * @param other
+	 * 	the other BigNumber to compute the LCM with
+	 *
+	 * @return the least common multiple of this and other
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs (e.g. if either number is zero)
+	 */
+	public BigNumber lcm(BigNumber other) {
+		return lcm(other, mathContext);
+	}
+
+	/**
+	 * Computes the least common multiple (LCM) of this BigNumber and another.
+	 * <p>
+	 * The LCM is calculated using the formula:
+	 * <pre>
+	 *     LCM(a, b) = (a * b) / GCD(a, b)
+	 * </pre>
+	 * where GCD is the greatest common divisor.
+	 * </p>
+	 *
+	 * @param other
+	 * 	the other BigNumber to compute the LCM with
+	 *
+	 * @return the least common multiple of this and other
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs (e.g. if either number is zero)
+	 */
+	public BigNumber lcm(BigNumber other, MathContext mathContext) {
+		return multiply(other).divide(gcd(other), mathContext);
+	}
 
 	/**
 	 * Converts Cartesian coordinates to polar coordinates.
@@ -1814,7 +1880,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return true if both numbers are equal, false otherwise
 	 */
-	public boolean isEqualsTo(BigNumber other) {
+	public boolean isEqualTo(BigNumber other) {
 		if (other == null) {
 			return false;
 		}
@@ -1846,8 +1912,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return true if this is less than or equal to other, false otherwise
 	 */
-	public boolean isLessThanOrEqualsTo(BigNumber other) {
-		return this.isLessThan(other) || this.isEqualsTo(other);
+	public boolean isLessThanOrEqualTo(BigNumber other) {
+		return this.isLessThan(other) || this.isEqualTo(other);
 	}
 
 	/**
@@ -1874,8 +1940,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return true if this is greater than or equal to other, false otherwise
 	 */
-	public boolean isGreaterThanOrEqualsTo(BigNumber other) {
-		return this.isGreaterThan(other) || this.isEqualsTo(other);
+	public boolean isGreaterThanOrEqualTo(BigNumber other) {
+		return this.isGreaterThan(other) || this.isEqualTo(other);
 	}
 
 	@Override
