@@ -80,7 +80,7 @@ public class Evaluator {
 			case POWER -> {
 				BigNumber exponent = stack.pop();
 				BigNumber base = stack.pop();
-				stack.push(base.pow(exponent, mathContext, CALCULATION_LOCALE));
+				stack.push(base.power(exponent, mathContext, CALCULATION_LOCALE));
 			}
 			case PERMUTATION_S -> {
 				BigNumber k = stack.pop();

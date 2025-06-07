@@ -238,6 +238,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Divides this number by the specified {@link BigNumber} using the current {@link MathContext}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #divide(BigNumber, MathContext)} with the current math
+	 * context.</p>
+	 *
+	 * @param other
+	 * 	the divisor
+	 *
+	 * @return a new {@code BigNumber} representing the quotient
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs
+	 */
+	public BigNumber divide(BigNumber other) {
+		return divide(other, mathContext);
+	}
+
+	/**
 	 * Divides this number by the specified {@link BigNumber} using the provided {@link MathContext}.
 	 *
 	 * <p>Performs division with the specified precision and rounding mode, using
@@ -274,7 +292,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing the result of the exponentiation
 	 */
-	public BigNumber pow(BigNumber exponent, MathContext mathContext, Locale locale) {
+	public BigNumber power(BigNumber exponent, MathContext mathContext, Locale locale) {
 		return new BigNumber(BigDecimalMath.pow(toBigDecimal(), new BigDecimal(exponent.toString()), mathContext).toPlainString(), locale);
 	}
 
@@ -943,7 +961,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a {@code BigNumberCoordinate} representing the polar coordinates (r, theta in degrees)
 	 */
 	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y, MathContext mathContext, Locale locale) {
-		BigNumber r = pow(BigNumbers.TWO, mathContext, locale).add(y.pow(BigNumbers.TWO, mathContext, locale)).squareRoot(mathContext, locale);
+		BigNumber r = power(BigNumbers.TWO, mathContext, locale).add(y.power(BigNumbers.TWO, mathContext, locale)).squareRoot(mathContext, locale);
 		BigNumber theta = y.atan2(this, mathContext, locale);
 		BigNumber thetaDeg = theta.toDegrees();
 
