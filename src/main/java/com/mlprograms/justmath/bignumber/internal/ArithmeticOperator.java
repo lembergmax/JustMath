@@ -17,6 +17,7 @@ public enum ArithmeticOperator {
 	SUBTRACT("-", false, 2),
 	MULTIPLY("*", false, 3),
 	DIVIDE("/", false, 3),
+	MODULO("%", false, 3),
 	POWER("^", false, 4),
 
 	ROOT_S("√", true, 4),
@@ -65,7 +66,13 @@ public enum ArithmeticOperator {
 	PERMUTATION_S("nPr", false, 6),
 	PERMUTATION_T("perm", true, 6),
 	COMBINATION_S("nCr", false, 6),
-	COMBINATION_T("comb", true, 6);
+	COMBINATION_T("comb", true, 6),
+
+	POLAR_TO_CARTESIAN("Pol", true, 6),
+	CARTESIAN_TO_POLAR("Rec", true, 6),
+
+	GCD("GCD", true, 6),
+	LCM("LCM", true, 6);
 
 	private final String operator;
 	private final boolean isFunction;
