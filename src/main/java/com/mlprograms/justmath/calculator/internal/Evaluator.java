@@ -59,106 +59,146 @@ public class Evaluator {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	private void applyOperator(ArithmeticOperator op, Deque<BigNumber> stack) {
+	private void applyOperand(ArithmeticOperator op, Deque<BigNumber> stack) {
 		BigNumber b = stack.pop();
 		BigNumber a = stack.pop();
 
 		switch (op) {
-			case ADD -> stack.push(a.add(b));
-			case SUBTRACT -> stack.push(a.subtract(b));
-			case MULTIPLY -> stack.push(a.multiply(b));
-			case DIVIDE -> stack.push(a.divide(b, mathContext));
-			case POWER -> stack.push(a.power(b, mathContext, CALCULATION_LOCALE));
-			case PERMUTATION_S -> stack.push(a.permutation(b, mathContext, CALCULATION_LOCALE));
-			case COMBINATION_S -> stack.push(a.combination(b, mathContext));
-			case MODULO -> stack.push(a.modulo(b));
+			case ADD_O -> stack.push(a.add(b));
+			case SUBTRACT_O -> stack.push(a.subtract(b));
+			case MULTIPLY_O -> stack.push(a.multiply(b));
+			case DIVIDE_O -> stack.push(a.divide(b, mathContext));
+			case POWER_O -> stack.push(a.power(b, mathContext, CALCULATION_LOCALE));
+			case PERMUTATION_O -> stack.push(a.permutation(b, mathContext, CALCULATION_LOCALE));
+			case COMBINATION_O -> stack.push(a.combination(b, mathContext));
+			case MODULO_O -> stack.push(a.modulo(b));
 			default -> throw new IllegalArgumentException("Unknown operator: " + op);
 		}
 	}
 
 	/**
-	 * Applies a mathematical function to one or more {@link BigNumber} arguments on the stack,
-	 * depending on the specified {@link ArithmeticOperator}.
+	 * Executes a mathematical operation represented by {@link ArithmeticOperator} on one or two {@link BigNumber}
+	 * operands
+	 * taken from the provided stack.
 	 * <p>
-	 * Most functions operate on a single argument popped from the top of the stack.
-	 * Some functions (e.g. {@code LOG_BASE}, {@code NTH_ROOT}, {@code ATAN2}, {@code PERMUTATION_T},
-	 * {@code COMBINATION_T})
-	 * require two arguments, which are popped in reverse order (i.e. second argument first, then first argument).
+	 * For single-operand operations, one argument is popped from the stack.
+	 * For two-operand operations, two arguments are popped in reverse order (second argument first, then first
+	 * argument).
+	 * The result is pushed back onto the stack.
 	 * <p>
-	 * The result of the function is pushed back onto the stack.
+	 * Supports trigonometric, hyperbolic, logarithmic, root, factorial, combinatorial and arithmetic operations.
 	 *
-	 * @param func
-	 * 	the function to apply; must be a valid {@link ArithmeticOperator} representing a function
-	 * @param stack
-	 * 	the operand stack containing one or more {@link BigNumber} values
+	 * @param operator
+	 * 	the {@link ArithmeticOperator} representing the mathematical function to apply; must be supported
+	 * @param operandStack
+	 * 	a {@link Deque} of {@link BigNumber} instances serving as the operand stack; must contain sufficient operands
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if the function is unknown or unsupported
+	 * 	if the operator is unknown or unsupported
+	 * @throws UnsupportedOperationException
+	 * 	if the operator is recognized but its implementation is not yet available
 	 */
-	private void applyFunction(@NonNull ArithmeticOperator func, Deque<BigNumber> stack) {
-		BigNumber x = stack.pop(); // all functions require at least one argument (x)
-
-		switch (func) {
-			case SIN -> stack.push(x.sin(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case COS -> stack.push(x.cos(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case TAN -> stack.push(x.tan(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case COT -> stack.push(x.cot(mathContext, CALCULATION_LOCALE));
-			case SINH -> stack.push(x.sinh(mathContext, CALCULATION_LOCALE));
-			case COSH -> stack.push(x.cosh(mathContext, CALCULATION_LOCALE));
-			case TANH -> stack.push(x.tanh(mathContext, CALCULATION_LOCALE));
-			case COTH -> stack.push(x.coth(mathContext, CALCULATION_LOCALE));
-			case ASIN_S, ASIN_T -> stack.push(x.asin(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case ACOS_S, ACOS_T -> stack.push(x.acos(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case ATAN_S, ATAN_T -> stack.push(x.atan(mathContext, trigonometricMode, CALCULATION_LOCALE));
-			case ACOT_S, ACOT_T -> stack.push(x.acot(mathContext, CALCULATION_LOCALE));
-			case ASINH_S, ASINH_T -> stack.push(x.asinh(mathContext, CALCULATION_LOCALE));
-			case ACOSH_S, ACOSH_T -> stack.push(x.acosh(mathContext, CALCULATION_LOCALE));
-			case ATANH_S, ATANH_T -> stack.push(x.atanh(mathContext, CALCULATION_LOCALE));
-			case ACOTH_S, ACOTH_T -> stack.push(x.acoth(mathContext, CALCULATION_LOCALE));
-			case LOG10 -> stack.push(x.log10(mathContext, CALCULATION_LOCALE));
-			case LOG2 -> stack.push(x.log2(mathContext, CALCULATION_LOCALE));
-			case LN -> stack.push(x.ln(mathContext, CALCULATION_LOCALE));
-			case LOG_BASE -> {
-				BigNumber base = stack.pop();
-				stack.push(x.logBase(base, mathContext, CALCULATION_LOCALE));
-			}
-			case ROOT_S, ROOT_T -> stack.push(x.squareRoot(mathContext, CALCULATION_LOCALE));
-			case CUBIC_ROOT_S, CUBIC_ROOT_T -> stack.push(x.cubicRoot(mathContext, CALCULATION_LOCALE));
-			case NTH_ROOT -> {
-				BigNumber n = stack.pop();
-				stack.push(x.nthRoot(n, mathContext, CALCULATION_LOCALE));
-			}
-			case FACTORIAL -> stack.push(x.factorial(mathContext, CALCULATION_LOCALE));
-			case ATAN2 -> {
-				BigNumber y = stack.pop();
-				stack.push(x.atan2(y, mathContext, CALCULATION_LOCALE));
-			}
-			case PERMUTATION_T -> {
-				BigNumber n = stack.pop();
-				stack.push(n.permutation(x, mathContext, CALCULATION_LOCALE));
-			}
-			case COMBINATION_T -> {
-				BigNumber n = stack.pop();
-				stack.push(n.combination(x, mathContext));
-			}
-			case POLAR_TO_CARTESIAN -> {
-				// TODO: implement this logic
-				throw new RuntimeException("this logic is not implemented yet!");
-			}
-			case CARTESIAN_TO_POLAR -> {
-				// TODO: implement this logic
-				throw new RuntimeException("this logic is not implemented yet!");
-			}
-			case GCD -> {
-				// TODO: implement this logic
-				throw new RuntimeException("this logic is not implemented yet!");
-			}
-			case LCM -> {
-				// TODO: implement this logic
-				throw new RuntimeException("this logic is not implemented yet!");
-			}
-			default -> throw new IllegalArgumentException("Unknown function: " + func);
+	private void applyFunction(@NonNull ArithmeticOperator operator, Deque<BigNumber> operandStack) {
+		if (requiresTwoOperands(operator)) {
+			BigNumber second = operandStack.pop();
+			BigNumber first = operandStack.pop();
+			BigNumber result = applyTwoOperandFunction(operator, first, second);
+			operandStack.push(result);
+		} else {
+			BigNumber operand = operandStack.pop();
+			BigNumber result = applySingleOperandFunction(operator, operand);
+			operandStack.push(result);
 		}
+	}
+
+	/**
+	 * Determines whether the given {@link ArithmeticOperator} requires two operands.
+	 *
+	 * @param operator
+	 * 	the arithmetic operator to check
+	 *
+	 * @return {@code true} if the operator requires two operands; {@code false} otherwise
+	 */
+	private boolean requiresTwoOperands(ArithmeticOperator operator) {
+		return operator.getRequiredOperandsCount() == 2;
+	}
+
+
+	/**
+	 * Applies a two-operand arithmetic function specified by {@link ArithmeticOperator}
+	 * to the provided operands.
+	 *
+	 * @param operator
+	 * 	the two-operand arithmetic operator to apply
+	 * @param first
+	 * 	the first operand (typically the base or left operand)
+	 * @param second
+	 * 	the second operand (typically the exponent or right operand)
+	 *
+	 * @return the result of the operation as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the operator is unsupported for two operands
+	 */
+	private BigNumber applyTwoOperandFunction(ArithmeticOperator operator, BigNumber first, BigNumber second) {
+		return switch (operator) {
+			case LOG_BASE_F2 -> first.logBase(second, mathContext, CALCULATION_LOCALE);
+			case NTH_ROOT_F2 -> first.nthRoot(second, mathContext, CALCULATION_LOCALE);
+			case ATAN2_F2 -> first.atan2(second, mathContext, CALCULATION_LOCALE);
+			case PERMUTATION_F2 -> first.permutation(second, mathContext, CALCULATION_LOCALE);
+			case COMBINATION_F2 -> first.combination(second, mathContext);
+			case GCD_F2 -> first.gcd(second);
+			case LCM_F2 -> first.lcm(second, mathContext);
+			case POLARTOCARTESIAN_F2 ->
+				throw new UnsupportedOperationException("POLAR_TO_CARTESIAN operation is not implemented.");
+			case CARTESIANTOPOLAR_F2 ->
+				throw new UnsupportedOperationException("CARTESIAN_TO_POLAR operation is not implemented.");
+			default -> throw new IllegalArgumentException("Unsupported two-operand function: " + operator);
+		};
+	}
+
+	/**
+	 * Applies a single-operand arithmetic function specified by {@link ArithmeticOperator}
+	 * to the given operand.
+	 *
+	 * @param operator
+	 * 	the single-operand arithmetic operator to apply
+	 * @param operand
+	 * 	the operand on which to apply the function
+	 *
+	 * @return the result of the operation as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the operator is unsupported for a single operand
+	 * @throws UnsupportedOperationException
+	 * 	if the operator is recognized but not implemented yet
+	 */
+	private BigNumber applySingleOperandFunction(ArithmeticOperator operator, BigNumber operand) {
+		return switch (operator) {
+			case SIN_F -> operand.sin(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case COS_F -> operand.cos(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case TAN_F -> operand.tan(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case COT_F -> operand.cot(mathContext, CALCULATION_LOCALE);
+			case SINH_F -> operand.sinh(mathContext, CALCULATION_LOCALE);
+			case COSH_F -> operand.cosh(mathContext, CALCULATION_LOCALE);
+			case TANH_F -> operand.tanh(mathContext, CALCULATION_LOCALE);
+			case COTH_F -> operand.coth(mathContext, CALCULATION_LOCALE);
+			case ASIN_AF, ASIN_F -> operand.asin(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case ACOS_AF, ACOS_F -> operand.acos(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case ATAN_AF, ATAN_F -> operand.atan(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			case ACOT_AF, ACOT_F -> operand.acot(mathContext, CALCULATION_LOCALE);
+			case ASINH_AF, ASINH_F -> operand.asinh(mathContext, CALCULATION_LOCALE);
+			case ACOSH_AF, ACOSH_F -> operand.acosh(mathContext, CALCULATION_LOCALE);
+			case ATANH_AF, ATANH_F -> operand.atanh(mathContext, CALCULATION_LOCALE);
+			case ACOTH_AF, ACOTH_F -> operand.acoth(mathContext, CALCULATION_LOCALE);
+			case LOG10_F -> operand.log10(mathContext, CALCULATION_LOCALE);
+			case LOG2_F -> operand.log2(mathContext, CALCULATION_LOCALE);
+			case LN_F -> operand.ln(mathContext, CALCULATION_LOCALE);
+			case ROOT_A, ROOT_F -> operand.squareRoot(mathContext, CALCULATION_LOCALE);
+			case CUBIC_ROOT_AF, CUBIC_ROOT_F -> operand.cubicRoot(mathContext, CALCULATION_LOCALE);
+			case FACTORIAL_O -> operand.factorial(mathContext, CALCULATION_LOCALE);
+			default -> throw new IllegalArgumentException("Unsupported single-operand function: " + operator);
+		};
 	}
 
 	/**
@@ -211,7 +251,7 @@ public class Evaluator {
 		if (arithmeticOperator.isFunction()) {
 			applyFunction(arithmeticOperator, stack);
 		} else {
-			applyOperator(arithmeticOperator, stack);
+			applyOperand(arithmeticOperator, stack);
 		}
 	}
 
