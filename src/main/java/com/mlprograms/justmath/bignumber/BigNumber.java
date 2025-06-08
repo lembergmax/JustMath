@@ -449,8 +449,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the product
 	 */
 	public BigNumber multiply(BigNumber other) {
-		BigDecimal bigDecimal = new BigDecimal(other.toString());
-		return new BigNumber(toBigDecimal().multiply(bigDecimal).toPlainString());
+		return new BigNumber(toBigDecimal().multiply(other.toBigDecimal()).toPlainString());
 	}
 
 	/**
