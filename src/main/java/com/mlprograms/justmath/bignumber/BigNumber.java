@@ -2,9 +2,10 @@ package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
-import com.mlprograms.justmath.bignumber.internal.calculator.BasicMath;
+import com.mlprograms.justmath.bignumber.internal.calculator.*;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.util.Values;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -601,7 +602,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the square root
 	 */
 	public BigNumber squareRoot(MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.root(toBigDecimal(), BigDecimal.TWO, mathContext).toPlainString(), locale);
+		return RadicalMath.squareRoot(this, mathContext, locale);
 	}
 
 	/**
@@ -630,7 +631,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the cube root
 	 */
 	public BigNumber cubicRoot(MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.root(toBigDecimal(), new BigDecimal("3"), mathContext).toPlainString(), locale);
+		return RadicalMath.cubicRoot(this, mathContext, locale);
 	}
 
 	/**
@@ -670,10 +671,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code n} is negative
 	 */
 	public BigNumber nthRoot(BigNumber n, MathContext mathContext, Locale locale) {
-		if (n.isNegative()) {
-			throw new IllegalArgumentException("Cannot calculate nth root with negative n.");
-		}
-		return new BigNumber(BigDecimalMath.root(toBigDecimal(), n.toBigDecimal(), mathContext).toPlainString(), locale);
+		return RadicalMath.nthRoot(this, n, mathContext, locale);
 	}
 
 	/**
@@ -859,14 +857,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing sin(this)
 	 */
 	public BigNumber sin(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal radians = (trigonometricMode == TrigonometricMode.DEG)
-			                     ? toBigDecimal().multiply(BigDecimalMath.pi(mathContext))
-				                       .divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext)
-			                     : toBigDecimal();
-		return new BigNumber(
-			BigDecimalMath.sin(radians, mathContext).toPlainString(),
-			locale
-		);
+		return TrigonometricMath.sin(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -912,14 +903,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing cos(this)
 	 */
 	public BigNumber cos(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal radians = (trigonometricMode == TrigonometricMode.DEG)
-			                     ? toBigDecimal().multiply(BigDecimalMath.pi(mathContext))
-				                       .divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext)
-			                     : toBigDecimal();
-		return new BigNumber(
-			BigDecimalMath.cos(radians, mathContext).toPlainString(),
-			locale
-		);
+		return TrigonometricMath.cos(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -949,7 +933,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return tan(mathContext, trigonometricMode, locale);
 	}
 
-
 	/**
 	 * Computes the tangent of this number, interpreting the input in degrees or radians as specified.
 	 *
@@ -966,14 +949,49 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing tan(this)
 	 */
 	public BigNumber tan(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal radians = (trigonometricMode == TrigonometricMode.DEG)
-			                     ? toBigDecimal().multiply(BigDecimalMath.pi(mathContext))
-				                       .divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext)
-			                     : toBigDecimal();
-		return new BigNumber(
-			BigDecimalMath.tan(radians, mathContext).toPlainString(),
-			locale
-		);
+		return TrigonometricMath.tan(this, mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the cotangent (cot) of this number using the default {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #cot(MathContext, TrigonometricMode, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing cot(this)
+	 */
+	public BigNumber cot() {
+		return cot(mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the cotangent of this number using the specified {@link TrigonometricMode} and the default
+	 * {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #cot(MathContext, TrigonometricMode, Locale)}.</p>
+	 *
+	 * @param trigonometricMode
+	 * 	whether the input is in degrees or radians
+	 *
+	 * @return a new {@code BigNumber} representing cot(this)
+	 */
+	public BigNumber cot(TrigonometricMode trigonometricMode) {
+		return cot(mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the cotangent of this number with the given precision and locale.
+	 *
+	 * <p>Delegates to {@link BigDecimalMath#cot} and wraps the result.</p>
+	 *
+	 * @param mathContext
+	 * 	the precision and rounding settings for the calculation
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing cot(this)
+	 */
+	public BigNumber cot(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		return TrigonometricMath.cot(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -1000,10 +1018,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing sinh(this)
 	 */
 	public BigNumber sinh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.sinh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return HyperbolicTrigonometricMath.sinh(this, mathContext, locale);
 	}
 
 	/**
@@ -1030,10 +1045,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing cosh(this)
 	 */
 	public BigNumber cosh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.cosh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return HyperbolicTrigonometricMath.cosh(this, mathContext, locale);
 	}
 
 	/**
@@ -1060,10 +1072,34 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing tanh(this)
 	 */
 	public BigNumber tanh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.tanh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return HyperbolicTrigonometricMath.tanh(this, mathContext, locale);
+	}
+
+	/**
+	 * Computes the hyperbolic cotangent (coth) of this number using the default {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #coth(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing coth(this)
+	 */
+	public BigNumber coth() {
+		return coth(mathContext, locale);
+	}
+
+	/**
+	 * Computes the hyperbolic cotangent (coth) of this number with the given precision and locale.
+	 *
+	 * <p>Delegates to {@link BigDecimalMath#coth} and wraps the result.</p>
+	 *
+	 * @param mathContext
+	 * 	the precision and rounding settings for the calculation
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing coth(this)
+	 */
+	public BigNumber coth(MathContext mathContext, Locale locale) {
+		return HyperbolicTrigonometricMath.coth(this, mathContext, locale);
 	}
 
 	/**
@@ -1109,12 +1145,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing asin(this)
 	 */
 	public BigNumber asin(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal result = BigDecimalMath.asin(toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal())
-				         .divide(BigDecimalMath.pi(mathContext), mathContext);
-		}
-		return new BigNumber(result.toPlainString(), locale);
+		return InverseTrigonometricMath.asin(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -1160,12 +1191,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing acos(this)
 	 */
 	public BigNumber acos(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal result = BigDecimalMath.acos(toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal())
-				         .divide(BigDecimalMath.pi(mathContext), mathContext);
-		}
-		return new BigNumber(result.toPlainString(), locale);
+		return InverseTrigonometricMath.acos(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -1211,12 +1237,34 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing atan(this)
 	 */
 	public BigNumber atan(MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigDecimal result = BigDecimalMath.atan(toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = result.multiply(ONE_HUNDRED_EIGHTY.toBigDecimal())
-				         .divide(BigDecimalMath.pi(mathContext), mathContext);
-		}
-		return new BigNumber(result.toPlainString(), locale);
+		return InverseTrigonometricMath.atan(this, mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the inverse cotangent (arccot) of this number using the default {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #acot(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing acot(this)
+	 */
+	public BigNumber acot() {
+		return acot(mathContext, locale);
+	}
+
+	/**
+	 * Computes the inverse cotangent (arccot) of this number with the given precision and locale.
+	 *
+	 * <p>Delegates to {@link BigDecimalMath#acot} and wraps the result.</p>
+	 *
+	 * @param mathContext
+	 * 	the precision and rounding settings for the calculation
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing acot(this)
+	 */
+	public BigNumber acot(MathContext mathContext, Locale locale) {
+		return InverseTrigonometricMath.acot(this, mathContext, locale);
 	}
 
 	/**
@@ -1350,66 +1398,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the cotangent (cot) of this number using the default {@link MathContext} and {@link Locale}.
-	 *
-	 * <p>This is a convenience method that delegates to {@link #cot(MathContext, Locale)}.</p>
-	 *
-	 * @return a new {@code BigNumber} representing cot(this)
-	 */
-	public BigNumber cot() {
-		return cot(mathContext, locale);
-	}
-
-	/**
-	 * Computes the cotangent of this number with the given precision and locale.
-	 *
-	 * <p>Delegates to {@link BigDecimalMath#cot} and wraps the result.</p>
-	 *
-	 * @param mathContext
-	 * 	the precision and rounding settings for the calculation
-	 * @param locale
-	 * 	the locale used for any locale-specific formatting
-	 *
-	 * @return a new {@code BigNumber} representing cot(this)
-	 */
-	public BigNumber cot(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.cot(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
-	}
-
-	/**
-	 * Computes the inverse cotangent (arccot) of this number using the default {@link MathContext} and {@link Locale}.
-	 *
-	 * <p>This is a convenience method that delegates to {@link #acot(MathContext, Locale)}.</p>
-	 *
-	 * @return a new {@code BigNumber} representing acot(this)
-	 */
-	public BigNumber acot() {
-		return acot(mathContext, locale);
-	}
-
-	/**
-	 * Computes the inverse cotangent (arccot) of this number with the given precision and locale.
-	 *
-	 * <p>Delegates to {@link BigDecimalMath#acot} and wraps the result.</p>
-	 *
-	 * @param mathContext
-	 * 	the precision and rounding settings for the calculation
-	 * @param locale
-	 * 	the locale used for any locale-specific formatting
-	 *
-	 * @return a new {@code BigNumber} representing acot(this)
-	 */
-	public BigNumber acot(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.acot(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
-	}
-
-	/**
 	 * Computes the inverse hyperbolic cotangent (acoth) of this number using the default {@link MathContext} and
 	 * {@link Locale}.
 	 *
@@ -1436,36 +1424,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	public BigNumber acoth(MathContext mathContext, Locale locale) {
 		return new BigNumber(
 			BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
-	}
-
-	/**
-	 * Computes the hyperbolic cotangent (coth) of this number using the default {@link MathContext} and {@link Locale}.
-	 *
-	 * <p>This is a convenience method that delegates to {@link #coth(MathContext, Locale)}.</p>
-	 *
-	 * @return a new {@code BigNumber} representing coth(this)
-	 */
-	public BigNumber coth() {
-		return coth(mathContext, locale);
-	}
-
-	/**
-	 * Computes the hyperbolic cotangent (coth) of this number with the given precision and locale.
-	 *
-	 * <p>Delegates to {@link BigDecimalMath#coth} and wraps the result.</p>
-	 *
-	 * @param mathContext
-	 * 	the precision and rounding settings for the calculation
-	 * @param locale
-	 * 	the locale used for any locale-specific formatting
-	 *
-	 * @return a new {@code BigNumber} representing coth(this)
-	 */
-	public BigNumber coth(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.coth(toBigDecimal(), mathContext).toPlainString(),
 			locale
 		);
 	}
@@ -1905,15 +1863,34 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Converts this angle from radians to degrees using the default {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #toDegrees(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing this value in degrees
+	 */
+	public BigNumber toDegrees() {
+		return toDegrees(mathContext, locale);
+	}
+
+	/**
 	 * Converts this BigNumber from radians to degrees.
 	 *
 	 * @return a new BigNumber representing the value in degrees
 	 */
-	public BigNumber toDegrees() {
-		return new BigNumber(
-			BigDecimalMath.toDegrees(toBigDecimal(), mathContext).toPlainString(),
-			locale, mathContext
-		);
+	public BigNumber toDegrees(MathContext mathContext, Locale locale) {
+		return new BigNumber(multiply(ONE_HUNDRED_EIGHTY).divide(Values.PI, mathContext), locale);
+	}
+
+	/**
+	 * Converts this angle from degrees to radians using the default {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #toRadians(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing this value in radians
+	 */
+	public BigNumber toRadians() {
+		return toRadians(mathContext, locale);
 	}
 
 	/**
@@ -1921,11 +1898,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new BigNumber representing the value in radians
 	 */
-	public BigNumber toRadians() {
-		return new BigNumber(
-			BigDecimalMath.toRadians(toBigDecimal(), mathContext).toPlainString(),
-			locale, mathContext
-		);
+	public BigNumber toRadians(MathContext mathContext, Locale locale) {
+		return new BigNumber(multiply(Values.PI).divide(ONE_HUNDRED_EIGHTY, mathContext), locale);
 	}
 
 	/**
