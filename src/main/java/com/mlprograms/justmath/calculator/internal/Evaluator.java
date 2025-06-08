@@ -196,7 +196,7 @@ public class Evaluator {
 			case LN_F -> operand.ln(mathContext, CALCULATION_LOCALE);
 			case ROOT_A, ROOT_F -> operand.squareRoot(mathContext, CALCULATION_LOCALE);
 			case CUBIC_ROOT_AF, CUBIC_ROOT_F -> operand.cubicRoot(mathContext, CALCULATION_LOCALE);
-			case FACTORIAL_O -> operand.factorial(mathContext, CALCULATION_LOCALE);
+			case FACTORIAL_F -> operand.factorial(mathContext, CALCULATION_LOCALE);
 			default -> throw new IllegalArgumentException("Unsupported single-operand function: " + operator);
 		};
 	}
