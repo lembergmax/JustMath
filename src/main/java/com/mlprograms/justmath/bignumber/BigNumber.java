@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.calculator.BasicMath;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Builder;
@@ -411,13 +412,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * <p>This method converts both operands to {@link BigDecimal}, performs the addition using
 	 * {@link BigDecimal#add(BigDecimal)}, and wraps the result in a new {@code BigNumber}.</p>
 	 *
-	 * @param other
+	 * @param addend
 	 * 	the number to add to this number
 	 *
 	 * @return a new {@code BigNumber} representing the sum
 	 */
-	public BigNumber add(BigNumber other) {
-		return new BigNumber(toBigDecimal().add(other.toBigDecimal()).toPlainString());
+	public BigNumber add(BigNumber addend) {
+		return BasicMath.add(this, addend);
 	}
 
 	/**
@@ -426,14 +427,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * <p>The method converts the operand to a {@link BigDecimal} and performs the subtraction using
 	 * {@link BigDecimal#subtract(BigDecimal)}. The result is then wrapped in a new {@code BigNumber}.</p>
 	 *
-	 * @param other
+	 * @param subtrahend
 	 * 	the number to subtract from this number
 	 *
 	 * @return a new {@code BigNumber} representing the difference
 	 */
-	public BigNumber subtract(BigNumber other) {
-		BigDecimal bigDecimal = new BigDecimal(other.toString());
-		return new BigNumber(toBigDecimal().subtract(bigDecimal).toPlainString());
+	public BigNumber subtract(BigNumber subtrahend) {
+		return BasicMath.subtract(this, subtrahend);
 	}
 
 	/**
@@ -442,13 +442,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * <p>Converts the operand to a {@link BigDecimal}, multiplies it with this number using
 	 * {@link BigDecimal#multiply(BigDecimal)}, and returns the result as a new {@code BigNumber}.</p>
 	 *
-	 * @param other
+	 * @param multiplier
 	 * 	the number to multiply with this number
 	 *
 	 * @return a new {@code BigNumber} representing the product
 	 */
-	public BigNumber multiply(BigNumber other) {
-		return new BigNumber(toBigDecimal().multiply(other.toBigDecimal()).toPlainString());
+	public BigNumber multiply(BigNumber multiplier) {
+		return BasicMath.multiply(this, multiplier);
 	}
 
 	/**
@@ -458,7 +458,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * <p>This is a convenience method that delegates to
 	 * {@link #divide(BigNumber, MathContext)} using the instance's default context.</p>
 	 *
-	 * @param other
+	 * @param divisor
 	 * 	the divisor
 	 *
 	 * @return a new {@code BigNumber} representing the result of the division
@@ -466,8 +466,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	public BigNumber divide(BigNumber other) {
-		return divide(other, mathContext);
+	public BigNumber divide(BigNumber divisor) {
+		return divide(divisor, mathContext);
 	}
 
 	/**
@@ -477,7 +477,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * {@link BigDecimal#divide(BigDecimal, MathContext)}.
 	 * The result is wrapped in a new {@code BigNumber}.</p>
 	 *
-	 * @param other
+	 * @param divisor
 	 * 	the divisor
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
@@ -487,13 +487,25 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @throws ArithmeticException
 	 * 	if division by zero occurs
 	 */
-	public BigNumber divide(BigNumber other, MathContext mathContext) {
-		if (other.compareTo(BigNumbers.ZERO) == 0) {
-			throw new ArithmeticException("Division by zero");
-		}
+	public BigNumber divide(BigNumber divisor, MathContext mathContext) {
+		return BasicMath.divide(this, divisor, mathContext);
+	}
 
-		BigDecimal bigDecimal = new BigDecimal(other.toString());
-		return new BigNumber(toBigDecimal().divide(bigDecimal, mathContext).toPlainString());
+	/**
+	 * Computes the modulo (remainder) of this number divided by the specified {@link BigNumber}.
+	 *
+	 * <p>This implementation uses integer subtraction and returns the result as a new {@code BigNumber}.</p>
+	 *
+	 * @param divisor
+	 * 	the divisor (must not be zero or negative)
+	 *
+	 * @return a new {@code BigNumber} representing {@code this % divisor}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the divisor is zero or if either number is negative
+	 */
+	public BigNumber modulo(BigNumber divisor) {
+		return BasicMath.modulo(this, divisor);
 	}
 
 	/**
@@ -528,7 +540,39 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the result of the exponentiation
 	 */
 	public BigNumber power(BigNumber exponent, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.pow(toBigDecimal(), new BigDecimal(exponent.toString()), mathContext).toPlainString(), locale);
+		return BasicMath.power(this, exponent, mathContext, locale);
+	}
+
+	/**
+	 * Computes the factorial of this {@code BigNumber} using the default
+	 * {@link MathContext} and {@link Locale} configured in this instance.
+	 *
+	 * <p>This method delegates to {@link #factorial(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing the factorial
+	 *
+	 * @throws ArithmeticException
+	 * 	if the number is not a non-negative integer or too large for computation
+	 */
+	public BigNumber factorial() {
+		return factorial(mathContext, locale);
+	}
+
+	/**
+	 * Computes the factorial of this number using the specified {@link MathContext}.
+	 *
+	 * <p>This method uses {@link BigDecimalMath#factorial(BigDecimal, MathContext)} to compute the factorial
+	 * with arbitrary precision and returns the result as a localized {@code BigNumber}.</p>
+	 *
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale to apply for formatting or localization (if relevant)
+	 *
+	 * @return a new {@code BigNumber} representing the factorial
+	 */
+	public BigNumber factorial(MathContext mathContext, Locale locale) {
+		return BasicMath.factorial(this, mathContext, locale);
 	}
 
 	/**
@@ -630,38 +674,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 			throw new IllegalArgumentException("Cannot calculate nth root with negative n.");
 		}
 		return new BigNumber(BigDecimalMath.root(toBigDecimal(), n.toBigDecimal(), mathContext).toPlainString(), locale);
-	}
-
-	/**
-	 * Computes the factorial of this {@code BigNumber} using the default
-	 * {@link MathContext} and {@link Locale} configured in this instance.
-	 *
-	 * <p>This method delegates to {@link #factorial(MathContext, Locale)}.</p>
-	 *
-	 * @return a new {@code BigNumber} representing the factorial
-	 *
-	 * @throws ArithmeticException
-	 * 	if the number is not a non-negative integer or too large for computation
-	 */
-	public BigNumber factorial() {
-		return factorial(mathContext, locale);
-	}
-
-	/**
-	 * Computes the factorial of this number using the specified {@link MathContext}.
-	 *
-	 * <p>This method uses {@link BigDecimalMath#factorial(BigDecimal, MathContext)} to compute the factorial
-	 * with arbitrary precision and returns the result as a localized {@code BigNumber}.</p>
-	 *
-	 * @param mathContext
-	 * 	the context specifying precision and rounding mode
-	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
-	 *
-	 * @return a new {@code BigNumber} representing the factorial
-	 */
-	public BigNumber factorial(MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.factorial(toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
@@ -1636,37 +1648,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y) {
 		return cartesianToPolarCoordinates(y, mathContext, locale);
-	}
-
-	/**
-	 * Computes the modulo (remainder) of this number divided by the specified {@link BigNumber}.
-	 *
-	 * <p>This implementation uses integer subtraction and returns the result as a new {@code BigNumber}.</p>
-	 *
-	 * @param other
-	 * 	the divisor (must not be zero or negative)
-	 *
-	 * @return a new {@code BigNumber} representing {@code this % other}
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if the divisor is zero or if either number is negative
-	 */
-	public BigNumber modulo(BigNumber other) {
-		if (other.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
-		}
-
-		if (isNegative() || other.isNegative()) {
-			throw new IllegalArgumentException("Modulo operation requires both numbers to be non-negative.");
-		}
-
-		BigNumber remainder = clone();
-
-		while (remainder.isGreaterThanOrEqualTo(other)) {
-			remainder = remainder.subtract(other);
-		}
-
-		return remainder;
 	}
 
 	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max)
