@@ -1,437 +1,108 @@
 package com.mlprograms.justmath.bignumber;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BigNumberTest {
 
-	BigNumber bigNumber1;
-	BigNumber bigNumber2;
-
-	@BeforeEach
-	public void setup() {
-		bigNumber1 = new BigNumber("123456");
-		bigNumber2 = new BigNumber("654321");
-	}
-
 	@Test
 	void add() {
+		BigNumber augend = new BigNumber("2.5");
+		BigNumber addend = new BigNumber("3.5");
+		assertEquals("6", augend.add(addend).toString());
+
+		BigNumber verySmall = new BigNumber("0.0000000000000000000000000000000000000000000000000001");
+		BigNumber veryLarge = new BigNumber("100000000000000000000000000000000000000000000000000");
+		assertEquals("100000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000001", verySmall.add(veryLarge).toString());
+
+		BigNumber negative = new BigNumber("-10");
+		BigNumber positive = new BigNumber("20");
+		assertEquals("10", negative.add(positive).toString());
 	}
 
 	@Test
 	void subtract() {
+		BigNumber minuend = new BigNumber("10");
+		BigNumber subtrahend = new BigNumber("3");
+		assertEquals("7", minuend.subtract(subtrahend).toString());
+
+		BigNumber verySmall = new BigNumber("0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
+		BigNumber veryLarge = new BigNumber("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+		assertEquals("-999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", verySmall.subtract(veryLarge).toString());
+
+		BigNumber small = new BigNumber("5");
+		BigNumber large = new BigNumber("10");
+		assertEquals("-5", small.subtract(large).toString());
 	}
 
 	@Test
 	void multiply() {
+		BigNumber factor1 = new BigNumber("6");
+		BigNumber factor2 = new BigNumber("7");
+		assertEquals("42", factor1.multiply(factor2).toString());
+
+		BigNumber veryLarge = new BigNumber("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+		BigNumber verySmall = new BigNumber("0.00000000000000000000000000000000000000000000000000001");
+		assertEquals("1", veryLarge.multiply(verySmall).toString());
+
+		BigNumber negative = new BigNumber("-5");
+		BigNumber positive = new BigNumber("4");
+		assertEquals("-20", negative.multiply(positive).toString());
 	}
 
 	@Test
 	void divide() {
-	}
+		BigNumber dividend = new BigNumber("10");
+		BigNumber divisor = new BigNumber("2");
+		assertEquals("5", dividend.divide(divisor).toString());
 
-	@Test
-	void testDivide() {
+		BigNumber veryLarge = new BigNumber("100000000000000000000000000000000000000000000000");
+		BigNumber verySmall = new BigNumber("0.0000000001");
+		assertEquals("1000000000000000000000000000000000000000000000000000000000", veryLarge.divide(verySmall).toString());
+
+		BigNumber numerator = new BigNumber("100");
+		BigNumber negativeDivisor = new BigNumber("-10");
+		assertEquals("-10", numerator.divide(negativeDivisor).toString());
 	}
 
 	@Test
 	void power() {
-	}
+		BigNumber base = new BigNumber("2");
+		BigNumber exponent = new BigNumber("3");
+		assertEquals("8", base.power(exponent).toString());
 
-	@Test
-	void testPower() {
+		BigNumber veryLarge = new BigNumber("100000000000000000000000000000000000000000000000000");
+		BigNumber zero = new BigNumber("0");
+		assertEquals("1", veryLarge.power(zero).toString());
+
+		BigNumber two = new BigNumber("2");
+		BigNumber negativeExponent = new BigNumber("-2");
+		assertEquals("0.25", two.power(negativeExponent).toString());
 	}
 
 	@Test
 	void squareRoot() {
-	}
+		BigNumber input = new BigNumber("49");
+		assertEquals("7", input.squareRoot().toString());
 
-	@Test
-	void testSquareRoot() {
-	}
+		BigNumber verySmall = new BigNumber("0.00000000000000000000000000000000000000000000000001");
+		assertEquals("0.00000000000000000000000000000000000001", verySmall.squareRoot().toString());
 
-	@Test
-	void cubicRoot() {
-	}
-
-	@Test
-	void testCubicRoot() {
-	}
-
-	@Test
-	void nthRoot() {
-	}
-
-	@Test
-	void testNthRoot() {
+		BigNumber zero = new BigNumber("0");
+		assertEquals("0", zero.squareRoot().toString());
 	}
 
 	@Test
 	void factorial() {
-	}
+		BigNumber input = new BigNumber("5");
+		assertEquals("120", input.factorial().toString());
 
-	@Test
-	void testFactorial() {
-	}
+		BigNumber zero = new BigNumber("0");
+		assertEquals("1", zero.factorial().toString());
 
-	@Test
-	void log2() {
-	}
-
-	@Test
-	void testLog2() {
-	}
-
-	@Test
-	void log10() {
-	}
-
-	@Test
-	void testLog10() {
-	}
-
-	@Test
-	void ln() {
-	}
-
-	@Test
-	void testLn() {
-	}
-
-	@Test
-	void logBase() {
-	}
-
-	@Test
-	void testLogBase() {
-	}
-
-	@Test
-	void sin() {
-	}
-
-	@Test
-	void testSin() {
-	}
-
-	@Test
-	void testSin1() {
-	}
-
-	@Test
-	void cos() {
-	}
-
-	@Test
-	void testCos() {
-	}
-
-	@Test
-	void testCos1() {
-	}
-
-	@Test
-	void tan() {
-	}
-
-	@Test
-	void testTan() {
-	}
-
-	@Test
-	void testTan1() {
-	}
-
-	@Test
-	void sinh() {
-	}
-
-	@Test
-	void testSinh() {
-	}
-
-	@Test
-	void cosh() {
-	}
-
-	@Test
-	void testCosh() {
-	}
-
-	@Test
-	void tanh() {
-	}
-
-	@Test
-	void testTanh() {
-	}
-
-	@Test
-	void asin() {
-	}
-
-	@Test
-	void testAsin() {
-	}
-
-	@Test
-	void testAsin1() {
-	}
-
-	@Test
-	void acos() {
-	}
-
-	@Test
-	void testAcos() {
-	}
-
-	@Test
-	void testAcos1() {
-	}
-
-	@Test
-	void atan() {
-	}
-
-	@Test
-	void testAtan() {
-	}
-
-	@Test
-	void testAtan1() {
-	}
-
-	@Test
-	void asinh() {
-	}
-
-	@Test
-	void testAsinh() {
-	}
-
-	@Test
-	void acosh() {
-	}
-
-	@Test
-	void testAcosh() {
-	}
-
-	@Test
-	void atanh() {
-	}
-
-	@Test
-	void testAtanh() {
-	}
-
-	@Test
-	void atan2() {
-	}
-
-	@Test
-	void testAtan2() {
-	}
-
-	@Test
-	void cot() {
-	}
-
-	@Test
-	void testCot() {
-	}
-
-	@Test
-	void acot() {
-	}
-
-	@Test
-	void testAcot() {
-	}
-
-	@Test
-	void acoth() {
-	}
-
-	@Test
-	void testAcoth() {
-	}
-
-	@Test
-	void coth() {
-	}
-
-	@Test
-	void testCoth() {
-	}
-
-	@Test
-	void combination() {
-	}
-
-	@Test
-	void testCombination() {
-	}
-
-	@Test
-	void permutation() {
-	}
-
-	@Test
-	void testPermutation() {
-	}
-
-	@Test
-	void polarToCartesianCoordinates() {
-	}
-
-	@Test
-	void testPolarToCartesianCoordinates() {
-	}
-
-	@Test
-	void cartesianToPolarCoordinates() {
-	}
-
-	@Test
-	void modulo() {
-	}
-
-	@Test
-	void gcd() {
-	}
-
-	@Test
-	void lcm() {
-	}
-
-	@Test
-	void testLcm() {
-	}
-
-	@Test
-	void testCartesianToPolarCoordinates() {
-	}
-
-	@Test
-	void formatToLocale() {
-	}
-
-	@Test
-	void formatWithGrouping() {
-	}
-
-	@Test
-	void setCalculatorEngineDivisionPrecision() {
-	}
-
-	@Test
-	void setCalculatorEngine() {
-	}
-
-	@Test
-	void setTrigonometricMode() {
-	}
-
-	@Test
-	void toDegrees() {
-	}
-
-	@Test
-	void toRadians() {
-	}
-
-	@Test
-	void isEqualTo() {
-	}
-
-	@Test
-	void isLessThan() {
-	}
-
-	@Test
-	void isLessThanOrEqualTo() {
-	}
-
-	@Test
-	void isGreaterThan() {
-	}
-
-	@Test
-	void isGreaterThanOrEqualTo() {
-	}
-
-	@Test
-	void intValue() {
-	}
-
-	@Test
-	void longValue() {
-	}
-
-	@Test
-	void floatValue() {
-	}
-
-	@Test
-	void doubleValue() {
-	}
-
-	@Test
-	void min() {
-	}
-
-	@Test
-	void max() {
-	}
-
-	@Test
-	void hasDecimals() {
-	}
-
-	@Test
-	void testToString() {
-	}
-
-	@Test
-	void compareTo() {
-	}
-
-	@Test
-	void testClone() {
-	}
-
-	@Test
-	void getLocale() {
-	}
-
-	@Test
-	void getValueBeforeDecimal() {
-	}
-
-	@Test
-	void getValueAfterDecimal() {
-	}
-
-	@Test
-	void isNegative() {
-	}
-
-	@Test
-	void getCalculatorEngine() {
-	}
-
-	@Test
-	void getTrigonometricMode() {
-	}
-
-	@Test
-	void getMathContext() {
-	}
-
-	@Test
-	void builder() {
+		BigNumber one = new BigNumber("1");
+		assertEquals("1", one.factorial().toString());
 	}
 
 }
