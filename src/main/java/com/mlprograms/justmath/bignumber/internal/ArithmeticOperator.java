@@ -22,7 +22,7 @@ public enum ArithmeticOperator {
 	DIVIDE_O("/", false, 3, 0),
 	MODULO_O("%", false, 3, 0),
 	POWER_O("^", false, 4, 0),
-	FACTORIAL_O("!", true, 5, 1),
+	FACTORIAL_F("!", true, 5, 1),
 
 	ROOT_A("√", true, 4, 1),
 	ROOT_F("sqrt", true, 4, 1),
