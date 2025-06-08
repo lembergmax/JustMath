@@ -3,14 +3,12 @@ package com.mlprograms.justmath.bignumber.internal.calculator;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
-import lombok.NoArgsConstructor;
 
 import java.math.MathContext;
 import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
 
-@NoArgsConstructor
 public class BasicMath {
 
 	public static BigNumber add(BigNumber augend, BigNumber addend) {
