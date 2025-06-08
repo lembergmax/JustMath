@@ -178,7 +178,7 @@ public class Evaluator {
 			case SIN_F -> operand.sin(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case COS_F -> operand.cos(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case TAN_F -> operand.tan(mathContext, trigonometricMode, CALCULATION_LOCALE);
-			case COT_F -> operand.cot(mathContext, CALCULATION_LOCALE);
+			case COT_F -> operand.cot(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case SINH_F -> operand.sinh(mathContext, CALCULATION_LOCALE);
 			case COSH_F -> operand.cosh(mathContext, CALCULATION_LOCALE);
 			case TANH_F -> operand.tanh(mathContext, CALCULATION_LOCALE);

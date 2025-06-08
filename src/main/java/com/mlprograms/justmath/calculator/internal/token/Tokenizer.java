@@ -157,12 +157,12 @@ public class Tokenizer {
 
 			// Special handling for constants
 			if (substring.equalsIgnoreCase("pi")) {
-				tokens.add(new Token(Token.Type.NUMBER, Values.PI));
+				tokens.add(new Token(Token.Type.NUMBER, Values.PI.toString()));
 				return length;
 			}
 
 			if (substring.equalsIgnoreCase("e")) {
-				tokens.add(new Token(Token.Type.NUMBER, Values.E));
+				tokens.add(new Token(Token.Type.NUMBER, Values.E.toString()));
 				return length;
 			}
 
