@@ -13,8 +13,7 @@ import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -1674,6 +1673,83 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	// TODO: polar and cartesian coordinates in 3d
 
 	/**
+	 * Calculates the percentage that this number represents of the given value {@code m}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #percentFromM(BigNumber, MathContext)}
+	 * using the instance's default {@link MathContext}.</p>
+	 *
+	 * @param m
+	 * 	the reference value to calculate the percentage from
+	 *
+	 * @return a new {@code BigNumber} representing (this / m) * 100
+	 */
+	public BigNumber percentFromM(BigNumber m) {
+		return percentFromM(m, mathContext);
+	}
+
+	/**
+	 * Calculates the percentage value of this number from the given value {@code m}.
+	 * <p>
+	 * For example, if this object represents 20 and {@code m} is 50, the result is 20% of 50 (i.e., 10).
+	 *
+	 * @param m
+	 * 	the value from which to calculate the percentage
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return a new {@code BigNumber} representing (this% of m)
+	 */
+	public BigNumber percentFromM(BigNumber m, MathContext mathContext) {
+		return m.multiply(divide(ONE_HUNDRED, mathContext));
+	}
+
+	/**
+	 * Calculates what percentage this number is of the given value {@code n}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #isXPercentOfN(BigNumber, MathContext)}
+	 * using the instance's default {@link MathContext}.</p>
+	 *
+	 * @param n
+	 * 	the reference value to calculate the percentage of
+	 *
+	 * @return a new {@code BigNumber} representing (this / n) * 100
+	 */
+	public BigNumber isXPercentOfN(BigNumber n) {
+		return isXPercentOfN(n, mathContext);
+	}
+
+	/**
+	 * Calculates what percentage this number is of the given value {@code n}.
+	 * <p>
+	 * For example, if this object represents 10 and {@code n} is 50, the result is 20 (since 10 is 20% of 50).
+	 *
+	 * @param n
+	 * 	the value to compare against
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return a new {@code BigNumber} representing the percentage (this as a percent of n)
+	 */
+	public BigNumber isXPercentOfN(BigNumber n, MathContext mathContext) {
+		return divide(n, mathContext).multiply(ONE_HUNDRED);
+	}
+
+	/**
+	 * Computes the greatest common divisor (GCD) of this {@code BigNumber} and the specified {@code other}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #gcd(BigNumber, MathContext)} using the instance's
+	 * default {@link MathContext}.</p>
+	 *
+	 * @param other
+	 * 	the other {@code BigNumber} to compute the GCD with
+	 *
+	 * @return a new {@code BigNumber} representing the greatest common divisor
+	 */
+	public BigNumber gcd(BigNumber other) {
+		return gcd(other, mathContext);
+	}
+
+	/**
 	 * Computes the greatest common divisor (GCD) of this BigNumber and another.
 	 * <p>
 	 * Uses the Euclidean algorithm to find the largest positive BigNumber that divides
@@ -1685,7 +1761,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return the greatest common divisor of this and other
 	 */
-	public BigNumber gcd(BigNumber other) {
+	public BigNumber gcd(BigNumber other, MathContext mathContext) {
 		BigNumber a = clone();
 		BigNumber b = other.clone();
 
@@ -1843,7 +1919,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a BigDecimal representation of this BigNumber
 	 */
-	private BigDecimal toBigDecimal() {
+	public BigDecimal toBigDecimal() {
 		return new BigDecimal(this.toString());
 	}
 
