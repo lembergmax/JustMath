@@ -4,6 +4,7 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 
 public class BigNumbers {
 
+	public static final BigNumber THREE = new BigNumber("3");
 	public static final BigNumber TWO = new BigNumber("2");
 	public static final BigNumber ONE = new BigNumber("1");
 	public static final BigNumber ZERO = new BigNumber("0");
