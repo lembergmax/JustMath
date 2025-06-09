@@ -1363,40 +1363,37 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the two-argument arctangent of this number and the specified other number using the default
+	 * Computes the two-argument arctangent of this number and the specified x number using the default
 	 * {@link MathContext} and {@link Locale}.
 	 *
 	 * <p>This is a convenience method that delegates to {@link #atan2(BigNumber, MathContext, Locale)}.</p>
 	 *
-	 * @param other
-	 * 	the second coordinate for atan2(this, other)
+	 * @param x
+	 * 	the second coordinate for atan2(this, x)
 	 *
-	 * @return a new {@code BigNumber} representing atan2(this, other)
+	 * @return a new {@code BigNumber} representing atan2(this, x)
 	 */
-	public BigNumber atan2(BigNumber other) {
-		return atan2(other, mathContext, locale);
+	public BigNumber atan2(BigNumber x) {
+		return atan2(x, mathContext, locale);
 	}
 
 	/**
-	 * Computes the two-argument arctangent of this number and the specified other number.
+	 * Computes the two-argument arctangent of this number and the specified x number.
 	 *
 	 * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for quadrant-aware result,
 	 * then wraps the result in a new {@code BigNumber} with the specified {@code locale}.</p>
 	 *
-	 * @param other
-	 * 	the y-coordinate component for atan2(this, other)
+	 * @param x
+	 * 	the y-coordinate component for atan2(this, x)
 	 * @param mathContext
 	 * 	the precision and rounding settings for the calculation
 	 * @param locale
 	 * 	the locale used for any locale-specific formatting
 	 *
-	 * @return a new {@code BigNumber} representing atan2(this, other)
+	 * @return a new {@code BigNumber} representing atan2(this, x)
 	 */
-	public BigNumber atan2(BigNumber other, MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.atan2(toBigDecimal(), other.toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+	public BigNumber atan2(BigNumber x, MathContext mathContext, Locale locale) {
+		return TwoDimensionalMath.atan2(this, x, mathContext, locale);
 	}
 
 	/**
