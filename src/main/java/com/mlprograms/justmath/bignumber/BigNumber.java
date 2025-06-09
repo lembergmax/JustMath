@@ -699,10 +699,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing log₂(this)
 	 */
 	public BigNumber log2(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.log2(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return LogarithmicMath.log2(this, mathContext, locale);
 	}
 
 	/**
@@ -730,10 +727,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing log₁₀(this)
 	 */
 	public BigNumber log10(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.log10(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return LogarithmicMath.log10(this, mathContext, locale);
 	}
 
 	/**
@@ -761,10 +755,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing ln(this)
 	 */
 	public BigNumber ln(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.log(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return LogarithmicMath.ln(this, mathContext, locale);
 	}
 
 	/**
@@ -803,15 +794,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code base} is zero or negative
 	 */
 	public BigNumber logBase(BigNumber base, MathContext mathContext, Locale locale) {
-		if (base.isNegative() || base.isEqualTo(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("Base must be positive and non-zero.");
-		}
-		BigDecimal lnThis = BigDecimalMath.log(toBigDecimal(), mathContext);
-		BigDecimal lnBase = BigDecimalMath.log(base.toBigDecimal(), mathContext);
-		return new BigNumber(
-			lnThis.divide(lnBase, mathContext).toPlainString(),
-			locale
-		);
+		return LogarithmicMath.logBase(this, base, mathContext, locale);
 	}
 
 	/**
