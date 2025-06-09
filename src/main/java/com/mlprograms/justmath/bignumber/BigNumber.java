@@ -14,7 +14,8 @@ import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
 
 /**
  * Immutable representation of a numeric value with optional decimal part and sign.
@@ -1602,7 +1603,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing (this% of m)
 	 */
 	public BigNumber percentFromM(BigNumber m, MathContext mathContext) {
-		return m.multiply(divide(ONE_HUNDRED, mathContext));
+		return PercentageMath.nPercentFromM(this, m, mathContext);
 	}
 
 	/**
@@ -1633,7 +1634,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the percentage (this as a percent of n)
 	 */
 	public BigNumber isXPercentOfN(BigNumber n, MathContext mathContext) {
-		return divide(n, mathContext).multiply(ONE_HUNDRED);
+		return PercentageMath.mIsXPercentOfN(this, n, mathContext);
 	}
 
 	/**
