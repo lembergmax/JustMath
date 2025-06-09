@@ -1,7 +1,6 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import com.mlprograms.justmath.bignumber.internal.math.*;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
@@ -1439,25 +1438,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code k > n} or either number has a decimal part
 	 */
 	public BigNumber combination(BigNumber k, MathContext mathContext) {
-		if (hasDecimals() || k.hasDecimals()) {
-			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
-		}
-
-		if (k.compareTo(this) > 0) {
-			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
-		}
-
-		if (k.isEqualTo(BigNumbers.ZERO) || k.isEqualTo(this)) {
-			return BigNumbers.ONE;
-		}
-
-		k = k.min(subtract(k));
-		BigNumber c = BigNumbers.ONE;
-		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(k); i = i.add(BigNumbers.ONE)) {
-			c = c.multiply(subtract(i)).divide(i.add(BigNumbers.ONE), mathContext);
-		}
-
-		return c;
+		return CombinatoricsMath.combination(this, k, mathContext);
 	}
 
 	/**
@@ -1503,17 +1484,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code k > n} or either value has a decimal part
 	 */
 	public BigNumber permutation(BigNumber k, MathContext mathContext, Locale locale) {
-		if (hasDecimals() || k.hasDecimals()) {
-			throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
-		}
-
-		if (k.compareTo(this) > 0) {
-			throw new IllegalArgumentException("Cannot calculate permutations: k cannot be greater than n.");
-		}
-
-		BigNumber nFactorial = factorial(mathContext, locale);
-		BigNumber nMinusKFactorial = subtract(k).factorial(mathContext, locale);
-		return nFactorial.divide(nMinusKFactorial, mathContext);
+		return CombinatoricsMath.permutation(this, k, mathContext, locale);
 	}
 
 	/**
@@ -1556,9 +1527,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a {@code BigNumberCoordinate} representing the Cartesian coordinates (x, y)
 	 */
 	public BigNumberCoordinate polarToCartesianCoordinates(BigNumber theta, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber x = multiply(theta.cos(mathContext, trigonometricMode, locale));
-		BigNumber y = multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y);
+		return CoordinateConversionMath.polarToCartesianCoordinates(this, theta, mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -1574,6 +1543,32 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y) {
 		return cartesianToPolarCoordinates(y, mathContext, locale);
+	}
+
+	/**
+	 * Converts Cartesian coordinates to polar coordinates.
+	 * <p>
+	 * This object represents the x-coordinate, and the parameter {@code y} is the y-coordinate.
+	 * The result is a polar coordinate pair (r, theta), where:
+	 *
+	 * <pre>
+	 *     r     = √(x² + y²)
+	 *     theta = atan2(y, x)
+	 * </pre>
+	 * <p>
+	 * The returned angle {@code theta} is converted to degrees.
+	 *
+	 * @param y
+	 * 	the y-coordinate
+	 * @param mathContext
+	 * 	the context for precision and rounding
+	 * @param locale
+	 * 	the locale for formatting or localization (used internally)
+	 *
+	 * @return a {@code BigNumberCoordinate} representing the polar coordinates (r, theta in degrees)
+	 */
+	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y, MathContext mathContext, Locale locale) {
+		return CoordinateConversionMath.cartesianToPolarCoordinates(this, y, mathContext, locale);
 	}
 
 	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max)
@@ -1720,36 +1715,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber lcm(BigNumber other, MathContext mathContext) {
 		return multiply(other).divide(gcd(other), mathContext);
-	}
-
-	/**
-	 * Converts Cartesian coordinates to polar coordinates.
-	 * <p>
-	 * This object represents the x-coordinate, and the parameter {@code y} is the y-coordinate.
-	 * The result is a polar coordinate pair (r, theta), where:
-	 *
-	 * <pre>
-	 *     r     = √(x² + y²)
-	 *     theta = atan2(y, x)
-	 * </pre>
-	 * <p>
-	 * The returned angle {@code theta} is converted to degrees.
-	 *
-	 * @param y
-	 * 	the y-coordinate
-	 * @param mathContext
-	 * 	the context for precision and rounding
-	 * @param locale
-	 * 	the locale for formatting or localization (used internally)
-	 *
-	 * @return a {@code BigNumberCoordinate} representing the polar coordinates (r, theta in degrees)
-	 */
-	public BigNumberCoordinate cartesianToPolarCoordinates(BigNumber y, MathContext mathContext, Locale locale) {
-		BigNumber r = power(BigNumbers.TWO, mathContext, locale).add(y.power(BigNumbers.TWO, mathContext, locale)).squareRoot(mathContext, locale);
-		BigNumber theta = y.atan2(this, mathContext, locale);
-		BigNumber thetaDeg = theta.toDegrees();
-
-		return new BigNumberCoordinate(r, thetaDeg);
 	}
 
 	/**
