@@ -47,7 +47,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Indicates whether the number is negative.
 	 */
-	private final boolean isNegative;
+	private boolean isNegative;
 	/**
 	 * Shared instance of the CalculatorEngine used for performing arithmetic operations.
 	 * This static engine allows all BigNumber instances to use the same precision settings.
@@ -1637,21 +1637,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the greatest common divisor (GCD) of this {@code BigNumber} and the specified {@code other}.
-	 *
-	 * <p>This is a convenience method that delegates to {@link #gcd(BigNumber, MathContext)} using the instance's
-	 * default {@link MathContext}.</p>
-	 *
-	 * @param other
-	 * 	the other {@code BigNumber} to compute the GCD with
-	 *
-	 * @return a new {@code BigNumber} representing the greatest common divisor
-	 */
-	public BigNumber gcd(BigNumber other) {
-		return gcd(other, mathContext);
-	}
-
-	/**
 	 * Computes the greatest common divisor (GCD) of this BigNumber and another.
 	 * <p>
 	 * Uses the Euclidean algorithm to find the largest positive BigNumber that divides
@@ -1663,7 +1648,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return the greatest common divisor of this and other
 	 */
-	public BigNumber gcd(BigNumber other, MathContext mathContext) {
+	public BigNumber gcd(BigNumber other) {
 		BigNumber a = clone();
 		BigNumber b = other.clone();
 
@@ -1833,6 +1818,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber toRadians(MathContext mathContext, Locale locale) {
 		return new BigNumber(multiply(Values.PI).divide(ONE_HUNDRED_EIGHTY, mathContext), locale);
+	}
+
+	/**
+	 * Returns the absolute value of this {@code BigNumber}.
+	 * <p>
+	 * If this number is negative, a new {@code BigNumber} instance is returned with the same value but positive sign.
+	 * If this number is already non-negative, the current instance is returned directly.
+	 * </p>
+	 *
+	 * @return the absolute value of this {@code BigNumber}; either a new instance or {@code this} if already non-negative
+	 */
+	public BigNumber abs() {
+		if (isNegative) {
+			BigNumber abs = new BigNumber(toString());
+			abs.isNegative = false;
+			return abs;
+		}
+		return this;
 	}
 
 	/**
