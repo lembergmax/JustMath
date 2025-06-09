@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal.calculator;
+package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;

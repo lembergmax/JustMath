@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal.calculator;
+package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.calculator.MathHelper.convertAngle;
+import static com.mlprograms.justmath.bignumber.internal.math.MathHelper.convertAngle;
 
 public class TrigonometricMath {
 

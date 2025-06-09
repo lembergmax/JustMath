@@ -2,7 +2,7 @@ package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
-import com.mlprograms.justmath.bignumber.internal.calculator.*;
+import com.mlprograms.justmath.bignumber.internal.math.*;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.util.Values;
@@ -1292,10 +1292,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing asinh(this)
 	 */
 	public BigNumber asinh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.asinh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return InverseHyperbolicTrigonometricMath.asinh(this, mathContext, locale);
 	}
 
 	/**
@@ -1323,10 +1320,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing acosh(this)
 	 */
 	public BigNumber acosh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.acosh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return InverseHyperbolicTrigonometricMath.acosh(this, mathContext, locale);
 	}
 
 	/**
@@ -1354,10 +1348,35 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing atanh(this)
 	 */
 	public BigNumber atanh(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.atanh(toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
+		return InverseHyperbolicTrigonometricMath.atanh(this, mathContext, locale);
+	}
+
+	/**
+	 * Computes the inverse hyperbolic cotangent (acoth) of this number using the default {@link MathContext} and
+	 * {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #acoth(MathContext, Locale)}.</p>
+	 *
+	 * @return a new {@code BigNumber} representing acoth(this)
+	 */
+	public BigNumber acoth() {
+		return acoth(mathContext, locale);
+	}
+
+	/**
+	 * Computes the inverse hyperbolic cotangent (acoth) of this number with the given precision and locale.
+	 *
+	 * <p>Delegates to {@link BigDecimalMath#acoth} and wraps the result.</p>
+	 *
+	 * @param mathContext
+	 * 	the precision and rounding settings for the calculation
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing acoth(this)
+	 */
+	public BigNumber acoth(MathContext mathContext, Locale locale) {
+		return InverseHyperbolicTrigonometricMath.acoth(this, mathContext, locale);
 	}
 
 	/**
@@ -1393,37 +1412,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	public BigNumber atan2(BigNumber other, MathContext mathContext, Locale locale) {
 		return new BigNumber(
 			BigDecimalMath.atan2(toBigDecimal(), other.toBigDecimal(), mathContext).toPlainString(),
-			locale
-		);
-	}
-
-	/**
-	 * Computes the inverse hyperbolic cotangent (acoth) of this number using the default {@link MathContext} and
-	 * {@link Locale}.
-	 *
-	 * <p>This is a convenience method that delegates to {@link #acoth(MathContext, Locale)}.</p>
-	 *
-	 * @return a new {@code BigNumber} representing acoth(this)
-	 */
-	public BigNumber acoth() {
-		return acoth(mathContext, locale);
-	}
-
-	/**
-	 * Computes the inverse hyperbolic cotangent (acoth) of this number with the given precision and locale.
-	 *
-	 * <p>Delegates to {@link BigDecimalMath#acoth} and wraps the result.</p>
-	 *
-	 * @param mathContext
-	 * 	the precision and rounding settings for the calculation
-	 * @param locale
-	 * 	the locale used for any locale-specific formatting
-	 *
-	 * @return a new {@code BigNumber} representing acoth(this)
-	 */
-	public BigNumber acoth(MathContext mathContext, Locale locale) {
-		return new BigNumber(
-			BigDecimalMath.acoth(toBigDecimal(), mathContext).toPlainString(),
 			locale
 		);
 	}
