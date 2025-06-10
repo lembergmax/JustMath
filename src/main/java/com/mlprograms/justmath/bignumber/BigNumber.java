@@ -1911,6 +1911,38 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return this.isGreaterThan(other) || this.isEqualTo(other);
 	}
 
+	/**
+	 * Negates this {@code BigNumber} by toggling its sign.
+	 * <p>
+	 * This operation mutates the current instance by flipping the {@code isNegative} flag.
+	 * </p>
+	 *
+	 * @return this {@code BigNumber} instance with its sign reversed
+	 */
+	public BigNumber negate() {
+		isNegative = !isNegative;
+		return this;
+	}
+
+	/**
+	 * Returns a new BigNumber instance rounded according to the given MathContext.
+	 *
+	 * @param mathContext
+	 * 	the MathContext controlling precision and rounding mode
+	 *
+	 * @return a new BigNumber rounded to the given precision
+	 */
+	public BigNumber round(MathContext mathContext) {
+		// Erstelle ein BigDecimal aus der internen Darstellung
+		BigDecimal bigDecimal = new BigDecimal(toString());
+
+		// Runden mit dem angegebenen MathContext
+		BigDecimal rounded = bigDecimal.round(mathContext);
+
+		// Neue BigNumber erzeugen aus gerundetem Wert mit gleicher Locale
+		return new BigNumber(rounded.toPlainString(), this.locale);
+	}
+
 	@Override
 	public int intValue() {
 		String numStr = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
