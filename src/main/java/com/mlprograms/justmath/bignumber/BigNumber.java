@@ -1995,6 +1995,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Checks if this BigNumber represents an integer value (i.e., has no decimal part).
+	 *
+	 * @return true if this number is an integer, false otherwise
+	 */
+	public boolean isInteger() {
+		return !hasDecimals();
+	}
+
+	/**
 	 * Returns the string representation of this number in standard US format,
 	 * using '.' as decimal separator and no grouping separators.
 	 *
