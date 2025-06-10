@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.internal.math.utils;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;

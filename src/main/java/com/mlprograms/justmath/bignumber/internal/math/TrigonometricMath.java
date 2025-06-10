@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.math.MathHelper.convertAngle;
+import static com.mlprograms.justmath.bignumber.internal.math.utils.MathHelper.convertAngle;
 
 /**
  * Provides trigonometric functions operating on BigNumber values.

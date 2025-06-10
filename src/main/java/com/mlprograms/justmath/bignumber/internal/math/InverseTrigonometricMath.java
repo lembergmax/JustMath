@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.math.MathHelper.bigDecimalRadiansToDegrees;
+import static com.mlprograms.justmath.bignumber.internal.math.utils.MathHelper.bigDecimalRadiansToDegrees;
 
 /**
  * Provides high-precision implementations of inverse trigonometric functions
