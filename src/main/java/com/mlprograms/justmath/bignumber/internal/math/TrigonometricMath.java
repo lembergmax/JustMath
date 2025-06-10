@@ -17,59 +17,28 @@ import static com.mlprograms.justmath.bignumber.internal.math.utils.MathHelper.c
 public class TrigonometricMath {
 
 	/**
-	 * Computes the sine of a given angle using the Taylor series expansion.
+	 * Calculates the sine of the given angle.
 	 * <p>
-	 * This method does <b>not</b> rely on any external libraries. It uses
-	 * the following Taylor series expansion for sin(x):
+	 * Mathematically, the sine function is defined as:
 	 * <pre>
-	 *     sin(x) = x - x^3/3! + x^5/5! - x^7/7! + ...
-	 *            = ∑ (n=0 to ∞) [(-1)^n * x^(2n+1)] / (2n+1)!
+	 * sin(θ) = opposite / hypotenuse
 	 * </pre>
-	 * The angle is first converted to radians depending on the given
-	 * {@link TrigonometricMode}. The series is evaluated until a fixed
-	 * number of terms (maxIterations) is reached.
+	 * where θ is the angle in radians or degrees. This method converts the angle to radians if necessary.
 	 *
 	 * @param angle
-	 * 	the angle for which to compute the sine, in degrees or radians
+	 * 	the angle for which to compute sine
 	 * @param mathContext
-	 * 	the {@link MathContext} controlling the precision of intermediate and final results
+	 * 	the {@link MathContext} controlling precision and rounding
 	 * @param trigonometricMode
-	 * 	the angle mode: degrees (DEG) or radians (RAD)
+	 * 	the angle measurement mode (DEG for degrees, RAD for radians)
 	 * @param locale
-	 * 	the locale for formatting and parsing {@link BigNumber} values
+	 * 	the locale used for number formatting
 	 *
 	 * @return the sine of the angle as a {@link BigNumber}
 	 */
 	public static BigNumber sin(BigNumber angle, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		// Convert angle to radians if necessary (ensures x is in radian)
-		BigNumber x = new BigNumber(convertAngle(angle, mathContext, trigonometricMode, locale), locale);
-
-		// Initialize variables for Taylor series
-		BigNumber term = x.clone();      // First term: x^1 / 1! = x
-		BigNumber result = x.clone();    // Start accumulating the result with the first term
-		BigNumber xSquared = x.multiply(x); // x^2 (used repeatedly)
-		int maxIterations = 100;        // Number of terms to compute; affects precision
-		int sign = -1;                  // Alternating sign for the series: +, -, +, -, ...
-
-		for (int i = 1; i < maxIterations; i++) {
-			// Calculate the denominator of the term: (2n)(2n+1) (this builds factorial incrementally)
-			BigNumber denominator = new BigNumber(String.valueOf((2 * i) * (2 * i + 1)), locale);
-
-			// Update the current term: term = term * x^2 / denominator
-			term = term.multiply(xSquared).divide(denominator, mathContext);
-
-			// Apply the alternating sign: (-1)^n
-			BigNumber signedTerm = (sign == -1) ? term.negate() : term;
-
-			// Accumulate result
-			result = result.add(signedTerm);
-
-			// Flip the sign for the next term
-			sign *= -1;
-		}
-
-		// Round the result to the requested precision
-		return result.round(mathContext);
+		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale);
 	}
 
 	/**
