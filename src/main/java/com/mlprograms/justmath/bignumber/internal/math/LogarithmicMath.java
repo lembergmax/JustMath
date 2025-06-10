@@ -8,32 +8,154 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
+/**
+ * Utility class providing high‐precision logarithmic functions on {@link BigNumber} values.
+ * <p>
+ * Wraps the {@link BigDecimalMath} library to compute
+ * base‐2 logarithm, base‐10 logarithm, natural logarithm (ln), and
+ * logarithm with arbitrary positive base.
+ * All methods accept a {@link MathContext} to control precision and rounding,
+ * and a {@link Locale} for formatting the resulting {@link BigNumber}.
+ */
 public class LogarithmicMath {
 
+	/**
+	 * Computes the base‐2 logarithm of the given argument.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₂(x) = ln(x) / ln(2)
+	 * </pre>
+	 * where ln is the natural logarithm.
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₂(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if the underlying library cannot compute with given context
+	 * @throws IllegalArgumentException
+	 * 	if argument is non‐positive
+	 */
 	public static BigNumber log2(BigNumber argument, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
+			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
+		}
+		return new BigNumber(
+			BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(),
+			locale
+		);
 	}
 
+	/**
+	 * Computes the base‐10 logarithm of the given argument.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₁₀(x) = ln(x) / ln(10)
+	 * </pre>
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₁₀(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if the underlying library cannot compute with given context
+	 * @throws IllegalArgumentException
+	 * 	if argument is non‐positive
+	 */
 	public static BigNumber log10(BigNumber argument, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
+			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
+		}
+		return new BigNumber(
+			BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(),
+			locale
+		);
 	}
 
+	/**
+	 * Computes the natural logarithm (ln) of the given argument.
+	 * <p>
+	 * Mathematically defined as the inverse of the exponential function:
+	 * <pre>
+	 * ln(x) = the unique y such that eʸ = x
+	 * </pre>
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing ln(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if the underlying library cannot compute with given context
+	 * @throws IllegalArgumentException
+	 * 	if argument is non‐positive
+	 */
 	public static BigNumber ln(BigNumber argument, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.log(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
+			throw new IllegalArgumentException("Argument to ln must be positive and non-zero.");
+		}
+		return new BigNumber(
+			BigDecimalMath.log(argument.toBigDecimal(), mathContext).toPlainString(),
+			locale
+		);
 	}
 
+	/**
+	 * Computes the logarithm of a number with respect to an arbitrary positive base.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₍b₎(x) = ln(x) / ln(b)
+	 * </pre>
+	 * where ln is the natural logarithm.
+	 * Domain: x &gt; 0, b &gt; 0 &amp;&amp; b ≠ 1.
+	 *
+	 * @param number
+	 * 	the positive input value x
+	 * @param base
+	 * 	the positive base b (not equal to 1)
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₍base₎(number)
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if number ≤ 0, or if base ≤ 0, or base == 1
+	 */
 	public static BigNumber logBase(BigNumber number, BigNumber base, MathContext mathContext, Locale locale) {
 		if (number.isNegative() || number.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Number must be positive and non-zero.");
 		}
-
 		if (base.isNegative() || base.isEqualTo(BigNumbers.ZERO) || base.isEqualTo(BigNumbers.ONE)) {
 			throw new IllegalArgumentException("Base must be positive and not equal to 1.");
 		}
 
 		BigDecimal lnNumber = BigDecimalMath.log(number.toBigDecimal(), mathContext);
 		BigDecimal lnBase = BigDecimalMath.log(base.toBigDecimal(), mathContext);
-		return new BigNumber(lnNumber.divide(lnBase, mathContext).toPlainString(), locale);
+		BigDecimal result = lnNumber.divide(lnBase, mathContext);
+
+		return new BigNumber(result.toPlainString(), locale);
 	}
 
 }
