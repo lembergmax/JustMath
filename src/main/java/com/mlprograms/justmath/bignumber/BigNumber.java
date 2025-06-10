@@ -1778,7 +1778,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a BigDecimal representation of this BigNumber
 	 */
 	public BigDecimal toBigDecimal() {
-		return new BigDecimal(this.toString());
+		return new BigDecimal(toString());
 	}
 
 	/**
