@@ -122,21 +122,56 @@ public class BasicMath {
 	}
 
 	/**
-	 * Computes the power of a {@link BigNumber} base raised to a {@link BigNumber} exponent using high-precision math.
+	 * Calculates the power of a {@link BigNumber} base raised to a non-negative integer exponent,
+	 * i.e., repeated multiplication of the base by itself.
+	 * <p>
+	 * Mathematically, this corresponds to:
+	 * <pre>
+	 *     base^exponent = base × base × ... × base  (exponent times)
+	 * </pre>
+	 * For {@code exponent = 0}, by definition:
+	 * <pre>
+	 *     base^0 = 1  (for base ≠ 0)
+	 * </pre>
+	 * This implementation supports only non-negative integer exponents and does not perform roots or
+	 * exponential/logarithmic operations.
+	 * The method is based on repeated multiplication:
+	 * <pre>
+	 *     result := 1
+	 *     repeat exponent times:
+	 *         result := result × base
+	 * </pre>
 	 *
 	 * @param base
-	 * 	the base number
+	 * 	the base of the power operation ({@code base ∈ ℝ})
 	 * @param exponent
-	 * 	the exponent
+	 * 	the exponent, a non-negative integer ({@code exponent ∈ ℕ₀})
 	 * @param mathContext
-	 * 	the {@link MathContext} defining precision and rounding
+	 * 	the {@link MathContext} defining precision and rounding (used for intermediate calculations, currently unused)
 	 * @param locale
-	 * 	the {@link Locale} used to construct the result {@link BigNumber}
+	 * 	the {@link Locale} used for formatting the result
 	 *
-	 * @return the result of {@code base ^ exponent} as a new {@link BigNumber}
+	 * @return the result of {@code base^exponent} as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the exponent is negative or not an integer
+	 * @implNote This method currently only supports {@code exponent ∈ ℕ₀} (non-negative integers).
+	 * 	To support rational or real exponents, implementations of logarithms and roots would be required.
 	 */
 	public static BigNumber power(BigNumber base, BigNumber exponent, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.pow(base.toBigDecimal(), exponent.toBigDecimal(), mathContext).toPlainString(), locale);
+		if (!exponent.isInteger() || exponent.isNegative()) {
+			throw new IllegalArgumentException("Only non-negative integer exponents are supported in this implementation.");
+		}
+
+		BigNumber result = BigNumbers.ONE;
+		BigNumber count = exponent.clone();
+
+		while (!count.isEqualTo(BigNumbers.ZERO)) {
+			result = multiply(result, base);
+			count = subtract(count, BigNumbers.ONE);
+		}
+
+		return result;
 	}
 
 	/**
