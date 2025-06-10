@@ -1,6 +1,5 @@
 package com.mlprograms.justmath.bignumber.internal.math;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 
@@ -171,26 +170,53 @@ public class BasicMath {
 			count = subtract(count, BigNumbers.ONE);
 		}
 
-		return result;
+		return new BigNumber(result.toString(), locale, mathContext);
 	}
 
 	/**
-	 * Computes the factorial of a {@link BigNumber} argument using high-precision math.
+	 * Computes the factorial of a {@link BigNumber} argument.
 	 * <p>
-	 * The argument must be a non-negative integer. If the input is not an integer, the factorial
-	 * is computed using the gamma function approximation.
+	 * Mathematically, factorial for a non-negative integer n is defined as:
+	 * <pre>
+	 *     n! = n × (n-1) × (n-2) × ... × 1, with 0! = 1
+	 * </pre>
+	 * This method supports only non-negative integer inputs.
 	 *
 	 * @param argument
-	 * 	the number for which the factorial is to be computed
+	 * 	the number for which the factorial is to be computed; must be a non-negative integer
 	 * @param mathContext
-	 * 	the {@link MathContext} defining precision and rounding
+	 * 	the {@link MathContext} specifying precision and rounding (currently not used in calculation)
 	 * @param locale
-	 * 	the {@link Locale} used to construct the result {@link BigNumber}
+	 * 	the {@link Locale} used for formatting the result
 	 *
 	 * @return the factorial of {@code argument} as a new {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code argument} is negative or not an integer
 	 */
 	public static BigNumber factorial(BigNumber argument, MathContext mathContext, Locale locale) {
-		return new BigNumber(BigDecimalMath.factorial(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		if (!argument.isInteger()) {
+			throw new IllegalArgumentException("Factorial is only defined for integers.");
+		}
+		if (argument.isNegative()) {
+			throw new IllegalArgumentException("Factorial is only defined for non-negative integers.");
+		}
+
+		BigNumber result = BigNumbers.ONE;
+		BigNumber counter = argument.clone();
+
+		// 0! = 1, so if argument is zero, returns 1 immediately
+		if (counter.isEqualTo(BigNumbers.ZERO)) {
+			return new BigNumber("1", locale, mathContext);
+		}
+
+		// multiply result by each integer from argument down to 1
+		while (counter.isGreaterThan(BigNumbers.ONE)) {
+			result = multiply(result, counter);
+			counter = subtract(counter, BigNumbers.ONE);
+		}
+
+		return new BigNumber(result.toString(), locale, mathContext);
 	}
 
 }
