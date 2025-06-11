@@ -166,8 +166,8 @@ public class BasicMath {
 		BigNumber count = exponent.clone();
 
 		while (!count.isEqualTo(BigNumbers.ZERO)) {
-			result = multiply(result, base);
-			count = subtract(count, BigNumbers.ONE);
+			result = result.multiply(base);
+			count = count.subtract(BigNumbers.ONE);
 		}
 
 		return new BigNumber(result.toString(), locale, mathContext);
@@ -212,8 +212,8 @@ public class BasicMath {
 
 		// multiply result by each integer from argument down to 1
 		while (counter.isGreaterThan(BigNumbers.ONE)) {
-			result = multiply(result, counter);
-			counter = subtract(counter, BigNumbers.ONE);
+			result = result.multiply(counter);
+			counter = counter.subtract(BigNumbers.ONE);
 		}
 
 		return new BigNumber(result.toString(), locale, mathContext);
