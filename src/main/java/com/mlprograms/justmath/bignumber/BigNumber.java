@@ -1735,41 +1735,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Sets the precision for the division in the CalculatorEngine used by this BigNumber. But be careful, because this
-	 * will overwrite
-	 * the current CalculatorEngine instance.
-	 *
-	 * @param precision
-	 * 	the number of decimal places to use in calculations
-	 */
-	public void setCalculatorEngineDivisionPrecision(int precision) {
-		this.calculatorEngine = new CalculatorEngine(precision);
-	}
-
-	/**
-	 * Sets the CalculatorEngine instance for this BigNumber.
-	 *
-	 * @param calculatorEngine
-	 * 	the CalculatorEngine to use; must not be null
-	 *
-	 * @throws NullPointerException
-	 * 	if calculatorEngine is null
-	 */
-	public void setCalculatorEngine(@NonNull CalculatorEngine calculatorEngine) {
-		this.calculatorEngine = calculatorEngine;
-	}
-
-	/**
-	 * Sets the trigonometric mode for this BigNumber instance.
-	 *
-	 * @param trigonometricMode
-	 * 	the trigonometric mode to set (e.g., DEG, RAD)
-	 */
-	public void setTrigonometricMode(@NonNull TrigonometricMode trigonometricMode) {
-		this.trigonometricMode = trigonometricMode;
-	}
-
-	/**
 	 * Converts this BigNumber to a BigDecimal using its string representation.
 	 * <p>
 	 * Note: The conversion uses the current locale's formatting, so ensure the string
@@ -2033,6 +1998,41 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public boolean isInteger() {
 		return !hasDecimals();
+	}
+
+	/**
+	 * Sets the precision for the division in the CalculatorEngine used by this BigNumber. But be careful, because this
+	 * will overwrite
+	 * the current CalculatorEngine instance.
+	 *
+	 * @param precision
+	 * 	the number of decimal places to use in calculations
+	 */
+	public void setCalculatorEngineDivisionPrecision(int precision) {
+		this.calculatorEngine = new CalculatorEngine(precision);
+	}
+
+	/**
+	 * Sets the CalculatorEngine instance for this BigNumber.
+	 *
+	 * @param calculatorEngine
+	 * 	the CalculatorEngine to use; must not be null
+	 *
+	 * @throws NullPointerException
+	 * 	if calculatorEngine is null
+	 */
+	public void setCalculatorEngine(@NonNull CalculatorEngine calculatorEngine) {
+		this.calculatorEngine = calculatorEngine;
+	}
+
+	/**
+	 * Sets the trigonometric mode for this BigNumber instance.
+	 *
+	 * @param trigonometricMode
+	 * 	the trigonometric mode to set (e.g., DEG, RAD)
+	 */
+	public void setTrigonometricMode(@NonNull TrigonometricMode trigonometricMode) {
+		this.trigonometricMode = trigonometricMode;
 	}
 
 	/**
