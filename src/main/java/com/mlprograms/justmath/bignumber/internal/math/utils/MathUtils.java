@@ -10,6 +10,7 @@ import java.math.MathContext;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE;
 import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 /**
@@ -115,7 +116,7 @@ public class MathUtils {
 
 	public static BigNumber randomIntegerBigNumberInRange(BigNumber min, BigNumber max) {
 		BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
-		BigInteger maxInt = max.toBigDecimal().toBigIntegerExact();
+		BigInteger maxInt = max.add(ONE).toBigDecimal().toBigIntegerExact();
 
 		if (minInt.compareTo(maxInt) >= 0) {
 			throw new IllegalArgumentException("min must be less than max");
