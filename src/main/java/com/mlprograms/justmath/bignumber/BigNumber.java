@@ -1977,8 +1977,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	@Override
 	public double doubleValue() {
 		try {
-			java.math.BigDecimal bd = new java.math.BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
-			return bd.doubleValue();
+			BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+			return bigDecimal.doubleValue();
 		} catch (NumberFormatException e) {
 			return isNegative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
 		}
