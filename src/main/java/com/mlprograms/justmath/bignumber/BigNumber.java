@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.internal.math.*;
+import com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.util.Values;
@@ -1572,8 +1573,27 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return CoordinateConversionMath.cartesianToPolarCoordinates(this, y, mathContext, locale);
 	}
 
-	// TODO: add randomIntegerForRange(BigNumber min, BigNumber max)
 	// TODO: polar and cartesian coordinates in 3d
+
+	/**
+	 * Generates a random integer {@link BigNumber} between this number (inclusive) and the given {@code max}
+	 * (exclusive).
+	 * <p>
+	 * Mathematically: returns a value x such that this ≤ x < max, where x is an integer.
+	 * <p>
+	 * Both {@code this} and {@code max} must be integers without decimal places, and {@code this < max}.
+	 *
+	 * @param max
+	 * 	the exclusive upper bound
+	 *
+	 * @return a random integer {@link BigNumber} in the range [this, max)
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
+	 */
+	public BigNumber randomIntegerForRange(BigNumber max) {
+		return MathUtils.randomIntegerBigNumberInRange(this, max);
+	}
 
 	/**
 	 * Calculates the percentage that this number represents of the given value {@code m}.
