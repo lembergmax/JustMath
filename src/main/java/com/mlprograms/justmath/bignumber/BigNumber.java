@@ -63,11 +63,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * Defaults to DEG (degrees).
 	 */
 	@NonNull
+	@Setter
 	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
 	/**
 	 * The MathContext used for arithmetic operations, defaulting to a precision of 1000 digits.
 	 */
 	@NonNull
+	@Setter
 	private MathContext mathContext = CalculatorEngine.getDefaultMathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
 
 	/**
