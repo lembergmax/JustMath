@@ -149,6 +149,7 @@ public class Evaluator {
 			case COMBINATION_F2 -> first.combination(second, mathContext);
 			case GCD_F2 -> first.gcd(second);
 			case LCM_F2 -> first.lcm(second, mathContext);
+			case RANDINT_F2 -> first.randomIntegerForRange(second);
 			case POLARTOCARTESIAN_F2 ->
 				throw new UnsupportedOperationException("POLAR_TO_CARTESIAN operation is not implemented.");
 			case CARTESIANTOPOLAR_F2 ->
