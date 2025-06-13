@@ -2028,6 +2028,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return true if this number is an integer, false otherwise
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isInteger() {
 		return !hasDecimals();
 	}
