@@ -6,7 +6,6 @@ import lombok.Getter;
 import java.util.Optional;
 
 @Getter
-@AllArgsConstructor
 public enum ArithmeticOperator {
 
 	// name description: NAME_<CONFIGURATION>_<OPERAND_COUNT(>=2)>
@@ -84,6 +83,13 @@ public enum ArithmeticOperator {
 	private final int precedence;
 	private final int requiredOperandsCount;
 
+	ArithmeticOperator(String operator, boolean isFunction, int precedence, int requiredOperandsCount) {
+		this.operator = operator;
+		this.isFunction = isFunction;
+		this.precedence = precedence;
+		this.requiredOperandsCount = requiredOperandsCount;
+	}
+
 	/**
 	 * Finds an {@link ArithmeticOperator} by its operator string.
 	 *
@@ -100,5 +106,4 @@ public enum ArithmeticOperator {
 		}
 		return Optional.empty();
 	}
-
 }
