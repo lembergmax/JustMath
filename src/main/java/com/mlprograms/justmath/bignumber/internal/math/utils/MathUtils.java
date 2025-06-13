@@ -113,7 +113,6 @@ public class MathUtils {
 	 * @throws IllegalArgumentException
 	 * 	if {@code min} ≥ {@code max}, or if either value has decimal places
 	 */
-
 	public static BigNumber randomIntegerBigNumberInRange(BigNumber min, BigNumber max) {
 		BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
 		BigInteger maxInt = max.add(ONE).toBigDecimal().toBigIntegerExact();
