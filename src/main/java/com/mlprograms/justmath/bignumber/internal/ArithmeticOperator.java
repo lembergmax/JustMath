@@ -75,7 +75,9 @@ public enum ArithmeticOperator {
 	CARTESIANTOPOLAR_F2("Rec", true, 6, 2),
 
 	GCD_F2("GCD", true, 6, 2),
-	LCM_F2("LCM", true, 6, 2);
+	LCM_F2("LCM", true, 6, 2),
+
+	RANDINT_F2("RandInt", true, 6, 2);
 
 	private final String operator;
 	private final boolean isFunction;
