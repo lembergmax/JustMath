@@ -9,6 +9,7 @@ import com.mlprograms.justmath.util.Values;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -55,6 +56,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * This static engine allows all BigNumber instances to use the same precision settings.
 	 */
 	@NonNull
+	@Setter
 	private CalculatorEngine calculatorEngine;
 	/**
 	 * The trigonometric mode (e.g., DEG, RAD, GRAD) used for trigonometric calculations.
@@ -66,7 +68,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * The MathContext used for arithmetic operations, defaulting to a precision of 1000 digits.
 	 */
 	@NonNull
-	private MathContext mathContext = new MathContext(1000);
+	private MathContext mathContext = CalculatorEngine.getDefaultMathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
 
 	/**
 	 * Parses the given string in the default format and constructs a {@code BigNumber}.
@@ -2051,41 +2053,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isInteger() {
 		return !hasDecimals();
-	}
-
-	/**
-	 * Sets the precision for the division in the CalculatorEngine used by this BigNumber. But be careful, because this
-	 * will overwrite
-	 * the current CalculatorEngine instance.
-	 *
-	 * @param precision
-	 * 	the number of decimal places to use in calculations
-	 */
-	public void setCalculatorEngineDivisionPrecision(int precision) {
-		this.calculatorEngine = new CalculatorEngine(precision);
-	}
-
-	/**
-	 * Sets the CalculatorEngine instance for this BigNumber.
-	 *
-	 * @param calculatorEngine
-	 * 	the CalculatorEngine to use; must not be null
-	 *
-	 * @throws NullPointerException
-	 * 	if calculatorEngine is null
-	 */
-	public void setCalculatorEngine(@NonNull CalculatorEngine calculatorEngine) {
-		this.calculatorEngine = calculatorEngine;
-	}
-
-	/**
-	 * Sets the trigonometric mode for this BigNumber instance.
-	 *
-	 * @param trigonometricMode
-	 * 	the trigonometric mode to set (e.g., DEG, RAD)
-	 */
-	public void setTrigonometricMode(@NonNull TrigonometricMode trigonometricMode) {
-		this.trigonometricMode = trigonometricMode;
 	}
 
 	/**
