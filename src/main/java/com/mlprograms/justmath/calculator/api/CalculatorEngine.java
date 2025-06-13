@@ -98,6 +98,22 @@ public class CalculatorEngine {
 	}
 
 	/**
+	 * Evaluates a mathematical expression using the specified trigonometric mode and math context.
+	 *
+	 * @param expression
+	 * 	the mathematical expression to evaluate
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (DEG or RAD)
+	 * @param mathContext
+	 * 	the MathContext specifying precision and rounding mode
+	 *
+	 * @return the result as a BigNumber
+	 */
+	public static BigNumber evaluate(@NonNull String expression, @NonNull TrigonometricMode trigonometricMode, @NonNull MathContext mathContext) {
+		return new CalculatorEngine(mathContext, trigonometricMode).evaluate(expression);
+	}
+
+	/**
 	 * Evaluates a given mathematical expression with full BigDecimal precision.
 	 *
 	 * @param expression
