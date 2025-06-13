@@ -151,7 +151,9 @@ public class Tokenizer {
 
 		for (int length = maxTokenLength; length > 0; length--) {
 			int endIndex = startIndex + length;
-			if (endIndex > expression.length()) continue;
+			if (endIndex > expression.length()) {
+				continue;
+			}
 
 			String substring = expression.substring(startIndex, endIndex);
 
