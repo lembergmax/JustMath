@@ -8,12 +8,12 @@ JustMath is a high-precision Java mathematics library designed for developers an
 - 🧮 **Expression Engine**: Evaluate full mathematical expressions like `"3 * sin(45) + ln(2.5)"` with automatic parsing.
 - 🔍 **Extreme Precision**: Internally uses `BigDecimal` for all calculations to avoid floating-point inaccuracies.
 - 🧠 **Rich Function Set**:
-    - Trigonometric (sin, cos, tan, asin, atan, etc.)
-    - Logarithmic (log, ln)
-    - Exponential (exp, pow)
-    - Hyperbolic (sinh, cosh, tanh, etc.)
-    - Combinatorics (factorials, combinations, permutations)
-    - Coordinate transformations
+  - Trigonometric (sin, cos, tan, asin, atan, etc.)
+  - Logarithmic (log, ln)
+  - Exponential (exp, pow)
+  - Hyperbolic (sinh, cosh, tanh, etc.)
+  - Combinatorics (factorials, combinations, permutations)
+  - Coordinate transformations
 - 🌐 **Modular Design**: Easily integrate or extend the engine for scientific computing, finance, or education.
 - 🧪 **JUnit-Tested**: Thoroughly tested for correctness and edge cases.
 
