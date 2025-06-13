@@ -1908,40 +1908,72 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return new BigNumber(rounded.toPlainString(), this.locale);
 	}
 
+	/**
+	 * Returns the value of this {@code BigNumber} as an {@code int}.
+	 * <p>
+	 * If the integer part exceeds 10 digits, only the first 10 digits are used.
+	 * If parsing fails, {@code Integer.MAX_VALUE} is returned (with sign).
+	 *
+	 * @return the integer value represented by this object, or {@code Integer.MAX_VALUE} on error
+	 */
 	@Override
 	public int intValue() {
-		String numStr = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
+		String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
 		int result;
 		try {
-			result = Integer.parseInt(numStr);
+			result = Integer.parseInt(valueBeforeDecimalAsString);
 		} catch (NumberFormatException e) {
 			result = Integer.MAX_VALUE;
 		}
 		return isNegative ? -result : result;
 	}
 
+	/**
+	 * Returns the value of this {@code BigNumber} as a {@code long}.
+	 * <p>
+	 * If the integer part exceeds 19 digits, only the first 19 digits are used.
+	 * If parsing fails, {@code Long.MAX_VALUE} is returned (with sign).
+	 *
+	 * @return the long value represented by this object, or {@code Long.MAX_VALUE} on error
+	 */
 	@Override
 	public long longValue() {
-		String numStr = valueBeforeDecimal.length() > 19 ? valueBeforeDecimal.substring(0, 19) : valueBeforeDecimal;
+		String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 19 ? valueBeforeDecimal.substring(0, 19) : valueBeforeDecimal;
 		long result;
 		try {
-			result = Long.parseLong(numStr);
+			result = Long.parseLong(valueBeforeDecimalAsString);
 		} catch (NumberFormatException e) {
 			result = Long.MAX_VALUE;
 		}
 		return isNegative ? -result : result;
 	}
 
+	/**
+	 * Returns the value of this {@code BigNumber} as a {@code float}.
+	 * <p>
+	 * Only the integer part is used for conversion. If parsing fails,
+	 * returns {@code Float.POSITIVE_INFINITY} or {@code Float.NEGATIVE_INFINITY} depending on sign.
+	 *
+	 * @return the float value represented by this object, or infinity on error
+	 */
 	@Override
 	public float floatValue() {
 		try {
-			java.math.BigDecimal bd = new java.math.BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
-			return bd.floatValue();
+			BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+			return bigDecimal.floatValue();
 		} catch (NumberFormatException e) {
 			return isNegative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
 		}
 	}
 
+	/**
+	 * Returns the value of this {@code BigNumber} as a {@code double}.
+	 * <p>
+	 * Only the integer part is used for conversion. If parsing fails,
+	 * returns {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} depending on sign.
+	 *
+	 * @return the double value represented by this object, or infinity on error
+	 */
 	@Override
 	public double doubleValue() {
 		try {
