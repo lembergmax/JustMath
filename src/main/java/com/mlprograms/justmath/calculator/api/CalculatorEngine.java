@@ -37,7 +37,7 @@ public class CalculatorEngine {
 	private final Parser parser;
 
 	public CalculatorEngine() {
-		this(new MathContext(DEFAULT_DIVISION_PRECISION, RoundingMode.HALF_UP), TrigonometricMode.DEG);
+		this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class CalculatorEngine {
 	 * 	the precision for division operations
 	 */
 	public CalculatorEngine(int divisionPrecision) {
-		this(new MathContext(divisionPrecision, RoundingMode.HALF_UP), TrigonometricMode.DEG);
+		this(getDefaultMathContext(divisionPrecision), TrigonometricMode.DEG);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class CalculatorEngine {
 	 * 	the trigonometric mode (DEG or RAD)
 	 */
 	public CalculatorEngine(int divisionPrecision, @NonNull TrigonometricMode trigonometricMode) {
-		this(new MathContext(divisionPrecision, RoundingMode.HALF_UP), trigonometricMode);
+		this(getDefaultMathContext(divisionPrecision), trigonometricMode);
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class CalculatorEngine {
 	 * 	the trigonometric mode (DEG or RAD)
 	 */
 	public CalculatorEngine(@NonNull TrigonometricMode trigonometricMode) {
-		this(new MathContext(DEFAULT_DIVISION_PRECISION, RoundingMode.HALF_UP), trigonometricMode);
+		this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), trigonometricMode);
 	}
 
 	/**
@@ -98,10 +98,10 @@ public class CalculatorEngine {
 	}
 
 	/**
-	 * Evaluates a mathematical expression using the specified trigonometric mode and math context.
+	 * Evaluates a mathematical expression with the specified trigonometric mode and math context.
 	 *
 	 * @param expression
-	 * 	the mathematical expression to evaluate
+	 * 	the input mathematical expression as a string
 	 * @param trigonometricMode
 	 * 	the trigonometric mode (DEG or RAD)
 	 * @param mathContext
@@ -111,6 +111,46 @@ public class CalculatorEngine {
 	 */
 	public static BigNumber evaluate(@NonNull String expression, @NonNull TrigonometricMode trigonometricMode, @NonNull MathContext mathContext) {
 		return new CalculatorEngine(mathContext, trigonometricMode).evaluate(expression);
+	}
+
+	/**
+	 * Evaluates a mathematical expression with the specified trigonometric mode and default math context.
+	 *
+	 * @param expression
+	 * 	the input mathematical expression as a string
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (DEG or RAD)
+	 *
+	 * @return the result as a BigNumber
+	 */
+	public static BigNumber evaluate(@NonNull String expression, @NonNull TrigonometricMode trigonometricMode) {
+		return CalculatorEngine.evaluate(expression, trigonometricMode, getDefaultMathContext(DEFAULT_DIVISION_PRECISION));
+	}
+
+	/**
+	 * Evaluates a mathematical expression with the specified math context and default trigonometric mode (DEG).
+	 *
+	 * @param expression
+	 * 	the input mathematical expression as a string
+	 * @param mathContext
+	 * 	the MathContext specifying precision and rounding mode
+	 *
+	 * @return the result as a BigNumber
+	 */
+	public static BigNumber evaluate(@NonNull String expression, @NonNull MathContext mathContext) {
+		return CalculatorEngine.evaluate(expression, TrigonometricMode.DEG, mathContext);
+	}
+
+	/**
+	 * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
+	 *
+	 * @param divisionPrecision
+	 * 	the precision for division operations
+	 *
+	 * @return a MathContext instance with the given precision and HALF_UP rounding mode
+	 */
+	private static MathContext getDefaultMathContext(int divisionPrecision) {
+		return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
 	}
 
 	/**
