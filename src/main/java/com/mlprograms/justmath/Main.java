@@ -1,18 +1,39 @@
 package com.mlprograms.justmath;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.api.CalculatorEngine;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
+import java.util.Scanner;
+
 public class Main {
 
 	public static void main(String[] args) {
-		//TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-		// to see how IntelliJ IDEA suggests fixing it.
-		System.out.printf("Hello and welcome!");
 
-		for (int i = 1; i <= 5; i++) {
-			//TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-			// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-			System.out.println("i = " + i);
+		testStation();
+
+	}
+
+	private static void testStation() {
+		System.out.println("Welcome to JustMath Calculator!");
+		System.out.println("Type your mathematical expression below:");
+		Scanner scanner = new Scanner(System.in);
+
+		while (true) {
+			System.out.print(">> ");
+			String input = scanner.nextLine().trim();
+			if (input.equalsIgnoreCase("exit")) {
+				System.out.println("Exiting JustMath Calculator. Goodbye!");
+				break;
+			}
+
+			try {
+				CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
+				BigNumber result = calculator.evaluate(input);
+				System.out.println("Result: " + result);
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 		}
 	}
 

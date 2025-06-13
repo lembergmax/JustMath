@@ -1,9 +1,13 @@
 package com.mlprograms.justmath.calculator.internal;
 
+import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * Converts a list of tokens from infix notation to postfix (Reverse Polish Notation).
@@ -12,17 +16,29 @@ import java.util.*;
 @NoArgsConstructor
 public class Parser {
 
-	private final Map<String, Integer> PRECEDENCE = Map.of(
-		"+", 2,
-		"-", 2,
-		"*", 3,
-		"/", 3,
-		"^", 4,
-		"!", 5,
-		"√", 4
-	);
+	/**
+	 * Checks if the given arithmetic operator is right-associative.
+	 *
+	 * @param operator
+	 * 	the arithmetic operator to check
+	 *
+	 * @return true if the operator is right-associative, false otherwise
+	 */
+	private static boolean isRightAssociativeOperator(ArithmeticOperator operator) {
+		return operator == ArithmeticOperator.POWER_O;
+	}
 
-	private final Set<String> RIGHT_ASSOCIATIVE = Set.of("^");
+	/**
+	 * Retrieves the precedence value of the given arithmetic operator.
+	 *
+	 * @param operator
+	 * 	the arithmetic operator
+	 *
+	 * @return the precedence value of the operator
+	 */
+	private static int getOperatorPrecedence(ArithmeticOperator operator) {
+		return operator.getPrecedence();
+	}
 
 	/**
 	 * Converts a list of infix tokens into a postfix list.
@@ -39,14 +55,13 @@ public class Parser {
 		for (Token token : tokens) {
 			switch (token.type()) {
 				case NUMBER -> output.add(token);
-				case FUNCTION -> operatorStack.push(token);
+				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					while (!operatorStack.isEmpty()) {
 						Token top = operatorStack.peek();
-						if ((top.type() == Token.Type.FUNCTION) ||
-							    (top.type() == Token.Type.OPERATOR &&
-								     (hasHigherPrecedence(top, token) ||
-									      (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
+
+						if ((top.type() == Token.Type.FUNCTION) || (top.type() == Token.Type.OPERATOR && (hasHigherPrecedence(top, token)
+							                                                                                  || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
 							output.add(operatorStack.pop());
 						} else {
 							break;
@@ -54,7 +69,6 @@ public class Parser {
 					}
 					operatorStack.push(token);
 				}
-				case LEFT_PAREN -> operatorStack.push(token);
 				case RIGHT_PAREN -> {
 					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
 						output.add(operatorStack.pop());
@@ -63,8 +77,18 @@ public class Parser {
 						throw new IllegalArgumentException("Mismatched parentheses");
 					}
 					operatorStack.pop(); // Remove '('
+
+					// If there's a function before the '(', pop it
 					if (!operatorStack.isEmpty() && operatorStack.peek().type() == Token.Type.FUNCTION) {
-						output.add(operatorStack.pop()); // function call after parentheses
+						output.add(operatorStack.pop());
+					}
+				}
+				case SEMICOLON -> {
+					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
+						output.add(operatorStack.pop());
+					}
+					if (operatorStack.isEmpty()) {
+						throw new IllegalArgumentException("Misplaced semicolon or mismatched parentheses");
 					}
 				}
 			}
@@ -82,55 +106,60 @@ public class Parser {
 	}
 
 	/**
-	 * Checks if the precedence of the first operator is higher than the second.
+	 * Checks if the precedence of the first operator token is higher than the second.
 	 *
 	 * @param op1
 	 * 	the first operator token
 	 * @param op2
 	 * 	the second operator token
 	 *
-	 * @return true if op1 has higher precedence than op2
+	 * @return true if op1 has higher precedence than op2, false otherwise
 	 */
 	private boolean hasHigherPrecedence(Token op1, Token op2) {
 		return getPrecedence(op1) > getPrecedence(op2);
 	}
 
 	/**
-	 * Checks if two operators have equal precedence.
+	 * Checks if two operator tokens have equal precedence.
 	 *
 	 * @param op1
 	 * 	the first operator token
 	 * @param op2
 	 * 	the second operator token
 	 *
-	 * @return true if both operators have equal precedence
+	 * @return true if both operators have equal precedence, false otherwise
 	 */
 	private boolean hasEqualPrecedence(Token op1, Token op2) {
 		return getPrecedence(op1) == getPrecedence(op2);
 	}
 
 	/**
-	 * Retrieves the precedence value for a given operator token.
+	 * Retrieves the precedence value of the given token if it is an arithmetic operator.
 	 *
 	 * @param token
-	 * 	the operator token
+	 * 	the token to check
 	 *
-	 * @return the precedence value, or 0 if not found
+	 * @return the precedence value, or 0 if not an operator
 	 */
 	private int getPrecedence(Token token) {
-		return PRECEDENCE.getOrDefault(token.value(), 0);
+		return token.asArithmeticOperator()
+			       .map(Parser::getOperatorPrecedence)
+			       .orElse(0);
 	}
 
 	/**
-	 * Determines if the given operator token is right-associative.
+	 * Determines if the given token represents a right-associative operator.
 	 *
 	 * @param token
-	 * 	the operator token
+	 * 	the token to check
 	 *
-	 * @return true if the operator is right-associative
+	 * @return true if the operator is right-associative, false otherwise
 	 */
 	private boolean isRightAssociative(Token token) {
-		return RIGHT_ASSOCIATIVE.contains(token.value());
+		return token.asArithmeticOperator()
+			       .map(Parser::isRightAssociativeOperator)
+			       .orElse(false);
 	}
+
 }
 
