@@ -2069,7 +2069,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
 	/**
 	 * Returns the string representation of this number in standard US format,
-	 * using '.' as decimal separator and no grouping separators.
+	 * using '.' as a decimal separator and no grouping separators.
 	 *
 	 * @return string representation, e.g. "-1234.56"
 	 */
