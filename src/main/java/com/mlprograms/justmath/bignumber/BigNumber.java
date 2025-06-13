@@ -66,7 +66,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	@Setter
 	private TrigonometricMode trigonometricMode = TrigonometricMode.DEG;
 	/**
-	 * The MathContext used for arithmetic operations, defaulting to a precision of 1000 digits.
+	 * The MathContext used for arithmetic operations, defaulting to a precision of
+	 * CalculatorEngine.DEFAULT_DIVISION_PRECISION digits.
 	 */
 	@NonNull
 	@Setter
@@ -316,7 +317,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.valueAfterDecimal = valueAfterDecimal;
 		this.isNegative = isNegative;
 		this.trigonometricMode = trigonometricMode;
-		this.mathContext = new MathContext(1000);
+		this.mathContext = new MathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
 		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
@@ -398,7 +399,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.valueBeforeDecimal = "0";
 		this.valueAfterDecimal = "0";
 		this.isNegative = false;
-		this.mathContext = new MathContext(1000);
+		this.mathContext = new MathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
 		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
