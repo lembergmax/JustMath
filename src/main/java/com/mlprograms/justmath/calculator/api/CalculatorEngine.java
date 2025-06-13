@@ -22,7 +22,7 @@ import java.util.List;
 @Getter
 public class CalculatorEngine {
 
-	private static final int DEFAULT_DIVISION_PRECISION = 1000;
+	public static final int DEFAULT_DIVISION_PRECISION = 1000;
 	/**
 	 * Tokenizer instance used to convert input expressions into tokens.
 	 */
@@ -149,7 +149,7 @@ public class CalculatorEngine {
 	 *
 	 * @return a MathContext instance with the given precision and HALF_UP rounding mode
 	 */
-	private static MathContext getDefaultMathContext(int divisionPrecision) {
+	public static MathContext getDefaultMathContext(int divisionPrecision) {
 		return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
 	}
 
