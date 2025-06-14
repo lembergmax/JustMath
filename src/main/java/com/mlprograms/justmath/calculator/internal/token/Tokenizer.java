@@ -30,6 +30,51 @@ public class Tokenizer {
 		                                                       .collect(Collectors.toSet());
 
 	/**
+	 * Performs additional processing on the token list after the initial tokenization
+	 * phase to handle specific cases involving tokens that might require adjustment.
+	 * <p>
+	 * Specifically, this method looks for occurrences where a {@link Token.Type#RIGHT_PAREN}
+	 * token is immediately followed by a {@link Token.Type#NUMBER} token whose value
+	 * begins with a plus ('+') or minus ('-') sign. In such cases, the method splits the
+	 * signed number token into two separate tokens: an operator token for the sign ('+' or '-')
+	 * and a number token for the unsigned numeric part.
+	 * <p>
+	 * This adjustment is important to correctly interpret expressions where a number
+	 * immediately follows a closing parenthesis with a leading sign, for example:
+	 * <pre>
+	 *     (3) -5
+	 * </pre>
+	 * Initially tokenized as: {@code [RIGHT_PAREN(')'), NUMBER("-5")]}, this method
+	 * transforms the tokens into: {@code [RIGHT_PAREN(')'), OPERATOR('-'), NUMBER("5")]}.
+	 * <p>
+	 * This ensures the parser or evaluator can correctly handle the subtraction operation
+	 * or unary operator semantics, avoiding confusion with a single signed number token.
+	 * <p>
+	 * Note that the method modifies the given {@code tokens} list in place.
+	 *
+	 * @param tokens
+	 * 	the list of tokens produced by the tokenizer that may contain signed number tokens
+	 * 	following a right parenthesis; this list is modified directly by the method
+	 */
+	private List<Token> postTokenProcessing(List<Token> tokens) {
+		for (int i = 0; i < tokens.size() - 1; i++) {
+			Token current = tokens.get(i);
+			Token next = tokens.get(i + 1);
+
+			if (current.type() == Token.Type.RIGHT_PAREN && next.type() == Token.Type.NUMBER) {
+				String value = next.value();
+				if (value.startsWith("+") || value.startsWith("-")) {
+					tokens.remove(i + 1);
+					tokens.add(i + 1, new Token(Token.Type.NUMBER, value.substring(1)));
+					tokens.add(i + 1, new Token(Token.Type.OPERATOR, String.valueOf(value.charAt(0))));
+				}
+			}
+		}
+
+		return tokens;
+	}
+
+	/**
 	 * Tokenizes the given mathematical input string.
 	 *
 	 * @param input
@@ -83,6 +128,8 @@ public class Tokenizer {
 
 			throw new IllegalArgumentException("Invalid character at position " + index + ": " + currentChar);
 		}
+
+		tokens = postTokenProcessing(tokens);
 
 		return tokens;
 	}
