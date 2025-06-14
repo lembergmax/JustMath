@@ -3,6 +3,7 @@ package com.mlprograms.justmath.calculator.internal;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
 import com.mlprograms.justmath.calculator.internal.token.Token;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -17,6 +18,7 @@ import java.util.Locale;
  * Supports full precision using BigDecimal.
  */
 @NoArgsConstructor
+@AllArgsConstructor
 public class Evaluator {
 
 	/**
@@ -32,19 +34,6 @@ public class Evaluator {
 	 * The mode used for trigonometric calculations (e.g., degrees or radians).
 	 */
 	private TrigonometricMode trigonometricMode;
-
-	/**
-	 * Constructs an Evaluator with the specified math context and trigonometric mode.
-	 *
-	 * @param mathContext
-	 * 	the MathContext specifying precision and rounding mode
-	 * @param trigonometricMode
-	 * 	the mode for trigonometric calculations (e.g., degrees or radians)
-	 */
-	public Evaluator(MathContext mathContext, TrigonometricMode trigonometricMode) {
-		this.mathContext = mathContext;
-		this.trigonometricMode = trigonometricMode;
-	}
 
 	/**
 	 * Applies the specified operator to the operands on the stack.
