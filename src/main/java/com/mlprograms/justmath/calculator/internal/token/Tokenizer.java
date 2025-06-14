@@ -170,9 +170,10 @@ public class Tokenizer {
 
 			// Insert * where implicit multiplication is likely
 			boolean needsMultiplication =
-				(current.type() == Token.Type.NUMBER && (next.type() == Token.Type.LEFT_PAREN || next.type() == Token.Type.FUNCTION)) ||
-					(current.type() == Token.Type.RIGHT_PAREN && (next.type() == Token.Type.NUMBER || next.type() == Token.Type.FUNCTION || next.type() == Token.Type.LEFT_PAREN)) ||
-					(current.type() == Token.Type.NUMBER && next.type() == Token.Type.FUNCTION);
+				current.type() == Token.Type.NUMBER
+					&& (next.type() == Token.Type.LEFT_PAREN || next.type() == Token.Type.FUNCTION)
+					|| current.type() == Token.Type.RIGHT_PAREN
+						   && (next.type() == Token.Type.NUMBER || next.type() == Token.Type.FUNCTION || next.type() == Token.Type.LEFT_PAREN);
 
 			if (needsMultiplication) {
 				tokens.add(i + 1, new Token(Token.Type.OPERATOR, "*"));
