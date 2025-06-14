@@ -169,6 +169,9 @@ public class CalculatorEngine {
 			// Parse to postfix notation using shunting yard algorithm
 			List<Token> postfix = parser.toPostfix(tokens);
 
+			System.out.println("Tokens: " + tokens);
+			System.out.println("Postfix Expression: " + postfix);
+
 			// Evaluate the postfix expression to a BigDecimal result
 			return evaluator.evaluate(postfix);
 		} catch (Exception e) {

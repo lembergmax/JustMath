@@ -1,6 +1,7 @@
 package com.mlprograms.justmath.bignumber.internal.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NonNull;
 
 import java.math.MathContext;
 
@@ -33,20 +34,23 @@ public class NumberTheoryMath {
 	 * @throws IllegalArgumentException
 	 * 	if a or b is not an integer
 	 */
-	public static BigNumber gcd(BigNumber a, BigNumber b) {
+	public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b) {
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("GCD requires integer values.");
 		}
 
-		a = a.abs();
-		b = b.abs();
+		BigNumber aClone = a.clone();
+		BigNumber bClone = b.clone();
+
+		aClone = aClone.abs();
+		bClone = bClone.abs();
 
 		while (b.isGreaterThan(ZERO)) {
-			BigNumber temp = b;
-			b = a.modulo(b);
-			a = temp;
+			BigNumber temp = bClone;
+			bClone = aClone.modulo(bClone);
+			aClone = temp;
 		}
-		return a;
+		return aClone;
 	}
 
 	/**
@@ -71,7 +75,7 @@ public class NumberTheoryMath {
 	 * @throws IllegalArgumentException
 	 * 	if a or b is not an integer
 	 */
-	public static BigNumber lcm(BigNumber a, BigNumber b, MathContext mathContext) {
+	public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext) {
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("LCM requires integer values.");
 		}

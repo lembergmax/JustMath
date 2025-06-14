@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -34,7 +35,7 @@ public class TwoDimensionalMath {
 	 *
 	 * @return the angle θ in radians as a {@link BigNumber}, within the range [-π, π]
 	 */
-	public static BigNumber atan2(BigNumber y, BigNumber x, MathContext mathContext, Locale locale) {
+	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 

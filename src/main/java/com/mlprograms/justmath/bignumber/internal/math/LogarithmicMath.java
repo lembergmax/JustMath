@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -43,7 +44,7 @@ public class LogarithmicMath {
 	 * @throws IllegalArgumentException
 	 * 	if argument is non‐positive
 	 */
-	public static BigNumber log2(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
 		}
@@ -76,7 +77,7 @@ public class LogarithmicMath {
 	 * @throws IllegalArgumentException
 	 * 	if argument is non‐positive
 	 */
-	public static BigNumber log10(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber log10(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
 		}
@@ -109,7 +110,7 @@ public class LogarithmicMath {
 	 * @throws IllegalArgumentException
 	 * 	if argument is non‐positive
 	 */
-	public static BigNumber ln(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Argument to ln must be positive and non-zero.");
 		}
@@ -143,7 +144,7 @@ public class LogarithmicMath {
 	 * @throws IllegalArgumentException
 	 * 	if number ≤ 0, or if base ≤ 0, or base == 1
 	 */
-	public static BigNumber logBase(BigNumber number, BigNumber base, MathContext mathContext, Locale locale) {
+	public static BigNumber logBase(@NonNull final BigNumber number, @NonNull final BigNumber base, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (number.isNegative() || number.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException("Number must be positive and non-zero.");
 		}

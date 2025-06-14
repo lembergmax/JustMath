@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -37,7 +38,7 @@ public class CombinatoricsMath {
 	 * @throws IllegalArgumentException
 	 * 	if {@code n} or {@code k} are not integers, or if {@code k > n}
 	 */
-	public static BigNumber combination(BigNumber n, BigNumber k, MathContext mathContext) {
+	public static BigNumber combination(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext) {
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
 		}
@@ -50,10 +51,12 @@ public class CombinatoricsMath {
 			return BigNumbers.ONE;
 		}
 
+		BigNumber kClone = k.clone();
+
 		// Use symmetry property: C(n, k) = C(n, n-k)
-		k = k.min(n.subtract(k));
+		kClone = kClone.min(n.subtract(kClone));
 		BigNumber c = BigNumbers.ONE;
-		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(k); i = i.add(BigNumbers.ONE)) {
+		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(kClone); i = i.add(BigNumbers.ONE)) {
 			c = c.multiply(n.subtract(i)).divide(i.add(BigNumbers.ONE), mathContext);
 		}
 
@@ -83,7 +86,7 @@ public class CombinatoricsMath {
 	 * @throws IllegalArgumentException
 	 * 	if {@code n} or {@code k} are not integers, or if {@code k > n}
 	 */
-	public static BigNumber permutation(BigNumber n, BigNumber k, MathContext mathContext, Locale locale) {
+	public static BigNumber permutation(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
 		}

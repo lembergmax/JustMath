@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -27,7 +28,7 @@ public class BasicMath {
 	 *
 	 * @return a new {@link BigNumber} representing the sum of {@code augend} and {@code addend}
 	 */
-	public static BigNumber add(BigNumber augend, BigNumber addend) {
+	public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend) {
 		return new BigNumber(augend.toBigDecimal().add(addend.toBigDecimal()).toPlainString());
 	}
 
@@ -41,7 +42,7 @@ public class BasicMath {
 	 *
 	 * @return a new {@link BigNumber} representing the result of the subtraction
 	 */
-	public static BigNumber subtract(BigNumber minuend, BigNumber subtrahend) {
+	public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend) {
 		return new BigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()).toPlainString());
 	}
 
@@ -55,7 +56,7 @@ public class BasicMath {
 	 *
 	 * @return a new {@link BigNumber} representing the product
 	 */
-	public static BigNumber multiply(BigNumber multiplicand, BigNumber multiplier) {
+	public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier) {
 		return new BigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()).toPlainString());
 	}
 
@@ -74,7 +75,7 @@ public class BasicMath {
 	 * @throws ArithmeticException
 	 * 	if the divisor is zero
 	 */
-	public static BigNumber divide(BigNumber dividend, BigNumber divisor, MathContext mathContext) {
+	public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext) {
 		if (divisor.compareTo(BigNumbers.ZERO) == 0) {
 			throw new ArithmeticException("Division by zero");
 		}
@@ -102,7 +103,7 @@ public class BasicMath {
 	 * @throws IllegalArgumentException
 	 * 	if either argument is negative or if the divisor is zero
 	 */
-	public static BigNumber modulo(BigNumber dividend, BigNumber divisor) {
+	public static BigNumber modulo(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor) {
 		if (divisor.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
 		}
@@ -157,7 +158,7 @@ public class BasicMath {
 	 * @implNote This method currently only supports {@code exponent ∈ ℕ₀} (non-negative integers).
 	 * 	To support rational or real exponents, implementations of logarithms and roots would be required.
 	 */
-	public static BigNumber power(BigNumber base, BigNumber exponent, MathContext mathContext, Locale locale) {
+	public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (!exponent.isInteger() || exponent.isNegative()) {
 			throw new IllegalArgumentException("Only non-negative integer exponents are supported in this implementation.");
 		}
@@ -194,7 +195,7 @@ public class BasicMath {
 	 * @throws IllegalArgumentException
 	 * 	if {@code argument} is negative or not an integer
 	 */
-	public static BigNumber factorial(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber factorial(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (!argument.isInteger()) {
 			throw new IllegalArgumentException("Factorial is only defined for integers.");
 		}

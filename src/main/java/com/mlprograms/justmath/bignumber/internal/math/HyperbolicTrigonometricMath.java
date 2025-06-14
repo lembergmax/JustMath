@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -41,7 +42,7 @@ public class HyperbolicTrigonometricMath {
 	 *
 	 * @return a {@link BigNumber} representing sinh(argument) calculated with the specified precision
 	 */
-	public static BigNumber sinh(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber sinh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.sinh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
@@ -62,7 +63,7 @@ public class HyperbolicTrigonometricMath {
 	 *
 	 * @return a {@link BigNumber} representing cosh(argument) calculated with the specified precision
 	 */
-	public static BigNumber cosh(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber cosh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.cosh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
@@ -83,7 +84,7 @@ public class HyperbolicTrigonometricMath {
 	 *
 	 * @return a {@link BigNumber} representing tanh(argument) calculated with the specified precision
 	 */
-	public static BigNumber tanh(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber tanh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.tanh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
@@ -109,7 +110,7 @@ public class HyperbolicTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if the calculation results in division by zero or undefined values
 	 */
-	public static BigNumber coth(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber coth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.coth(argument.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 

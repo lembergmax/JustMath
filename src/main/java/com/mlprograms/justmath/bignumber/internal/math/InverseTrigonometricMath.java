@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -46,7 +47,7 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
-	public static BigNumber asin(BigNumber argument, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+	public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
@@ -81,7 +82,7 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
-	public static BigNumber acos(BigNumber argument, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
@@ -113,7 +114,7 @@ public class InverseTrigonometricMath {
 	 *
 	 * @return a {@link BigNumber} representing the arctangent of the argument
 	 */
-	public static BigNumber atan(BigNumber argument, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+	public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal result = BigDecimalMath.atan(argument.toBigDecimal(), mathContext);
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
@@ -144,7 +145,7 @@ public class InverseTrigonometricMath {
 	 *
 	 * @return a {@link BigNumber} representing the arccotangent of the argument
 	 */
-	public static BigNumber acot(BigNumber argument, MathContext mathContext, Locale locale) {
+	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(BigDecimalMath.acot(argument.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
