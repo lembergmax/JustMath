@@ -1725,7 +1725,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if division by zero occurs (e.g. if either number is zero)
 	 */
 	public BigNumber lcm(BigNumber other, MathContext mathContext) {
-		return multiply(other).divide(gcd(other), mathContext);
+		return NumberTheoryMath.lcm(this, other, mathContext);
 	}
 
 	/**
