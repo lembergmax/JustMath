@@ -48,7 +48,7 @@ public class Tokenizer {
 		while (index < expression.length()) {
 			char currentChar = expression.charAt(index);
 
-			if (isNegativeNumberStart(expression, index)) {
+			if (isSignedNumberStart(expression, index)) {
 				index = tokenizeNumber(expression, index, tokens);
 				continue;
 			}
@@ -120,11 +120,11 @@ public class Tokenizer {
 	 * @throws IndexOutOfBoundsException
 	 * 	if the {@code index} is not a valid position in the expression
 	 */
-	private boolean isNegativeNumberStart(String expression, int index) {
+	private boolean isSignedNumberStart(String expression, int index) {
 		char c = expression.charAt(index);
 
-		// directly a negative number: -5 or -3.2
-		if (c == '-' && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
+		// + or - at the start of the expression
+		if ((c == '-' || c == '+') && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
 			// check whether the minus sign is at a valid position
 			if (index == 0) {
 				return true; // at the very beginning
@@ -182,8 +182,8 @@ public class Tokenizer {
 	private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
 		int index = startIndex;
 
-		// optional negative sign
-		if (expression.charAt(index) == '-') {
+		// optional positive or negative sign
+		if (expression.charAt(index) == '-' || expression.charAt(index) == '+') {
 			index++;
 		}
 
