@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
@@ -44,7 +45,7 @@ public class CoordinateConversionMath {
 	public static BigNumberCoordinate polarToCartesianCoordinates(BigNumber r, BigNumber theta, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
 		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
 		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y);
+		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN);
 	}
 
 	/**
@@ -58,9 +59,9 @@ public class CoordinateConversionMath {
 	 * The angle θ is returned in degrees for consistency and ease of use.
 	 *
 	 * @param x
-	 * 	the x-coordinate in Cartesian system
+	 * 	the x-coordinate in a Cartesian system
 	 * @param y
-	 * 	the y-coordinate in Cartesian system
+	 * 	the y-coordinate in a Cartesian system
 	 * @param mathContext
 	 * 	the {@link MathContext} controlling precision and rounding for calculations
 	 * @param locale
@@ -75,7 +76,7 @@ public class CoordinateConversionMath {
 		BigNumber theta = y.atan2(x, mathContext, locale);
 		BigNumber thetaDeg = theta.toDegrees();
 
-		return new BigNumberCoordinate(r, thetaDeg);
+		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR);
 	}
 
 }
