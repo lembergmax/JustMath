@@ -48,7 +48,7 @@ public class Tokenizer {
 		while (index < expression.length()) {
 			char currentChar = expression.charAt(index);
 
-			if (isDigitOrDecimal(currentChar)) {
+			if (isNegativeNumberStart(expression, index)) {
 				index = tokenizeNumber(expression, index, tokens);
 				continue;
 			}
@@ -85,6 +85,58 @@ public class Tokenizer {
 		}
 
 		return tokens;
+	}
+
+	/**
+	 * Determines whether the character at the specified index in the given expression
+	 * marks the beginning of a number, including the case of a negative number.
+	 * <p>
+	 * This method handles both explicitly negative numbers (e.g., {@code -5}, {@code -3.2})
+	 * and regular numeric values (e.g., {@code 5}, {@code 3.2}). A minus sign is only
+	 * interpreted as indicating a negative number if it is followed by a digit or a
+	 * decimal separator. It is either at the very start of the expression or
+	 * preceded by a valid context (such as a left parenthesis or an operator).
+	 * <p>
+	 * Examples of valid negative number starts:
+	 * <ul>
+	 *   <li>{@code "-5"} (at the beginning)</li>
+	 *   <li>{@code "(-3"} (after an opening parenthesis)</li>
+	 *   <li>{@code "*-2"} (after an operator)</li>
+	 * </ul>
+	 * Examples that are not valid negative number starts:
+	 * <ul>
+	 *   <li>{@code "5-3"} (the minus is treated as a subtraction operator)</li>
+	 *   <li>{@code "x-4"} (minus after a variable, not a number start)</li>
+	 * </ul>
+	 *
+	 * @param expression
+	 * 	the full mathematical expression as a string
+	 * @param index
+	 * 	the position of the character to check within the expression
+	 *
+	 * @return {@code true} if the character at the specified index starts a (possibly negative) number;
+	 *   {@code false} otherwise
+	 *
+	 * @throws IndexOutOfBoundsException
+	 * 	if the {@code index} is not a valid position in the expression
+	 */
+	private boolean isNegativeNumberStart(String expression, int index) {
+		char c = expression.charAt(index);
+
+		// directly a negative number: -5 or -3.2
+		if (c == '-' && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
+			// check whether the minus sign is at a valid position
+			if (index == 0) {
+				return true; // at the very beginning
+			}
+
+			char prev = expression.charAt(index - 1);
+			// valid cases: minus is preceded by '(' or an operator
+			return isLeftParenthesis(prev) || validOperatorsAndFunctions.contains(String.valueOf(prev));
+		}
+
+		// regular number without minus
+		return isDigitOrDecimal(c);
 	}
 
 	/**
@@ -129,9 +181,16 @@ public class Tokenizer {
 	 */
 	private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
 		int index = startIndex;
+
+		// optional negative sign
+		if (expression.charAt(index) == '-') {
+			index++;
+		}
+
 		while (index < expression.length() && isDigitOrDecimal(expression.charAt(index))) {
 			index++;
 		}
+
 		String number = expression.substring(startIndex, index);
 		tokens.add(new Token(Token.Type.NUMBER, number));
 		return index;
