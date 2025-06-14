@@ -1,6 +1,5 @@
 package com.mlprograms.justmath.bignumber.internal;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Optional;
@@ -70,8 +69,8 @@ public enum ArithmeticOperator {
 	COMBINATION_O("nCr", false, 6, 1),
 	COMBINATION_F2("comb", true, 6, 2),
 
-	POLARTOCARTESIAN_F2("Pol", true, 6, 2),
-	CARTESIANTOPOLAR_F2("Rec", true, 6, 2),
+	CARTESIANTOPOLAR_F2("Pol", true, 6, 2),
+	POLARTOCARTESIAN_F2("Rec", true, 6, 2),
 
 	GCD_F2("GCD", true, 6, 2),
 	LCM_F2("LCM", true, 6, 2),
