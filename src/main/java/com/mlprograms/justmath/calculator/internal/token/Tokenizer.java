@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Typical usage:
  * <pre>
  *   Tokenizer tokenizer = new Tokenizer();
- *   List&lt;Token&gt; tokens = tokenizer.tokenize("3 + √(4)");
+ *   List<Token> tokens = tokenizer.tokenize("3 + √(4)");
  * </pre>
  * This results in tokens for NUMBER(3), OPERATOR(+), FUNCTION(√), LEFT_PAREN, NUMBER(4), RIGHT_PAREN.
  */
@@ -94,7 +94,7 @@ public class Tokenizer {
 	 * Example usage:
 	 * <pre>
 	 *   Tokenizer tokenizer = new Tokenizer();
-	 *   List&lt;Token&gt; tokens = tokenizer.tokenize("3 + (-4) * pi");
+	 *   List<Token> tokens = tokenizer.tokenize("3 + (-4) * pi");
 	 * </pre>
 	 * Produces tokens for NUMBER(3), OPERATOR(+), LEFT_PAREN, OPERATOR(-), NUMBER(4), RIGHT_PAREN,
 	 * OPERATOR(*), NUMBER(3.141592653589793...).
