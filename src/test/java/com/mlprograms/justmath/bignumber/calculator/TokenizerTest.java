@@ -228,4 +228,172 @@ class TokenizerTest {
 		), tokens);
 	}
 
+	@Test
+	void testEmptyInputReturnsEmptyList() {
+		List<Token> tokens = tokenizer.tokenize("");
+		assertTrue(tokens.isEmpty(), "Expected no tokens for empty input");
+	}
+
+	@Test
+	void testOnlyWhitespaceReturnsEmptyList() {
+		List<Token> tokens = tokenizer.tokenize("   \t \n ");
+		assertTrue(tokens.isEmpty(), "Expected no tokens for whitespace-only input");
+	}
+
+	@Test
+	void testImplicitMultiplicationParenthesisNumber() {
+		// (2)3 → (2)*3
+		List<Token> tokens = tokenizer.tokenize("(2)3");
+		assertEquals(List.of(
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.NUMBER, "3")
+		), tokens);
+	}
+
+	@Test
+	void testImplicitMultiplicationNumberParenthesis() {
+		// 2(3) → 2*(3)
+		List<Token> tokens = tokenizer.tokenize("2(3)");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testImplicitMultiplicationParenthesisParenthesis() {
+		// (2)(3) → (2)*(3)
+		List<Token> tokens = tokenizer.tokenize("(2)(3)");
+		assertEquals(List.of(
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testImplicitMultiplicationNumberFunction() {
+		// 2√4 → 2*√4
+		List<Token> tokens = tokenizer.tokenize("2√(4)");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.FUNCTION, "√"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "4"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testDecimalLeadingDot() {
+		// .5 → NUMBER(".5")
+		List<Token> tokens = tokenizer.tokenize(".5");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, ".5")
+		), tokens);
+	}
+
+	@Test
+	void testDecimalTrailingDot() {
+		// 5. → NUMBER("5.")
+		List<Token> tokens = tokenizer.tokenize("5.");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "5.")
+		), tokens);
+	}
+
+	@Test
+	void testMultiDigitNumber() {
+		List<Token> tokens = tokenizer.tokenize("12345");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "12345")
+		), tokens);
+	}
+
+	@Test
+	void testUpperCaseConstants() {
+		List<Token> piTokens = tokenizer.tokenize("PI");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, Values.PI.toString())
+		), piTokens);
+
+		List<Token> eTokens = tokenizer.tokenize("E");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, Values.E.toString())
+		), eTokens);
+	}
+
+	@Test
+	void testNestedParentheses() {
+		List<Token> tokens = tokenizer.tokenize("((3))");
+		assertEquals(List.of(
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testTrailingOperatorIsTokenized() {
+		// Parser will complain later, but tokenizer must emit the '+'
+		List<Token> tokens = tokenizer.tokenize("3+");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.OPERATOR, "+")
+		), tokens);
+	}
+
+	@Test
+	void testMultipleSemicolons() {
+		List<Token> tokens = tokenizer.tokenize("1;;2");
+		assertEquals(List.of(
+			new Token(Token.Type.NUMBER, "1"),
+			new Token(Token.Type.SEMICOLON, ";"),
+			new Token(Token.Type.SEMICOLON, ";"),
+			new Token(Token.Type.NUMBER, "2")
+		), tokens);
+	}
+
+	@Test
+	void testLongExpressionWithAllFeatures() {
+		String expr = "(-.5)2+PI*e--√(16);(3)4";
+		List<Token> tokens = tokenizer.tokenize(expr);
+		assertEquals(List.of(
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "-.5"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.OPERATOR, "+"),
+			new Token(Token.Type.NUMBER, Values.PI.toString()),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.NUMBER, Values.E.toString()),
+			new Token(Token.Type.OPERATOR, "+"),
+			new Token(Token.Type.FUNCTION, "√"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "16"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.SEMICOLON, ";"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.OPERATOR, "*"),
+			new Token(Token.Type.NUMBER, "4")
+		), tokens);
+	}
+
+
 }
