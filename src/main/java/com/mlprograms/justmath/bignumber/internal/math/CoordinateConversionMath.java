@@ -46,7 +46,7 @@ public class CoordinateConversionMath {
 	public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
 		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN);
+		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN).trim();
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class CoordinateConversionMath {
 		BigNumber theta = y.atan2(x, mathContext, locale);
 		BigNumber thetaDeg = theta.toDegrees();
 
-		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR);
+		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR).trim();
 	}
 
 }
