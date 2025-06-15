@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.math.BasicMath.exp;
+
 /**
  * Utility class providing high‐precision logarithmic functions on {@link BigNumber} values.
  * <p>
@@ -45,7 +48,7 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
+		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
 		}
 		return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -75,7 +78,7 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber log10(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
+		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
 		}
 		return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -105,10 +108,20 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (argument.isNegative() || argument.isEqualTo(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("Argument to ln must be positive and non-zero.");
-		}
-		return new BigNumber(BigDecimalMath.log(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+		if (argument.compareTo(ZERO) <= 0)
+			throw new ArithmeticException("ln(x) undefined for x <= 0");
+
+		BigDecimal last;
+		BigDecimal result = BigDecimal.ZERO;
+		int iterations = 0;
+
+		do {
+			last = result;
+			result = result.subtract(BigDecimal.ONE.subtract(argument.divide(exp(new BigNumber(result.toPlainString(), locale, mathContext), mathContext, locale), mathContext).toBigDecimal()), mathContext);
+		} while (result.subtract(last).abs().compareTo(BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision())) > 0
+			         && ++iterations < 50);
+
+		return new BigNumber(result.toPlainString(), locale).trim();
 	}
 
 	/**
@@ -136,10 +149,10 @@ public class LogarithmicMath {
 	 * 	if number ≤ 0, or if base ≤ 0, or base == 1
 	 */
 	public static BigNumber logBase(@NonNull final BigNumber number, @NonNull final BigNumber base, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (number.isNegative() || number.isEqualTo(BigNumbers.ZERO)) {
+		if (number.isNegative() || number.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Number must be positive and non-zero.");
 		}
-		if (base.isNegative() || base.isEqualTo(BigNumbers.ZERO) || base.isEqualTo(BigNumbers.ONE)) {
+		if (base.isNegative() || base.isEqualTo(ZERO) || base.isEqualTo(BigNumbers.ONE)) {
 			throw new IllegalArgumentException("Base must be positive and not equal to 1.");
 		}
 
