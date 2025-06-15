@@ -13,6 +13,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.DEFAULT_DIVISION_PRECISION;
+
 /**
  * ExactCalculatorEngine.java
  * <p>
@@ -22,7 +24,6 @@ import java.util.List;
 @Getter
 public class CalculatorEngine {
 
-	public static final int DEFAULT_DIVISION_PRECISION = 1000;
 	/**
 	 * Tokenizer instance used to convert input expressions into tokens.
 	 */
