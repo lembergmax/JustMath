@@ -50,7 +50,7 @@ public class NumberTheoryMath {
 			bClone = aClone.modulo(bClone);
 			aClone = temp;
 		}
-		return aClone;
+		return aClone.trim();
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class NumberTheoryMath {
 		BigNumber product = a.multiply(b).abs();
 		BigNumber divisor = gcd(a, b);
 
-		return product.divide(divisor, mathContext);
+		return product.divide(divisor, mathContext).trim();
 	}
 
 }
