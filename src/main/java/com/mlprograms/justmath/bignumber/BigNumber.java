@@ -605,6 +605,30 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Computes the exponential function \(e^x\), where \(x\) is this {@code BigNumber} instance,
+	 * using the default {@link MathContext} and {@link Locale} configured in this instance.
+	 *
+	 * @return a new {@code BigNumber} representing \(e^{this}\)
+	 */
+	public BigNumber exp() {
+		return exp(mathContext, locale);
+	}
+
+	/**
+	 * Computes the exponential function e^x, where x is this {@link BigNumber} instance.
+	 *
+	 * @param mathContext
+	 * 	the context defining precision and rounding
+	 * @param locale
+	 * 	the locale for result formatting
+	 *
+	 * @return a new {@link BigNumber} representing e^this
+	 */
+	public BigNumber exp(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return BasicMath.exp(this, mathContext, locale);
+	}
+
+	/**
 	 * Computes the square root of this {@code BigNumber} using the default
 	 * {@link MathContext} and {@link Locale} configured in this instance.
 	 *
