@@ -276,40 +276,12 @@ public class Evaluator {
 		if (result instanceof BigNumber bn) {
 			finalResult = bn;
 		} else if (result instanceof BigNumberCoordinate coordinate) {
-			finalResult = new BigNumberWrapper(formatCoordinate(coordinate));
+			finalResult = new BigNumberWrapper(coordinate.toString());
 		} else {
 			throw new IllegalStateException("Unsupported result type: " + result);
 		}
 
 		return finalResult;
-	}
-
-	/**
-	 * Formats a {@link BigNumberCoordinate} into a string representation.
-	 * <p>
-	 * The formatting is based on the coordinate type:
-	 * <ul>
-	 *   <li>For {@code CARTESIAN}, returns a string like {@code "x=...; y=..."}.</li>
-	 *   <li>For {@code POLAR}, returns a string like {@code "r=...; θ=..."}.</li>
-	 *   <li>For unknown types, falls back to a simple comma-separated string.</li>
-	 * </ul>
-	 *
-	 * @param coordinate
-	 * 	the coordinate to format
-	 *
-	 * @return a human-readable string representation of the coordinate
-	 */
-	private String formatCoordinate(BigNumberCoordinate coordinate) {
-		String x = coordinate.getX().toString();
-		String y = coordinate.getY().toString();
-
-		if (coordinate.getType() == CoordinateType.CARTESIAN) {
-			return "x=" + x + "; y=" + y;
-		} else if (coordinate.getType() == CoordinateType.POLAR) {
-			return "r=" + x + "; θ=" + y;
-		} else {
-			return x + ", " + y; // Fallback
-		}
 	}
 
 	/**
