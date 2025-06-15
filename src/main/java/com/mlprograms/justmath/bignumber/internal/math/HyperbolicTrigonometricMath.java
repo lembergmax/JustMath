@@ -43,7 +43,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing sinh(argument) calculated with the specified precision
 	 */
 	public static BigNumber sinh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.sinh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.sinh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing cosh(argument) calculated with the specified precision
 	 */
 	public static BigNumber cosh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.cosh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.cosh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing tanh(argument) calculated with the specified precision
 	 */
 	public static BigNumber tanh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.tanh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.tanh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class HyperbolicTrigonometricMath {
 	 * 	if the calculation results in division by zero or undefined values
 	 */
 	public static BigNumber coth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.coth(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.coth(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 }
