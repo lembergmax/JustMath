@@ -1982,7 +1982,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
 	/**
 	 * Removes trailing zeros from a numeric string (typically the decimal part).
-	 * If the string only contains zeros, returns an empty string.
+	 * If the string only contains zeros, it returns an empty string.
 	 *
 	 * @param string
 	 * 	the string to trim trailing zeros from
