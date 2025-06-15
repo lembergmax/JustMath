@@ -33,13 +33,6 @@ import lombok.NonNull;
  * functions that return 2D results, such as {@code atan2}, polar-to-Cartesian transformations,
  * or complex number representations.
  * </p>
- *
- * @param x
- * 	the first coordinate component (x or r); must not be {@code null}
- * @param y
- * 	the second coordinate component (y or θ); must not be {@code null}
- * @param type
- * 	the coordinate type indicating the meaning of {@code x} and {@code y}; must not be {@code null}
  */
 @Getter
 @AllArgsConstructor
