@@ -173,7 +173,7 @@ public class CalculatorEngine {
 			System.out.println("Postfix Expression: " + postfix);
 
 			// Evaluate the postfix expression to a BigDecimal result
-			return evaluator.evaluate(postfix);
+			return evaluator.evaluate(postfix).trim();
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
