@@ -60,7 +60,7 @@ public class CombinatoricsMath {
 			c = c.multiply(n.subtract(i)).divide(i.add(BigNumbers.ONE), mathContext);
 		}
 
-		return c;
+		return c.trim();
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class CombinatoricsMath {
 
 		BigNumber nFactorial = n.factorial(mathContext, locale);
 		BigNumber nMinusKFactorial = n.subtract(k).factorial(mathContext, locale);
-		return nFactorial.divide(nMinusKFactorial, mathContext);
+		return nFactorial.divide(nMinusKFactorial, mathContext).trim();
 	}
 
 }
