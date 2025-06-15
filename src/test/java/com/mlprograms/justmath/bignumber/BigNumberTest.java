@@ -113,6 +113,10 @@ public class BigNumberTest {
 			num1 = new BigNumber("1.1");
 			result = num1.power(new BigNumber("2"));
 			assertEquals("1.21", result.toString(), "1.1^2 should be 1.21");
+
+			num1 = new BigNumber("-1.2");
+			result = num1.power(new BigNumber("-2.99"));
+			assertEquals("-0.579759767", result.trim().toString().substring(0, 12), "1.1^2 should be -0.579759767");
 		}
 
 		@Test
@@ -153,6 +157,53 @@ public class BigNumberTest {
 			num = new BigNumber("0");
 			result = num.squareRoot();
 			assertEquals("0", result.toString(), "Square root of 0 should be 0");
+		}
+
+		@Test
+		void cubicRootTest() {
+			BigNumber num = new BigNumber("27");
+			BigNumber result = num.cubicRoot();
+			assertEquals("3", result.toString(), "Cubic root of 27 should be 3");
+
+			num = new BigNumber("0");
+			result = num.cubicRoot();
+			assertEquals("0", result.toString(), "Cubic root of 0 should be 0");
+
+			num = new BigNumber("8");
+			result = num.cubicRoot();
+			assertEquals("2", result.toString(), "Cubic root of 8 should be 2");
+
+			num = new BigNumber("-27");
+			result = num.cubicRoot();
+			assertEquals("-3", result.toString(), "Cubic root of -27 should be -3");
+		}
+
+		@Test
+		void nthRootTest() {
+			BigNumber num = new BigNumber("81");
+			BigNumber root = new BigNumber("4");
+			BigNumber result = num.nthRoot(root);
+			assertEquals("3", result.toString(), "4th root of 81 should be 3");
+
+			num = new BigNumber("32");
+			root = new BigNumber("5");
+			result = num.nthRoot(root);
+			assertEquals("2", result.toString(), "5th root of 32 should be 2");
+
+			num = new BigNumber("1");
+			root = new BigNumber("100");
+			result = num.nthRoot(root);
+			assertEquals("1", result.toString(), "Any root of 1 should be 1");
+
+			num = new BigNumber("-8");
+			root = new BigNumber("3");
+			result = num.nthRoot(root);
+			assertEquals("-2", result.toString(), "3rd root of -8 should be -2");
+
+			BigNumber finalNum = new BigNumber("-16");
+			BigNumber finalRoot = new BigNumber("4");
+			assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
+				"Even root of negative number should throw exception");
 		}
 
 	}
@@ -269,6 +320,56 @@ public class BigNumberTest {
 
 			assertEquals("14.6540207", result.getX().toString().substring(0, 10));
 			assertEquals("28.5344307", result.getY().toString().substring(0, 10));
+		}
+
+	}
+
+	@Nested
+	public class HyperbolicTrigonometricMath {
+
+		@Test
+		void sinhTest() {
+
+		}
+
+		@Test
+		void coshTest() {
+
+		}
+
+		@Test
+		void tanhTest() {
+
+		}
+
+		@Test
+		void cothTest() {
+
+		}
+
+	}
+
+	@Nested
+	public class InverseHyperbolicTrigonometricMath {
+
+		@Test
+		void asinhTest() {
+
+		}
+
+		@Test
+		void acoshTest() {
+
+		}
+
+		@Test
+		void atanhTest() {
+
+		}
+
+		@Test
+		void acothTest() {
+
 		}
 
 	}
