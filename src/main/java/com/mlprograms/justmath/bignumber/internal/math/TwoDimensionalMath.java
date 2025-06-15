@@ -36,7 +36,7 @@ public class TwoDimensionalMath {
 	 * @return the angle θ in radians as a {@link BigNumber}, within the range [-π, π]
 	 */
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 }

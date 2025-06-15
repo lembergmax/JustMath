@@ -91,7 +91,7 @@ public class Evaluator {
 			return bn;
 		}
 		if (object instanceof BigNumberCoordinate coordinate) {
-			return coordinate.x(); // Use X coordinate for calculations
+			return coordinate.getX(); // Use X coordinate for calculations
 		}
 
 		throw new IllegalArgumentException("Expected BigNumber or coordinate, got: " + object);
@@ -177,11 +177,11 @@ public class Evaluator {
 			case RANDINT_F2 -> first.randomIntegerForRange(second);
 			case POLARTOCARTESIAN_F2 -> {
 				BigNumberCoordinate coordinates = CoordinateConversionMath.polarToCartesianCoordinates(first, second, mathContext, trigonometricMode, CALCULATION_LOCALE);
-				yield new BigNumberCoordinate(coordinates.x(), coordinates.y(), CoordinateType.CARTESIAN);
+				yield new BigNumberCoordinate(coordinates.getX(), coordinates.getY(), CoordinateType.CARTESIAN);
 			}
 			case CARTESIANTOPOLAR_F2 -> {
 				BigNumberCoordinate coordinates = CoordinateConversionMath.cartesianToPolarCoordinates(first, second, mathContext, CALCULATION_LOCALE);
-				yield new BigNumberCoordinate(coordinates.x(), coordinates.y(), CoordinateType.POLAR);
+				yield new BigNumberCoordinate(coordinates.getX(), coordinates.getY(), CoordinateType.POLAR);
 			}
 			default -> throw new IllegalArgumentException("Unsupported two-operand function: " + operator);
 		};
@@ -300,12 +300,12 @@ public class Evaluator {
 	 * @return a human-readable string representation of the coordinate
 	 */
 	private String formatCoordinate(BigNumberCoordinate coordinate) {
-		String x = coordinate.x().toString();
-		String y = coordinate.y().toString();
+		String x = coordinate.getX().toString();
+		String y = coordinate.getY().toString();
 
-		if (coordinate.type() == CoordinateType.CARTESIAN) {
+		if (coordinate.getType() == CoordinateType.CARTESIAN) {
 			return "x=" + x + "; y=" + y;
-		} else if (coordinate.type() == CoordinateType.POLAR) {
+		} else if (coordinate.getType() == CoordinateType.POLAR) {
 			return "r=" + x + "; θ=" + y;
 		} else {
 			return x + ", " + y; // Fallback
