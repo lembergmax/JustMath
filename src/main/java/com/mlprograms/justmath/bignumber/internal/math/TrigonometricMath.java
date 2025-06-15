@@ -39,7 +39,7 @@ public class TrigonometricMath {
 	 */
 	public static BigNumber sin(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
-		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class TrigonometricMath {
 	 */
 	public static BigNumber cos(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
-		return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class TrigonometricMath {
 	 */
 	public static BigNumber tan(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
-		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class TrigonometricMath {
 	 */
 	public static BigNumber cot(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
-		return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale).trim();
 	}
 
 }
