@@ -52,7 +52,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale);
+		return new BigNumber(result.toPlainString(), locale).trim();
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale);
+		return new BigNumber(result.toPlainString(), locale).trim();
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale);
+		return new BigNumber(result.toPlainString(), locale).trim();
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class InverseTrigonometricMath {
 	 * @return a {@link BigNumber} representing the arccotangent of the argument
 	 */
 	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.acot(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.acot(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 }
