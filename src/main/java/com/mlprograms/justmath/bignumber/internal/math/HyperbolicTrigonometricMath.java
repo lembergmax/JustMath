@@ -7,6 +7,8 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+
 /**
  * Provides high-precision implementations of hyperbolic trigonometric functions
  * using {@link BigNumber} for arbitrary precision arithmetic.
@@ -22,6 +24,9 @@ import java.util.Locale;
  *   <li>{@link #tanh(BigNumber, MathContext, Locale)} - Hyperbolic tangent</li>
  *   <li>{@link #coth(BigNumber, MathContext, Locale)} - Hyperbolic cotangent</li>
  * </ul>
+ * <br>
+ * <strong>Restrictions:</strong> None. This function is defined for all real input values.
+ * <p>However, be aware that extremely large arguments may cause performance or overflow issues due to exponential growth.</p>
  */
 public class HyperbolicTrigonometricMath {
 
@@ -91,15 +96,19 @@ public class HyperbolicTrigonometricMath {
 	/**
 	 * Calculates the hyperbolic cotangent of the given argument.
 	 * <p>
-	 * The hyperbolic cotangent function is defined as the reciprocal of the hyperbolic tangent:
+	 * The hyperbolic cotangent function is defined as:
 	 * <pre>
-	 * coth(x) = 1 / tanh(x)
+	 *     coth(x) = 1 / tanh(x)
 	 * </pre>
 	 * <p>
-	 * Note that coth(x) is undefined for x = 0, and the caller should handle such cases appropriately.
+	 * <strong>Restrictions:</strong>
+	 * <ul>
+	 *   <li>This function is <strong>undefined for x = 0</strong>. Division by zero will occur.</li>
+	 *   <li>Very small values close to zero may lead to extreme outputs (positive or negative infinity-like behavior).</li>
+	 * </ul>
 	 *
 	 * @param argument
-	 * 	the input value for which to compute coth
+	 * 	the input value for which to compute coth (must not be zero)
 	 * @param mathContext
 	 * 	the {@link MathContext} specifying precision and rounding behavior
 	 * @param locale
@@ -108,9 +117,13 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing coth(argument) calculated with the specified precision
 	 *
 	 * @throws ArithmeticException
-	 * 	if the calculation results in division by zero or undefined values
+	 * 	if {@code argument} is zero (undefined result due to division by zero)
 	 */
 	public static BigNumber coth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (argument.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("argument cannot be zero");
+		}
+		
 		return new BigNumber(BigDecimalMath.coth(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
