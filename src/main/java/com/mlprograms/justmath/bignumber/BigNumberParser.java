@@ -1,12 +1,13 @@
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
 import com.mlprograms.justmath.bignumber.internal.NumberChecker;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Objects;
 
 import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
 
@@ -32,11 +33,9 @@ public class BigNumberParser {
 	 *
 	 * @return the parsed {@link BigNumber}
 	 */
-	BigNumber parse(@NonNull String input, @NonNull Locale locale) {
-		Objects.requireNonNull(locale, "Locale must not be null");
-
+	BigNumber parse(@NonNull final String input, @NonNull final Locale locale) {
 		if (input.isBlank() || !NumberChecker.isNumber(input, locale)) {
-			return defaultBigNumber();
+			return getDefaultBigNumber();
 		}
 
 		String normalized = normalize(input.trim(), locale);
@@ -55,9 +54,9 @@ public class BigNumberParser {
 	 *
 	 * @return parsed {@link BigNumber} or default zero BigNumber if parsing fails
 	 */
-	BigNumber parseAutoDetect(@NonNull String input) {
+	BigNumber parseAutoDetect(@NonNull final String input) {
 		if (input.isBlank()) {
-			return defaultBigNumber();
+			return getDefaultBigNumber();
 		}
 
 		for (Locale locale : LocalesConfig.getSupportedLocales()) {
@@ -65,7 +64,8 @@ public class BigNumberParser {
 				return parse(input, locale);
 			}
 		}
-		return defaultBigNumber();
+
+		return getDefaultBigNumber();
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class BigNumberParser {
 	 *
 	 * @return formatted string with grouping and targetLocale decimal separator
 	 */
-	BigNumber format(@NonNull BigNumber number, @NonNull Locale targetLocale) {
+	BigNumber format(@NonNull final BigNumber number, @NonNull final Locale targetLocale) {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(targetLocale);
 		char groupingSeparator = symbols.getGroupingSeparator();
 		char decimalSeparator = symbols.getDecimalSeparator();
@@ -113,7 +113,7 @@ public class BigNumberParser {
 	 *
 	 * @return string with grouping separators inserted
 	 */
-	StringBuilder getGroupedBeforeDecimal(@NonNull String integerPart, char groupingSeparator) {
+	StringBuilder getGroupedBeforeDecimal(@NonNull final String integerPart, final char groupingSeparator) {
 		StringBuilder grouped = new StringBuilder();
 
 		int len = integerPart.length();
@@ -133,7 +133,7 @@ public class BigNumberParser {
 	 * Normalizes the input by removing grouping separators
 	 * and converting the decimal separator to '.' (US format).
 	 */
-	private String normalize(String value, Locale fromLocale) {
+	private String normalize(@NonNull final String value, @NonNull final Locale fromLocale) {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(fromLocale);
 		char groupingSeparator = symbols.getGroupingSeparator();
 		char decimalSeparator = symbols.getDecimalSeparator();
@@ -154,17 +154,20 @@ public class BigNumberParser {
 	 *
 	 * @return a BigNumber representing the parsed value, with correct sign and parts
 	 */
-	private BigNumber extractParts(String normalizedValue, Locale originalLocale) {
-		boolean isNegative = normalizedValue.startsWith("-");
+	private BigNumber extractParts(@NonNull final String normalizedValue, @NonNull final Locale originalLocale) {
+		String nomalizedString = normalizedValue;
+		boolean isNegative = nomalizedString.startsWith("-");
 		if (isNegative) {
-			normalizedValue = normalizedValue.substring(1);
+			nomalizedString = nomalizedString.substring(1);
 		}
 
-		String[] parts = normalizedValue.split("\\.", 2);
+		String[] parts = nomalizedString.split("\\.", 2);
 		String beforeDecimal = parts[ 0 ];
 		String afterDecimal = (parts.length > 1) ? parts[ 1 ] : "0";
 
 		return BigNumber.builder()
+			       .mathContext(BigNumbers.DEFAULT_MATH_CONTEXT)
+			       .trigonometricMode(TrigonometricMode.DEG)
 			       .locale(originalLocale)
 			       .valueBeforeDecimal(beforeDecimal)
 			       .valueAfterDecimal(afterDecimal)
@@ -177,7 +180,7 @@ public class BigNumberParser {
 	 *
 	 * @return BigNumber with zero values
 	 */
-	private BigNumber defaultBigNumber() {
+	private BigNumber getDefaultBigNumber() {
 		return ZERO;
 	}
 
