@@ -29,7 +29,7 @@ public class BasicMath {
 	 * @return a new {@link BigNumber} representing the sum of {@code augend} and {@code addend}
 	 */
 	public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend) {
-		return new BigNumber(augend.toBigDecimal().add(addend.toBigDecimal()).toPlainString());
+		return new BigNumber(augend.toBigDecimal().add(addend.toBigDecimal()).toPlainString()).trim();
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class BasicMath {
 	 * @return a new {@link BigNumber} representing the result of the subtraction
 	 */
 	public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend) {
-		return new BigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()).toPlainString());
+		return new BigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()).toPlainString()).trim();
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class BasicMath {
 	 * @return a new {@link BigNumber} representing the product
 	 */
 	public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier) {
-		return new BigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()).toPlainString());
+		return new BigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()).toPlainString()).trim();
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class BasicMath {
 			throw new ArithmeticException("Division by zero");
 		}
 
-		return new BigNumber(dividend.toBigDecimal().divide(divisor.toBigDecimal(), mathContext).toPlainString());
+		return new BigNumber(dividend.toBigDecimal().divide(divisor.toBigDecimal(), mathContext).toPlainString()).trim();
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class BasicMath {
 			remainder = remainder.subtract(divisor);
 		}
 
-		return remainder;
+		return remainder.trim();
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class BasicMath {
 			count = count.subtract(BigNumbers.ONE);
 		}
 
-		return new BigNumber(result.toString(), locale, mathContext);
+		return new BigNumber(result.toString(), locale, mathContext).trim();
 	}
 
 	/**
@@ -217,7 +217,7 @@ public class BasicMath {
 			counter = counter.subtract(BigNumbers.ONE);
 		}
 
-		return new BigNumber(result.toString(), locale, mathContext);
+		return new BigNumber(result.toString(), locale, mathContext).trim();
 	}
 
 }
