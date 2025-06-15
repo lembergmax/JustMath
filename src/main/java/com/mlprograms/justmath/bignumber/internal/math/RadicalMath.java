@@ -34,7 +34,7 @@ public class RadicalMath {
 	 * @return the square root of the radicand
 	 */
 	public static BigNumber squareRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), TWO.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), TWO.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -56,7 +56,7 @@ public class RadicalMath {
 	 * @return the cubic root of the radicand
 	 */
 	public static BigNumber cubicRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), THREE.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), THREE.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class RadicalMath {
 		if (radicand.isNegative() || index.isNegative()) {
 			throw new IllegalArgumentException("Cannot calculate nth root with negative index or negative radicand.");
 		}
-		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 }
