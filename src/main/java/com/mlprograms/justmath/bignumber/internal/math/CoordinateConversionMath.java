@@ -104,8 +104,7 @@ public class CoordinateConversionMath {
 		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
 			              .add(y.power(BigNumbers.TWO, mathContext, locale))
 			              .squareRoot(mathContext, locale);
-		BigNumber theta = y.atan2(x, mathContext, locale);
-		BigNumber thetaDeg = theta.toDegrees();
+		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees();
 
 		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR).trim();
 	}
