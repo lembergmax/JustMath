@@ -66,4 +66,18 @@ public class BigNumberCoordinate {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		String xCoordinate = x.trim().toString();
+		String yCoordinate = y.trim().toString();
+
+		if (type == CoordinateType.CARTESIAN) {
+			return "x=" + xCoordinate + "; y=" + yCoordinate;
+		} else if (type == CoordinateType.POLAR) {
+			return "r=" + xCoordinate + "; θ=" + yCoordinate;
+		} else {
+			return xCoordinate + ", " + yCoordinate; // Fallback
+		}
+	}
+
 }
