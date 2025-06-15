@@ -1957,6 +1957,66 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Removes insignificant leading and trailing zeros from the number representation.
+	 * This includes leading zeros before the decimal point and trailing zeros after the decimal point.
+	 *
+	 * @return this {@code BigNumber} instance with trimmed parts
+	 */
+	public BigNumber trim() {
+		valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
+		valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
+		return this;
+	}
+
+	/**
+	 * Removes leading zeros from a numeric string. If the string only contains zeros,
+	 * returns a single "0".
+	 *
+	 * @param string
+	 * 	the string to trim leading zeros from
+	 *
+	 * @return the trimmed string with leading zeros removed
+	 */
+	private String trimLeadingZeros(@NonNull final String string) {
+		if (string.isEmpty()) {
+			return "0";
+		}
+
+		String cleaned = string.replace(" ", "");
+		int index = 0;
+
+		while (index < cleaned.length() && cleaned.charAt(index) == '0') {
+			index++;
+		}
+
+		String trimmed = cleaned.substring(index);
+		return trimmed.isEmpty() ? "0" : trimmed;
+	}
+
+	/**
+	 * Removes trailing zeros from a numeric string (typically the decimal part).
+	 * If the string only contains zeros, returns an empty string.
+	 *
+	 * @param string
+	 * 	the string to trim trailing zeros from
+	 *
+	 * @return the trimmed string with trailing zeros removed
+	 */
+	private String trimTrailingZeros(@NonNull final String string) {
+		if (string.isEmpty()) {
+			return "";
+		}
+
+		int index = string.length() - 1;
+
+		while (index >= 0 && string.charAt(index) == '0') {
+			index--;
+		}
+
+		return string.substring(0, index + 1);
+	}
+
+	/**
 	 * Returns the value of this {@code BigNumber} as an {@code int}.
 	 * <p>
 	 * If the integer part exceeds 10 digits, only the first 10 digits are used.
