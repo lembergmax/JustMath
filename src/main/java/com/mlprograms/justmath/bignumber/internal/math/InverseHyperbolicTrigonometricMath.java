@@ -52,7 +52,7 @@ public class InverseHyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing asinh(argument) calculated with the specified precision
 	 */
 	public static BigNumber asinh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.asinh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.asinh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class InverseHyperbolicTrigonometricMath {
 	 * 	if argument is outside the domain (less than 1)
 	 */
 	public static BigNumber acosh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.acosh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.acosh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class InverseHyperbolicTrigonometricMath {
 	 * 	if argument is outside the domain (absolute value >= 1)
 	 */
 	public static BigNumber atanh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.atanh(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.atanh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class InverseHyperbolicTrigonometricMath {
 	 * 	if argument is outside the domain (absolute value <= 1)
 	 */
 	public static BigNumber acoth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.acoth(argument.toBigDecimal(), mathContext).toPlainString(), locale);
+		return new BigNumber(BigDecimalMath.acoth(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 }
