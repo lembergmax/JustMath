@@ -10,6 +10,8 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+
 /**
  * Provides mathematical utilities to convert coordinates between
  * polar and Cartesian coordinate systems using {@link BigNumber} for high precision.
@@ -44,6 +46,10 @@ public class CoordinateConversionMath {
 	 * @return a {@link BigNumberCoordinate} representing the Cartesian coordinates (x, y)
 	 */
 	public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		if (r.isLessThan(ZERO)) {
+			throw new IllegalArgumentException("r cannot be less than zero");
+		}
+
 		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
 		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
 		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN).trim();
@@ -71,6 +77,10 @@ public class CoordinateConversionMath {
 	 * @return a {@link BigNumberCoordinate} representing the polar coordinates (r, θ in degrees)
 	 */
 	public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("x or y cannot be zero");
+		}
+
 		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
 			              .add(y.power(BigNumbers.TWO, mathContext, locale))
 			              .squareRoot(mathContext, locale);
