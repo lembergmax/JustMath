@@ -1,9 +1,11 @@
 package com.mlprograms.justmath.bignumber.internal.math;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -122,56 +124,41 @@ public class BasicMath {
 	}
 
 	/**
-	 * Calculates the power of a {@link BigNumber} base raised to a non-negative integer exponent,
-	 * i.e., repeated multiplication of the base by itself.
+	 * Computes the power of a {@link BigNumber} base raised to an arbitrary real exponent.
 	 * <p>
-	 * Mathematically, this corresponds to:
+	 * Mathematically, the power function with real base and real exponent is defined as:
 	 * <pre>
-	 *     base^exponent = base × base × ... × base  (exponent times)
+	 *     base^exponent = e^(exponent * ln(base))
 	 * </pre>
-	 * For {@code exponent = 0}, by definition:
-	 * <pre>
-	 *     base^0 = 1  (for base ≠ 0)
-	 * </pre>
-	 * This implementation supports only non-negative integer exponents and does not perform roots or
-	 * exponential/logarithmic operations.
-	 * The method is based on repeated multiplication:
-	 * <pre>
-	 *     result := 1
-	 *     repeat exponent times:
-	 *         result := result × base
-	 * </pre>
+	 * where {@code e} is Euler's number and {@code ln} is the natural logarithm.
+	 * <p>
+	 * This method supports negative, zero, and fractional exponents, as well as negative and fractional bases
+	 * where mathematically defined (currently, only positive bases are supported due to logarithm domain).
+	 * <p>
+	 * Special cases:
+	 * <ul>
+	 *   <li>If {@code base} is zero and {@code exponent} &gt; 0, returns zero.</li>
+	 *   <li>Negative or zero {@code base} values are not supported because natural logarithm is undefined there.</li>
+	 *   <li>{@code exponent} can be any real number (negative, zero, fractional).</li>
+	 * </ul>
 	 *
 	 * @param base
-	 * 	the base of the power operation ({@code base ∈ ℝ})
+	 * 	the base value of the power operation, must be &gt; 0 (domain restriction due to ln)
 	 * @param exponent
-	 * 	the exponent, a non-negative integer ({@code exponent ∈ ℕ₀})
+	 * 	the real exponent value
 	 * @param mathContext
-	 * 	the {@link MathContext} defining precision and rounding (used for intermediate calculations, currently unused)
+	 * 	the {@link MathContext} specifying precision and rounding behavior for intermediate calculations
 	 * @param locale
-	 * 	the {@link Locale} used for formatting the result
+	 * 	the {@link Locale} used to format the resulting {@link BigNumber}
 	 *
-	 * @return the result of {@code base^exponent} as a {@link BigNumber}
+	 * @return a new {@link BigNumber} representing {@code base^exponent}
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if the exponent is negative or not an integer
-	 * @implNote This method currently only supports {@code exponent ∈ ℕ₀} (non-negative integers).
-	 * 	To support rational or real exponents, implementations of logarithms and roots would be required.
+	 * 	if {@code base} is less than or equal to zero (since natural logarithm is undefined there)
 	 */
 	public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (!exponent.isInteger() || exponent.isNegative()) {
-			throw new IllegalArgumentException("Only non-negative integer exponents are supported in this implementation.");
-		}
-
-		BigNumber result = BigNumbers.ONE;
-		BigNumber count = exponent.clone();
-
-		while (!count.isEqualTo(BigNumbers.ZERO)) {
-			result = result.multiply(base);
-			count = count.subtract(BigNumbers.ONE);
-		}
-
-		return new BigNumber(result.toString(), locale, mathContext).trim();
+		// TODO: replace with own and more functional logic
+		return new BigNumber(BigDecimalMath.pow(base.toBigDecimal(), exponent.toBigDecimal(), mathContext).toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
@@ -218,6 +205,72 @@ public class BasicMath {
 		}
 
 		return new BigNumber(result.toString(), locale, mathContext).trim();
+	}
+
+	/**
+	 * Computes the exponential function <code>e<sup>x</sup></code> for a given {@link BigNumber} argument using
+	 * its Maclaurin (Taylor) series expansion.
+	 * <p>
+	 * The exponential function is defined mathematically as:
+	 * <pre>
+	 *     exp(x) = e^x = Σ (x^n / n!) from n = 0 to ∞
+	 * </pre>
+	 * where:
+	 * <ul>
+	 *   <li><code>x</code> is the real number input (in this case represented by a {@link BigNumber})</li>
+	 *   <li><code>n!</code> is the factorial of n</li>
+	 * </ul>
+	 * This implementation uses a loop to iteratively compute and sum terms of the Maclaurin series until the
+	 * absolute value of the current term is smaller than the numerical precision defined by the provided
+	 * {@link MathContext}.
+	 * <p>
+	 * The computation proceeds as follows:
+	 * <ol>
+	 *   <li>Initialize the result with the first term of the series (1)</li>
+	 *   <li>Iteratively compute each term using the recurrence relation:
+	 *       <code>term = term * x / n</code> to avoid recomputing powers and factorials from scratch</li>
+	 *   <li>Stop the iteration once the absolute value of the current term is less than
+	 *       <code>10<sup>-precision</sup></code>, as defined by the {@link MathContext}</li>
+	 * </ol>
+	 * <p>
+	 * This method ensures correct handling of precision and rounding through the specified {@link MathContext}.
+	 * The result is returned as a new {@link BigNumber} instance using the specified {@link Locale}, which may
+	 * influence formatting or parsing behavior elsewhere in the application.
+	 * <p>
+	 * <b>Note:</b> This method computes <code>e^x</code> only for real numbers. For complex exponents, a different
+	 * implementation involving Euler's formula would be required.
+	 *
+	 * @param argument
+	 * 	the exponent x in the expression <code>e^x</code>, must not be null
+	 * @param mathContext
+	 * 	the precision and rounding context to be used during computation must not be null
+	 * @param locale
+	 * 	the locale to be associated with the resulting {@link BigNumber}, must not be null
+	 *
+	 * @return the computed value of <code>e^x</code> as a {@link BigNumber}
+	 *
+	 * @throws NullPointerException
+	 * 	if any of the parameters is null
+	 * @see java.math.BigDecimal
+	 * @see java.math.MathContext
+	 * @see java.util.Locale
+	 */
+	public static BigNumber exp(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		BigDecimal result = BigDecimal.ONE;
+		BigDecimal term = BigDecimal.ONE;
+
+		int n = 1;
+		while (term.compareTo(BigDecimal.ZERO) != 0) {
+			term = term.multiply(argument.toBigDecimal(), mathContext).divide(BigDecimal.valueOf(n), mathContext);
+			result = result.add(term, mathContext);
+
+			if (term.abs().compareTo(BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision())) < 0) {
+				break;
+			}
+			n++;
+		}
+
+		return new BigNumber(result.toPlainString(), locale, mathContext);
 	}
 
 }
