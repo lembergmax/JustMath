@@ -16,8 +16,7 @@ import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
@@ -94,7 +93,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	@NonNull
 	@Setter
-	private MathContext mathContext = CalculatorEngine.getDefaultMathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
+	private MathContext mathContext;
 
 	/**
 	 * Parses the given string in the default format and constructs a {@code BigNumber}.
@@ -340,7 +339,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.valueAfterDecimal = valueAfterDecimal;
 		this.isNegative = isNegative;
 		this.trigonometricMode = trigonometricMode;
-		this.mathContext = new MathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
+		this.mathContext = new MathContext(DEFAULT_DIVISION_PRECISION);
 		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
@@ -422,7 +421,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.valueBeforeDecimal = "0";
 		this.valueAfterDecimal = "0";
 		this.isNegative = false;
-		this.mathContext = new MathContext(CalculatorEngine.DEFAULT_DIVISION_PRECISION);
+		this.mathContext = DEFAULT_MATH_CONTEXT;
 		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
