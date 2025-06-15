@@ -7,8 +7,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.THREE;
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.TWO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
 
 /**
  * Provides mathematical operations for calculating roots of numbers (radicals).
@@ -85,8 +84,12 @@ public class RadicalMath {
 	 * 	if radicand or index is negative
 	 */
 	public static BigNumber nthRoot(@NonNull final BigNumber radicand, @NonNull final BigNumber index, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (radicand.isNegative() || index.isNegative()) {
-			throw new IllegalArgumentException("Cannot calculate nth root with negative index or negative radicand.");
+		if (radicand.isLessThanOrEqualTo(ZERO)) {
+			throw new IllegalArgumentException("radicand must be greater than zero");
+		}
+
+		if (index.isLessThan(ZERO)) {
+			throw new IllegalArgumentException("index must be greater than zero");
 		}
 
 		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext).toPlainString(), locale).trim();
