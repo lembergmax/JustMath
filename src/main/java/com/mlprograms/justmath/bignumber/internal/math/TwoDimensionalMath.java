@@ -7,6 +7,8 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+
 /**
  * Provides two-dimensional mathematical functions.
  */
@@ -36,6 +38,10 @@ public class TwoDimensionalMath {
 	 * @return the angle θ in radians as a {@link BigNumber}, within the range [-π, π]
 	 */
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("x or y cannot be zero");
+		}
+
 		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
