@@ -2088,9 +2088,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the smaller of this and other; if other is null, returns this
 	 */
 	public BigNumber min(@NonNull final BigNumber other) {
-		if (other == null) {
-			return this;
-		}
 		return this.isLessThan(other) ? this : other;
 	}
 
