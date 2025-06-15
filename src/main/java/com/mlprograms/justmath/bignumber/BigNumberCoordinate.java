@@ -66,6 +66,17 @@ public class BigNumberCoordinate {
 		return this;
 	}
 
+	/**
+	 * Returns a string representation of this coordinate, formatted according to its type.
+	 * <ul>
+	 *   <li>If the type is {@code CARTESIAN}, returns "x=<x>; y=<y>".</li>
+	 *   <li>If the type is {@code POLAR}, returns "r=<x>; θ=<y>".</li>
+	 *   <li>Otherwise, returns "<x>, <y>".</li>
+	 * </ul>
+	 * The values are trimmed to remove insignificant zeros.
+	 *
+	 * @return a string representation of this coordinate
+	 */
 	@Override
 	public String toString() {
 		String xCoordinate = x.trim().toString();
