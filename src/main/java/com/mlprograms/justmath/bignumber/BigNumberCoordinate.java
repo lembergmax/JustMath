@@ -1,6 +1,8 @@
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -39,6 +41,29 @@ import lombok.NonNull;
  * @param type
  * 	the coordinate type indicating the meaning of {@code x} and {@code y}; must not be {@code null}
  */
-public record BigNumberCoordinate(@NonNull BigNumber x, @NonNull BigNumber y, @NonNull CoordinateType type) {
+@Getter
+@AllArgsConstructor
+public class BigNumberCoordinate {
+
+	@NonNull
+	private BigNumber x;
+
+	@NonNull
+	private BigNumber y;
+
+	@NonNull
+	private CoordinateType type;
+
+	/**
+	 * Removes insignificant leading and trailing zeros from the {@link BigNumber} x and y representation.
+	 * This includes leading zeros before the decimal point and trailing zeros after the decimal point.
+	 *
+	 * @return this {@code BigNumber} instance with trimmed parts
+	 */
+	public BigNumberCoordinate trim() {
+		x = x.trim();
+		y = y.trim();
+		return this;
+	}
 
 }
