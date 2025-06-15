@@ -7,6 +7,8 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE;
+
 /**
  * Provides high-precision implementations of inverse hyperbolic trigonometric functions
  * using {@link BigNumber} for arbitrary precision arithmetic.
@@ -75,9 +77,13 @@ public class InverseHyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing acosh(argument) calculated with the specified precision
 	 *
 	 * @throws ArithmeticException
-	 * 	if argument is outside the domain (less than 1)
+	 * 	if the argument is outside the domain (absolute value >= 1)
 	 */
 	public static BigNumber acosh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (argument.isLessThan(ONE)) {
+			throw new IllegalArgumentException("argument must be greater than 1");
+		}
+
 		return new BigNumber(BigDecimalMath.acosh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -101,9 +107,13 @@ public class InverseHyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing atanh(argument) calculated with the specified precision
 	 *
 	 * @throws ArithmeticException
-	 * 	if argument is outside the domain (absolute value >= 1)
+	 * 	if the argument is outside the domain (absolute value >= 1)
 	 */
 	public static BigNumber atanh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (argument.isLessThanOrEqualTo(ONE)) {
+			throw new IllegalArgumentException("argument must be greater than 1");
+		}
+
 		return new BigNumber(BigDecimalMath.atanh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -127,9 +137,13 @@ public class InverseHyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing acoth(argument) calculated with the specified precision
 	 *
 	 * @throws ArithmeticException
-	 * 	if argument is outside the domain (absolute value <= 1)
+	 * 	if the argument is outside the domain (absolute value <= 1)
 	 */
 	public static BigNumber acoth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (argument.isLessThanOrEqualTo(ONE)) {
+			throw new IllegalArgumentException("argument must be greater than 1");
+		}
+
 		return new BigNumber(BigDecimalMath.acoth(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
