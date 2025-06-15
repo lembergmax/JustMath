@@ -17,25 +17,34 @@ public class TwoDimensionalMath {
 	/**
 	 * Computes the angle θ between the positive x-axis and the point (x, y).
 	 * <p>
-	 * This method calculates the arctangent of y/x considering the signs of both arguments to determine
-	 * the correct quadrant of the angle. The result is in radians, ranging from -π to π.
+	 * This method calculates the arctangent of y/x while taking into account the signs of both arguments
+	 * to determine the correct quadrant of the angle. The result is returned in radians and lies within
+	 * the interval [-π, π].
 	 * <p>
-	 * Mathematically, atan2(y, x) is defined as:
+	 * Mathematically, this function represents:
 	 * <pre>
-	 * θ = atan2(y, x)
+	 *     θ = atan2(y, x)
 	 * </pre>
-	 * where θ is the angle between the positive x-axis and the point (x, y) in the Cartesian plane.
+	 * where θ is the angle between the vector (x, y) and the positive x-axis in the Cartesian plane.
+	 * <p>
+	 * <strong>Restrictions:</strong>
+	 * <ul>
+	 *   <li>Neither {@code x} nor {@code y} may be zero. The angle is undefined at the origin (0,0).</li>
+	 * </ul>
 	 *
 	 * @param y
-	 * 	the y-coordinate
+	 * 	the y-coordinate (must not be zero)
 	 * @param x
-	 * 	the x-coordinate
+	 * 	the x-coordinate (must not be zero)
 	 * @param mathContext
 	 * 	the {@link MathContext} controlling precision and rounding
 	 * @param locale
-	 * 	the locale used for number formatting
+	 * 	the {@link Locale} used for number formatting
 	 *
-	 * @return the angle θ in radians as a {@link BigNumber}, within the range [-π, π]
+	 * @return the angle θ in radians as a {@link BigNumber}, in the range [-π, π]
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code x} or {@code y} is zero (undefined result at origin)
 	 */
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
