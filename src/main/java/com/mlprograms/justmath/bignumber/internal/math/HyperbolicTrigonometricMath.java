@@ -123,7 +123,7 @@ public class HyperbolicTrigonometricMath {
 		if (argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("argument cannot be zero");
 		}
-		
+
 		return new BigNumber(BigDecimalMath.coth(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
