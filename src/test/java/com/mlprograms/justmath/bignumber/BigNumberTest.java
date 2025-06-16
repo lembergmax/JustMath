@@ -327,26 +327,68 @@ public class BigNumberTest {
 	@Nested
 	public class HyperbolicTrigonometricMath {
 
+		// TODO: nach rechnen
 		@Test
 		void sinhTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.sinh();
+			assertEquals("0", result.toString(), "sinh(0) should be 0");
 
+			num = new BigNumber("1");
+			result = num.sinh();
+			assertEquals("1.17520119", result.toString().substring(0, 10), "sinh(1) should be approximately 1.17520119");
+
+			num = new BigNumber("-1");
+			result = num.sinh();
+			assertEquals("-1.1752011", result.toString().substring(0, 10), "sinh(-1) should be approximately -1.17520119");
 		}
 
+		// TODO: nach rechnen
 		@Test
 		void coshTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.cosh();
+			assertEquals("1", result.toString(), "cosh(0) should be 1");
 
+			num = new BigNumber("1");
+			result = num.cosh();
+			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(1) should be approximately 1.54308063");
+
+			num = new BigNumber("-1");
+			result = num.cosh();
+			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(-1) should be same as cosh(1)");
 		}
 
+		// TODO: nach rechnen
 		@Test
 		void tanhTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.tanh();
+			assertEquals("0", result.toString(), "tanh(0) should be 0");
 
+			num = new BigNumber("1");
+			result = num.tanh();
+			assertEquals("0.76159415", result.toString().substring(0, 10), "tanh(1) should be approximately 0.76159415");
+
+			num = new BigNumber("-1");
+			result = num.tanh();
+			assertEquals("-0.7615941", result.toString().substring(0, 10), "tanh(-1) should be approximately -0.76159415");
 		}
 
+		// TODO: nach rechnen
 		@Test
 		void cothTest() {
+			BigNumber num = new BigNumber("1");
+			BigNumber result = num.coth();
+			assertEquals("1.31303528", result.toString().substring(0, 10), "coth(1) should be approximately 1.31303529");
 
+			num = new BigNumber("-1");
+			result = num.coth();
+			assertEquals("-1.31303529", result.round(new MathContext(9, RoundingMode.HALF_UP)).toString(), "coth(-1) should be approximately -1.31303529");
+
+			BigNumber finalZero = new BigNumber("0");
+			assertThrows(IllegalArgumentException.class, finalZero::coth, "coth(0) should throw ArithmeticException (division by zero)");
 		}
-
 	}
 
 	@Nested
