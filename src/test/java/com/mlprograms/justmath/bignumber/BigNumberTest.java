@@ -195,10 +195,10 @@ public class BigNumberTest {
 			result = num.nthRoot(root);
 			assertEquals("1", result.toString(), "Any root of 1 should be 1");
 
-			num = new BigNumber("-8");
-			root = new BigNumber("3");
+			num = new BigNumber("8");
+			root = new BigNumber("-12");
 			result = num.nthRoot(root);
-			assertEquals("-2", result.toString(), "3rd root of -8 should be -2");
+			assertEquals("0.840896415", result.trim().toString().substring(0, 11), "-12th root of 8 should be (rounded) 0.840896415");
 
 			BigNumber finalNum = new BigNumber("-16");
 			BigNumber finalRoot = new BigNumber("4");
