@@ -2,8 +2,10 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.internal.BigNumbers;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -58,41 +60,36 @@ public class RadicalMath {
 		return nthRoot(radicand, THREE, mathContext, locale);
 	}
 
-	/**
-	 * Calculates the nth root of the given radicand.
-	 * <p>
-	 * Mathematically:
-	 * <pre>
-	 * result = radicand^(1/index)
-	 * </pre>
-	 * The nth root is the value which, when raised to the power n (the index), equals the radicand.
-	 * <p>
-	 * Note: Negative indices or negative radicands are not supported and will throw an exception.
-	 *
-	 * @param radicand
-	 * 	the number to find the root of, must be non-negative
-	 * @param index
-	 * 	the degree of the root, must be positive
-	 * @param mathContext
-	 * 	the {@link MathContext} to control precision and rounding
-	 * @param locale
-	 * 	the {@link Locale} used for number formatting
-	 *
-	 * @return the nth root of the radicand
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if radicand or index is negative
-	 */
 	public static BigNumber nthRoot(@NonNull final BigNumber radicand, @NonNull final BigNumber index, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (radicand.isLessThanOrEqualTo(ZERO)) {
-			throw new IllegalArgumentException("radicand must be greater than zero");
+		if (index.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("Index must not be zero");
 		}
 
-		if (index.isLessThan(ZERO)) {
-			throw new IllegalArgumentException("index must be greater than zero");
+		// Fall: negativer Index → berechne positive Wurzel und bilde den Kehrwert
+		if (index.isNegative()) {
+			BigNumber positiveIndex = index.negate();
+			BigNumber positiveRoot = nthRoot(radicand, positiveIndex, mathContext, locale);
+			return ONE.divide(positiveRoot, mathContext).trim();
 		}
 
-		return new BigNumber(BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+		boolean isEvenRoot = index.isInteger() && index.toBigDecimal().remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0;
+		boolean radicandIsNegative = radicand.isNegative();
+
+		// Gerade Wurzel von negativer Zahl → nicht erlaubt
+		if (radicandIsNegative && isEvenRoot) {
+			throw new IllegalArgumentException("Even root of a negative number is not a real number");
+		}
+
+		// Ungerade Wurzel von negativer Zahl → Ergebnis ist negativ
+		if (radicandIsNegative) {
+			BigDecimal absValue = radicand.toBigDecimal().negate();  // |-x|
+			BigDecimal root = BigDecimalMath.root(absValue, index.toBigDecimal(), mathContext);
+			return new BigNumber(root.negate().toPlainString(), locale, mathContext).trim();
+		}
+
+		// Normale positive Wurzel
+		BigDecimal result = BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext);
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 }
