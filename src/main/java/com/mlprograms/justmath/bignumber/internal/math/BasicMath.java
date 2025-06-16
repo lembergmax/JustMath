@@ -124,41 +124,63 @@ public class BasicMath {
 	}
 
 	/**
-	 * Computes the power of a {@link BigNumber} base raised to an arbitrary real exponent.
-	 * <p>
-	 * Mathematically, the power function with real base and real exponent is defined as:
+	 * Raises a {@link BigNumber} base to the power of a given {@link BigNumber} exponent using the identity:
 	 * <pre>
-	 *     base^exponent = e^(exponent * ln(base))
+	 *     a^b = exp(b * ln|a|)
 	 * </pre>
-	 * where {@code e} is Euler's number and {@code ln} is the natural logarithm.
+	 * and re-applies the sign if the base is negative and the exponent is real.
 	 * <p>
-	 * This method supports negative, zero, and fractional exponents, as well as negative and fractional bases
-	 * where mathematically defined (currently, only positive bases are supported due to logarithm domain).
-	 * <p>
-	 * Special cases:
+	 * Mathematically, exponentiation with real exponents is defined as follows:
 	 * <ul>
-	 *   <li>If {@code base} is zero and {@code exponent} &gt; 0, returns zero.</li>
-	 *   <li>Negative or zero {@code base} values are not supported because natural logarithm is undefined there.</li>
-	 *   <li>{@code exponent} can be any real number (negative, zero, fractional).</li>
+	 *     <li>If the base <code>a</code> is positive, the power <code>a^b</code> is defined for all real <code>b</code>.</li>
+	 *     <li>If <code>a</code> is negative and <code>b</code> is an integer, the result is real and preserves the expected sign.</li>
+	 *     <li>If <code>a</code> is negative and <code>b</code> is non-integer, the result is generally complex (involving imaginary parts),
+	 *         but this method approximates a real result by applying the sign after computing <code>exp(b * ln|a|)</code>.</li>
 	 * </ul>
+	 * This method:
+	 * <ol>
+	 *     <li>Computes the natural logarithm <code>ln|a|</code> of the absolute value of the base.</li>
+	 *     <li>Multiplies the logarithm by the exponent <code>b</code>.</li>
+	 *     <li>Computes the exponential <code>exp(b * ln|a|)</code> to obtain the absolute value of the result.</li>
+	 *     <li>Applies the original sign of the base if it was negative, flipping the result's sign accordingly.</li>
+	 * </ol>
+	 * <p>
+	 * <b>Important:</b> This implementation assumes real-valued results and does not support complex number outputs
+	 * (e.g. it does not return <code>i</code> for results like <code>(-1)^0.5</code>). If <code>base &lt; 0</code> and
+	 * <code>exponent</code> is not an integer, the returned value will be negative, though mathematically the result is complex.
+	 * <p>
+	 * This method uses high-precision arithmetic via the {@link BigDecimalMath} library to ensure accuracy and is locale-aware
+	 * to support appropriate formatting and parsing.
 	 *
 	 * @param base
-	 * 	the base value of the power operation, must be &gt; 0 (domain restriction due to ln)
+	 * 	the base <code>a</code> of the exponentiation, must not be null
 	 * @param exponent
-	 * 	the real exponent value
+	 * 	the exponent <code>b</code> of the exponentiation, must not be null
 	 * @param mathContext
-	 * 	the {@link MathContext} specifying precision and rounding behavior for intermediate calculations
+	 * 	the precision and rounding settings for all intermediate and final calculations, must not be null
 	 * @param locale
-	 * 	the {@link Locale} used to format the resulting {@link BigNumber}
+	 * 	the locale used for parsing and formatting the result, must not be null
 	 *
-	 * @return a new {@link BigNumber} representing {@code base^exponent}
+	 * @return a new {@link BigNumber} representing the computed power <code>a^b</code>
 	 *
-	 * @throws IllegalArgumentException
-	 * 	if {@code base} is less than or equal to zero (since natural logarithm is undefined there)
+	 * @throws ArithmeticException
+	 * 	if the logarithm of zero is attempted (i.e., <code>base = 0</code> and <code>exponent &le; 0</code>)
+	 * @throws NullPointerException
+	 * 	if any argument is {@code null}
+	 * @see BigDecimalMath#log(BigDecimal, MathContext)
+	 * @see BigDecimalMath#exp(BigDecimal, MathContext)
+	 * @see MathContext
 	 */
 	public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		// TODO: replace with own and more functional logic
-		return new BigNumber(BigDecimalMath.pow(base.toBigDecimal(), exponent.toBigDecimal(), mathContext).toPlainString(), locale, mathContext).trim();
+		BigDecimal baseBigDecimal = base.toBigDecimal();
+		BigDecimal exponentBigDecimal = exponent.toBigDecimal();
+
+		BigDecimal ln = BigDecimalMath.log(baseBigDecimal.abs(), mathContext);
+		BigDecimal powAbs = BigDecimalMath.exp(exponentBigDecimal.multiply(ln, mathContext), mathContext);
+
+		BigDecimal signed = baseBigDecimal.signum() < 0 ? powAbs.negate() : powAbs;
+
+		return new BigNumber(signed.toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
