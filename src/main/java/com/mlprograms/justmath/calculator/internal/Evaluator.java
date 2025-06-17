@@ -216,7 +216,7 @@ public class Evaluator {
 			case ASIN_AF, ASIN_F -> operand.asin(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOS_AF, ACOS_F -> operand.acos(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ATAN_AF, ATAN_F -> operand.atan(mathContext, trigonometricMode, CALCULATION_LOCALE);
-			case ACOT_AF, ACOT_F -> operand.acot(mathContext, CALCULATION_LOCALE);
+			case ACOT_AF, ACOT_F -> operand.acot(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ASINH_AF, ASINH_F -> operand.asinh(mathContext, CALCULATION_LOCALE);
 			case ACOSH_AF, ACOSH_F -> operand.acosh(mathContext, CALCULATION_LOCALE);
 			case ATANH_AF, ATANH_F -> operand.atanh(mathContext, CALCULATION_LOCALE);
