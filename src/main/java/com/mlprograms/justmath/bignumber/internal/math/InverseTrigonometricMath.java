@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
 import static com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
@@ -52,7 +53,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale).trim();
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale).trim();
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
@@ -119,34 +120,48 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-		return new BigNumber(result.toPlainString(), locale).trim();
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
 	 * Calculates the arccotangent (inverse cotangent) of the given argument.
 	 * <p>
 	 * Mathematically, acot(x) returns the angle θ such that cot(θ) = x.
-	 * The range of θ is typically (0, π).
-	 * The cotangent is defined as cot(θ) = 1 / tan(θ).
+	 * The range of θ is typically (0, π). The cotangent is defined as cot(θ) = 1 / tan(θ).
 	 * <p>
 	 * Formula:
 	 * <pre>
 	 * acot(x) = atan(1/x), for x ≠ 0
 	 * </pre>
 	 * <p>
-	 * This function does not support degree output mode; result is in radians.
+	 * This function does not support degree output mode; result is returned in radians.
+	 *
+	 * <p>
+	 * <strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero
+	 * due to division by zero in the formula.
 	 *
 	 * @param argument
-	 * 	the input value x for which to compute arccotangent
+	 * 	the input value x for which to compute arccotangent; must not be 0
 	 * @param mathContext
 	 * 	the precision and rounding context
 	 * @param locale
 	 * 	locale used for formatting the output
 	 *
 	 * @return a {@link BigNumber} representing the arccotangent of the argument
+	 *
+	 * @throws ArithmeticException
+	 * 	if the argument is zero (undefined operation)
 	 */
-	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.acot(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		if (argument.isEqualTo(ZERO)) {
+			throw new ArithmeticException("acot(x) is undefined for x = 0");
+		}
+
+		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
+		if (trigonometricMode == TrigonometricMode.DEG) {
+			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+		}
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 }
