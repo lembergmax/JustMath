@@ -368,6 +368,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
+	public BigNumber(
+		@NonNull final String number,
+		@NonNull final TrigonometricMode trigonometricMode
+	) {
+		this(bigNumberParser.parseAutoDetect(number), DEFAULT_MATH_CONTEXT, trigonometricMode);
+	}
+
 	/**
 	 * Parses the given string in the specified locale, then constructs a {@code BigNumber}
 	 * with the provided precision and trigonometric mode.
@@ -1279,12 +1286,27 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Computes the inverse cotangent (arccot) of this number using the default {@link MathContext} and {@link Locale}.
 	 *
-	 * <p>This is a convenience method that delegates to {@link #acot(MathContext, Locale)}.</p>
+	 * <p>This is a convenience method that delegates to {@link #acot(MathContext, TrigonometricMode, Locale)}.</p>
 	 *
 	 * @return a new {@code BigNumber} representing acot(this)
 	 */
 	public BigNumber acot() {
-		return acot(mathContext, locale);
+		return acot(mathContext, TrigonometricMode.DEG, locale);
+	}
+
+	/**
+	 * Computes the inverse cotangent (arccot) of this number in the specified angle unit using the default
+	 * {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #acot(MathContext, TrigonometricMode, Locale)}.</p>
+	 *
+	 * @param trigonometricMode
+	 * 	whether the result should be in degrees ({@code DEG}) or radians ({@code RAD})
+	 *
+	 * @return a new {@code BigNumber} representing acot(this)
+	 */
+	public BigNumber acot(@NonNull final TrigonometricMode trigonometricMode) {
+		return acot(mathContext, trigonometricMode, locale);
 	}
 
 	/**
@@ -1299,8 +1321,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing acot(this)
 	 */
-	public BigNumber acot(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return InverseTrigonometricMath.acot(this, mathContext, locale);
+	public BigNumber acot(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		return InverseTrigonometricMath.acot(this, mathContext, trigonometricMode, locale);
 	}
 
 	/**
