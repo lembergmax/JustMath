@@ -1,5 +1,6 @@
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -11,464 +12,581 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BigNumberTest {
 
-    @Nested
-    public class BasicMath {
-
-        @Test
-        void additionTest() {
-            BigNumber num1 = new BigNumber("25.5");
-            BigNumber num2 = new BigNumber("30.2");
-
-            BigNumber result = num1.add(num2);
-            assertEquals("55.7", result.toString(), "Addition result should be 55.7");
-
-            num1 = new BigNumber("0.000000000000000000000000000000000000000000000001");
-            num2 = new BigNumber("0.00000000000000000003");
-            result = num1.add(num2);
-
-            assertEquals("0.000000000000000000030000000000000000000000000001", result.toString(),
-                    "Addition of very small numbers should be accurate");
-
-            num1 = new BigNumber("8736519650165165946166562572365809265462671456");
-            num2 = new BigNumber("143153651451954101155145145169254155145");
-            result = num1.add(num2);
-
-            assertEquals("8736519793318817398120663727510954434716826601", result.toString(),
-                    "Addition of large numbers should be accurate");
-
-            num1 = new BigNumber("123");
-            num2 = new BigNumber("456");
-            BigNumber num3 = new BigNumber("789");
-
-            result = num1.add(num2).add(num3);
-
-            assertEquals("1368", result.toString(), "Chained addition should yield 1368");
-        }
-
-        @Test
-        void subtractionTest() {
-            BigNumber num1 = new BigNumber("100");
-            BigNumber num2 = new BigNumber("30");
-            BigNumber result = num1.subtract(num2);
-            assertEquals("70", result.toString(), "Subtraction result should be 70");
-
-            num1 = new BigNumber("0.0000000001");
-            num2 = new BigNumber("0.00000000009");
-            result = num1.subtract(num2);
-            assertEquals("0.00000000001", result.toString(), "Subtraction of small decimals should be precise");
-
-            num1 = new BigNumber("500");
-            num2 = new BigNumber("1000");
-            result = num1.subtract(num2);
-            assertEquals("-500", result.toString(), "Subtraction should support negative results");
-        }
-
-        @Test
-        void multiplicationTest() {
-            BigNumber num1 = new BigNumber("12");
-            BigNumber num2 = new BigNumber("3");
-            BigNumber result = num1.multiply(num2);
-            assertEquals("36", result.toString(), "Multiplication result should be 36");
-
-            num1 = new BigNumber("0.00001");
-            num2 = new BigNumber("100000");
-            result = num1.multiply(num2);
-            assertEquals("1", result.toString(), "Multiplication with inverse values should yield 1");
-
-            num1 = new BigNumber("123456789");
-            num2 = new BigNumber("987654321");
-            result = num1.multiply(num2);
-            assertEquals("121932631112635269", result.toString(), "Multiplication of large numbers should be accurate");
-        }
-
-        @Test
-        void divisionTest() {
-            BigNumber num1 = new BigNumber("100");
-            BigNumber num2 = new BigNumber("4");
-            BigNumber result = num1.divide(num2);
-            assertEquals("25", result.toString(), "Division result should be 25");
-
-            num1 = new BigNumber("1", new MathContext(10, RoundingMode.HALF_UP));
-            num2 = new BigNumber("3");
-            result = num1.divide(num2);
-            assertEquals("0.3333333333", result.toString(),
-                    "Division should be precise with recurring decimals");
-
-            num1 = new BigNumber("123456789123456789");
-            num2 = new BigNumber("1");
-            result = num1.divide(num2);
-            assertEquals("123456789123456789", result.toString(), "Division by one should return the same number");
-        }
-
-        @Test
-        void powerTest() {
-            BigNumber num1 = new BigNumber("2");
-            BigNumber result = num1.power(new BigNumber("10"));
-            assertEquals("1024", result.toString(), "2^10 should be 1024");
-
-            num1 = new BigNumber("5");
-            result = num1.power(new BigNumber("0"));
-            assertEquals("1", result.toString(), "Any number to power 0 should be 1");
-
-            num1 = new BigNumber("1.1");
-            result = num1.power(new BigNumber("2"));
-            assertEquals("1.21", result.toString(), "1.1^2 should be 1.21");
-
-            num1 = new BigNumber("-1.2");
-            result = num1.power(new BigNumber("-2.99"));
-            assertEquals("-0.579759767", result.trim().toString().substring(0, 12), "1.1^2 should be -0.579759767");
-        }
-
-        @Test
-        void factorialTest() {
-            BigNumber num = new BigNumber("0");
-            BigNumber result = num.factorial();
-            assertEquals("1", result.toString(), "0! should be 1");
-
-            num = new BigNumber("1");
-            result = num.factorial();
-            assertEquals("1", result.toString(), "1! should be 1");
-
-            num = new BigNumber("5");
-            result = num.factorial();
-            assertEquals("120", result.toString(), "5! should be 120");
-
-            num = new BigNumber("20");
-            result = num.factorial();
-            assertEquals("2432902008176640000", result.toString(), "20! should be 2432902008176640000");
-        }
-
-    }
-
-    @Nested
-    public class RadicalMath {
-
-        @Test
-        void squareRootTest() {
-            BigNumber num = new BigNumber("9");
-            BigNumber result = num.squareRoot();
-            assertEquals("3", result.toString(), "Square root of 9 should be 3");
-
-            num = new BigNumber("2");
-            result = num.squareRoot();
-            assertEquals("1.41421356237309504880168872420969807856967187537694", result.toString().substring(0, 52),
-                    "Square root of 2 should be accurate");
-
-            num = new BigNumber("0");
-            result = num.squareRoot();
-            assertEquals("0", result.toString(), "Square root of 0 should be 0");
-        }
-
-        @Test
-        void cubicRootTest() {
-            BigNumber num = new BigNumber("27");
-            BigNumber result = num.cubicRoot();
-            assertEquals("3", result.toString(), "Cubic root of 27 should be 3");
-
-            num = new BigNumber("0");
-            result = num.cubicRoot();
-            assertEquals("0", result.toString(), "Cubic root of 0 should be 0");
-
-            num = new BigNumber("8");
-            result = num.cubicRoot();
-            assertEquals("2", result.toString(), "Cubic root of 8 should be 2");
-
-            num = new BigNumber("-27");
-            result = num.cubicRoot();
-            assertEquals("-3", result.toString(), "Cubic root of -27 should be -3");
-        }
-
-        @Test
-        void nthRootTest() {
-            BigNumber num = new BigNumber("81");
-            BigNumber root = new BigNumber("4");
-            BigNumber result = num.nthRoot(root);
-            assertEquals("3", result.toString(), "4th root of 81 should be 3");
-
-            num = new BigNumber("32");
-            root = new BigNumber("5");
-            result = num.nthRoot(root);
-            assertEquals("2", result.toString(), "5th root of 32 should be 2");
-
-            num = new BigNumber("1");
-            root = new BigNumber("100");
-            result = num.nthRoot(root);
-            assertEquals("1", result.toString(), "Any root of 1 should be 1");
-
-            num = new BigNumber("8");
-            root = new BigNumber("-12");
-            result = num.nthRoot(root);
-            assertEquals("0.840896415", result.trim().toString().substring(0, 11), "-12th root of 8 should be (rounded) 0.840896415");
-
-            BigNumber finalNum = new BigNumber("-16");
-            BigNumber finalRoot = new BigNumber("4");
-            assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
-                    "Even root of negative number should throw exception");
-        }
-
-    }
-
-    @Nested
-    public class CombinatoricsMath {
-
-        @Test
-        void combinationTest() {
-            BigNumber num1 = new BigNumber("0");
-            BigNumber num2 = new BigNumber("0");
-            BigNumber result = num1.combination(num2);
-
-            assertEquals("1", result.toString(), "0C0 should be 1");
-
-            num1 = new BigNumber("1");
-            num2 = new BigNumber("1");
-            result = num1.combination(num2);
-
-            assertEquals("1", result.toString(), "1C1 should be 1");
-
-            num1 = new BigNumber("12");
-            num2 = new BigNumber("7");
-            result = num1.combination(num2);
-
-            assertEquals("792", result.toString(), "7C1 should be 792");
-
-            num1 = new BigNumber("123");
-            num2 = new BigNumber("345");
-
-            BigNumber finalNum = num1;
-            BigNumber finalNum1 = num2;
-            assertThrows(IllegalArgumentException.class, () -> finalNum.combination(finalNum1));
-        }
-
-        @Test
-        void permutationTest() {
-            BigNumber num1 = new BigNumber("0");
-            BigNumber num2 = new BigNumber("0");
-            BigNumber result = num1.permutation(num2);
-
-            assertEquals("1", result.toString(), "0P0 should be 1");
-
-            num1 = new BigNumber("1");
-            num2 = new BigNumber("1");
-            result = num1.permutation(num2);
-
-            assertEquals("1", result.toString(), "1P1 should be 1");
-
-            num1 = new BigNumber("12");
-            num2 = new BigNumber("7");
-            result = num1.permutation(num2);
-
-            assertEquals("3991680", result.toString(), "7P1 should be 3991680");
-
-            num1 = new BigNumber("123");
-            num2 = new BigNumber("345");
-
-            BigNumber finalNum = num1;
-            BigNumber finalNum1 = num2;
-            assertThrows(IllegalArgumentException.class, () -> finalNum.permutation(finalNum1));
-        }
-
-    }
-
-    @Nested
-    public class CoordinateConversionMath {
-
-        @Test
-        void polarToCartesianCoordinateTest() {
-            BigNumber num1 = new BigNumber("-1");
-            BigNumber num2 = new BigNumber("0");
-            BigNumberCoordinate result;
-
-            BigNumber finalNum = num1;
-            BigNumber finalNum1 = num2;
-            assertThrows(IllegalArgumentException.class, () -> finalNum.polarToCartesianCoordinates(finalNum1));
-
-            num1 = new BigNumber("0");
-            num2 = new BigNumber("0");
-            result = num1.polarToCartesianCoordinates(num2);
-
-            assertEquals("0", result.getX().toString());
-            assertEquals("0", result.getY().toString());
-
-            num1 = new BigNumber("12.874");
-            num2 = new BigNumber("7.000032");
-            result = num1.polarToCartesianCoordinates(num2);
-
-            assertEquals("12.7780382", result.getX().toString().substring(0, 10));
-            assertEquals("1.56895306", result.getY().toString().substring(0, 10));
-        }
-
-        @Test
-        void cartesianToPolarCoordinateTest() {
-            BigNumber num1 = new BigNumber("-1");
-            BigNumber num2 = new BigNumber("0");
-            BigNumberCoordinate result;
-
-            BigNumber finalNum = num1;
-            BigNumber finalNum1 = num2;
-            assertThrows(IllegalArgumentException.class, () -> finalNum.cartesianToPolarCoordinates(finalNum1));
-
-            num1 = new BigNumber("1");
-            num2 = new BigNumber("1");
-            result = num1.cartesianToPolarCoordinates(num2);
-
-            assertEquals("1.41421356", result.getX().toString().substring(0, 10));
-            assertEquals("45", result.getY().toString());
-
-            num1 = new BigNumber("12.874");
-            num2 = new BigNumber("7.000032");
-            result = num1.cartesianToPolarCoordinates(num2);
-
-            assertEquals("14.6540207", result.getX().toString().substring(0, 10));
-            assertEquals("28.5344307", result.getY().toString().substring(0, 10));
-        }
-
-    }
-
-    @Nested
-    public class HyperbolicTrigonometricMath {
-
-        @Test
-        void sinhTest() {
-            BigNumber num = new BigNumber("0");
-            BigNumber result = num.sinh();
-            assertEquals("0", result.toString(), "sinh(0) should be 0");
-
-            num = new BigNumber("1");
-            result = num.sinh();
-            assertEquals("1.17520119", result.toString().substring(0, 10), "sinh(1) should be approximately 1.17520119");
-
-            num = new BigNumber("-1");
-            result = num.sinh();
-            assertEquals("-1.1752011", result.toString().substring(0, 10), "sinh(-1) should be approximately -1.17520119");
-
-            num = new BigNumber("1.2541");
-            result = num.sinh();
-            assertEquals("1.60967510", result.toString().substring(0, 10), "sinh(1.2541) should be approximately 1.60967510");
-        }
-
-        @Test
-        void coshTest() {
-            BigNumber num = new BigNumber("0");
-            BigNumber result = num.cosh();
-            assertEquals("1", result.toString(), "cosh(0) should be 1");
-
-            num = new BigNumber("1");
-            result = num.cosh();
-            assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(1) should be approximately 1.54308063");
-
-            num = new BigNumber("-1");
-            result = num.cosh();
-            assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(-1) should be same as cosh(1)");
-
-            num = new BigNumber("1.2541");
-            result = num.cosh();
-            assertEquals("1.89500763", result.toString().substring(0, 10), "cosh(1.2541) should be approximately 1.89500763");
-        }
-
-        @Test
-        void tanhTest() {
-            BigNumber num = new BigNumber("0");
-            BigNumber result = num.tanh();
-            assertEquals("0", result.toString(), "tanh(0) should be 0");
-
-            num = new BigNumber("1");
-            result = num.tanh();
-            assertEquals("0.76159415", result.toString().substring(0, 10), "tanh(1) should be approximately 0.76159415");
-
-            num = new BigNumber("-1");
-            result = num.tanh();
-            assertEquals("-0.7615941", result.toString().substring(0, 10), "tanh(-1) should be approximately -0.76159415");
-
-            num = new BigNumber("1.2541");
-            result = num.tanh();
-            assertEquals("0.84942934", result.toString().substring(0, 10), "tanh(1.2541) should be approximately 0.849429349");
-        }
-
-        @Test
-        void cothTest() {
-            BigNumber num = new BigNumber("1");
-            BigNumber result = num.coth();
-            assertEquals("1.31303528", result.toString().substring(0, 10), "coth(1) should be approximately 1.31303529");
-
-            num = new BigNumber("-1");
-            result = num.coth();
-            assertEquals("-1.31303529", result.round(new MathContext(9, RoundingMode.HALF_UP)).toString(), "coth(-1) should be approximately -1.31303529");
-
-            BigNumber finalZero = new BigNumber("0");
-            assertThrows(IllegalArgumentException.class, finalZero::coth, "coth(0) should throw ArithmeticException (division by zero)");
-        }
-    }
-
-    @Nested
-    public class InverseHyperbolicTrigonometricMath {
-
-        @Test
-        void asinhTest() {
-            BigNumber num = new BigNumber("0");
-            BigNumber result = num.asinh();
-            assertEquals("0", result.toString(), "asinh(0) should be 0");
-
-            num = new BigNumber("1");
-            result = num.asinh();
-            assertEquals("0.88137358", result.toString().substring(0, 10), "asinh(1) should be approximately 0.88137358");
-
-            num = new BigNumber("-1");
-            result = num.asinh();
-            assertEquals("-0.8813735", result.toString().substring(0, 10), "asinh(-1) should be approximately -0.88137358");
-
-            num = new BigNumber("2.5");
-            result = num.asinh();
-            assertEquals("1.64723114", result.toString().substring(0, 10), "asinh(2.5) should be approximately 1.64723114");
-        }
-
-        @Test
-        void acoshTest() {
-            BigNumber num = new BigNumber("1");
-            BigNumber result = num.acosh();
-            assertEquals("0", result.toString(), "acosh(1) should be 0");
-
-            num = new BigNumber("2");
-            result = num.acosh();
-            assertEquals("1.31695789", result.toString().substring(0, 10), "acosh(2) should be approximately 1.31695789");
-
-            num = new BigNumber("10");
-            result = num.acosh();
-            assertEquals("2.99322284", result.toString().substring(0, 10), "acosh(10) should be approximately 2.99322284");
-
-            BigNumber invalid = new BigNumber("0.5");
-            assertThrows(IllegalArgumentException.class, invalid::acosh, "acosh(x < 1) should throw exception");
-        }
-
-        @Test
-        void atanhTest() {
-            BigNumber num = new BigNumber("-1.01");
-            BigNumber result;
-            assertThrows(IllegalArgumentException.class, num::atanh, "atanh(-1.01) should throw exception");
-
-            num = new BigNumber("0.5");
-            result = num.atanh();
-            assertEquals("0.54930614", result.toString().substring(0, 10), "atanh(0.5) should be approximately 0.54930614");
-
-            BigNumber invalid = new BigNumber("1");
-            assertThrows(IllegalArgumentException.class, invalid::atanh, "atanh(1) should throw exception");
-        }
-
-        @Test
-        void acothTest() {
-            BigNumber num = new BigNumber("2");
-            BigNumber result = num.acoth();
-            assertEquals("0.54930614", result.toString().substring(0, 10), "acoth(2) should be approximately 0.54930614");
-
-            num = new BigNumber("-2");
-            result = num.acoth();
-            assertEquals("-0.5493061", result.toString().substring(0, 10), "acoth(-2) should be approximately -0.54930614");
-
-            BigNumber invalid = new BigNumber("0.5");
-            assertThrows(IllegalArgumentException.class, invalid::acoth, "acoth(|x| <= 1) should throw exception");
-
-            invalid = new BigNumber("1");
-            assertThrows(IllegalArgumentException.class, invalid::acoth, "acoth(1) should throw exception");
-        }
-    }
+	@Nested
+	public class BasicMath {
+
+		@Test
+		void additionTest() {
+			BigNumber num1 = new BigNumber("25.5");
+			BigNumber num2 = new BigNumber("30.2");
+
+			BigNumber result = num1.add(num2);
+			assertEquals("55.7", result.toString(), "Addition result should be 55.7");
+
+			num1 = new BigNumber("0.000000000000000000000000000000000000000000000001");
+			num2 = new BigNumber("0.00000000000000000003");
+			result = num1.add(num2);
+
+			assertEquals("0.000000000000000000030000000000000000000000000001", result.toString(),
+				"Addition of very small numbers should be accurate");
+
+			num1 = new BigNumber("8736519650165165946166562572365809265462671456");
+			num2 = new BigNumber("143153651451954101155145145169254155145");
+			result = num1.add(num2);
+
+			assertEquals("8736519793318817398120663727510954434716826601", result.toString(),
+				"Addition of large numbers should be accurate");
+
+			num1 = new BigNumber("123");
+			num2 = new BigNumber("456");
+			BigNumber num3 = new BigNumber("789");
+
+			result = num1.add(num2).add(num3);
+
+			assertEquals("1368", result.toString(), "Chained addition should yield 1368");
+		}
+
+		@Test
+		void subtractionTest() {
+			BigNumber num1 = new BigNumber("100");
+			BigNumber num2 = new BigNumber("30");
+			BigNumber result = num1.subtract(num2);
+			assertEquals("70", result.toString(), "Subtraction result should be 70");
+
+			num1 = new BigNumber("0.0000000001");
+			num2 = new BigNumber("0.00000000009");
+			result = num1.subtract(num2);
+			assertEquals("0.00000000001", result.toString(), "Subtraction of small decimals should be precise");
+
+			num1 = new BigNumber("500");
+			num2 = new BigNumber("1000");
+			result = num1.subtract(num2);
+			assertEquals("-500", result.toString(), "Subtraction should support negative results");
+		}
+
+		@Test
+		void multiplicationTest() {
+			BigNumber num1 = new BigNumber("12");
+			BigNumber num2 = new BigNumber("3");
+			BigNumber result = num1.multiply(num2);
+			assertEquals("36", result.toString(), "Multiplication result should be 36");
+
+			num1 = new BigNumber("0.00001");
+			num2 = new BigNumber("100000");
+			result = num1.multiply(num2);
+			assertEquals("1", result.toString(), "Multiplication with inverse values should yield 1");
+
+			num1 = new BigNumber("123456789");
+			num2 = new BigNumber("987654321");
+			result = num1.multiply(num2);
+			assertEquals("121932631112635269", result.toString(), "Multiplication of large numbers should be accurate");
+		}
+
+		@Test
+		void divisionTest() {
+			BigNumber num1 = new BigNumber("100");
+			BigNumber num2 = new BigNumber("4");
+			BigNumber result = num1.divide(num2);
+			assertEquals("25", result.toString(), "Division result should be 25");
+
+			num1 = new BigNumber("1", new MathContext(10, RoundingMode.HALF_UP));
+			num2 = new BigNumber("3");
+			result = num1.divide(num2);
+			assertEquals("0.3333333333", result.toString(),
+				"Division should be precise with recurring decimals");
+
+			num1 = new BigNumber("123456789123456789");
+			num2 = new BigNumber("1");
+			result = num1.divide(num2);
+			assertEquals("123456789123456789", result.toString(), "Division by one should return the same number");
+		}
+
+		@Test
+		void powerTest() {
+			BigNumber num1 = new BigNumber("2");
+			BigNumber result = num1.power(new BigNumber("10"));
+			assertEquals("1024", result.toString(), "2^10 should be 1024");
+
+			num1 = new BigNumber("5");
+			result = num1.power(new BigNumber("0"));
+			assertEquals("1", result.toString(), "Any number to power 0 should be 1");
+
+			num1 = new BigNumber("1.1");
+			result = num1.power(new BigNumber("2"));
+			assertEquals("1.21", result.toString(), "1.1^2 should be 1.21");
+
+			num1 = new BigNumber("-1.2");
+			result = num1.power(new BigNumber("-2.99"));
+			assertEquals("-0.579759767", result.trim().toString().substring(0, 12), "1.1^2 should be -0.579759767");
+		}
+
+		@Test
+		void factorialTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.factorial();
+			assertEquals("1", result.toString(), "0! should be 1");
+
+			num = new BigNumber("1");
+			result = num.factorial();
+			assertEquals("1", result.toString(), "1! should be 1");
+
+			num = new BigNumber("5");
+			result = num.factorial();
+			assertEquals("120", result.toString(), "5! should be 120");
+
+			num = new BigNumber("20");
+			result = num.factorial();
+			assertEquals("2432902008176640000", result.toString(), "20! should be 2432902008176640000");
+		}
+
+	}
+
+	@Nested
+	public class CombinatoricsMath {
+
+		@Test
+		void combinationTest() {
+			BigNumber num1 = new BigNumber("0");
+			BigNumber num2 = new BigNumber("0");
+			BigNumber result = num1.combination(num2);
+
+			assertEquals("1", result.toString(), "0C0 should be 1");
+
+			num1 = new BigNumber("1");
+			num2 = new BigNumber("1");
+			result = num1.combination(num2);
+
+			assertEquals("1", result.toString(), "1C1 should be 1");
+
+			num1 = new BigNumber("12");
+			num2 = new BigNumber("7");
+			result = num1.combination(num2);
+
+			assertEquals("792", result.toString(), "7C1 should be 792");
+
+			num1 = new BigNumber("123");
+			num2 = new BigNumber("345");
+
+			BigNumber finalNum = num1;
+			BigNumber finalNum1 = num2;
+			assertThrows(IllegalArgumentException.class, () -> finalNum.combination(finalNum1));
+		}
+
+		@Test
+		void permutationTest() {
+			BigNumber num1 = new BigNumber("0");
+			BigNumber num2 = new BigNumber("0");
+			BigNumber result = num1.permutation(num2);
+
+			assertEquals("1", result.toString(), "0P0 should be 1");
+
+			num1 = new BigNumber("1");
+			num2 = new BigNumber("1");
+			result = num1.permutation(num2);
+
+			assertEquals("1", result.toString(), "1P1 should be 1");
+
+			num1 = new BigNumber("12");
+			num2 = new BigNumber("7");
+			result = num1.permutation(num2);
+
+			assertEquals("3991680", result.toString(), "7P1 should be 3991680");
+
+			num1 = new BigNumber("123");
+			num2 = new BigNumber("345");
+
+			BigNumber finalNum = num1;
+			BigNumber finalNum1 = num2;
+			assertThrows(IllegalArgumentException.class, () -> finalNum.permutation(finalNum1));
+		}
+
+	}
+
+	@Nested
+	public class CoordinateConversionMath {
+
+		@Test
+		void polarToCartesianCoordinateTest() {
+			BigNumber num1 = new BigNumber("-1");
+			BigNumber num2 = new BigNumber("0");
+			BigNumberCoordinate result;
+
+			BigNumber finalNum = num1;
+			BigNumber finalNum1 = num2;
+			assertThrows(IllegalArgumentException.class, () -> finalNum.polarToCartesianCoordinates(finalNum1));
+
+			num1 = new BigNumber("0");
+			num2 = new BigNumber("0");
+			result = num1.polarToCartesianCoordinates(num2);
+
+			assertEquals("0", result.getX().toString());
+			assertEquals("0", result.getY().toString());
+
+			num1 = new BigNumber("12.874");
+			num2 = new BigNumber("7.000032");
+			result = num1.polarToCartesianCoordinates(num2);
+
+			assertEquals("12.7780382", result.getX().toString().substring(0, 10));
+			assertEquals("1.56895306", result.getY().toString().substring(0, 10));
+		}
+
+		@Test
+		void cartesianToPolarCoordinateTest() {
+			BigNumber num1 = new BigNumber("-1");
+			BigNumber num2 = new BigNumber("0");
+			BigNumberCoordinate result;
+
+			BigNumber finalNum = num1;
+			BigNumber finalNum1 = num2;
+			assertThrows(IllegalArgumentException.class, () -> finalNum.cartesianToPolarCoordinates(finalNum1));
+
+			num1 = new BigNumber("1");
+			num2 = new BigNumber("1");
+			result = num1.cartesianToPolarCoordinates(num2);
+
+			assertEquals("1.41421356", result.getX().toString().substring(0, 10));
+			assertEquals("45", result.getY().toString());
+
+			num1 = new BigNumber("12.874");
+			num2 = new BigNumber("7.000032");
+			result = num1.cartesianToPolarCoordinates(num2);
+
+			assertEquals("14.6540207", result.getX().toString().substring(0, 10));
+			assertEquals("28.5344307", result.getY().toString().substring(0, 10));
+		}
+
+	}
+
+	@Nested
+	public class HyperbolicTrigonometricMath {
+
+		@Test
+		void sinhTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.sinh();
+			assertEquals("0", result.toString(), "sinh(0) should be 0");
+
+			num = new BigNumber("1");
+			result = num.sinh();
+			assertEquals("1.17520119", result.toString().substring(0, 10), "sinh(1) should be approximately 1.17520119");
+
+			num = new BigNumber("-1");
+			result = num.sinh();
+			assertEquals("-1.1752011", result.toString().substring(0, 10), "sinh(-1) should be approximately -1.17520119");
+
+			num = new BigNumber("1.2541");
+			result = num.sinh();
+			assertEquals("1.60967510", result.toString().substring(0, 10), "sinh(1.2541) should be approximately 1.60967510");
+		}
+
+		@Test
+		void coshTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.cosh();
+			assertEquals("1", result.toString(), "cosh(0) should be 1");
+
+			num = new BigNumber("1");
+			result = num.cosh();
+			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(1) should be approximately 1.54308063");
+
+			num = new BigNumber("-1");
+			result = num.cosh();
+			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(-1) should be same as cosh(1)");
+
+			num = new BigNumber("1.2541");
+			result = num.cosh();
+			assertEquals("1.89500763", result.toString().substring(0, 10), "cosh(1.2541) should be approximately 1.89500763");
+		}
+
+		@Test
+		void tanhTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.tanh();
+			assertEquals("0", result.toString(), "tanh(0) should be 0");
+
+			num = new BigNumber("1");
+			result = num.tanh();
+			assertEquals("0.76159415", result.toString().substring(0, 10), "tanh(1) should be approximately 0.76159415");
+
+			num = new BigNumber("-1");
+			result = num.tanh();
+			assertEquals("-0.7615941", result.toString().substring(0, 10), "tanh(-1) should be approximately -0.76159415");
+
+			num = new BigNumber("1.2541");
+			result = num.tanh();
+			assertEquals("0.84942934", result.toString().substring(0, 10), "tanh(1.2541) should be approximately 0.849429349");
+		}
+
+		@Test
+		void cothTest() {
+			BigNumber num = new BigNumber("1");
+			BigNumber result = num.coth();
+			assertEquals("1.31303528", result.toString().substring(0, 10), "coth(1) should be approximately 1.31303529");
+
+			num = new BigNumber("-1");
+			result = num.coth();
+			assertEquals("-1.31303529", result.round(new MathContext(9, RoundingMode.HALF_UP)).toString(), "coth(-1) should be approximately -1.31303529");
+
+			BigNumber finalZero = new BigNumber("0");
+			assertThrows(IllegalArgumentException.class, finalZero::coth, "coth(0) should throw ArithmeticException (division by zero)");
+		}
+	}
+
+	@Nested
+	public class InverseHyperbolicTrigonometricMath {
+
+		@Test
+		void asinhTest() {
+			BigNumber num = new BigNumber("0");
+			BigNumber result = num.asinh();
+			assertEquals("0", result.toString(), "asinh(0) should be 0");
+
+			num = new BigNumber("1");
+			result = num.asinh();
+			assertEquals("0.88137358", result.toString().substring(0, 10), "asinh(1) should be approximately 0.88137358");
+
+			num = new BigNumber("-1");
+			result = num.asinh();
+			assertEquals("-0.8813735", result.toString().substring(0, 10), "asinh(-1) should be approximately -0.88137358");
+
+			num = new BigNumber("2.5");
+			result = num.asinh();
+			assertEquals("1.64723114", result.toString().substring(0, 10), "asinh(2.5) should be approximately 1.64723114");
+		}
+
+		@Test
+		void acoshTest() {
+			BigNumber num = new BigNumber("1");
+			BigNumber result = num.acosh();
+			assertEquals("0", result.toString(), "acosh(1) should be 0");
+
+			num = new BigNumber("2");
+			result = num.acosh();
+			assertEquals("1.31695789", result.toString().substring(0, 10), "acosh(2) should be approximately 1.31695789");
+
+			num = new BigNumber("10");
+			result = num.acosh();
+			assertEquals("2.99322284", result.toString().substring(0, 10), "acosh(10) should be approximately 2.99322284");
+
+			BigNumber invalid = new BigNumber("0.5");
+			assertThrows(IllegalArgumentException.class, invalid::acosh, "acosh(x < 1) should throw exception");
+		}
+
+		@Test
+		void atanhTest() {
+			BigNumber num = new BigNumber("-1.01");
+			BigNumber result;
+			assertThrows(IllegalArgumentException.class, num::atanh, "atanh(-1.01) should throw exception");
+
+			num = new BigNumber("0.5");
+			result = num.atanh();
+			assertEquals("0.54930614", result.toString().substring(0, 10), "atanh(0.5) should be approximately 0.54930614");
+
+			BigNumber invalid = new BigNumber("1");
+			assertThrows(IllegalArgumentException.class, invalid::atanh, "atanh(1) should throw exception");
+		}
+
+		@Test
+		void acothTest() {
+			BigNumber num = new BigNumber("2");
+			BigNumber result = num.acoth();
+			assertEquals("0.54930614", result.toString().substring(0, 10), "acoth(2) should be approximately 0.54930614");
+
+			num = new BigNumber("-2");
+			result = num.acoth();
+			assertEquals("-0.5493061", result.toString().substring(0, 10), "acoth(-2) should be approximately -0.54930614");
+
+			BigNumber invalid = new BigNumber("0.5");
+			assertThrows(ArithmeticException.class, invalid::acoth, "acoth(|x| <= 1) should throw exception");
+
+			invalid = new BigNumber("1");
+			assertThrows(IllegalArgumentException.class, invalid::acoth, "acoth(1) should throw exception");
+		}
+	}
+
+	@Nested
+	public class InverseTrigonometricMath {
+
+		@Test
+		void asinTest() {
+			BigNumber rad = new BigNumber("0", TrigonometricMode.RAD);
+			BigNumber deg = new BigNumber("0", TrigonometricMode.DEG);
+			assertEquals("0", rad.asin().toString());
+			assertEquals("0", deg.asin().toString());
+
+			rad = new BigNumber("1", TrigonometricMode.RAD);
+			deg = new BigNumber("1", TrigonometricMode.DEG);
+			assertEquals("1.570796", rad.asin().toString().substring(0, 8));
+			assertEquals("90", deg.asin().toString().substring(0, 2));
+
+			rad = new BigNumber("-1", TrigonometricMode.RAD);
+			deg = new BigNumber("-1", TrigonometricMode.DEG);
+			assertEquals("-1.570796", rad.asin().toString().substring(0, 9));
+			assertEquals("-90", deg.asin().toString().substring(0, 3));
+
+			assertThrows(ArithmeticException.class, () -> new BigNumber("2", TrigonometricMode.RAD).asin());
+			assertThrows(ArithmeticException.class, () -> new BigNumber("2", TrigonometricMode.DEG).asin());
+		}
+
+		@Test
+		void acosTest() {
+			BigNumber rad = new BigNumber("1", TrigonometricMode.RAD);
+			BigNumber deg = new BigNumber("1", TrigonometricMode.DEG);
+			assertEquals("0", rad.acos().toString());
+			assertEquals("0", deg.acos().toString());
+
+			rad = new BigNumber("0", TrigonometricMode.RAD);
+			deg = new BigNumber("0", TrigonometricMode.DEG);
+			assertEquals("1.570796", rad.acos().toString().substring(0, 8));
+			assertEquals("90", deg.acos().toString().substring(0, 2));
+
+			rad = new BigNumber("-1", TrigonometricMode.RAD);
+			deg = new BigNumber("-1", TrigonometricMode.DEG);
+			assertEquals("3.141593", rad.acos().toString().substring(0, 8));
+			assertEquals("180", deg.acos().toString().substring(0, 3));
+
+			assertThrows(ArithmeticException.class, () -> new BigNumber("1.5", TrigonometricMode.RAD).acos());
+			assertThrows(ArithmeticException.class, () -> new BigNumber("1.5", TrigonometricMode.DEG).acos());
+		}
+
+		@Test
+		void atanTest() {
+			BigNumber rad = new BigNumber("0", TrigonometricMode.RAD);
+			BigNumber deg = new BigNumber("0", TrigonometricMode.DEG);
+			assertEquals("0", rad.atan().toString());
+			assertEquals("0", deg.atan().toString());
+
+			rad = new BigNumber("1", TrigonometricMode.RAD);
+			deg = new BigNumber("1", TrigonometricMode.DEG);
+			assertEquals("0.785398", rad.atan().toString().substring(0, 8));
+			assertEquals("45", deg.atan().toString().substring(0, 2));
+
+			rad = new BigNumber("-1", TrigonometricMode.RAD);
+			deg = new BigNumber("-1", TrigonometricMode.DEG);
+			assertEquals("-0.785398", rad.atan().toString().substring(0, 9));
+			assertEquals("-45", deg.atan().toString().substring(0, 3));
+
+			rad = new BigNumber("1000", TrigonometricMode.RAD);
+			deg = new BigNumber("1000", TrigonometricMode.DEG);
+			assertEquals("1.569796", rad.atan().toString().substring(0, 8));
+			assertEquals("89.942", deg.atan().toString().substring(0, 6));
+		}
+
+		// TODO: Test korrigieren
+		@Test
+		void acotTest() {
+			BigNumber rad = new BigNumber("1", TrigonometricMode.RAD);
+			BigNumber deg = new BigNumber("1", TrigonometricMode.DEG);
+			assertEquals("0.785398", rad.acot().toString());
+			assertEquals("45", deg.acot().toString().substring(0, 2));
+
+			rad = new BigNumber("2", TrigonometricMode.RAD);
+			deg = new BigNumber("2", TrigonometricMode.DEG);
+			assertEquals("0.463648", rad.acot().toString().substring(0, 8));
+			assertEquals("26", deg.acot().toString().substring(0, 2));
+
+			rad = new BigNumber("-2", TrigonometricMode.RAD);
+			deg = new BigNumber("-2", TrigonometricMode.DEG);
+			assertEquals("-0.463648", rad.acot().toString().substring(0, 9));
+			assertEquals("-26", deg.acot().toString().substring(0, 3));
+
+			assertThrows(ArithmeticException.class, () -> new BigNumber("0", TrigonometricMode.RAD).acot());
+			assertThrows(ArithmeticException.class, () -> new BigNumber("0", TrigonometricMode.DEG).acot());
+		}
+
+	}
+
+	@Nested
+	public class LogarithmicMath {
+
+	}
+
+	@Nested
+	public class NumberTheoryMath {
+
+	}
+
+	@Nested
+	public class PercentageMath {
+
+	}
+
+	@Nested
+	public class RadicalMath {
+
+		@Test
+		void squareRootTest() {
+			BigNumber num = new BigNumber("9");
+			BigNumber result = num.squareRoot();
+			assertEquals("3", result.toString(), "Square root of 9 should be 3");
+
+			num = new BigNumber("2");
+			result = num.squareRoot();
+			assertEquals("1.41421356237309504880168872420969807856967187537694", result.toString().substring(0, 52),
+				"Square root of 2 should be accurate");
+
+			num = new BigNumber("0");
+			result = num.squareRoot();
+			assertEquals("0", result.toString(), "Square root of 0 should be 0");
+		}
+
+		@Test
+		void cubicRootTest() {
+			BigNumber num = new BigNumber("27");
+			BigNumber result = num.cubicRoot();
+			assertEquals("3", result.toString(), "Cubic root of 27 should be 3");
+
+			num = new BigNumber("0");
+			result = num.cubicRoot();
+			assertEquals("0", result.toString(), "Cubic root of 0 should be 0");
+
+			num = new BigNumber("8");
+			result = num.cubicRoot();
+			assertEquals("2", result.toString(), "Cubic root of 8 should be 2");
+
+			num = new BigNumber("-27");
+			result = num.cubicRoot();
+			assertEquals("-3", result.toString(), "Cubic root of -27 should be -3");
+		}
+
+		@Test
+		void nthRootTest() {
+			BigNumber num = new BigNumber("81");
+			BigNumber root = new BigNumber("4");
+			BigNumber result = num.nthRoot(root);
+			assertEquals("3", result.toString(), "4th root of 81 should be 3");
+
+			num = new BigNumber("32");
+			root = new BigNumber("5");
+			result = num.nthRoot(root);
+			assertEquals("2", result.toString(), "5th root of 32 should be 2");
+
+			num = new BigNumber("1");
+			root = new BigNumber("100");
+			result = num.nthRoot(root);
+			assertEquals("1", result.toString(), "Any root of 1 should be 1");
+
+			num = new BigNumber("8");
+			root = new BigNumber("-12");
+			result = num.nthRoot(root);
+			assertEquals("0.840896415", result.trim().toString().substring(0, 11), "-12th root of 8 should be (rounded) 0.840896415");
+
+			BigNumber finalNum = new BigNumber("-16");
+			BigNumber finalRoot = new BigNumber("4");
+			assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
+				"Even root of negative number should throw exception");
+		}
+
+	}
+
+	@Nested
+	public class TrigonometricMath {
+
+	}
+
+	@Nested
+	public class TwoDimensionalMath {
+
+	}
 
 }
