@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
 import static com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**

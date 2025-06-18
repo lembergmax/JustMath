@@ -2,7 +2,7 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -10,7 +10,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
 
 /**
  * Provides mathematical utilities to convert coordinates between
@@ -101,8 +101,8 @@ public class CoordinateConversionMath {
 			throw new IllegalArgumentException("x or y cannot be zero");
 		}
 
-		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
-			              .add(y.power(BigNumbers.TWO, mathContext, locale))
+		BigNumber r = x.power(BigNumberValues.TWO, mathContext, locale)
+			              .add(y.power(BigNumberValues.TWO, mathContext, locale))
 			              .squareRoot(mathContext, locale);
 		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees();
 

@@ -10,8 +10,8 @@ import java.math.MathContext;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE;
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ONE;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ONE_HUNDRED_EIGHTY;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.

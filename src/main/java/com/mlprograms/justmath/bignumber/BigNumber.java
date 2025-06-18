@@ -17,7 +17,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.*;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.

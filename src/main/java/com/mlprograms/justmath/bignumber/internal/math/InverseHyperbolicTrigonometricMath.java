@@ -7,7 +7,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.*;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.*;
 
 /**
  * Provides high-precision implementations of inverse hyperbolic trigonometric functions

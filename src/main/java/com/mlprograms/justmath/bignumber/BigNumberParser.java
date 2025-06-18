@@ -1,6 +1,6 @@
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
 import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
 import com.mlprograms.justmath.bignumber.internal.NumberChecker;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
@@ -9,7 +9,7 @@ import lombok.NonNull;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
 
 /**
  * Utility class responsible for parsing numeric strings into {@link BigNumber} instances,
@@ -166,7 +166,7 @@ public class BigNumberParser {
 		String afterDecimal = (parts.length > 1) ? parts[ 1 ] : "0";
 
 		return BigNumber.builder()
-			       .mathContext(BigNumbers.DEFAULT_MATH_CONTEXT)
+			       .mathContext(BigNumberValues.DEFAULT_MATH_CONTEXT)
 			       .trigonometricMode(TrigonometricMode.DEG)
 			       .locale(originalLocale)
 			       .valueBeforeDecimal(beforeDecimal)

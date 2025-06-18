@@ -1,7 +1,7 @@
 package com.mlprograms.justmath.bignumber.internal.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -47,17 +47,17 @@ public class CombinatoricsMath {
 			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
 		}
 
-		if (k.isEqualTo(BigNumbers.ZERO) || k.isEqualTo(n)) {
-			return BigNumbers.ONE;
+		if (k.isEqualTo(BigNumberValues.ZERO) || k.isEqualTo(n)) {
+			return BigNumberValues.ONE;
 		}
 
 		BigNumber kClone = k.clone();
 
 		// Use symmetry property: C(n, k) = C(n, n-k)
 		kClone = kClone.min(n.subtract(kClone));
-		BigNumber c = BigNumbers.ONE;
-		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(kClone); i = i.add(BigNumbers.ONE)) {
-			c = c.multiply(n.subtract(i)).divide(i.add(BigNumbers.ONE), mathContext);
+		BigNumber c = BigNumberValues.ONE;
+		for (BigNumber i = BigNumberValues.ZERO; i.isLessThan(kClone); i = i.add(BigNumberValues.ONE)) {
+			c = c.multiply(n.subtract(i)).divide(i.add(BigNumberValues.ONE), mathContext);
 		}
 
 		return c.trim();

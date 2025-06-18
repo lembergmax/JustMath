@@ -2,14 +2,14 @@ package com.mlprograms.justmath.bignumber.internal.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
 import static com.mlprograms.justmath.bignumber.internal.math.BasicMath.exp;
 
 /**
@@ -152,7 +152,7 @@ public class LogarithmicMath {
 		if (number.isNegative() || number.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Number must be positive and non-zero.");
 		}
-		if (base.isNegative() || base.isEqualTo(ZERO) || base.isEqualTo(BigNumbers.ONE)) {
+		if (base.isNegative() || base.isEqualTo(ZERO) || base.isEqualTo(BigNumberValues.ONE)) {
 			throw new IllegalArgumentException("Base must be positive and not equal to 1.");
 		}
 

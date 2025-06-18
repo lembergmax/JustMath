@@ -5,7 +5,7 @@ import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 
 import java.math.MathContext;
 
-public class BigNumbers {
+public class BigNumberValues {
 
 	public static final int DEFAULT_DIVISION_PRECISION = 100;
 	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
