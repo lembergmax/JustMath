@@ -209,11 +209,11 @@ public class BigNumberTest {
 			"-1,-1.1752011",
 			"1.2541,1.60967510"
 		})
-		void sinhTest(String input, String expectedResultPrefix) {
+		void sinhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
-			BigNumber result = num.sinh();
+			BigNumber result = num.sinh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -223,11 +223,11 @@ public class BigNumberTest {
 			"-1,1.54308063",
 			"1.2541,1.89500763"
 		})
-		void coshTest(String input, String expectedResultPrefix) {
+		void coshTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
-			BigNumber result = num.cosh();
+			BigNumber result = num.cosh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -237,11 +237,11 @@ public class BigNumberTest {
 			"-1,-0.7615941",
 			"1.2541,0.84942934"
 		})
-		void tanhTest(String input, String expectedResultPrefix) {
+		void tanhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.tanh();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -249,11 +249,11 @@ public class BigNumberTest {
 			"1,1.313035285",
 			"-1,-1.313035285"
 		})
-		void cothTest(String input, String expectedResultPrefix) {
+		void cothTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.coth();
 
-			assertEquals(expectedResultPrefix, result.round(new MathContext(10, RoundingMode.HALF_UP)).toString());
+			assertEquals(expectedResult, result.round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).toString());
 		}
 
 		@Test
@@ -274,11 +274,11 @@ public class BigNumberTest {
 			"-1,-0.8813735",
 			"2.5,1.64723114"
 		})
-		void asinhTest(String input, String expectedResultPrefix) {
+		void asinhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.asinh();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -287,11 +287,11 @@ public class BigNumberTest {
 			"2,1.31695789",
 			"10,2.99322284"
 		})
-		void acoshTest(String input, String expectedResultPrefix) {
+		void acoshTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.acosh();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@Test
@@ -304,11 +304,11 @@ public class BigNumberTest {
 		@CsvSource({
 			"0.5,0.54930614"
 		})
-		void atanhTest(String input, String expectedResultPrefix) {
+		void atanhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.atanh();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -326,11 +326,11 @@ public class BigNumberTest {
 			"2,0.54930614",
 			"-2,-0.5493061"
 		})
-		void acothTest(String input, String expectedResultPrefix) {
+		void acothTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input);
 			BigNumber result = num.acoth();
 
-			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -358,9 +358,9 @@ public class BigNumberTest {
 			"-1,RAD,-1.570796",
 			"-1,DEG,-90"
 		})
-		void asinTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber num = new BigNumber(input, mode);
-			assertEquals(expected, num.asin().toString().substring(0, expected.length()));
+		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
+			assertEquals(expectedResult, num.asin().toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -369,12 +369,12 @@ public class BigNumberTest {
 			"1,DEG,0",
 			"0,RAD,1.570796",
 			"0,DEG,90",
-			"-1,RAD,3.141593",
+			"-1,RAD,3.141592",
 			"-1,DEG,180"
 		})
-		void acosTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber num = new BigNumber(input, mode);
-			assertEquals(expected, num.acos().toString().substring(0, expected.length()));
+		void acosTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
+			assertEquals(expectedResult, num.acos().toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -388,9 +388,9 @@ public class BigNumberTest {
 			"1000,RAD,1.569796",
 			"1000,DEG,89.942"
 		})
-		void atanTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber num = new BigNumber(input, mode);
-			assertEquals(expected, num.atan().toString().substring(0, expected.length()));
+		void atanTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
+			assertEquals(expectedResult, num.atan().toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -402,9 +402,9 @@ public class BigNumberTest {
 			"-2,RAD,-0.463648",
 			"-2,DEG,-26"
 		})
-		void acotTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber num = new BigNumber(input, mode);
-			assertEquals(expected, num.acot().toString().substring(0, expected.length()));
+		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
+			assertEquals(expectedResult, num.acot().toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest
@@ -412,8 +412,8 @@ public class BigNumberTest {
 			"2,RAD",
 			"2,DEG"
 		})
-		void asinInvalidTest(String input, TrigonometricMode mode) {
-			BigNumber num = new BigNumber(input, mode);
+		void asinInvalidTest(String input, TrigonometricMode trigonometricMode) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
 			assertThrows(ArithmeticException.class, num::asin);
 		}
 
@@ -422,8 +422,8 @@ public class BigNumberTest {
 			"1.5,RAD",
 			"1.5,DEG"
 		})
-		void acosInvalidTest(String input, TrigonometricMode mode) {
-			BigNumber num = new BigNumber(input, mode);
+		void acosInvalidTest(String input, TrigonometricMode trigonometricMode) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
 			assertThrows(ArithmeticException.class, num::acos);
 		}
 
@@ -432,11 +432,11 @@ public class BigNumberTest {
 			"0,RAD",
 			"0,DEG"
 		})
-		void acotInvalidTest(String input, TrigonometricMode mode) {
-			BigNumber num = new BigNumber(input, mode);
+		void acotInvalidTest(String input, TrigonometricMode trigonometricMode) {
+			BigNumber num = new BigNumber(input, trigonometricMode);
 			assertThrows(ArithmeticException.class, num::acot);
 		}
-		
+
 	}
 
 	@Nested
