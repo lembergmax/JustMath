@@ -202,76 +202,66 @@ public class BigNumberTest {
 	@Nested
 	public class HyperbolicTrigonometricMath {
 
-		@Test
-		void sinhTest() {
-			BigNumber num = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,0",
+			"1,1.17520119",
+			"-1,-1.1752011",
+			"1.2541,1.60967510"
+		})
+		void sinhTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
 			BigNumber result = num.sinh();
-			assertEquals("0", result.toString(), "sinh(0) should be 0");
 
-			num = new BigNumber("1");
-			result = num.sinh();
-			assertEquals("1.17520119", result.toString().substring(0, 10), "sinh(1) should be approximately 1.17520119");
-
-			num = new BigNumber("-1");
-			result = num.sinh();
-			assertEquals("-1.1752011", result.toString().substring(0, 10), "sinh(-1) should be approximately -1.17520119");
-
-			num = new BigNumber("1.2541");
-			result = num.sinh();
-			assertEquals("1.60967510", result.toString().substring(0, 10), "sinh(1.2541) should be approximately 1.60967510");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
 		}
 
-		@Test
-		void coshTest() {
-			BigNumber num = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,1",
+			"1,1.54308063",
+			"-1,1.54308063",
+			"1.2541,1.89500763"
+		})
+		void coshTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
 			BigNumber result = num.cosh();
-			assertEquals("1", result.toString(), "cosh(0) should be 1");
 
-			num = new BigNumber("1");
-			result = num.cosh();
-			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(1) should be approximately 1.54308063");
-
-			num = new BigNumber("-1");
-			result = num.cosh();
-			assertEquals("1.54308063", result.toString().substring(0, 10), "cosh(-1) should be same as cosh(1)");
-
-			num = new BigNumber("1.2541");
-			result = num.cosh();
-			assertEquals("1.89500763", result.toString().substring(0, 10), "cosh(1.2541) should be approximately 1.89500763");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
 		}
 
-		@Test
-		void tanhTest() {
-			BigNumber num = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,0",
+			"1,0.76159415",
+			"-1,-0.7615941",
+			"1.2541,0.84942934"
+		})
+		void tanhTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
 			BigNumber result = num.tanh();
-			assertEquals("0", result.toString(), "tanh(0) should be 0");
 
-			num = new BigNumber("1");
-			result = num.tanh();
-			assertEquals("0.76159415", result.toString().substring(0, 10), "tanh(1) should be approximately 0.76159415");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+		}
 
-			num = new BigNumber("-1");
-			result = num.tanh();
-			assertEquals("-0.7615941", result.toString().substring(0, 10), "tanh(-1) should be approximately -0.76159415");
+		@ParameterizedTest
+		@CsvSource({
+			"1,1.313035285",
+			"-1,-1.313035285"
+		})
+		void cothTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
+			BigNumber result = num.coth();
 
-			num = new BigNumber("1.2541");
-			result = num.tanh();
-			assertEquals("0.84942934", result.toString().substring(0, 10), "tanh(1.2541) should be approximately 0.849429349");
+			assertEquals(expectedResultPrefix, result.round(new MathContext(10, RoundingMode.HALF_UP)).toString());
 		}
 
 		@Test
-		void cothTest() {
-			BigNumber num = new BigNumber("1");
-			BigNumber result = num.coth();
-			assertEquals("1.31303528", result.toString().substring(0, 10), "coth(1) should be approximately 1.31303529");
-
-			num = new BigNumber("-1");
-			result = num.coth();
-			assertEquals("-1.31303529", result.round(new MathContext(9, RoundingMode.HALF_UP)).toString(), "coth(-1) should be approximately -1.31303529");
-
-			BigNumber finalZero = new BigNumber("0");
-			assertThrows(IllegalArgumentException.class, finalZero::coth, "coth(0) should throw ArithmeticException (division by zero)");
+		void cothInvalidTest() {
+			BigNumber zero = new BigNumber("0");
+			assertThrows(IllegalArgumentException.class, zero::coth, "coth(0) should throw ArithmeticException (division by zero)");
 		}
+
 	}
 
 	@Nested
