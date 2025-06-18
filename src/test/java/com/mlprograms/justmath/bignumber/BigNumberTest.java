@@ -153,54 +153,48 @@ public class BigNumberTest {
 	@Nested
 	public class CoordinateConversionMath {
 
-		@Test
-		void polarToCartesianCoordinateTest() {
-			BigNumber num1 = new BigNumber("-1");
-			BigNumber num2 = new BigNumber("0");
-			BigNumberCoordinate result;
+		@ParameterizedTest
+		@CsvSource({
+			"0,0,0,0",
+			"12.874,7.000032,12.7780382,1.56895306"
+		})
+		void polarToCartesianCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumberCoordinate result = num1.polarToCartesianCoordinates(num2);
 
-			BigNumber finalNum = num1;
-			BigNumber finalNum1 = num2;
-			assertThrows(IllegalArgumentException.class, () -> finalNum.polarToCartesianCoordinates(finalNum1));
-
-			num1 = new BigNumber("0");
-			num2 = new BigNumber("0");
-			result = num1.polarToCartesianCoordinates(num2);
-
-			assertEquals("0", result.getX().toString());
-			assertEquals("0", result.getY().toString());
-
-			num1 = new BigNumber("12.874");
-			num2 = new BigNumber("7.000032");
-			result = num1.polarToCartesianCoordinates(num2);
-
-			assertEquals("12.7780382", result.getX().toString().substring(0, 10));
-			assertEquals("1.56895306", result.getY().toString().substring(0, 10));
+			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
+			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
 		}
 
 		@Test
-		void cartesianToPolarCoordinateTest() {
+		void polarToCartesianCoordinateInvalidTest() {
 			BigNumber num1 = new BigNumber("-1");
 			BigNumber num2 = new BigNumber("0");
-			BigNumberCoordinate result;
 
-			BigNumber finalNum = num1;
-			BigNumber finalNum1 = num2;
-			assertThrows(IllegalArgumentException.class, () -> finalNum.cartesianToPolarCoordinates(finalNum1));
+			assertThrows(IllegalArgumentException.class, () -> num1.polarToCartesianCoordinates(num2));
+		}
 
-			num1 = new BigNumber("1");
-			num2 = new BigNumber("1");
-			result = num1.cartesianToPolarCoordinates(num2);
+		@ParameterizedTest
+		@CsvSource({
+			"1,1,1.41421356,45",
+			"12.874,7.000032,14.6540207,28.5344307"
+		})
+		void cartesianToPolarCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2);
 
-			assertEquals("1.41421356", result.getX().toString().substring(0, 10));
-			assertEquals("45", result.getY().toString());
+			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
+			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
+		}
 
-			num1 = new BigNumber("12.874");
-			num2 = new BigNumber("7.000032");
-			result = num1.cartesianToPolarCoordinates(num2);
+		@Test
+		void cartesianToPolarCoordinateInvalidTest() {
+			BigNumber num1 = new BigNumber("-1");
+			BigNumber num2 = new BigNumber("0");
 
-			assertEquals("14.6540207", result.getX().toString().substring(0, 10));
-			assertEquals("28.5344307", result.getY().toString().substring(0, 10));
+			assertThrows(IllegalArgumentException.class, () -> num1.cartesianToPolarCoordinates(num2));
 		}
 
 	}
