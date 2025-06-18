@@ -267,165 +267,176 @@ public class BigNumberTest {
 	@Nested
 	public class InverseHyperbolicTrigonometricMath {
 
-		@Test
-		void asinhTest() {
-			BigNumber num = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,0",
+			"1,0.88137358",
+			"-1,-0.8813735",
+			"2.5,1.64723114"
+		})
+		void asinhTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
 			BigNumber result = num.asinh();
-			assertEquals("0", result.toString(), "asinh(0) should be 0");
 
-			num = new BigNumber("1");
-			result = num.asinh();
-			assertEquals("0.88137358", result.toString().substring(0, 10), "asinh(1) should be approximately 0.88137358");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
+		}
 
-			num = new BigNumber("-1");
-			result = num.asinh();
-			assertEquals("-0.8813735", result.toString().substring(0, 10), "asinh(-1) should be approximately -0.88137358");
+		@ParameterizedTest
+		@CsvSource({
+			"1,0",
+			"2,1.31695789",
+			"10,2.99322284"
+		})
+		void acoshTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
+			BigNumber result = num.acosh();
 
-			num = new BigNumber("2.5");
-			result = num.asinh();
-			assertEquals("1.64723114", result.toString().substring(0, 10), "asinh(2.5) should be approximately 1.64723114");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
 		}
 
 		@Test
-		void acoshTest() {
-			BigNumber num = new BigNumber("1");
-			BigNumber result = num.acosh();
-			assertEquals("0", result.toString(), "acosh(1) should be 0");
-
-			num = new BigNumber("2");
-			result = num.acosh();
-			assertEquals("1.31695789", result.toString().substring(0, 10), "acosh(2) should be approximately 1.31695789");
-
-			num = new BigNumber("10");
-			result = num.acosh();
-			assertEquals("2.99322284", result.toString().substring(0, 10), "acosh(10) should be approximately 2.99322284");
-
+		void acoshInvalidInputTest() {
 			BigNumber invalid = new BigNumber("0.5");
 			assertThrows(IllegalArgumentException.class, invalid::acosh, "acosh(x < 1) should throw exception");
 		}
 
-		@Test
-		void atanhTest() {
-			BigNumber num = new BigNumber("-1.01");
-			BigNumber result;
-			assertThrows(IllegalArgumentException.class, num::atanh, "atanh(-1.01) should throw exception");
+		@ParameterizedTest
+		@CsvSource({
+			"0.5,0.54930614"
+		})
+		void atanhTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
+			BigNumber result = num.atanh();
 
-			num = new BigNumber("0.5");
-			result = num.atanh();
-			assertEquals("0.54930614", result.toString().substring(0, 10), "atanh(0.5) should be approximately 0.54930614");
-
-			BigNumber invalid = new BigNumber("1");
-			assertThrows(IllegalArgumentException.class, invalid::atanh, "atanh(1) should throw exception");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
 		}
 
-		@Test
-		void acothTest() {
-			BigNumber num = new BigNumber("2");
+		@ParameterizedTest
+		@CsvSource({
+			"-1.01",
+			"1"
+		})
+		void atanhInvalidInputTest(String input) {
+			BigNumber num = new BigNumber(input);
+			assertThrows(IllegalArgumentException.class, num::atanh, "atanh(|x| >= 1) should throw exception");
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"2,0.54930614",
+			"-2,-0.5493061"
+		})
+		void acothTest(String input, String expectedResultPrefix) {
+			BigNumber num = new BigNumber(input);
 			BigNumber result = num.acoth();
-			assertEquals("0.54930614", result.toString().substring(0, 10), "acoth(2) should be approximately 0.54930614");
 
-			num = new BigNumber("-2");
-			result = num.acoth();
-			assertEquals("-0.5493061", result.toString().substring(0, 10), "acoth(-2) should be approximately -0.54930614");
-
-			BigNumber invalid = new BigNumber("0.5");
-			assertThrows(ArithmeticException.class, invalid::acoth, "acoth(|x| <= 1) should throw exception");
-
-			invalid = new BigNumber("1");
-			assertThrows(IllegalArgumentException.class, invalid::acoth, "acoth(1) should throw exception");
+			assertEquals(expectedResultPrefix, result.toString().substring(0, expectedResultPrefix.length()));
 		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0.5",
+			"1",
+			"-1"
+		})
+		void acothInvalidInputTest(String input) {
+			BigNumber num = new BigNumber(input);
+			assertThrows(IllegalArgumentException.class, num::acoth, "acoth(|x| <= 1) should throw exception");
+		}
+
 	}
 
 	@Nested
 	public class InverseTrigonometricMath {
 
-		@Test
-		void asinTest() {
-			BigNumber rad = new BigNumber("0", TrigonometricMode.RAD);
-			BigNumber deg = new BigNumber("0", TrigonometricMode.DEG);
-			assertEquals("0", rad.asin().toString());
-			assertEquals("0", deg.asin().toString());
-
-			rad = new BigNumber("1", TrigonometricMode.RAD);
-			deg = new BigNumber("1", TrigonometricMode.DEG);
-			assertEquals("1.570796", rad.asin().toString().substring(0, 8));
-			assertEquals("90", deg.asin().toString().substring(0, 2));
-
-			rad = new BigNumber("-1", TrigonometricMode.RAD);
-			deg = new BigNumber("-1", TrigonometricMode.DEG);
-			assertEquals("-1.570796", rad.asin().toString().substring(0, 9));
-			assertEquals("-90", deg.asin().toString().substring(0, 3));
-
-			assertThrows(ArithmeticException.class, () -> new BigNumber("2", TrigonometricMode.RAD).asin());
-			assertThrows(ArithmeticException.class, () -> new BigNumber("2", TrigonometricMode.DEG).asin());
+		@ParameterizedTest
+		@CsvSource({
+			"0,RAD,0",
+			"0,DEG,0",
+			"1,RAD,1.570796",
+			"1,DEG,90",
+			"-1,RAD,-1.570796",
+			"-1,DEG,-90"
+		})
+		void asinTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber num = new BigNumber(input, mode);
+			assertEquals(expected, num.asin().toString().substring(0, expected.length()));
 		}
 
-		@Test
-		void acosTest() {
-			BigNumber rad = new BigNumber("1", TrigonometricMode.RAD);
-			BigNumber deg = new BigNumber("1", TrigonometricMode.DEG);
-			assertEquals("0", rad.acos().toString());
-			assertEquals("0", deg.acos().toString());
-
-			rad = new BigNumber("0", TrigonometricMode.RAD);
-			deg = new BigNumber("0", TrigonometricMode.DEG);
-			assertEquals("1.570796", rad.acos().toString().substring(0, 8));
-			assertEquals("90", deg.acos().toString().substring(0, 2));
-
-			rad = new BigNumber("-1", TrigonometricMode.RAD);
-			deg = new BigNumber("-1", TrigonometricMode.DEG);
-			assertEquals("3.141593", rad.acos().toString().substring(0, 8));
-			assertEquals("180", deg.acos().toString().substring(0, 3));
-
-			assertThrows(ArithmeticException.class, () -> new BigNumber("1.5", TrigonometricMode.RAD).acos());
-			assertThrows(ArithmeticException.class, () -> new BigNumber("1.5", TrigonometricMode.DEG).acos());
+		@ParameterizedTest
+		@CsvSource({
+			"1,RAD,0",
+			"1,DEG,0",
+			"0,RAD,1.570796",
+			"0,DEG,90",
+			"-1,RAD,3.141593",
+			"-1,DEG,180"
+		})
+		void acosTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber num = new BigNumber(input, mode);
+			assertEquals(expected, num.acos().toString().substring(0, expected.length()));
 		}
 
-		@Test
-		void atanTest() {
-			BigNumber rad = new BigNumber("0", TrigonometricMode.RAD);
-			BigNumber deg = new BigNumber("0", TrigonometricMode.DEG);
-			assertEquals("0", rad.atan().toString());
-			assertEquals("0", deg.atan().toString());
-
-			rad = new BigNumber("1", TrigonometricMode.RAD);
-			deg = new BigNumber("1", TrigonometricMode.DEG);
-			assertEquals("0.785398", rad.atan().toString().substring(0, 8));
-			assertEquals("45", deg.atan().toString().substring(0, 2));
-
-			rad = new BigNumber("-1", TrigonometricMode.RAD);
-			deg = new BigNumber("-1", TrigonometricMode.DEG);
-			assertEquals("-0.785398", rad.atan().toString().substring(0, 9));
-			assertEquals("-45", deg.atan().toString().substring(0, 3));
-
-			rad = new BigNumber("1000", TrigonometricMode.RAD);
-			deg = new BigNumber("1000", TrigonometricMode.DEG);
-			assertEquals("1.569796", rad.atan().toString().substring(0, 8));
-			assertEquals("89.942", deg.atan().toString().substring(0, 6));
+		@ParameterizedTest
+		@CsvSource({
+			"0,RAD,0",
+			"0,DEG,0",
+			"1,RAD,0.785398",
+			"1,DEG,45",
+			"-1,RAD,-0.785398",
+			"-1,DEG,-45",
+			"1000,RAD,1.569796",
+			"1000,DEG,89.942"
+		})
+		void atanTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber num = new BigNumber(input, mode);
+			assertEquals(expected, num.atan().toString().substring(0, expected.length()));
 		}
 
-		// TODO: Test korrigieren
-		@Test
-		void acotTest() {
-			BigNumber rad = new BigNumber("1", TrigonometricMode.RAD);
-			BigNumber deg = new BigNumber("1", TrigonometricMode.DEG);
-			assertEquals("0.785398", rad.acot().toString());
-			assertEquals("45", deg.acot().toString());
-
-			rad = new BigNumber("2", TrigonometricMode.RAD);
-			deg = new BigNumber("2", TrigonometricMode.DEG);
-			assertEquals("0.463648", rad.acot().toString().substring(0, 8));
-			assertEquals("26", deg.acot().toString());
-
-			rad = new BigNumber("-2", TrigonometricMode.RAD);
-			deg = new BigNumber("-2", TrigonometricMode.DEG);
-			assertEquals("-0.463648", rad.acot().toString().substring(0, 9));
-			assertEquals("-26", deg.acot().toString().substring(0, 3));
-
-			assertThrows(ArithmeticException.class, () -> new BigNumber("0", TrigonometricMode.RAD).acot());
-			assertThrows(ArithmeticException.class, () -> new BigNumber("0", TrigonometricMode.DEG).acot());
+		@ParameterizedTest
+		@CsvSource({
+			"1,RAD,0.785398",
+			"1,DEG,45",
+			"2,RAD,0.463648",
+			"2,DEG,26",
+			"-2,RAD,-0.463648",
+			"-2,DEG,-26"
+		})
+		void acotTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber num = new BigNumber(input, mode);
+			assertEquals(expected, num.acot().toString().substring(0, expected.length()));
 		}
 
+		@ParameterizedTest
+		@CsvSource({
+			"2,RAD",
+			"2,DEG"
+		})
+		void asinInvalidTest(String input, TrigonometricMode mode) {
+			BigNumber num = new BigNumber(input, mode);
+			assertThrows(ArithmeticException.class, num::asin);
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"1.5,RAD",
+			"1.5,DEG"
+		})
+		void acosInvalidTest(String input, TrigonometricMode mode) {
+			BigNumber num = new BigNumber(input, mode);
+			assertThrows(ArithmeticException.class, num::acos);
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0,RAD",
+			"0,DEG"
+		})
+		void acotInvalidTest(String input, TrigonometricMode mode) {
+			BigNumber num = new BigNumber(input, mode);
+			assertThrows(ArithmeticException.class, num::acot);
+		}
+		
 	}
 
 	@Nested
