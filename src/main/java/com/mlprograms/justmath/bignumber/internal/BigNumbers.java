@@ -7,7 +7,7 @@ import java.math.MathContext;
 
 public class BigNumbers {
 
-	public static final int DEFAULT_DIVISION_PRECISION = 1000;
+	public static final int DEFAULT_DIVISION_PRECISION = 100;
 	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
 	public static final BigNumber NEGATIVE_ONE = new BigNumber("-1", DEFAULT_MATH_CONTEXT);
