@@ -3,6 +3,8 @@ package com.mlprograms.justmath.bignumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -15,128 +17,86 @@ public class BigNumberTest {
 	@Nested
 	public class BasicMath {
 
-		@Test
-		void additionTest() {
-			BigNumber num1 = new BigNumber("25.5");
-			BigNumber num2 = new BigNumber("30.2");
+		@ParameterizedTest
+		@CsvSource({
+			"25.5,30.2,55.7",
+			"0.000000000000000000000000000000000000000000000001,0.00000000000000000003,0.000000000000000000030000000000000000000000000001",
+			"8736519650165165946166562572365809265462671456,143153651451954101155145145169254155145,8736519793318817398120663727510954434716826601",
+			"123,456,579"
+		})
+		void additionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
 
-			BigNumber result = num1.add(num2);
-			assertEquals("55.7", result.toString(), "Addition result should be 55.7");
+			BigNumber actualResult = num1.add(num2);
 
-			num1 = new BigNumber("0.000000000000000000000000000000000000000000000001");
-			num2 = new BigNumber("0.00000000000000000003");
-			result = num1.add(num2);
-
-			assertEquals("0.000000000000000000030000000000000000000000000001", result.toString(),
-				"Addition of very small numbers should be accurate");
-
-			num1 = new BigNumber("8736519650165165946166562572365809265462671456");
-			num2 = new BigNumber("143153651451954101155145145169254155145");
-			result = num1.add(num2);
-
-			assertEquals("8736519793318817398120663727510954434716826601", result.toString(),
-				"Addition of large numbers should be accurate");
-
-			num1 = new BigNumber("123");
-			num2 = new BigNumber("456");
-			BigNumber num3 = new BigNumber("789");
-
-			result = num1.add(num2).add(num3);
-
-			assertEquals("1368", result.toString(), "Chained addition should yield 1368");
+			assertEquals(inputExpectedResult, actualResult.toString());
 		}
 
-		@Test
-		void subtractionTest() {
-			BigNumber num1 = new BigNumber("100");
-			BigNumber num2 = new BigNumber("30");
+		@ParameterizedTest
+		@CsvSource({
+			"100,30,70",
+			"0.0000000001,0.00000000009,0.00000000001",
+			"500,1000,-500"
+		})
+		void subtractionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
 			BigNumber result = num1.subtract(num2);
-			assertEquals("70", result.toString(), "Subtraction result should be 70");
-
-			num1 = new BigNumber("0.0000000001");
-			num2 = new BigNumber("0.00000000009");
-			result = num1.subtract(num2);
-			assertEquals("0.00000000001", result.toString(), "Subtraction of small decimals should be precise");
-
-			num1 = new BigNumber("500");
-			num2 = new BigNumber("1000");
-			result = num1.subtract(num2);
-			assertEquals("-500", result.toString(), "Subtraction should support negative results");
+			assertEquals(inputExpectedResult, result.toString());
 		}
 
-		@Test
-		void multiplicationTest() {
-			BigNumber num1 = new BigNumber("12");
-			BigNumber num2 = new BigNumber("3");
+		@ParameterizedTest
+		@CsvSource({
+			"12,3,36",
+			"0.00001,100000,1",
+			"123456789,987654321,121932631112635269"
+		})
+		void multiplicationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
 			BigNumber result = num1.multiply(num2);
-			assertEquals("36", result.toString(), "Multiplication result should be 36");
-
-			num1 = new BigNumber("0.00001");
-			num2 = new BigNumber("100000");
-			result = num1.multiply(num2);
-			assertEquals("1", result.toString(), "Multiplication with inverse values should yield 1");
-
-			num1 = new BigNumber("123456789");
-			num2 = new BigNumber("987654321");
-			result = num1.multiply(num2);
-			assertEquals("121932631112635269", result.toString(), "Multiplication of large numbers should be accurate");
+			assertEquals(inputExpectedResult, result.toString());
 		}
 
-		@Test
-		void divisionTest() {
-			BigNumber num1 = new BigNumber("100");
-			BigNumber num2 = new BigNumber("4");
-			BigNumber result = num1.divide(num2);
-			assertEquals("25", result.toString(), "Division result should be 25");
-
-			num1 = new BigNumber("1", new MathContext(10, RoundingMode.HALF_UP));
-			num2 = new BigNumber("3");
-			result = num1.divide(num2);
-			assertEquals("0.3333333333", result.toString(),
-				"Division should be precise with recurring decimals");
-
-			num1 = new BigNumber("123456789123456789");
-			num2 = new BigNumber("1");
-			result = num1.divide(num2);
-			assertEquals("123456789123456789", result.toString(), "Division by one should return the same number");
+		@ParameterizedTest
+		@CsvSource({
+			"100,4,25",
+			"1,3,0.33333333333333333333",
+			"123456789123456789,1,123456789123456789"
+		})
+		void divisionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber result = num1.divide(num2, new MathContext(20, RoundingMode.HALF_UP));
+			assertEquals(inputExpectedResult, result.trim().toString());
 		}
 
-		@Test
-		void powerTest() {
-			BigNumber num1 = new BigNumber("2");
-			BigNumber result = num1.power(new BigNumber("10"));
-			assertEquals("1024", result.toString(), "2^10 should be 1024");
-
-			num1 = new BigNumber("5");
-			result = num1.power(new BigNumber("0"));
-			assertEquals("1", result.toString(), "Any number to power 0 should be 1");
-
-			num1 = new BigNumber("1.1");
-			result = num1.power(new BigNumber("2"));
-			assertEquals("1.21", result.toString(), "1.1^2 should be 1.21");
-
-			num1 = new BigNumber("-1.2");
-			result = num1.power(new BigNumber("-2.99"));
-			assertEquals("-0.579759767", result.trim().toString().substring(0, 12), "1.1^2 should be -0.579759767");
+		@ParameterizedTest
+		@CsvSource({
+			"2,10,1024",
+			"5,0,1",
+			"1.1,2,1.21",
+			"-1.2,-2.99,-0.579759767"
+		})
+		void powerTest(String inputNum1, String inputNum2, String inputExpectedResultPrefix) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber exponent = new BigNumber(inputNum2);
+			BigNumber result = num1.power(exponent);
+			assertEquals(inputExpectedResultPrefix, result.trim().toString().substring(0, inputExpectedResultPrefix.length()));
 		}
 
-		@Test
-		void factorialTest() {
-			BigNumber num = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,1",
+			"1,1",
+			"5,120",
+			"20,2432902008176640000"
+		})
+		void factorialTest(String inputNum, String inputExpectedResult) {
+			BigNumber num = new BigNumber(inputNum);
 			BigNumber result = num.factorial();
-			assertEquals("1", result.toString(), "0! should be 1");
-
-			num = new BigNumber("1");
-			result = num.factorial();
-			assertEquals("1", result.toString(), "1! should be 1");
-
-			num = new BigNumber("5");
-			result = num.factorial();
-			assertEquals("120", result.toString(), "5! should be 120");
-
-			num = new BigNumber("20");
-			result = num.factorial();
-			assertEquals("2432902008176640000", result.toString(), "20! should be 2432902008176640000");
+			assertEquals(inputExpectedResult, result.toString());
 		}
 
 	}
@@ -144,60 +104,48 @@ public class BigNumberTest {
 	@Nested
 	public class CombinatoricsMath {
 
-		@Test
-		void combinationTest() {
-			BigNumber num1 = new BigNumber("0");
-			BigNumber num2 = new BigNumber("0");
+		@ParameterizedTest
+		@CsvSource({
+			"0,0,1",
+			"1,1,1",
+			"12,7,792"
+		})
+		void combinationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
 			BigNumber result = num1.combination(num2);
 
-			assertEquals("1", result.toString(), "0C0 should be 1");
-
-			num1 = new BigNumber("1");
-			num2 = new BigNumber("1");
-			result = num1.combination(num2);
-
-			assertEquals("1", result.toString(), "1C1 should be 1");
-
-			num1 = new BigNumber("12");
-			num2 = new BigNumber("7");
-			result = num1.combination(num2);
-
-			assertEquals("792", result.toString(), "7C1 should be 792");
-
-			num1 = new BigNumber("123");
-			num2 = new BigNumber("345");
-
-			BigNumber finalNum = num1;
-			BigNumber finalNum1 = num2;
-			assertThrows(IllegalArgumentException.class, () -> finalNum.combination(finalNum1));
+			assertEquals(inputExpectedResult, result.toString());
 		}
 
 		@Test
-		void permutationTest() {
-			BigNumber num1 = new BigNumber("0");
-			BigNumber num2 = new BigNumber("0");
+		void combinationInvalidInputTest() {
+			BigNumber num1 = new BigNumber("123");
+			BigNumber num2 = new BigNumber("345");
+
+			assertThrows(IllegalArgumentException.class, () -> num1.combination(num2));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0,0,1",
+			"1,1,1",
+			"12,7,3991680"
+		})
+		void permutationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
+			BigNumber num1 = new BigNumber(inputNum1);
+			BigNumber num2 = new BigNumber(inputNum2);
 			BigNumber result = num1.permutation(num2);
 
-			assertEquals("1", result.toString(), "0P0 should be 1");
+			assertEquals(inputExpectedResult, result.toString());
+		}
 
-			num1 = new BigNumber("1");
-			num2 = new BigNumber("1");
-			result = num1.permutation(num2);
+		@Test
+		void permutationInvalidInputTest() {
+			BigNumber num1 = new BigNumber("123");
+			BigNumber num2 = new BigNumber("345");
 
-			assertEquals("1", result.toString(), "1P1 should be 1");
-
-			num1 = new BigNumber("12");
-			num2 = new BigNumber("7");
-			result = num1.permutation(num2);
-
-			assertEquals("3991680", result.toString(), "7P1 should be 3991680");
-
-			num1 = new BigNumber("123");
-			num2 = new BigNumber("345");
-
-			BigNumber finalNum = num1;
-			BigNumber finalNum1 = num2;
-			assertThrows(IllegalArgumentException.class, () -> finalNum.permutation(finalNum1));
+			assertThrows(IllegalArgumentException.class, () -> num1.permutation(num2));
 		}
 
 	}
@@ -478,12 +426,12 @@ public class BigNumberTest {
 			BigNumber rad = new BigNumber("1", TrigonometricMode.RAD);
 			BigNumber deg = new BigNumber("1", TrigonometricMode.DEG);
 			assertEquals("0.785398", rad.acot().toString());
-			assertEquals("45", deg.acot().toString().substring(0, 2));
+			assertEquals("45", deg.acot().toString());
 
 			rad = new BigNumber("2", TrigonometricMode.RAD);
 			deg = new BigNumber("2", TrigonometricMode.DEG);
 			assertEquals("0.463648", rad.acot().toString().substring(0, 8));
-			assertEquals("26", deg.acot().toString().substring(0, 2));
+			assertEquals("26", deg.acot().toString());
 
 			rad = new BigNumber("-2", TrigonometricMode.RAD);
 			deg = new BigNumber("-2", TrigonometricMode.DEG);
