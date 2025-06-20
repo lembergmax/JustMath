@@ -399,8 +399,8 @@ public class BigNumberTest {
 			"1,DEG,45",
 			"2,RAD,0.463647",
 			"2,DEG,26,565052",
-			// "-2,RAD,-0.463647", // TODO: es kommt ein falsches Ergebnis raus
-			// "-2,DEG,-26,565052" // TODO: es kommt ein falsches Ergebnis raus
+			"-2,RAD,-0.463647",
+			"-2,DEG,-26,565052"
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input);
