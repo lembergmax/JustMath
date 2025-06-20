@@ -111,16 +111,7 @@ public class LogarithmicMath {
 		if (argument.compareTo(ZERO) <= 0)
 			throw new ArithmeticException("ln(x) undefined for x <= 0");
 
-		BigDecimal last;
-		BigDecimal result = BigDecimal.ZERO;
-		int iterations = 0;
-
-		do {
-			last = result;
-			result = result.subtract(BigDecimal.ONE.subtract(argument.divide(exp(new BigNumber(result.toPlainString(), locale, mathContext), mathContext, locale), mathContext).toBigDecimal()), mathContext);
-		} while (result.subtract(last).abs().compareTo(BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision())) > 0
-			         && ++iterations < 50);
-
+		BigDecimal result = BigDecimalMath.log(argument.toBigDecimal(), mathContext);
 		return new BigNumber(result.toPlainString(), locale).trim();
 	}
 
