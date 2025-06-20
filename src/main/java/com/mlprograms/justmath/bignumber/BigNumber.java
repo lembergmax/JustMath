@@ -1484,7 +1484,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return a new {@code BigNumber} representing the percentage (this as a percent of n)
      */
     public BigNumber isXPercentOfN(@NonNull final BigNumber n, @NonNull final MathContext mathContext) {
-        return PercentageMath.mIsXPercentOfN(this, n, mathContext);
+        return PercentageMath.xIsNPercentOfN(this, n, mathContext);
     }
 
     /**
