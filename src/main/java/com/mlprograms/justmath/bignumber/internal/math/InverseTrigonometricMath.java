@@ -126,41 +126,47 @@ public class InverseTrigonometricMath {
 	/**
 	 * Calculates the arccotangent (inverse cotangent) of the given argument.
 	 * <p>
-	 * Mathematically, acot(x) returns the angle θ such that cot(θ) = x.
-	 * The range of θ is typically (0, π). The cotangent is defined as cot(θ) = 1 / tan(θ).
-	 * <p>
-	 * Formula:
+	 * Mathematically, {@code acot(x)} returns the angle θ such that {@code cot(θ) = x}.
+	 * Since {@code cot(θ) = 1 / tan(θ)}, the function is computed using:
 	 * <pre>
-	 * acot(x) = atan(1/x), for x ≠ 0
+	 * acot(x) = atan(1 / x), for x ≠ 0
 	 * </pre>
-	 * <p>
-	 * This function does not support degree output mode; result is returned in radians.
 	 *
 	 * <p>
-	 * <strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero
-	 * due to division by zero in the formula.
+	 * The function is defined for all real values of {@code x} except 0.
+	 * For positive arguments, the result is in (0, π/2),
+	 * and for negative arguments, the result is in (−π/2, 0).
+	 * The result is returned in radians or degrees, depending on the specified {@link TrigonometricMode}.
+	 *
+	 * <p><strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero due to division by zero.
 	 *
 	 * @param argument
-	 * 	the input value x for which to compute arccotangent; must not be 0
+	 * 	the input value {@code x} for which to compute the inverse cotangent; must not be zero
 	 * @param mathContext
-	 * 	the precision and rounding context
+	 * 	the precision and rounding context to be used during the computation
+	 * @param trigonometricMode
+	 * 	determines whether the result is returned in radians or degrees
 	 * @param locale
-	 * 	locale used for formatting the output
+	 * 	the locale used to format the resulting {@link BigNumber}
 	 *
-	 * @return a {@link BigNumber} representing the arccotangent of the argument
+	 * @return a {@link BigNumber} representing the inverse cotangent of the argument
 	 *
 	 * @throws ArithmeticException
 	 * 	if the argument is zero (undefined operation)
+	 * @see #atan(BigNumber, MathContext, TrigonometricMode, Locale)
 	 */
 	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		if (argument.isEqualTo(ZERO)) {
 			throw new ArithmeticException("acot(x) is undefined for x = 0");
 		}
 
-		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
+		BigDecimal oneOverX = BigDecimal.ONE.divide(argument.toBigDecimal(), mathContext);
+		BigDecimal result = BigDecimalMath.atan(oneOverX, mathContext);
+
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
+
 		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
