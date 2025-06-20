@@ -39,13 +39,10 @@ public class NumberTheoryMath {
 			throw new IllegalArgumentException("GCD requires integer values.");
 		}
 
-		BigNumber aClone = a.clone();
-		BigNumber bClone = b.clone();
+		BigNumber aClone = a.clone().abs();
+		BigNumber bClone = b.clone().abs();
 
-		aClone = aClone.abs();
-		bClone = bClone.abs();
-
-		while (b.isGreaterThan(ZERO)) {
+		while (bClone.isGreaterThan(ZERO)) {
 			BigNumber temp = bClone;
 			bClone = aClone.modulo(bClone);
 			aClone = temp;
