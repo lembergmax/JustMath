@@ -529,7 +529,6 @@ public class BigNumberTest {
 
 	}
 
-
 	@Nested
 	public class NumberTheoryMath {
 
@@ -573,16 +572,38 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
+			"20, 50, 10",
+			"50, 200, 100",
+			"0, 1000, 0",
+			"100, 42, 42",
+			"12.5, 80, 10",
+			"-25, 200, -50",
+			"150, 10, 15"
 		})
-		void nPercentFromMTest() {
+		void nPercentFromMTest(String n, String m, String expectedResult) {
+			BigNumber percent = new BigNumber(n);
+			BigNumber base = new BigNumber(m);
 
+			BigNumber result = base.percentFromM(percent);
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"25, 50, 50",
+			"100, 200, 50",
+			"42, 42, 100",
+			"10, 80, 12.5",
+			"0, 1000, 0",
+			"-50, 200, -25",
+			"15, 10, 150"
 		})
-		void mIsXPercentOfNTest() {
+		void xIsNPercentOfMTest(String part, String total, String expectedResult) {
+			BigNumber partVal = new BigNumber(part);
+			BigNumber totalVal = new BigNumber(total);
 
+			BigNumber result = partVal.isXPercentOfN(totalVal);
+			assertEquals(expectedResult, result.toString());
 		}
 
 	}
@@ -660,30 +681,94 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, 0",
+			"0, DEG, 0",
+			"1.57079632679, RAD, 1",
+			"90, DEG, 1",
+			"3.14159265359, RAD, 0",
+			"180, DEG, 0",
+			"-1.57079632679, RAD, -1",
+			"-90, DEG, -1"
 		})
-		void sinTest() {
-
+		void sinTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber angle = new BigNumber(input);
+			BigNumber result = angle.sin(mode);
+			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, 1",
+			"0, DEG, 1",
+			"1.57079632679, RAD, 0",
+			"90, DEG, 0",
+			"3.14159265359, RAD, -1",
+			"180, DEG, -1",
+			"-1.57079632679, RAD, 0",
+			"-90, DEG, 0"
 		})
-		void cosTest() {
-
+		void cosTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber angle = new BigNumber(input);
+			BigNumber result = angle.cos(mode);
+			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, 0",
+			"0, DEG, 0",
+			"1.57079632679, RAD, NaN",
+			"90, DEG, NaN",
+			"0.78539816339, RAD, 1",
+			"45, DEG, 1",
+			"-0.78539816339, RAD, -1",
+			"-45, DEG, -1"
 		})
-		void tanTest() {
-
+		void tanTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber angle = new BigNumber(input);
+			BigNumber result = angle.tan(mode);
+			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, NaN",
+			"0, DEG, NaN",
+			"1.57079632679, RAD, 0",
+			"90, DEG, 0",
+			"0.78539816339, RAD, 1",
+			"45, DEG, 1",
+			"-0.78539816339, RAD, -1",
+			"-45, DEG, -1"
 		})
-		void cotTest() {
+		void cotTest(String input, TrigonometricMode mode, String expected) {
+			BigNumber angle = new BigNumber(input);
+			BigNumber result = angle.cot(mode);
+			assertEquals(expected, result.toString());
+		}
 
+		@ParameterizedTest
+		@CsvSource({
+			"90, DEG",
+			"1.57079632679, RAD",
+			"270, DEG",
+			"4.71238898038, RAD"
+		})
+		void tanInvalidTest(String input, TrigonometricMode mode) {
+			BigNumber angle = new BigNumber(input);
+			assertThrows(ArithmeticException.class, () -> angle.tan(mode), "tan undefined where cos = 0");
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0, DEG",
+			"0, RAD",
+			"180, DEG",
+			"3.14159265359, RAD"
+		})
+		void cotInvalidTest(String input, TrigonometricMode mode) {
+			BigNumber angle = new BigNumber(input);
+			assertThrows(ArithmeticException.class, () -> angle.cot(mode), "cot undefined where sin = 0");
 		}
 
 	}
@@ -693,9 +778,30 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
+			"1,1,0.78539",
+			"1,-1,2.35619",
+			"-1,-1,-2.3561",
+			"-1,1,-0.7853",
 		})
-		void atan2Test() {
+		void atan2Test(String inputY, String inputX, String expected) {
+			BigNumber y = new BigNumber(inputY);
+			BigNumber x = new BigNumber(inputX);
 
+			BigNumber result = y.atan2(x);
+			assertEquals(expected, result.toString().substring(0, 7));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0,0",
+			"0,1",
+			"1,0"
+		})
+		void atan2InvalidTest(String inputY, String inputX) {
+			BigNumber y = new BigNumber(inputY);
+			BigNumber x = new BigNumber(inputX);
+
+			assertThrows(IllegalArgumentException.class, () -> y.atan2(x));
 		}
 
 	}
