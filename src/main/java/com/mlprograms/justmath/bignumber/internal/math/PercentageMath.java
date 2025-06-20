@@ -52,8 +52,8 @@ public class PercentageMath {
 	 *
 	 * @return the percentage that m is of n
 	 */
-	public static BigNumber mIsXPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext) {
-		return m.divide(n, mathContext).multiply(ONE_HUNDRED).trim();
+	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext) {
+		return n.divide(m, mathContext).multiply(ONE_HUNDRED).trim();
 	}
 
 }
