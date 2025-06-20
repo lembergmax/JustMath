@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -442,15 +443,147 @@ public class BigNumberTest {
 	@Nested
 	public class LogarithmicMath {
 
+		@ParameterizedTest
+		@CsvSource({
+			"1,0",
+			"2,1",
+			"8,3",
+			"10,3.321928094"
+		})
+		void log2Test(String input, String expectedPrefix) {
+			BigNumber arg = new BigNumber(input);
+			BigNumber result = arg.log2(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
+			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+		}
+
+		@Test
+		void log2InvalidTest() {
+			BigNumber zero = new BigNumber("0");
+			assertThrows(IllegalArgumentException.class, () -> zero.log2(new MathContext(10, RoundingMode.HALF_UP), Locale.US));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"1,0",
+			"10,1",
+			"100,2",
+			"2,0.3010299"
+		})
+		void log10Test(String input, String expectedPrefix) {
+			BigNumber arg = new BigNumber(input);
+			BigNumber result = arg.log10(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
+			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+		}
+
+		@Test
+		void log10InvalidTest() {
+			BigNumber neg = new BigNumber("-5");
+			assertThrows(IllegalArgumentException.class, () -> neg.log10(new MathContext(10, RoundingMode.HALF_UP), Locale.GERMAN));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"1,0",
+			"2.71828182845904523536,1",
+			"10,2.302585093"
+		})
+		void lnTest(String input, String expectedPrefix) {
+			BigNumber arg = new BigNumber(input);
+			BigNumber result = arg.ln(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
+			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+		}
+
+		@Test
+		void lnInvalidTest() {
+			BigNumber neg = new BigNumber("0");
+			assertThrows(ArithmeticException.class, () -> neg.ln(new MathContext(10, RoundingMode.HALF_UP), Locale.US));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"8,2,3",
+			"27,3,3",
+			"16,2,4",
+			"10,10,1"
+		})
+		void logBaseTest(String number, String base, String expectedPrefix) {
+			BigNumber arg = new BigNumber(number);
+			BigNumber b = new BigNumber(base);
+			BigNumber result = arg.logBase(b, new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
+			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"0,2",
+			"5,1",
+			"1,0",
+			"-3,2"
+		})
+		void logBaseInvalidTest(String number, String base) {
+			BigNumber arg = new BigNumber(number);
+			BigNumber b = new BigNumber(base);
+			assertThrows(IllegalArgumentException.class,
+				() -> arg.logBase(b, new MathContext(10, RoundingMode.HALF_UP), Locale.US));
+		}
+
 	}
+
 
 	@Nested
 	public class NumberTheoryMath {
+
+		@ParameterizedTest
+		@CsvSource({
+			"12, 8, 4",
+			"100, 25, 25",
+			"7, 3, 1",
+			"-18, 24, 6",
+			"0, 5, 5",
+			"5, 0, 5",
+			"0, 0, 0"
+		})
+		void gcdTest(String input1, String input2, String expected) {
+			BigNumber a = new BigNumber(input1);
+			BigNumber b = new BigNumber(input2);
+			BigNumber result = a.gcd(b);
+			assertEquals(expected, result.toString());
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"4, 6, 12",
+			"5, 3, 15",
+			"0, 7, 0",
+			"7, 0, 0",
+			"-3, 5, 15",
+			"-2, -4, 4"
+		})
+		void lcmTest(String input1, String input2, String expected) {
+			BigNumber a = new BigNumber(input1);
+			BigNumber b = new BigNumber(input2);
+			BigNumber result = a.lcm(b);
+			assertEquals(expected, result.toString());
+		}
 
 	}
 
 	@Nested
 	public class PercentageMath {
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void nPercentFromMTest() {
+
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void mIsXPercentOfNTest() {
+
+		}
 
 	}
 
@@ -525,10 +658,45 @@ public class BigNumberTest {
 	@Nested
 	public class TrigonometricMath {
 
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void sinTest() {
+
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void cosTest() {
+
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void tanTest() {
+
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void cotTest() {
+
+		}
+
 	}
 
 	@Nested
 	public class TwoDimensionalMath {
+
+		@ParameterizedTest
+		@CsvSource({
+		})
+		void atan2Test() {
+
+		}
 
 	}
 
