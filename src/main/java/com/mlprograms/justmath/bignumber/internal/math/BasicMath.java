@@ -110,17 +110,20 @@ public class BasicMath {
 			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
 		}
 
-		if (dividend.isNegative() || divisor.isNegative()) {
-			throw new IllegalArgumentException("Modulo operation requires both numbers to be non-negative.");
+		BigNumber dividendAbs = dividend.abs();
+		BigNumber divisorAbs = divisor.abs();
+
+		BigNumber remainder = dividendAbs.clone();
+
+		while (remainder.isGreaterThanOrEqualTo(divisorAbs)) {
+			remainder = remainder.subtract(divisorAbs);
 		}
 
-		BigNumber remainder = dividend.clone();
-
-		while (remainder.isGreaterThanOrEqualTo(divisor)) {
-			remainder = remainder.subtract(divisor);
+		if (dividend.isNegative()) {
+			return divisorAbs.subtract(remainder).trim();
+		} else {
+			return remainder.trim();
 		}
-
-		return remainder.trim();
 	}
 
 	/**
