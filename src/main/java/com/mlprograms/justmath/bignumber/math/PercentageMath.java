@@ -1,11 +1,11 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.NonNull;
 
 import java.math.MathContext;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ONE_HUNDRED;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED;
 
 /**
  * Utility class for percentage calculations using {@link BigNumber}.

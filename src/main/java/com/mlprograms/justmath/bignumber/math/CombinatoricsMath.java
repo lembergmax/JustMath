@@ -1,7 +1,7 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
+import com.mlprograms.justmath.bignumber.BigNumberValues;
 import lombok.NonNull;
 
 import java.math.MathContext;

@@ -1,8 +1,8 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.bignumber.internal.math.*;
-import com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils;
+import com.mlprograms.justmath.bignumber.math.*;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.api.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.util.Values;
@@ -17,7 +17,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.*;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
@@ -1752,8 +1752,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
-        valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
         valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
+        valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
         return this;
     }
 

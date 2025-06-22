@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
-import static com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils.bigDecimalRadiansToDegrees;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
  * Provides high-precision implementations of inverse trigonometric functions

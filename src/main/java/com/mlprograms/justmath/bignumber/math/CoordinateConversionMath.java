@@ -1,8 +1,8 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.internal.BigNumberValues;
+import com.mlprograms.justmath.bignumber.BigNumberValues;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -10,7 +10,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
 
 /**
  * Provides mathematical utilities to convert coordinates between

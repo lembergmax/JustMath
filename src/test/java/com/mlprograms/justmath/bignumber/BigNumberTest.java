@@ -676,7 +676,6 @@ public class BigNumberTest {
 
 	}
 
-	/* TODO
 	@Nested
 	public class TrigonometricMath {
 
@@ -773,7 +772,6 @@ public class BigNumberTest {
 		}
 
 	}
-	 */
 
 	@Nested
 	public class TwoDimensionalMath {
