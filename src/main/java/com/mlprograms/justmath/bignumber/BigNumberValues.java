@@ -1,6 +1,6 @@
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.calculator.api.CalculatorEngine;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 
 import java.math.MathContext;
 

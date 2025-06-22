@@ -1,7 +1,7 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.api.CalculatorEngine;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.util.Scanner;

@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.api;
+package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.Evaluator;

@@ -1,7 +1,7 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
-import com.mlprograms.justmath.util.Values;
+import com.mlprograms.justmath.calculator.internal.util.Values;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.util;
+package com.mlprograms.justmath.calculator.internal.util;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 
@@ -12,6 +12,7 @@ import java.util.Locale;
  */
 public final class Values {
 
+	// TODO: add method to calculate this number
 	/**
 	 * Constant for pi.
 	 */
@@ -215,6 +216,7 @@ public final class Values {
 		                                                 "21624843914035998953539459094407046912091409387001" +
 		                                                 "26456001623742880210927645793106579229552498872758" +
 		                                                 "46101264836999892256959688159205600101655256375678", Locale.US);
+	// TODO: add method to calculate this number
 	/**
 	 * Constant for Euler's number.
 	 */

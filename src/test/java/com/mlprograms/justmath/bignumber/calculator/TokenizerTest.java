@@ -2,7 +2,7 @@ package com.mlprograms.justmath.bignumber.calculator;
 
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
-import com.mlprograms.justmath.util.Values;
+import com.mlprograms.justmath.calculator.internal.util.Values;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
