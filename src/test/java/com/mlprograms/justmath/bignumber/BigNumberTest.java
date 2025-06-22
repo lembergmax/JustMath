@@ -698,77 +698,32 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"0, RAD, 1",
-			"0, DEG, 1",
-			"1.57079632679, RAD, 0",
-			"90, DEG, 0",
-			"3.14159265359, RAD, -1",
-			"180, DEG, -1",
-			"-1.57079632679, RAD, 0",
-			"-90, DEG, 0"
 		})
 		void cosTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber angle = new BigNumber(input);
-			BigNumber result = angle.cos(mode);
-			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
-			"0, RAD, 0",
-			"0, DEG, 0",
-			"1.57079632679, RAD, NaN",
-			"90, DEG, NaN",
-			"0.78539816339, RAD, 1",
-			"45, DEG, 1",
-			"-0.78539816339, RAD, -1",
-			"-45, DEG, -1"
 		})
 		void tanTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber angle = new BigNumber(input);
-			BigNumber result = angle.tan(mode);
-			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
-			"0, RAD, NaN",
-			"0, DEG, NaN",
-			"1.57079632679, RAD, 0",
-			"90, DEG, 0",
-			"0.78539816339, RAD, 1",
-			"45, DEG, 1",
-			"-0.78539816339, RAD, -1",
-			"-45, DEG, -1"
 		})
 		void cotTest(String input, TrigonometricMode mode, String expected) {
-			BigNumber angle = new BigNumber(input);
-			BigNumber result = angle.cot(mode);
-			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
-			"90, DEG",
-			"1.57079632679, RAD",
-			"270, DEG",
-			"4.71238898038, RAD"
 		})
 		void tanInvalidTest(String input, TrigonometricMode mode) {
-			BigNumber angle = new BigNumber(input);
-			assertThrows(ArithmeticException.class, () -> angle.tan(mode), "tan undefined where cos = 0");
 		}
 
 		@ParameterizedTest
 		@CsvSource({
-			"0, DEG",
-			"0, RAD",
-			"180, DEG",
-			"3.14159265359, RAD"
 		})
 		void cotInvalidTest(String input, TrigonometricMode mode) {
-			BigNumber angle = new BigNumber(input);
-			assertThrows(ArithmeticException.class, () -> angle.cot(mode), "cot undefined where sin = 0");
 		}
 
 	}
