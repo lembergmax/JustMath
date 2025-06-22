@@ -2,7 +2,6 @@ package com.mlprograms.justmath.bignumber.math.utils;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.util.Values;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

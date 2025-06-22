@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.internal.util;
+package com.mlprograms.justmath.bignumber.math.utils;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 

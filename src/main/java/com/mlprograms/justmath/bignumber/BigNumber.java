@@ -5,7 +5,7 @@ import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.util.Values;
+import com.mlprograms.justmath.bignumber.math.utils.Values;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
