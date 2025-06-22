@@ -690,40 +690,28 @@ public class BigNumberTest {
 			"-1.57079632679, RAD, -1",
 			"-90, DEG, -1"
 		})
-		void sinTest(String input, TrigonometricMode mode, String expected) {
+		void sinTest(String input, TrigonometricMode trigonometricMode, String expected) {
 			BigNumber angle = new BigNumber(input);
-			BigNumber result = angle.sin(mode);
+			BigNumber result = angle.sin(trigonometricMode);
 			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
 		})
-		void cosTest(String input, TrigonometricMode mode, String expected) {
+		void cosTest(String input, TrigonometricMode trigonometricMode, String expected) {
 		}
 
 		@ParameterizedTest
 		@CsvSource({
 		})
-		void tanTest(String input, TrigonometricMode mode, String expected) {
+		void tanTest(String input, TrigonometricMode trigonometricMode, String expected) {
 		}
 
 		@ParameterizedTest
 		@CsvSource({
 		})
-		void cotTest(String input, TrigonometricMode mode, String expected) {
-		}
-
-		@ParameterizedTest
-		@CsvSource({
-		})
-		void tanInvalidTest(String input, TrigonometricMode mode) {
-		}
-
-		@ParameterizedTest
-		@CsvSource({
-		})
-		void cotInvalidTest(String input, TrigonometricMode mode) {
+		void cotTest(String input, TrigonometricMode trigonometricMode, String expected) {
 		}
 
 	}
