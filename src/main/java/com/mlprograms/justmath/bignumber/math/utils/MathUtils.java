@@ -69,7 +69,7 @@ public class MathUtils {
 	 * @return the corresponding angle in degrees as a {@link BigDecimal}
 	 */
 	public static BigDecimal bigDecimalRadiansToDegrees(BigDecimal radians, MathContext mathContext, Locale locale) {
-		return new BigNumber(radians, locale).toDegrees(mathContext, locale).toBigDecimal();
+		return new BigNumber(radians, locale).toDegrees(mathContext).toBigDecimal();
 	}
 
 	/**

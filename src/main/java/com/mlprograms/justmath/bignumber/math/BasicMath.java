@@ -218,12 +218,12 @@ public class BasicMath {
 		BigNumber result = BigNumberValues.ONE;
 		BigNumber counter = argument.clone();
 
-		// 0! = 1, so if argument is zero, returns 1 immediately
+		// 0! = 1, so if the argument is zero, returns 1 immediately
 		if (counter.isEqualTo(BigNumberValues.ZERO)) {
 			return new BigNumber("1", locale, mathContext);
 		}
 
-		// multiply result by each integer from argument down to 1
+		// multiply the result by each integer from argument down to 1
 		while (counter.isGreaterThan(BigNumberValues.ONE)) {
 			result = result.multiply(counter);
 			counter = counter.subtract(BigNumberValues.ONE);

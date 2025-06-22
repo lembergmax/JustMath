@@ -66,7 +66,7 @@ public class RadicalMath {
 
 		// Fall: negativer Index → berechne positive Wurzel und bilde den Kehrwert
 		if (index.isNegative()) {
-			BigNumber positiveIndex = index.negate();
+			BigNumber positiveIndex = index.negateNewObject();
 			BigNumber positiveRoot = nthRoot(radicand, positiveIndex, mathContext, locale);
 			return ONE.divide(positiveRoot, mathContext).trim();
 		}
