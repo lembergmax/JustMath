@@ -683,6 +683,9 @@ public class BigNumberTest {
 		@CsvSource({
 			"0, RAD, 0",
 			"0, DEG, 0",
+			"1, RAD, 0.8414709848",
+			"1, DEG, 0.01745240643",
+
 			"1.57079632679, RAD, 1",
 			"90, DEG, 1",
 			"3.14159265359, RAD, 0",
