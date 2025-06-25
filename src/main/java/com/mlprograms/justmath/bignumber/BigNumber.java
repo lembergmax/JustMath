@@ -2074,6 +2074,18 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return isNegative ? "-" + localized : localized;
 	}
 
+	/**
+	 * Returns the string representation of this number formatted for the specified locale.
+	 *
+	 * @param targetLocale
+	 * 	the locale to use for formatting
+	 *
+	 * @return the localized string representation of this number
+	 */
+	public String toString(Locale targetLocale) {
+		return bigNumberParser.parseAndFormat(toString(), targetLocale).toString();
+	}
+
 	@Override
 	public int compareTo(@NonNull final BigNumber other) {
 		return this.toBigDecimal().compareTo(other.toBigDecimal());
