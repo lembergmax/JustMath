@@ -2564,7 +2564,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return string representation with grouping
 	 */
 	public String toString(@NonNull final Locale locale) {
-		return formatToString(locale, true);
+		return formatToString(locale, false);
 	}
 
 	/**
@@ -2578,8 +2578,21 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return string representation in the given locale
 	 */
-	public String toString(@NonNull final Locale locale, boolean useGrouping) {
+	public String toString(@NonNull final Locale locale, final boolean useGrouping) {
 		return formatToString(locale, useGrouping);
+	}
+
+	/**
+	 * Returns the string representation of this number using the current locale,
+	 * optionally using grouping separators.
+	 *
+	 * @param useGrouping
+	 * 	whether grouping separators should be used
+	 *
+	 * @return string representation in the current locale
+	 */
+	public String toString(final boolean useGrouping) {
+		return formatToString(this.locale, useGrouping);
 	}
 
 	/**
@@ -2606,7 +2619,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return the localized string representation of this number
 	 */
-	private String formatToString(@NonNull final Locale locale, boolean useGrouping) {
+	private String formatToString(@NonNull final Locale locale, final boolean useGrouping) {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 		String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
 
