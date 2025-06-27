@@ -2626,6 +2626,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return isNegative ? "-" + localized : localized;
 	}
 
+	/**
+	 * Compares this {@code BigNumber} with the specified {@code BigNumber} for order.
+	 *
+	 * @param other
+	 * 	the {@code BigNumber} to be compared.
+	 *
+	 * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the
+	 * 	specified object.
+	 */
 	@Override
 	public int compareTo(@NonNull final BigNumber other) {
 		return this.toBigDecimal().compareTo(other.toBigDecimal());
