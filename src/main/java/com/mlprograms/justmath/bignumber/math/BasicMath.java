@@ -77,12 +77,12 @@ public class BasicMath {
 	 * @throws ArithmeticException
 	 * 	if the divisor is zero
 	 */
-	public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext) {
+	public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (divisor.compareTo(BigNumberValues.ZERO) == 0) {
 			throw new ArithmeticException("Division by zero");
 		}
 
-		return new BigNumber(dividend.toBigDecimal().divide(divisor.toBigDecimal(), mathContext).toPlainString()).trim();
+		return new BigNumber(dividend.toBigDecimal().divide(divisor.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
 	/**
