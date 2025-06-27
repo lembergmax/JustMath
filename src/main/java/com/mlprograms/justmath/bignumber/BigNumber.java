@@ -215,7 +215,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the sum
 	 */
 	public BigNumber add(@NonNull final BigNumber addend, @NonNull final Locale locale) {
-		return BasicMath.add(this, addend);
+		return BasicMath.add(this, addend, locale);
 	}
 
 	/**
@@ -244,7 +244,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the difference
 	 */
 	public BigNumber subtract(@NonNull final BigNumber subtrahend, @NonNull final Locale locale) {
-		return BasicMath.subtract(this, subtrahend);
+		return BasicMath.subtract(this, subtrahend, locale);
 	}
 
 	/**
@@ -273,7 +273,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the product
 	 */
 	public BigNumber multiply(@NonNull final BigNumber multiplier, @NonNull final Locale locale) {
-		return BasicMath.multiply(this, multiplier);
+		return BasicMath.multiply(this, multiplier, locale);
 	}
 
 	/**
@@ -368,8 +368,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if the divisor is zero or if either number is negative
 	 */
 	public BigNumber modulo(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
-		return BasicMath.modulo(this, divisor);
+		return BasicMath.modulo(this, divisor, locale);
 	}
+
+	// TODO: füge in jeder methode, in einer mathe klasse, den locale parameter hinzu
 
 	/**
 	 * Raises this {@code BigNumber} to the specified exponent using the default

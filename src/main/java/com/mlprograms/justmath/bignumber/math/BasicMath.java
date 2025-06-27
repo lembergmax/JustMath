@@ -27,11 +27,13 @@ public class BasicMath {
 	 * 	the number to which the addend is added
 	 * @param addend
 	 * 	the number to add to the augend
+	 * @param locale
+	 * 	the {@link Locale} used for formatting and parsing the result
 	 *
 	 * @return a new {@link BigNumber} representing the sum of {@code augend} and {@code addend}
 	 */
-	public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend) {
-		return new BigNumber(augend.toBigDecimal().add(addend.toBigDecimal()).toPlainString()).trim();
+	public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend, @NonNull final Locale locale) {
+		return new BigNumber(augend.toBigDecimal().add(addend.toBigDecimal()).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -41,11 +43,13 @@ public class BasicMath {
 	 * 	the number from which the {@code subtrahend} is subtracted
 	 * @param subtrahend
 	 * 	the number to subtract from the {@code minuend}
+	 * @param locale
+	 * 	the {@link Locale} used for formatting and parsing the result
 	 *
 	 * @return a new {@link BigNumber} representing the result of the subtraction
 	 */
-	public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend) {
-		return new BigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()).toPlainString()).trim();
+	public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend, @NonNull final Locale locale) {
+		return new BigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -55,11 +59,13 @@ public class BasicMath {
 	 * 	the number to be multiplied
 	 * @param multiplier
 	 * 	the number by which to multiply the {@code multiplicand}
+	 * @param locale
+	 * 	the {@link Locale} used for formatting and parsing the result
 	 *
 	 * @return a new {@link BigNumber} representing the product
 	 */
-	public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier) {
-		return new BigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()).toPlainString()).trim();
+	public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier, @NonNull final Locale locale) {
+		return new BigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()).toPlainString(), locale).trim();
 	}
 
 	/**
@@ -71,6 +77,8 @@ public class BasicMath {
 	 * 	the number by which the {@code dividend} is divided
 	 * @param mathContext
 	 * 	the {@link MathContext} specifying precision and rounding behavior
+	 * @param locale
+	 * 	the {@link Locale} used for formatting and parsing the result
 	 *
 	 * @return a new {@link BigNumber} representing the quotient
 	 *
@@ -99,13 +107,15 @@ public class BasicMath {
 	 * 	the non-negative number from which the modulo is computed
 	 * @param divisor
 	 * 	the non-zero, non-negative number used as the divisor
+	 * @param locale
+	 * 	the {@link Locale} used for formatting and parsing the result
 	 *
 	 * @return the remainder of the division (dividend mod divisor)
 	 *
 	 * @throws IllegalArgumentException
 	 * 	if either argument is negative or if the divisor is zero
 	 */
-	public static BigNumber modulo(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor) {
+	public static BigNumber modulo(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
 		if (divisor.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
 		}
@@ -122,7 +132,7 @@ public class BasicMath {
 		if (dividend.isNegative()) {
 			return divisorAbs.subtract(remainder).trim();
 		} else {
-			return remainder.trim();
+			return new BigNumber(remainder, locale).trim();
 		}
 	}
 

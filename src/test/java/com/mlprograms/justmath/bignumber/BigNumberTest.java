@@ -29,7 +29,7 @@ public class BigNumberTest {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 
-			BigNumber actualResult = num1.add(num2);
+			BigNumber actualResult = num1.add(num2, Locale.US);
 
 			assertEquals(inputExpectedResult, actualResult.toString());
 		}
