@@ -108,6 +108,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this(number, targetLocale, DEFAULT_MATH_CONTEXT);
 	}
 
+	public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale targetLocale) {
+		this(number, targetLocale, DEFAULT_MATH_CONTEXT, trigonometricMode);
+	}
+
 	public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
 		this(number, Locale.getDefault(), mathContext);
 	}
