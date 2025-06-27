@@ -26,8 +26,8 @@ public class BigNumberTest {
 			"123,456,579"
 		})
 		void additionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 
 			BigNumber actualResult = num1.add(num2);
 
@@ -41,8 +41,8 @@ public class BigNumberTest {
 			"500,1000,-500"
 		})
 		void subtractionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.subtract(num2);
 			assertEquals(inputExpectedResult, result.toString());
 		}
@@ -54,8 +54,8 @@ public class BigNumberTest {
 			"123456789,987654321,121932631112635269"
 		})
 		void multiplicationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.multiply(num2);
 			assertEquals(inputExpectedResult, result.toString());
 		}
@@ -67,8 +67,8 @@ public class BigNumberTest {
 			"123456789123456789,1,123456789123456789"
 		})
 		void divisionTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.divide(num2, new MathContext(20, RoundingMode.HALF_UP));
 			assertEquals(inputExpectedResult, result.trim().toString());
 		}
@@ -81,8 +81,8 @@ public class BigNumberTest {
 			"-1.2,-2.99,-0.579759767"
 		})
 		void powerTest(String inputNum1, String inputNum2, String inputExpectedResultPrefix) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber exponent = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber exponent = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.power(exponent);
 			assertEquals(inputExpectedResultPrefix, result.trim().toString().substring(0, inputExpectedResultPrefix.length()));
 		}
@@ -95,7 +95,7 @@ public class BigNumberTest {
 			"20,2432902008176640000"
 		})
 		void factorialTest(String inputNum, String inputExpectedResult) {
-			BigNumber num = new BigNumber(inputNum);
+			BigNumber num = new BigNumber(inputNum, Locale.US);
 			BigNumber result = num.factorial();
 			assertEquals(inputExpectedResult, result.toString());
 		}
@@ -112,8 +112,8 @@ public class BigNumberTest {
 			"12,7,792"
 		})
 		void combinationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.combination(num2);
 
 			assertEquals(inputExpectedResult, result.toString());
@@ -121,8 +121,8 @@ public class BigNumberTest {
 
 		@Test
 		void combinationInvalidInputTest() {
-			BigNumber num1 = new BigNumber("123");
-			BigNumber num2 = new BigNumber("345");
+			BigNumber num1 = new BigNumber("123", Locale.US);
+			BigNumber num2 = new BigNumber("345", Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> num1.combination(num2));
 		}
@@ -134,8 +134,8 @@ public class BigNumberTest {
 			"12,7,3991680"
 		})
 		void permutationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.permutation(num2);
 
 			assertEquals(inputExpectedResult, result.toString());
@@ -143,8 +143,8 @@ public class BigNumberTest {
 
 		@Test
 		void permutationInvalidInputTest() {
-			BigNumber num1 = new BigNumber("123");
-			BigNumber num2 = new BigNumber("345");
+			BigNumber num1 = new BigNumber("123", Locale.US);
+			BigNumber num2 = new BigNumber("345", Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> num1.permutation(num2));
 		}
@@ -160,8 +160,8 @@ public class BigNumberTest {
 			"12.874,7.000032,12.7780382,1.56895306"
 		})
 		void polarToCartesianCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.polarToCartesianCoordinates(num2);
 
 			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
@@ -170,8 +170,8 @@ public class BigNumberTest {
 
 		@Test
 		void polarToCartesianCoordinateInvalidTest() {
-			BigNumber num1 = new BigNumber("-1");
-			BigNumber num2 = new BigNumber("0");
+			BigNumber num1 = new BigNumber("-1", Locale.US);
+			BigNumber num2 = new BigNumber("0", Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> num1.polarToCartesianCoordinates(num2));
 		}
@@ -182,8 +182,8 @@ public class BigNumberTest {
 			"12.874,7.000032,14.6540207,28.5344307"
 		})
 		void cartesianToPolarCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
-			BigNumber num1 = new BigNumber(inputNum1);
-			BigNumber num2 = new BigNumber(inputNum2);
+			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2);
 
 			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
@@ -192,8 +192,8 @@ public class BigNumberTest {
 
 		@Test
 		void cartesianToPolarCoordinateInvalidTest() {
-			BigNumber num1 = new BigNumber("-1");
-			BigNumber num2 = new BigNumber("0");
+			BigNumber num1 = new BigNumber("-1", Locale.US);
+			BigNumber num2 = new BigNumber("0", Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> num1.cartesianToPolarCoordinates(num2));
 		}
@@ -211,7 +211,7 @@ public class BigNumberTest {
 			"1.2541,1.60967510"
 		})
 		void sinhTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.sinh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -225,7 +225,7 @@ public class BigNumberTest {
 			"1.2541,1.89500763"
 		})
 		void coshTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.cosh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -239,7 +239,7 @@ public class BigNumberTest {
 			"1.2541,0.84942934"
 		})
 		void tanhTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.tanh();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -251,7 +251,7 @@ public class BigNumberTest {
 			"-1,-1.313035285"
 		})
 		void cothTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.coth();
 
 			assertEquals(expectedResult, result.round(new MathContext(10 /* hardcoding = happy :) */, RoundingMode.HALF_UP)).toString());
@@ -259,7 +259,7 @@ public class BigNumberTest {
 
 		@Test
 		void cothInvalidTest() {
-			BigNumber zero = new BigNumber("0");
+			BigNumber zero = new BigNumber("0", Locale.US);
 			assertThrows(IllegalArgumentException.class, zero::coth, "coth(0) should throw ArithmeticException (division by zero)");
 		}
 
@@ -276,7 +276,7 @@ public class BigNumberTest {
 			"2.5,1.64723114"
 		})
 		void asinhTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.asinh();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -289,7 +289,7 @@ public class BigNumberTest {
 			"10,2.99322284"
 		})
 		void acoshTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acosh();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -297,7 +297,7 @@ public class BigNumberTest {
 
 		@Test
 		void acoshInvalidInputTest() {
-			BigNumber invalid = new BigNumber("0.5");
+			BigNumber invalid = new BigNumber("0.5", Locale.US);
 			assertThrows(IllegalArgumentException.class, invalid::acosh, "acosh(x < 1) should throw exception");
 		}
 
@@ -306,7 +306,7 @@ public class BigNumberTest {
 			"0.5,0.54930614"
 		})
 		void atanhTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.atanh();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -318,7 +318,7 @@ public class BigNumberTest {
 			"1"
 		})
 		void atanhInvalidInputTest(String input) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			assertThrows(IllegalArgumentException.class, num::atanh, "atanh(|x| >= 1) should throw exception");
 		}
 
@@ -328,7 +328,7 @@ public class BigNumberTest {
 			"-2,-0.5493061"
 		})
 		void acothTest(String input, String expectedResult) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acoth();
 
 			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
@@ -341,7 +341,7 @@ public class BigNumberTest {
 			"-1" // throws ArithmeticException
 		})
 		void acothInvalidInputTest(String input) {
-			BigNumber num = new BigNumber(input);
+			BigNumber num = new BigNumber(input, Locale.US);
 			assertThrows(Exception.class, num::acoth, "acoth(|x| <= 1) should throw exception");
 		}
 
@@ -360,7 +360,7 @@ public class BigNumberTest {
 			"-1,DEG,-90"
 		})
 		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			BigNumber num = new BigNumber(input, trigonometricMode);
+			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
 			assertEquals(expectedResult, num.asin().toString().substring(0, expectedResult.length()));
 		}
 
@@ -390,7 +390,7 @@ public class BigNumberTest {
 			"1000,DEG,89.942"
 		})
 		void atanTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			BigNumber num = new BigNumber(input, trigonometricMode);
+			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
 			assertEquals(expectedResult, num.atan().toString().substring(0, expectedResult.length()));
 		}
 
@@ -581,8 +581,8 @@ public class BigNumberTest {
 			"150, 10, 15"
 		})
 		void nPercentFromMTest(String n, String m, String expectedResult) {
-			BigNumber percent = new BigNumber(n);
-			BigNumber base = new BigNumber(m);
+			BigNumber percent = new BigNumber(n, Locale.US);
+			BigNumber base = new BigNumber(m, Locale.US);
 
 			BigNumber result = base.percentFromM(percent);
 			assertEquals(expectedResult, result.toString());
@@ -599,8 +599,8 @@ public class BigNumberTest {
 			"15, 10, 150"
 		})
 		void xIsNPercentOfMTest(String part, String total, String expectedResult) {
-			BigNumber partVal = new BigNumber(part);
-			BigNumber totalVal = new BigNumber(total);
+			BigNumber partVal = new BigNumber(part, Locale.US);
+			BigNumber totalVal = new BigNumber(total, Locale.US);
 
 			BigNumber result = partVal.isXPercentOfN(totalVal);
 			assertEquals(expectedResult, result.toString());
@@ -613,58 +613,58 @@ public class BigNumberTest {
 
 		@Test
 		void squareRootTest() {
-			BigNumber num = new BigNumber("9");
+			BigNumber num = new BigNumber("9", Locale.US);
 			BigNumber result = num.squareRoot();
 			assertEquals("3", result.toString(), "Square root of 9 should be 3");
 
-			num = new BigNumber("2");
+			num = new BigNumber("2", Locale.US);
 			result = num.squareRoot();
 			assertEquals("1.41421356237309504880168872420969807856967187537694", result.toString().substring(0, 52),
 				"Square root of 2 should be accurate");
 
-			num = new BigNumber("0");
+			num = new BigNumber("0", Locale.US);
 			result = num.squareRoot();
 			assertEquals("0", result.toString(), "Square root of 0 should be 0");
 		}
 
 		@Test
 		void cubicRootTest() {
-			BigNumber num = new BigNumber("27");
+			BigNumber num = new BigNumber("27", Locale.US);
 			BigNumber result = num.cubicRoot();
 			assertEquals("3", result.toString(), "Cubic root of 27 should be 3");
 
-			num = new BigNumber("0");
+			num = new BigNumber("0", Locale.US);
 			result = num.cubicRoot();
 			assertEquals("0", result.toString(), "Cubic root of 0 should be 0");
 
-			num = new BigNumber("8");
+			num = new BigNumber("8", Locale.US);
 			result = num.cubicRoot();
 			assertEquals("2", result.toString(), "Cubic root of 8 should be 2");
 
-			num = new BigNumber("-27");
+			num = new BigNumber("-27", Locale.US);
 			result = num.cubicRoot();
 			assertEquals("-3", result.toString(), "Cubic root of -27 should be -3");
 		}
 
 		@Test
 		void nthRootTest() {
-			BigNumber num = new BigNumber("81");
-			BigNumber root = new BigNumber("4");
+			BigNumber num = new BigNumber("81", Locale.US);
+			BigNumber root = new BigNumber("4", Locale.US);
 			BigNumber result = num.nthRoot(root);
 			assertEquals("3", result.toString(), "4th root of 81 should be 3");
 
-			num = new BigNumber("32");
-			root = new BigNumber("5");
+			num = new BigNumber("32", Locale.US);
+			root = new BigNumber("5", Locale.US);
 			result = num.nthRoot(root);
 			assertEquals("2", result.toString(), "5th root of 32 should be 2");
 
-			num = new BigNumber("1");
-			root = new BigNumber("100");
+			num = new BigNumber("1", Locale.US);
+			root = new BigNumber("100", Locale.US);
 			result = num.nthRoot(root);
 			assertEquals("1", result.toString(), "Any root of 1 should be 1");
 
-			num = new BigNumber("8");
-			root = new BigNumber("-12");
+			num = new BigNumber("8", Locale.US);
+			root = new BigNumber("-12", Locale.US);
 			result = num.nthRoot(root);
 			assertEquals("0.840896415", result.trim().toString().substring(0, 11), "-12th root of 8 should be (rounded) 0.840896415");
 
@@ -685,7 +685,6 @@ public class BigNumberTest {
 			"0, DEG, 0",
 			"1, RAD, 0.8414709848",
 			"1, DEG, 0.01745240643",
-
 			"1.57079632679, RAD, 1",
 			"90, DEG, 1",
 			"3.14159265359, RAD, 0",
@@ -694,7 +693,7 @@ public class BigNumberTest {
 			"-90, DEG, -1"
 		})
 		void sinTest(String input, TrigonometricMode trigonometricMode, String expected) {
-			BigNumber angle = new BigNumber(input);
+			BigNumber angle = new BigNumber(input, Locale.US);
 			BigNumber result = angle.sin(trigonometricMode);
 			assertEquals(expected, result.toString());
 		}
@@ -730,8 +729,8 @@ public class BigNumberTest {
 			"-1,1,-0.7853",
 		})
 		void atan2Test(String inputY, String inputX, String expected) {
-			BigNumber y = new BigNumber(inputY);
-			BigNumber x = new BigNumber(inputX);
+			BigNumber y = new BigNumber(inputY, Locale.US);
+			BigNumber x = new BigNumber(inputX, Locale.US);
 
 			BigNumber result = y.atan2(x);
 			assertEquals(expected, result.toString().substring(0, 7));
@@ -744,8 +743,8 @@ public class BigNumberTest {
 			"1,0"
 		})
 		void atan2InvalidTest(String inputY, String inputX) {
-			BigNumber y = new BigNumber(inputY);
-			BigNumber x = new BigNumber(inputX);
+			BigNumber y = new BigNumber(inputY, Locale.US);
+			BigNumber x = new BigNumber(inputX, Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> y.atan2(x));
 		}
