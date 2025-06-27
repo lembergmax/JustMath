@@ -45,22 +45,65 @@ public class BigNumberCoordinate {
 	@NonNull
 	private BigNumber y;
 
+	/**
+	 * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates.
+	 * Both x and y are set to {@link BigNumberValues#ZERO}.
+	 */
 	public BigNumberCoordinate() {
 		this(BigNumberValues.ZERO);
 	}
 
+	/**
+	 * Constructs a {@code BigNumberCoordinate} where both x and y are set to the same value.
+	 * The coordinate type defaults to {@link CoordinateType#CARTESIAN}.
+	 *
+	 * @param xy
+	 * 	the value for both x and y
+	 */
 	public BigNumberCoordinate(BigNumber xy) {
 		this(xy, xy);
 	}
 
+	/**
+	 * Constructs a {@code BigNumberCoordinate} with the specified x and y values,
+	 * using {@link CoordinateType#CARTESIAN} as the default type.
+	 *
+	 * @param x
+	 * 	the x-coordinate or radius (depending on type)
+	 * @param y
+	 * 	the y-coordinate or angle (depending on type)
+	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y) {
 		this(x, y, CoordinateType.CARTESIAN);
 	}
 
+	/**
+	 * Constructs a {@code BigNumberCoordinate} with the specified x, y, and coordinate type,
+	 * using the system default {@link Locale}.
+	 *
+	 * @param x
+	 * 	the x-coordinate or radius
+	 * @param y
+	 * 	the y-coordinate or angle
+	 * @param type
+	 * 	the coordinate type (CARTESIAN or POLAR)
+	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type) {
 		this(x, y, type, Locale.getDefault());
 	}
 
+	/**
+	 * Constructs a {@code BigNumberCoordinate} with the specified x, y, coordinate type, and locale.
+	 *
+	 * @param x
+	 * 	the x-coordinate or radius
+	 * @param y
+	 * 	the y-coordinate or angle
+	 * @param type
+	 * 	the coordinate type (CARTESIAN or POLAR)
+	 * @param locale
+	 * 	the locale to use for number formatting
+	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type, Locale locale) {
 		this.x = new BigNumber(x, locale);
 		this.y = new BigNumber(y, locale);
