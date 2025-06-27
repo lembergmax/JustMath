@@ -2052,38 +2052,85 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Returns the string representation of this number in standard US format,
-	 * using '.' as a decimal separator and no grouping separators.
+	 * Returns a string representation of this {@code BigNumber} using the current locale.
 	 *
-	 * @return string representation, e.g. "-1234.56"
+	 * @return the string representation of this number
 	 */
 	@Override
 	public String toString() {
-		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-		String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
-		String newValueAfterDecimal;
-
-		if (valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0")) {
-			newValueAfterDecimal = "";
-			decimalSeparator = "";
-		} else {
-			newValueAfterDecimal = valueAfterDecimal;
-		}
-
-		String localized = valueBeforeDecimal + decimalSeparator + newValueAfterDecimal;
-		return isNegative ? "-" + localized : localized;
+		return formatToString(this.locale, false);
 	}
 
 	/**
-	 * Returns the string representation of this number formatted for the specified locale.
+	 * Returns the string representation of this number in the specified locale,
+	 * using the locale's decimal and grouping separators.
 	 *
-	 * @param targetLocale
+	 * @param locale
 	 * 	the locale to use for formatting
+	 *
+	 * @return string representation with grouping
+	 */
+	public String toString(@NonNull final Locale locale) {
+		return formatToString(locale, true);
+	}
+
+	/**
+	 * Returns the string representation of this number in the specified locale,
+	 * optionally using grouping separators.
+	 *
+	 * @param locale
+	 * 	the locale to use for formatting
+	 * @param useGrouping
+	 * 	whether grouping separators should be used
+	 *
+	 * @return string representation in the given locale
+	 */
+	public String toString(@NonNull final Locale locale, boolean useGrouping) {
+		return formatToString(locale, useGrouping);
+	}
+
+	/**
+	 * Returns the string representation of this number using its locale,
+	 * optionally with grouping separators.
+	 *
+	 * @return string representation in the object's locale
+	 */
+	public String toStringWithGrouping() {
+		return formatToString(this.locale, true);
+	}
+
+	/**
+	 * Formats this {@code BigNumber} as a string according to the specified {@link Locale} and grouping option.
+	 * <p>
+	 * The method uses the locale's decimal and grouping separators. If {@code useGrouping} is true,
+	 * grouping separators are applied to the integer part. If the decimal part is blank or zero,
+	 * it is omitted from the result.
+	 *
+	 * @param locale
+	 * 	the {@link Locale} to use for formatting
+	 * @param useGrouping
+	 * 	whether to use grouping separators in the integer part
 	 *
 	 * @return the localized string representation of this number
 	 */
-	public String toString(Locale targetLocale) {
-		return bigNumberParser.parseAndFormat(toString(), targetLocale).toString();
+	private String formatToString(@NonNull final Locale locale, boolean useGrouping) {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+		String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
+
+		String newValueAfterDecimal = valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0")
+			                              ? ""
+			                              : valueAfterDecimal;
+
+		if (newValueAfterDecimal.isEmpty()) {
+			decimalSeparator = "";
+		}
+
+		String integerPart = useGrouping
+			                     ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, symbols.getGroupingSeparator()).toString()
+			                     : valueBeforeDecimal;
+
+		String localized = integerPart + decimalSeparator + newValueAfterDecimal;
+		return isNegative ? "-" + localized : localized;
 	}
 
 	@Override

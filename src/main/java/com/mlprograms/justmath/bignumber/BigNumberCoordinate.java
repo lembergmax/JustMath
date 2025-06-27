@@ -1,9 +1,10 @@
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+
+import java.util.Locale;
 
 /**
  * An immutable data structure representing a 2D coordinate with arbitrary precision,
@@ -35,17 +36,36 @@ import lombok.NonNull;
  * </p>
  */
 @Getter
-@AllArgsConstructor
 public class BigNumberCoordinate {
 
 	@NonNull
+	private final CoordinateType type;
+	@NonNull
 	private BigNumber x;
-
 	@NonNull
 	private BigNumber y;
 
-	@NonNull
-	private CoordinateType type;
+	public BigNumberCoordinate() {
+		this(BigNumberValues.ZERO);
+	}
+
+	public BigNumberCoordinate(BigNumber xy) {
+		this(xy, xy);
+	}
+
+	public BigNumberCoordinate(BigNumber x, BigNumber y) {
+		this(x, y, CoordinateType.CARTESIAN);
+	}
+
+	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type) {
+		this(x, y, type, Locale.getDefault());
+	}
+
+	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type, Locale locale) {
+		this.x = new BigNumber(x, locale);
+		this.y = new BigNumber(y, locale);
+		this.type = type;
+	}
 
 	/**
 	 * Removes insignificant leading and trailing zeros from the {@link BigNumber} x and y representation.
@@ -60,28 +80,80 @@ public class BigNumberCoordinate {
 	}
 
 	/**
-	 * Returns a string representation of this coordinate, formatted according to its type.
-	 * <ul>
-	 *   <li>If the type is {@code CARTESIAN}, returns "x=<x>; y=<y>".</li>
-	 *   <li>If the type is {@code POLAR}, returns "r=<x>; θ=<y>".</li>
-	 *   <li>Otherwise, returns "<x>, <y>".</li>
-	 * </ul>
-	 * The values are trimmed to remove insignificant zeros.
+	 * Returns a string representation of this coordinate using the object's default locale
+	 * and without grouping separators.
 	 *
-	 * @return a string representation of this coordinate
+	 * @return a basic string representation of the coordinate
 	 */
 	@Override
 	public String toString() {
-		String xCoordinate = x.trim().toString();
-		String yCoordinate = y.trim().toString();
+		return toString(x.getLocale(), false);
+	}
 
-		if (type == CoordinateType.CARTESIAN) {
-			return "x=" + xCoordinate + "; y=" + yCoordinate;
-		} else if (type == CoordinateType.POLAR) {
-			return "r=" + xCoordinate + "; θ=" + yCoordinate;
-		} else {
-			return xCoordinate + ", " + yCoordinate; // Fallback
-		}
+	/**
+	 * Returns a string representation of this coordinate using the specified {@link Locale},
+	 * with grouping separators enabled.
+	 *
+	 * @param locale
+	 * 	the locale to use for formatting
+	 *
+	 * @return the localized string representation with grouping
+	 */
+	public String toString(@NonNull final Locale locale) {
+		return toString(locale, true);
+	}
+
+	/**
+	 * Returns a string representation of this coordinate using the object's current locale
+	 * and optional grouping separators.
+	 *
+	 * @param useGrouping
+	 * 	whether to include grouping separators in the integer part
+	 *
+	 * @return the formatted string using current locale and grouping option
+	 */
+	public String toString(boolean useGrouping) {
+		return toString(x.getLocale(), useGrouping);
+	}
+
+	/**
+	 * Returns a string representation of this coordinate using the object's current locale
+	 * with grouping separators enabled.
+	 *
+	 * @return the localized string representation with grouping
+	 */
+	public String toStringWithGrouping() {
+		return toString(x.getLocale(), true);
+	}
+
+	/**
+	 * Returns a fully formatted string representation of this coordinate using the specified
+	 * {@link Locale} and grouping option.
+	 *
+	 * <p>Formatting is based on the coordinate type:
+	 * <ul>
+	 *   <li>{@code CARTESIAN}: {@code "x=<x>; y=<y>"}</li>
+	 *   <li>{@code POLAR}: {@code "r=<x>; θ=<y>"}</li>
+	 *   <li>Fallback: {@code "<x>, <y>"}</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param locale
+	 * 	the locale to use for formatting
+	 * @param useGrouping
+	 * 	whether grouping separators should be used in the integer part
+	 *
+	 * @return the fully formatted coordinate string
+	 */
+	public String toString(@NonNull final Locale locale, boolean useGrouping) {
+		String xCoordinate = x.trim().toString(locale, useGrouping);
+		String yCoordinate = y.trim().toString(locale, useGrouping);
+
+		return switch (type) {
+			case CARTESIAN -> "x=" + xCoordinate + "; y=" + yCoordinate;
+			case POLAR -> "r=" + xCoordinate + "; θ=" + yCoordinate;
+			// default -> xCoordinate + ", " + yCoordinate; // not needed yet
+		};
 	}
 
 }

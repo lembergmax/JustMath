@@ -64,7 +64,7 @@ public class CoordinateConversionMath {
 
 		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
 		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN).trim();
+		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, locale).trim();
 	}
 
 	/**
