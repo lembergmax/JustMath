@@ -1760,6 +1760,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return combination(k, mathContext);
 	}
 
+
+	/**
+	 * Calculates the number of combinations (n choose k) using the specified {@link MathContext} and the current
+	 * {@link Locale}.
+	 *
+	 * <p>This is a convenience method that delegates to {@link #combination(BigNumber, MathContext, Locale)} using the
+	 * current locale.</p>
+	 *
+	 * @param k
+	 * 	the number of items to choose (must be between 0 and n inclusive)
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return a {@code BigNumber} representing C(n, k)
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code k > n} or either number has a decimal part
+	 */
+	public BigNumber combination(@NonNull final BigNumber k, @NonNull final MathContext mathContext) {
+		return combination(k, mathContext, locale);
+	}
+
 	/**
 	 * Calculates the number of combinations (also known as "n choose k").
 	 * <p>
@@ -1784,8 +1806,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @throws IllegalArgumentException
 	 * 	if {@code k > n} or either number has a decimal part
 	 */
-	public BigNumber combination(@NonNull final BigNumber k, @NonNull final MathContext mathContext) {
-		return CombinatoricsMath.combination(this, k, mathContext);
+	public BigNumber combination(@NonNull final BigNumber k, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return CombinatoricsMath.combination(this, k, mathContext, locale);
 	}
 
 	/**
@@ -2062,7 +2084,26 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing (this% of m)
 	 */
 	public BigNumber percentFromM(@NonNull final BigNumber m, @NonNull final MathContext mathContext) {
-		return PercentageMath.nPercentFromM(this, m, mathContext);
+		return percentFromM(m, mathContext, locale);
+	}
+
+	/**
+	 * Calculates the percentage that this number represents of the given value {@code m},
+	 * using the specified {@link MathContext} and {@link Locale}.
+	 *
+	 * <p>For example, if this object is 20 and {@code m} is 50, the result is (20 / 50) * 100 = 40.</p>
+	 *
+	 * @param m
+	 * 	the reference value to calculate the percentage from
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing (this / m) * 100
+	 */
+	public BigNumber percentFromM(@NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return PercentageMath.nPercentFromM(this, m, mathContext, locale);
 	}
 
 	/**
@@ -2093,7 +2134,26 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the percentage (this as a percent of n)
 	 */
 	public BigNumber isXPercentOfN(@NonNull final BigNumber n, @NonNull final MathContext mathContext) {
-		return PercentageMath.xIsNPercentOfN(this, n, mathContext);
+		return isXPercentOfN(n, mathContext, locale);
+	}
+
+	/**
+	 * Calculates what percentage this number is of the given value {@code n}, using the specified {@link MathContext}
+	 * and {@link Locale}.
+	 *
+	 * <p>For example, if this object is 10 and {@code n} is 50, the result is 20 (since 10 is 20% of 50).</p>
+	 *
+	 * @param n
+	 * 	the value to compare against
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a new {@code BigNumber} representing the percentage (this as a percent of n)
+	 */
+	public BigNumber isXPercentOfN(@NonNull final BigNumber n, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return PercentageMath.xIsNPercentOfN(this, n, mathContext, locale);
 	}
 
 	/**
@@ -2109,7 +2169,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the greatest common divisor of this and other
 	 */
 	public BigNumber gcd(@NonNull final BigNumber other) {
-		return NumberTheoryMath.gcd(this, other);
+		return gcd(other, locale);
+	}
+
+	/**
+	 * Computes the greatest common divisor (GCD) of this BigNumber and another, using the specified {@link Locale}.
+	 * <p>
+	 * Delegates to {@link NumberTheoryMath#gcd(BigNumber, BigNumber, Locale)} for the calculation.
+	 * </p>
+	 *
+	 * @param other
+	 * 	the other BigNumber to compute the GCD with
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the greatest common divisor of this and other
+	 */
+	public BigNumber gcd(@NonNull final BigNumber other, @NonNull final Locale locale) {
+		return NumberTheoryMath.gcd(this, other, locale);
 	}
 
 	/**
@@ -2151,7 +2228,34 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if division by zero occurs (e.g. if either number is zero)
 	 */
 	public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext) {
-		return NumberTheoryMath.lcm(this, other, mathContext);
+		return lcm(other, mathContext, locale);
+	}
+
+	/**
+	 * Computes the least common multiple (LCM) of this BigNumber and another, using the specified {@link MathContext}
+	 * and {@link Locale}.
+	 * <p>
+	 * The LCM is calculated using the formula:
+	 * <pre>
+	 *     LCM(a, b) = (a * b) / GCD(a, b)
+	 * </pre>
+	 * where GCD is the greatest common divisor.
+	 * </p>
+	 *
+	 * @param other
+	 * 	the other BigNumber to compute the LCM with
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the least common multiple of this and other
+	 *
+	 * @throws ArithmeticException
+	 * 	if division by zero occurs (e.g. if either number is zero)
+	 */
+	public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return NumberTheoryMath.lcm(this, other, mathContext, locale);
 	}
 
 	/**
