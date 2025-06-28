@@ -38,7 +38,7 @@ public class CombinatoricsMath {
 	 * @throws IllegalArgumentException
 	 * 	if {@code n} or {@code k} are not integers, or if {@code k > n}
 	 */
-	public static BigNumber combination(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext) {
+	public static BigNumber combination(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
 		}
@@ -57,7 +57,7 @@ public class CombinatoricsMath {
 		kClone = kClone.min(n.subtract(kClone));
 		BigNumber c = BigNumberValues.ONE;
 		for (BigNumber i = BigNumberValues.ZERO; i.isLessThan(kClone); i = i.add(BigNumberValues.ONE)) {
-			c = c.multiply(n.subtract(i)).divide(i.add(BigNumberValues.ONE), mathContext);
+			c = c.multiply(n.subtract(i), locale).divide(i.add(BigNumberValues.ONE, locale), mathContext);
 		}
 
 		return c.trim();
@@ -97,7 +97,7 @@ public class CombinatoricsMath {
 
 		BigNumber nFactorial = n.factorial(mathContext, locale);
 		BigNumber nMinusKFactorial = n.subtract(k).factorial(mathContext, locale);
-		return nFactorial.divide(nMinusKFactorial, mathContext).trim();
+		return nFactorial.divide(nMinusKFactorial, mathContext, locale).trim();
 	}
 
 }
