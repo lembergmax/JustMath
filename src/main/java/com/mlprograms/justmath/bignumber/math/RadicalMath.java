@@ -73,12 +73,19 @@ public class RadicalMath {
 	 *   <li>Otherwise, returns the n-th root of the radicand.</li>
 	 * </ul>
 	 *
-	 * @param radicand the number to find the root of
-	 * @param index the degree of the root (n)
-	 * @param mathContext the MathContext to control precision and rounding
-	 * @param locale the Locale used for number formatting
+	 * @param radicand
+	 * 	the number to find the root of
+	 * @param index
+	 * 	the degree of the root (n)
+	 * @param mathContext
+	 * 	the MathContext to control precision and rounding
+	 * @param locale
+	 * 	the Locale used for number formatting
+	 *
 	 * @return the n-th root of the radicand as a BigNumber
-	 * @throws IllegalArgumentException if the index is zero or if even root of a negative number is requested
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the index is zero or if even root of a negative number is requested
 	 */
 	public static BigNumber nthRoot(@NonNull final BigNumber radicand, @NonNull final BigNumber index, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (index.isEqualTo(ZERO)) {
