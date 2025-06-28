@@ -106,7 +106,7 @@ public class CoordinateConversionMath {
 			              .squareRoot(mathContext, locale);
 		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees(mathContext);
 
-		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR).trim();
+		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR, locale).trim();
 	}
 
 }
