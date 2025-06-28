@@ -7,6 +7,9 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+
 /**
  * Provides combinatorial mathematical operations on {@link BigNumber} instances,
  * specifically computing combinations and permutations with high precision.
@@ -47,17 +50,17 @@ public class CombinatoricsMath {
 			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
 		}
 
-		if (k.isEqualTo(BigNumberValues.ZERO) || k.isEqualTo(n)) {
-			return BigNumberValues.ONE;
+		if (k.isEqualTo(ZERO) || k.isEqualTo(n)) {
+			return ONE;
 		}
 
 		BigNumber kClone = k.clone();
 
 		// Use symmetry property: C(n, k) = C(n, n-k)
 		kClone = kClone.min(n.subtract(kClone));
-		BigNumber c = BigNumberValues.ONE;
-		for (BigNumber i = BigNumberValues.ZERO; i.isLessThan(kClone); i = i.add(BigNumberValues.ONE)) {
-			c = c.multiply(n.subtract(i), locale).divide(i.add(BigNumberValues.ONE, locale), mathContext);
+		BigNumber c = ONE;
+		for (BigNumber i = ZERO; i.isLessThan(kClone); i = i.add(ONE)) {
+			c = c.multiply(n.subtract(i), locale).divide(i.add(ONE, locale), mathContext);
 		}
 
 		return c.trim();
