@@ -15,18 +15,11 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		BigNumber bigNumber1 = new BigNumber("12.3", Locale.US);
-		BigNumber bigNumber2 = new BigNumber("45.7");
-
-
-		BigNumberCoordinate coordinate = CoordinateConversionMath.polarToCartesianCoordinates(bigNumber1, bigNumber2, new MathContext(10, RoundingMode.HALF_UP), TrigonometricMode.DEG, Locale.US);
-		System.out.println(coordinate.toString(Locale.US));
-
-		// testStation();
+		testCalculator();
 
 	}
 
-	private static void testStation() {
+	private static void testCalculator() {
 		System.out.println("Welcome to   JustMath Calculator!");
 		System.out.println("Type your mathematical expression below:");
 		Scanner scanner = new Scanner(System.in);
@@ -40,7 +33,7 @@ public class Main {
 			}
 
 			try {
-				CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.RAD);
+				CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
 				BigNumber result = calculator.evaluate(input);
 				System.out.println("Result: " + result);
 			} catch (Exception e) {

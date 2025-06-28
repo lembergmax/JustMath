@@ -3,7 +3,6 @@ package com.mlprograms.justmath.bignumber;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import com.mlprograms.justmath.bignumber.math.utils.Values;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Builder;
@@ -2312,7 +2311,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new BigNumber representing the value in degrees
 	 */
 	public BigNumber toDegrees(@NonNull final MathContext mathContext) {
-		return multiply(ONE_HUNDRED_EIGHTY).divide(Values.PI, mathContext);
+		return multiply(ONE_HUNDRED_EIGHTY, locale).divide(MathUtils.pi(mathContext), mathContext, locale);
 	}
 
 	/**
@@ -2321,7 +2320,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new BigNumber representing the value in radians
 	 */
 	public BigNumber toRadians(@NonNull final MathContext mathContext) {
-		return multiply(Values.PI).divide(ONE_HUNDRED_EIGHTY, mathContext);
+		return multiply(MathUtils.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY, mathContext);
 	}
 
 	/**

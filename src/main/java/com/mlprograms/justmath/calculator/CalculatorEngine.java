@@ -93,7 +93,7 @@ public class CalculatorEngine {
 	 * 	the trigonometric mode (DEG or RAD)
 	 */
 	public CalculatorEngine(@NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
-		this.tokenizer = new Tokenizer();
+		this.tokenizer = new Tokenizer(mathContext);
 		this.evaluator = new Evaluator(mathContext, trigonometricMode);
 		this.parser = new Parser();
 	}

@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
@@ -22,38 +23,75 @@ import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalR
 public class InverseTrigonometricMath {
 
 	/**
-	 * Calculates the arcsine (inverse sine) of the given argument.
+	 * Computes the arcsine (inverse sine) of a given BigNumber.
 	 * <p>
-	 * Mathematically, asin(x) returns the angle θ such that sin(θ) = x, where θ ∈ [-π/2, π/2].
-	 * The function is defined for input values x ∈ [-1, 1].
-	 * <p>
-	 * Formula:
+	 * The arcsine is defined as the angle θ such that:
 	 * <pre>
-	 * asin(x) = θ, where sin(θ) = x
+	 *   sin(θ) = x, where θ ∈ [-π/2, π/2]
 	 * </pre>
+	 * and x ∈ [-1, 1]. This implementation uses the identity:
+	 * <pre>
+	 *   arcsin(x) = arctan( x / sqrt(1 - x²) )
+	 * </pre>
+	 * which provides improved numerical stability and precision over direct series expansion.
+	 *
 	 * <p>
-	 * If {@code trigonometricMode} is DEG, the result is converted from radians to degrees.
+	 * If the trigonometric mode is DEG (degrees), the result is converted accordingly.
 	 *
 	 * @param argument
-	 * 	the input value x for which to compute arcsine
+	 * 	the input value x for which to compute arcsine; must be in [-1, 1]
 	 * @param mathContext
-	 * 	the precision and rounding context
+	 * 	the context to control precision and rounding
 	 * @param trigonometricMode
-	 * 	indicates whether the result is returned in radians or degrees
+	 * 	the output mode: RAD or DEG
 	 * @param locale
-	 * 	locale used for formatting the output
+	 * 	the locale used for formatting output
 	 *
-	 * @return a {@link BigNumber} representing the arcsine of the argument
+	 * @return the arcsine of x as a BigNumber
 	 *
 	 * @throws ArithmeticException
-	 * 	if argument is outside [-1, 1]
+	 * 	if |x| > 1
 	 */
 	public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+		// Domain check: asin is only defined for -1 <= x <= 1
+		if (argument.abs().compareTo(ONE) > 0) {
+			throw new ArithmeticException("asin(x) is only defined for -1 <= x <= 1");
 		}
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+
+		// Edge cases: asin(1) = π/2, asin(-1) = -π/2
+		if (argument.compareTo(ONE) == 0) {
+			BigNumber result = MathUtils.pi(mathContext).divide(TWO, mathContext);
+			return trigonometricMode == TrigonometricMode.DEG
+				       ? result.toDegrees(mathContext)
+				       : result;
+		}
+
+		if (argument.compareTo(ONE.negate()) == 0) {
+			BigNumber result = MathUtils.pi(mathContext).divide(TWO, mathContext).negate();
+			return trigonometricMode == TrigonometricMode.DEG
+				       ? result.toDegrees(mathContext)
+				       : result;
+		}
+
+		// Compute sqrt(1 - x^2)
+		BigNumber xSquared = argument.power(TWO, mathContext);
+		BigNumber oneMinusXSquared = ONE.subtract(xSquared);
+
+		// If 1 - x^2 == 0, we already handled it above
+		BigNumber sqrt = oneMinusXSquared.squareRoot(mathContext);
+		if (sqrt.isEqualTo(ZERO)) {
+			throw new ArithmeticException("Division by zero in asin(x) formula");
+		}
+
+		// Compute atan(x / sqrt(1 - x^2))
+		BigNumber quotient = argument.divide(sqrt, mathContext);
+		BigNumber result = quotient.atan(mathContext, trigonometricMode);
+
+		if (trigonometricMode == TrigonometricMode.DEG) {
+			result = result.toDegrees(mathContext);
+		}
+
+		return result.trim();
 	}
 
 	/**

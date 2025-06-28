@@ -1,5 +1,6 @@
 package com.mlprograms.justmath.bignumber.math.utils;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
@@ -92,7 +93,7 @@ public class MathUtils {
 	 * @return the corresponding angle in radians as a {@link BigDecimal}
 	 */
 	public static BigDecimal bigDecimalNumberToRadians(BigDecimal degrees, MathContext mathContext, Locale locale) {
-		return new BigNumber(degrees.multiply(Values.PI.toBigDecimal()).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext), locale).toBigDecimal();
+		return new BigNumber(degrees.multiply(pi(mathContext).toBigDecimal()).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext), locale).toBigDecimal();
 	}
 
 	/**
@@ -124,6 +125,34 @@ public class MathUtils {
 		BigInteger randomInRange = new BigInteger(range.bitLength(), ThreadLocalRandom.current()).mod(range).add(minInt);
 
 		return new BigNumber(randomInRange.toString(), min.getLocale());
+	}
+
+	/**
+	 * Returns the mathematical constant e (Euler's number) with the specified precision.
+	 * <p>
+	 * Uses {@link BigDecimalMath#e(MathContext)} to compute the value of e to the desired precision.
+	 *
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 *
+	 * @return a {@link BigNumber} representing the value of e
+	 */
+	public static BigNumber e(MathContext mathContext) {
+		return new BigNumber(BigDecimalMath.e(mathContext).toPlainString(), mathContext);
+	}
+
+	/**
+	 * Returns the mathematical constant π (pi) with the specified precision.
+	 * <p>
+	 * Uses {@link BigDecimalMath#pi(MathContext)} to compute the value of pi to the desired precision.
+	 *
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 *
+	 * @return a {@link BigNumber} representing the value of pi
+	 */
+	public static BigNumber pi(MathContext mathContext) {
+		return new BigNumber(BigDecimalMath.pi(mathContext).toPlainString(), mathContext);
 	}
 
 }
