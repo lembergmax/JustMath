@@ -2547,10 +2547,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} with the opposite sign of this number
 	 */
 	public BigNumber negate() {
-		String thisCloneValueBeforeDecimal = this.clone().getValueBeforeDecimal();
-		return isNegative ?
-			       new BigNumber(thisCloneValueBeforeDecimal.replace("-", "")) :
-			       new BigNumber("-" + thisCloneValueBeforeDecimal);
+		return new BigNumber(this.clone().negateThis());
 	}
 
 	/**
