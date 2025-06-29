@@ -93,7 +93,7 @@ public class RadicalMath {
 		}
 
 		if (index.isNegative()) {
-			BigNumber positiveIndex = index.negateNewObject();
+			BigNumber positiveIndex = index.negate();
 			BigNumber positiveRoot = nthRoot(radicand, positiveIndex, mathContext, locale);
 			return ONE.divide(positiveRoot, mathContext, locale).trim();
 		}
