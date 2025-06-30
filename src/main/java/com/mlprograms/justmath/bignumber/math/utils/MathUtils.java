@@ -159,6 +159,19 @@ public class MathUtils {
 	}
 
 	/**
+	 * Returns the mathematical constant π (pi) with the specified precision,
+	 * using the default calculation locale.
+	 *
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 *
+	 * @return a {@link BigNumber} representing the value of pi
+	 */
+	public static BigNumber pi(@NonNull final MathContext mathContext) {
+		return pi(mathContext, CALCULATION_LOCALE);
+	}
+
+	/**
 	 * Returns the mathematical constant π (pi) with the specified precision.
 	 * <p>
 	 * Uses {@link BigDecimalMath#pi(MathContext)} to compute the value of pi to the desired precision.
