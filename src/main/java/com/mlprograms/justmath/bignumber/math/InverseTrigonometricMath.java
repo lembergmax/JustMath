@@ -85,7 +85,7 @@ public class InverseTrigonometricMath {
 
 		// Compute atan(x / sqrt(1 - x^2))
 		BigNumber quotient = argument.divide(sqrt, mathContext);
-		BigNumber result = quotient.atan(mathContext, trigonometricMode);
+		BigNumber result = new BigNumber(quotient.atan(mathContext, trigonometricMode), locale);
 
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = result.toDegrees(mathContext);

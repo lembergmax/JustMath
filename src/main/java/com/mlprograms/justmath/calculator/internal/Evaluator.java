@@ -7,6 +7,7 @@ import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
 import com.mlprograms.justmath.bignumber.math.CoordinateConversionMath;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -16,6 +17,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.BigNumberValues.CALCULATION_LOCALE;
+
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
  * Supports full precision using BigDecimal.
@@ -24,10 +27,7 @@ import java.util.Locale;
 @AllArgsConstructor
 public class Evaluator {
 
-	/**
-	 * Locale used for all calculations to ensure consistent number formatting and parsing.
-	 */
-	private final Locale CALCULATION_LOCALE = Locale.US;
+
 	/**
 	 * Math context specifying the precision and rounding mode for calculations.
 	 */

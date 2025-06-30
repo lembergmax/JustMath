@@ -2188,7 +2188,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
 	 */
 	public BigNumber randomIntegerForRange(@NonNull final BigNumber max) {
-		return MathUtils.randomIntegerBigNumberInRange(this, max);
+		return MathUtils.randomIntegerBigNumberInRange(this, max, locale);
 	}
 
 	/**

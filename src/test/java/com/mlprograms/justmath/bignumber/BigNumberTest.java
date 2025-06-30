@@ -361,7 +361,7 @@ public class BigNumberTest {
 		})
 		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.asin().toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
 		}
 
 		@ParameterizedTest

@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.math.utils;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -10,8 +11,7 @@ import java.math.MathContext;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE;
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.
@@ -45,7 +45,7 @@ public class MathUtils {
 	 *
 	 * @return the angle in radians as a {@link BigDecimal}, computed with the specified precision and locale
 	 */
-	public static BigDecimal convertAngle(BigNumber angle, MathContext context, TrigonometricMode trigonometricMode, Locale locale) {
+	public static BigDecimal convertAngle(@NonNull final BigNumber angle, @NonNull final MathContext context, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return (trigonometricMode == TrigonometricMode.DEG)
 			       ? bigDecimalNumberToRadians(angle.toBigDecimal(), context, locale)
 			       : angle.toBigDecimal();
@@ -69,7 +69,7 @@ public class MathUtils {
 	 *
 	 * @return the corresponding angle in degrees as a {@link BigDecimal}
 	 */
-	public static BigDecimal bigDecimalRadiansToDegrees(BigDecimal radians, MathContext mathContext, Locale locale) {
+	public static BigDecimal bigDecimalRadiansToDegrees(@NonNull final BigDecimal radians, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(radians, locale).toDegrees(mathContext).toBigDecimal();
 	}
 
@@ -92,8 +92,8 @@ public class MathUtils {
 	 *
 	 * @return the corresponding angle in radians as a {@link BigDecimal}
 	 */
-	public static BigDecimal bigDecimalNumberToRadians(BigDecimal degrees, MathContext mathContext, Locale locale) {
-		return new BigNumber(degrees.multiply(pi(mathContext).toBigDecimal()).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext), locale).toBigDecimal();
+	public static BigDecimal bigDecimalNumberToRadians(@NonNull final BigDecimal degrees, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return new BigNumber(degrees.multiply(pi(mathContext, locale).toBigDecimal()).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext), locale).toBigDecimal();
 	}
 
 	/**
@@ -107,13 +107,15 @@ public class MathUtils {
 	 * 	the inclusive lower bound (must be an integer)
 	 * @param max
 	 * 	the exclusive upper bound (must be an integer)
+	 * @param locale
+	 * 	* 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
 	 *
 	 * @return a random {@link BigNumber} representing an integer in the range [min, max)
 	 *
 	 * @throws IllegalArgumentException
 	 * 	if {@code min} ≥ {@code max}, or if either value has decimal places
 	 */
-	public static BigNumber randomIntegerBigNumberInRange(BigNumber min, BigNumber max) {
+	public static BigNumber randomIntegerBigNumberInRange(@NonNull final BigNumber min, @NonNull final BigNumber max, @NonNull final Locale locale) {
 		BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
 		BigInteger maxInt = max.add(ONE).toBigDecimal().toBigIntegerExact();
 
@@ -124,7 +126,20 @@ public class MathUtils {
 		BigInteger range = maxInt.subtract(minInt);
 		BigInteger randomInRange = new BigInteger(range.bitLength(), ThreadLocalRandom.current()).mod(range).add(minInt);
 
-		return new BigNumber(randomInRange.toString(), min.getLocale());
+		return new BigNumber(randomInRange.toString(), locale);
+	}
+
+	/**
+	 * Returns the mathematical constant e (Euler's number) with the specified precision,
+	 * using the default calculation locale.
+	 *
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 *
+	 * @return a {@link BigNumber} representing the value of e
+	 */
+	public static BigNumber e(@NonNull final MathContext mathContext) {
+		return e(mathContext, CALCULATION_LOCALE);
 	}
 
 	/**
@@ -134,11 +149,13 @@ public class MathUtils {
 	 *
 	 * @param mathContext
 	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 * @param locale
+	 * 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
 	 *
 	 * @return a {@link BigNumber} representing the value of e
 	 */
-	public static BigNumber e(MathContext mathContext) {
-		return new BigNumber(BigDecimalMath.e(mathContext).toPlainString(), mathContext);
+	public static BigNumber e(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return new BigNumber(BigDecimalMath.e(mathContext).toPlainString(), locale, mathContext);
 	}
 
 	/**
@@ -148,11 +165,13 @@ public class MathUtils {
 	 *
 	 * @param mathContext
 	 * 	the {@link MathContext} specifying the precision and rounding mode
+	 * @param locale
+	 * 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
 	 *
 	 * @return a {@link BigNumber} representing the value of pi
 	 */
-	public static BigNumber pi(MathContext mathContext) {
-		return new BigNumber(BigDecimalMath.pi(mathContext).toPlainString(), mathContext);
+	public static BigNumber pi(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return new BigNumber(BigDecimalMath.pi(mathContext).toPlainString(), locale, mathContext);
 	}
 
 }
