@@ -1,11 +1,12 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.NonNull;
 
 import java.math.MathContext;
+import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ONE_HUNDRED;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED;
 
 /**
  * Utility class for percentage calculations using {@link BigNumber}.
@@ -30,8 +31,8 @@ public class PercentageMath {
 	 *
 	 * @return n percent of m
 	 */
-	public static BigNumber nPercentFromM(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext) {
-		return m.multiply(n.divide(ONE_HUNDRED, mathContext)).trim();
+	public static BigNumber nPercentFromM(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return m.multiply(n.divide(ONE_HUNDRED, mathContext, locale), locale).trim();
 	}
 
 	/**
@@ -52,8 +53,8 @@ public class PercentageMath {
 	 *
 	 * @return the percentage that m is of n
 	 */
-	public static BigNumber mIsXPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext) {
-		return m.divide(n, mathContext).multiply(ONE_HUNDRED).trim();
+	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return n.divide(m, mathContext, locale).multiply(ONE_HUNDRED, locale).trim();
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.api;
+package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.Evaluator;
@@ -13,7 +13,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.DEFAULT_DIVISION_PRECISION;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.DEFAULT_DIVISION_PRECISION;
 
 /**
  * ExactCalculatorEngine.java
@@ -93,7 +93,7 @@ public class CalculatorEngine {
 	 * 	the trigonometric mode (DEG or RAD)
 	 */
 	public CalculatorEngine(@NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
-		this.tokenizer = new Tokenizer();
+		this.tokenizer = new Tokenizer(mathContext);
 		this.evaluator = new Evaluator(mathContext, trigonometricMode);
 		this.parser = new Parser();
 	}

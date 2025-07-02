@@ -1,17 +1,20 @@
 package com.mlprograms.justmath.bignumber.calculator;
 
+import com.mlprograms.justmath.bignumber.BigNumberValues;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
-import com.mlprograms.justmath.util.Values;
 import org.junit.jupiter.api.Test;
 
+import java.math.MathContext;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerTest {
 
-	private final Tokenizer tokenizer = new Tokenizer();
+	private final MathContext mathContext = BigNumberValues.DEFAULT_MATH_CONTEXT;
+	private final Tokenizer tokenizer = new Tokenizer(mathContext);
 
 	@Test
 	void testSimpleExpression() {
@@ -130,7 +133,7 @@ class TokenizerTest {
 		List<Token> tokens = tokenizer.tokenize("pi");
 
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, Values.PI.toString())
+			new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString())
 		), tokens);
 	}
 
@@ -139,7 +142,7 @@ class TokenizerTest {
 		List<Token> tokens = tokenizer.tokenize("e");
 
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, Values.E.toString())
+			new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString())
 		), tokens);
 	}
 
@@ -185,7 +188,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "4"),
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.OPERATOR, "-"),
-			new Token(Token.Type.NUMBER, Values.PI.toString()),
+			new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString()),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.OPERATOR, "-"),
 			new Token(Token.Type.FUNCTION, "√"),
@@ -193,7 +196,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "9"),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.SEMICOLON, ";"),
-			new Token(Token.Type.NUMBER, Values.E.toString())
+			new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString())
 		), tokens);
 	}
 
@@ -325,12 +328,12 @@ class TokenizerTest {
 	void testUpperCaseConstants() {
 		List<Token> piTokens = tokenizer.tokenize("PI");
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, Values.PI.toString())
+			new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString())
 		), piTokens);
 
 		List<Token> eTokens = tokenizer.tokenize("E");
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, Values.E.toString())
+			new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString())
 		), eTokens);
 	}
 
@@ -378,9 +381,9 @@ class TokenizerTest {
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.NUMBER, "2"),
 			new Token(Token.Type.OPERATOR, "+"),
-			new Token(Token.Type.NUMBER, Values.PI.toString()),
+			new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString()),
 			new Token(Token.Type.OPERATOR, "*"),
-			new Token(Token.Type.NUMBER, Values.E.toString()),
+			new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString()),
 			new Token(Token.Type.OPERATOR, "+"),
 			new Token(Token.Type.FUNCTION, "√"),
 			new Token(Token.Type.LEFT_PAREN, "("),

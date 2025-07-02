@@ -1,9 +1,11 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
+import com.mlprograms.justmath.bignumber.BigNumberValues;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
-import com.mlprograms.justmath.util.Values;
-import lombok.NoArgsConstructor;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import lombok.AllArgsConstructor;
 
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
  * </pre>
  * This results in tokens for NUMBER(3), OPERATOR(+), FUNCTION(√), LEFT_PAREN, NUMBER(4), RIGHT_PAREN.
  */
-@NoArgsConstructor
+@AllArgsConstructor
 public class Tokenizer {
 
 	/**
@@ -35,6 +37,11 @@ public class Tokenizer {
 	private final Set<String> validOperatorsAndFunctions = Arrays.stream(ArithmeticOperator.values())
 		                                                       .map(ArithmeticOperator::getOperator)
 		                                                       .collect(Collectors.toSet());
+
+	/**
+	 * Math context specifying the precision and rounding mode for calculations.
+	 */
+	private MathContext mathContext;
 
 	/**
 	 * Scans the given token list for occurrences where a signed number directly follows
@@ -406,11 +413,11 @@ public class Tokenizer {
 			String candidate = expression.substring(startIndex, endIndex);
 
 			if (candidate.equalsIgnoreCase("pi")) {
-				tokens.add(new Token(Token.Type.NUMBER, Values.PI.toString()));
+				tokens.add(new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString()));
 				return length;
 			}
 			if (candidate.equalsIgnoreCase("e")) {
-				tokens.add(new Token(Token.Type.NUMBER, Values.E.toString()));
+				tokens.add(new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString()));
 				return length;
 			}
 			if (validOperatorsAndFunctions.contains(candidate)) {

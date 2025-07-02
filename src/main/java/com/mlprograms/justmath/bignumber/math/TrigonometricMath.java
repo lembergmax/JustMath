@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.math.utils.MathUtils.convertAngle;
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.convertAngle;
 
 /**
  * Provides trigonometric functions operating on BigNumber values.
