@@ -1,11 +1,12 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.NonNull;
 
 import java.math.MathContext;
+import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
 
 /**
  * Utility class providing number theory operations on {@link BigNumber} integers.
@@ -34,20 +35,17 @@ public class NumberTheoryMath {
 	 * @throws IllegalArgumentException
 	 * 	if a or b is not an integer
 	 */
-	public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b) {
+	public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final Locale locale) {
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("GCD requires integer values.");
 		}
 
-		BigNumber aClone = a.clone();
-		BigNumber bClone = b.clone();
+		BigNumber aClone = a.clone().abs();
+		BigNumber bClone = b.clone().abs();
 
-		aClone = aClone.abs();
-		bClone = bClone.abs();
-
-		while (b.isGreaterThan(ZERO)) {
+		while (bClone.isGreaterThan(ZERO)) {
 			BigNumber temp = bClone;
-			bClone = aClone.modulo(bClone);
+			bClone = aClone.modulo(bClone, locale);
 			aClone = temp;
 		}
 		return aClone.trim();
@@ -75,15 +73,15 @@ public class NumberTheoryMath {
 	 * @throws IllegalArgumentException
 	 * 	if a or b is not an integer
 	 */
-	public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext) {
+	public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("LCM requires integer values.");
 		}
 
-		BigNumber product = a.multiply(b).abs();
-		BigNumber divisor = gcd(a, b);
+		BigNumber product = a.multiply(b, locale).abs();
+		BigNumber divisor = gcd(a, b, locale);
 
-		return product.divide(divisor, mathContext).trim();
+		return product.divide(divisor, mathContext, locale).trim();
 	}
 
 }

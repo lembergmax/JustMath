@@ -4,9 +4,10 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
 import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
-import com.mlprograms.justmath.bignumber.internal.math.CoordinateConversionMath;
+import com.mlprograms.justmath.bignumber.math.CoordinateConversionMath;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -16,6 +17,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.BigNumberValues.CALCULATION_LOCALE;
+
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
  * Supports full precision using BigDecimal.
@@ -24,10 +27,7 @@ import java.util.Locale;
 @AllArgsConstructor
 public class Evaluator {
 
-	/**
-	 * Locale used for all calculations to ensure consistent number formatting and parsing.
-	 */
-	private final Locale CALCULATION_LOCALE = Locale.US;
+
 	/**
 	 * Math context specifying the precision and rounding mode for calculations.
 	 */
@@ -216,7 +216,7 @@ public class Evaluator {
 			case ASIN_AF, ASIN_F -> operand.asin(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOS_AF, ACOS_F -> operand.acos(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ATAN_AF, ATAN_F -> operand.atan(mathContext, trigonometricMode, CALCULATION_LOCALE);
-			case ACOT_AF, ACOT_F -> operand.acot(mathContext, CALCULATION_LOCALE);
+			case ACOT_AF, ACOT_F -> operand.acot(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ASINH_AF, ASINH_F -> operand.asinh(mathContext, CALCULATION_LOCALE);
 			case ACOSH_AF, ACOSH_F -> operand.acosh(mathContext, CALCULATION_LOCALE);
 			case ATANH_AF, ATANH_F -> operand.atanh(mathContext, CALCULATION_LOCALE);

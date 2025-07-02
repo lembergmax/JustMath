@@ -1,21 +1,26 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.api.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.bignumber.math.CoordinateConversionMath;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
 
 	public static void main(String[] args) {
 
-		testStation();
+		testCalculator();
 
 	}
 
-	private static void testStation() {
-		System.out.println("Welcome to JustMath Calculator!");
+	private static void testCalculator() {
+		System.out.println("Welcome to   JustMath Calculator!");
 		System.out.println("Type your mathematical expression below:");
 		Scanner scanner = new Scanner(System.in);
 

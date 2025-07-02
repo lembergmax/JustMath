@@ -1,8 +1,8 @@
-package com.mlprograms.justmath.bignumber.internal.math;
+package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.internal.BigNumbers;
+import com.mlprograms.justmath.bignumber.BigNumberValues;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -10,7 +10,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.internal.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
 
 /**
  * Provides mathematical utilities to convert coordinates between
@@ -64,7 +64,7 @@ public class CoordinateConversionMath {
 
 		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
 		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN).trim();
+		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, locale).trim();
 	}
 
 	/**
@@ -101,12 +101,12 @@ public class CoordinateConversionMath {
 			throw new IllegalArgumentException("x or y cannot be zero");
 		}
 
-		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
-			              .add(y.power(BigNumbers.TWO, mathContext, locale))
+		BigNumber r = x.power(BigNumberValues.TWO, mathContext, locale)
+			              .add(y.power(BigNumberValues.TWO, mathContext, locale))
 			              .squareRoot(mathContext, locale);
-		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees();
+		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees(mathContext);
 
-		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR).trim();
+		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR, locale).trim();
 	}
 
 }
