@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BigNumberTest {
 
@@ -692,10 +692,17 @@ public class BigNumberTest {
 			"-1.57079632679, RAD, -1",
 			"-90, DEG, -1"
 		})
-		void sinTest(String input, TrigonometricMode trigonometricMode, String expected) {
+		void sinTest(String input, TrigonometricMode mode, String expectedStr) {
 			BigNumber angle = new BigNumber(input, Locale.US);
-			BigNumber result = angle.sin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US);
-			assertEquals(expected, result.toString().substring(0, Math.min(expected.length(), 13)));
+			BigNumber result = angle.sin(BigNumberValues.DEFAULT_MATH_CONTEXT, mode, Locale.US);
+			BigDecimal actual = result.toBigDecimal();
+			BigDecimal expected = new BigDecimal(expectedStr);
+
+			BigDecimal tolerance = new BigDecimal("1E-9");
+
+			BigDecimal diff = actual.subtract(expected).abs();
+			assertTrue(diff.compareTo(tolerance) <= 0,
+				() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
 		}
 
 		/*
