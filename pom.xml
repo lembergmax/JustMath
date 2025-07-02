@@ -22,11 +22,6 @@
             <name>GitHub Packages Release</name>
             <url>https://maven.pkg.github.com/lembergmax/JustMath</url>
         </repository>
-        <snapshotRepository>
-            <id>github</id>
-            <name>GitHub Packages Snapshot</name>
-            <url>https://maven.pkg.github.com/lembergmax/JustMath</url>
-        </snapshotRepository>
     </distributionManagement>
 
     <dependencies>
