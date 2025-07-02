@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9f3fff33-9ed4-417f-9e0c-2ea65b1bcd7d" name="Changes" comment="Remove snapshot repository configuration from pom.xml" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/gamingPanther3/JustMath.git",
+    "accountId": "59c6b075-e1cf-4d81-9127-b75e19f0ec4a"
+  }
+}]]></component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JUnit.BigNumberTest.executor": "Run",
+    "git-widget-placeholder": "developer",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="RunManager" selected="JUnit.BigNumberTest">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.Main" />
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest$BasicMath" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest$BasicMath" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest$CombinatoricsMath.combination" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest$CombinatoricsMath" />
+      <option name="METHOD_NAME" value="combination" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest$CombinatoricsMath.permutation" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest$CombinatoricsMath" />
+      <option name="METHOD_NAME" value="permutation" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest$CoordinateConversionMath.cartesianToPolarCoordinateTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest$CoordinateConversionMath" />
+      <option name="METHOD_NAME" value="cartesianToPolarCoordinateTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest$CoordinateConversionMath.polarToCartesianCoordinateTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest$CoordinateConversionMath" />
+      <option name="METHOD_NAME" value="polarToCartesianCoordinateTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BigNumberTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.BigNumberTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TokenizerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.calculator.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.calculator" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.calculator.TokenizerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TokenizerTest.testExpressionWithPlusAfterParenthesis" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.calculator.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.calculator" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.calculator.TokenizerTest" />
+      <option name="METHOD_NAME" value="testExpressionWithPlusAfterParenthesis" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TokenizerTest.testMultipleConsecutiveSigns" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JustMath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.mlprograms.justmath.bignumber.calculator.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.mlprograms.justmath.bignumber.calculator" />
+      <option name="MAIN_CLASS_NAME" value="com.mlprograms.justmath.bignumber.calculator.TokenizerTest" />
+      <option name="METHOD_NAME" value="testMultipleConsecutiveSigns" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="JustMath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="JustMath" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.Main" />
+      <item itemvalue="JUnit.BigNumberTest$BasicMath" />
+      <item itemvalue="JUnit.BigNumberTest$CombinatoricsMath.combination" />
+      <item itemvalue="JUnit.BigNumberTest$CombinatoricsMath.permutation" />
+      <item itemvalue="JUnit.BigNumberTest$CoordinateConversionMath.cartesianToPolarCoordinateTest" />
+      <item itemvalue="JUnit.BigNumberTest$CoordinateConversionMath.polarToCartesianCoordinateTest" />
+      <item itemvalue="JUnit.TokenizerTest" />
+      <item itemvalue="JUnit.TokenizerTest.testExpressionWithPlusAfterParenthesis" />
+      <item itemvalue="JUnit.TokenizerTest.testMultipleConsecutiveSigns" />
+      <item itemvalue="JUnit.BigNumberTest" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.BigNumberTest" />
+        <item itemvalue="JUnit.BigNumberTest" />
+        <item itemvalue="JUnit.TokenizerTest.testMultipleConsecutiveSigns" />
+        <item itemvalue="JUnit.TokenizerTest.testExpressionWithPlusAfterParenthesis" />
+        <item itemvalue="JUnit.TokenizerTest" />
+        <item itemvalue="JUnit.BigNumberTest$CoordinateConversionMath.polarToCartesianCoordinateTest" />
+        <item itemvalue="JUnit.BigNumberTest$CoordinateConversionMath.cartesianToPolarCoordinateTest" />
+        <item itemvalue="JUnit.BigNumberTest$CombinatoricsMath.permutation" />
+        <item itemvalue="JUnit.BigNumberTest$CombinatoricsMath.combination" />
+        <item itemvalue="JUnit.BigNumberTest$BasicMath" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task id="LOCAL-00001" summary="jaja">
+      <option name="closed" value="true" />
+      <created>1751464960577</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1751464960577</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Refactor BigNumberTest: Comment out asinTest and acosTest methods; add Maven annotation processing profile in compiler.xml">
+      <option name="closed" value="true" />
+      <created>1751465706467</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1751465706467</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Bump version from 1.0-SNAPSHOT to 0.0.1 in pom.xml">
+      <option name="closed" value="true" />
+      <created>1751466001989</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1751466001989</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Bump version from 0.0.1 to 1.0.0 in pom.xml; update distribution management for GitHub Packages">
+      <option name="closed" value="true" />
+      <created>1751466378127</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1751466378127</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Revert version from 1.0.0 to 1.0-SNAPSHOT in pom.xml">
+      <option name="closed" value="true" />
+      <created>1751466450311</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1751466450311</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Bump version from 1.0-SNAPSHOT to 1.0 in pom.xml">
+      <option name="closed" value="true" />
+      <created>1751467000627</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1751467000627</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Remove snapshot repository configuration from pom.xml">
+      <option name="closed" value="true" />
+      <created>1751467892231</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1751467892231</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="jaja" />
+    <MESSAGE value="Refactor BigNumberTest: Comment out asinTest and acosTest methods; add Maven annotation processing profile in compiler.xml" />
+    <MESSAGE value="Bump version from 1.0-SNAPSHOT to 0.0.1 in pom.xml" />
+    <MESSAGE value="Bump version from 0.0.1 to 1.0.0 in pom.xml; update distribution management for GitHub Packages" />
+    <MESSAGE value="Revert version from 1.0.0 to 1.0-SNAPSHOT in pom.xml" />
+    <MESSAGE value="Bump version from 1.0-SNAPSHOT to 1.0 in pom.xml" />
+    <MESSAGE value="Remove snapshot repository configuration from pom.xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove snapshot repository configuration from pom.xml" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.RuntimeException" package="java.lang" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
