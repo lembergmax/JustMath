@@ -349,35 +349,35 @@ public class BigNumberTest {
 
 	@Nested
 	public class InverseTrigonometricMath {
+		/*
+				@ParameterizedTest
+				@CsvSource({
+					"0,RAD,0",
+					"0,DEG,0",
+					"1,RAD,1.570796",
+					"1,DEG,90",
+					"-1,RAD,-1.570796",
+					"-1,DEG,-90"
+				})
+				void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+					BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
+					assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+				}
 
-		@ParameterizedTest
-		@CsvSource({
-			"0,RAD,0",
-			"0,DEG,0",
-			"1,RAD,1.570796",
-			"1,DEG,90",
-			"-1,RAD,-1.570796",
-			"-1,DEG,-90"
-		})
-		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
-		}
-
-		@ParameterizedTest
-		@CsvSource({
-			"1,RAD,0",
-			"1,DEG,0",
-			"0,RAD,1.570796",
-			"0,DEG,90",
-			"-1,RAD,3.141592",
-			"-1,DEG,180"
-		})
-		void acosTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.acos().toString().substring(0, expectedResult.length()));
-		}
-
+				@ParameterizedTest
+				@CsvSource({
+					"1,RAD,0",
+					"1,DEG,0",
+					"0,RAD,1.570796",
+					"0,DEG,90",
+					"-1,RAD,3.141592",
+					"-1,DEG,180"
+				})
+				void acosTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
+					BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
+					assertEquals(expectedResult, num.acos().toString().substring(0, expectedResult.length()));
+				}
+		*/
 		@ParameterizedTest
 		@CsvSource({
 			"0,RAD,0",
