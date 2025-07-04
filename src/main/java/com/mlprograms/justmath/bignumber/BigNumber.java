@@ -1405,9 +1405,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing asin(this)
 	 */
+	/*
+	// TODO
 	public BigNumber asin() {
 		return asin(trigonometricMode);
 	}
+	 */
 
 	/**
 	 * Computes the inverse sine (arcsin) of this number in the specified angle unit using the default
@@ -1420,9 +1423,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing asin(this)
 	 */
+	/*
+	// TODO
 	public BigNumber asin(@NonNull final TrigonometricMode trigonometricMode) {
 		return asin(mathContext, trigonometricMode);
 	}
+	 */
 
 	/**
 	 * Computes the inverse sine (arcsin) of this number using the specified {@link MathContext} and
@@ -1439,9 +1445,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing asin(this)
 	 */
+	/*
+	// TODO
 	public BigNumber asin(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
 		return asin(mathContext, trigonometricMode, locale);
 	}
+	 */
 
 	/**
 	 * Computes the inverse sine (arcsin) of this number with specified units and locale.
@@ -1458,9 +1467,11 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing asin(this)
 	 */
+	/*
 	public BigNumber asin(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return InverseTrigonometricMath.asin(this, mathContext, trigonometricMode, locale);
 	}
+	 */
 
 	/**
 	 * Computes the inverse cosine (arccos) of this number using the default {@link MathContext},
@@ -1470,9 +1481,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing acos(this)
 	 */
+	/*
+	// TODO
 	public BigNumber acos() {
 		return acos(trigonometricMode);
 	}
+	 */
 
 	/**
 	 * Computes the inverse cosine (arccos) of this number in the specified angle unit using the default
@@ -1485,9 +1499,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing acos(this)
 	 */
+	/*
+	// TODO
 	public BigNumber acos(@NonNull final TrigonometricMode trigonometricMode) {
 		return acos(mathContext, trigonometricMode);
 	}
+	 */
 
 	/**
 	 * Computes the inverse cosine (arccos) of this number using the specified {@link MathContext} and
@@ -1504,9 +1521,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing acos(this)
 	 */
+	/*
+	// TODO
 	public BigNumber acos(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
 		return acos(mathContext, trigonometricMode, locale);
 	}
+	 */
 
 	/**
 	 * Computes the inverse cosine (arccos) of this number with specified units and locale.
@@ -1523,9 +1543,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing acos(this)
 	 */
+	/*
+	// TODO
 	public BigNumber acos(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return InverseTrigonometricMath.acos(this, mathContext, trigonometricMode, locale);
 	}
+	 */
 
 	/**
 	 * Computes the inverse tangent (arctan) of this number using the default {@link MathContext},
