@@ -7,7 +7,6 @@ import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
 import com.mlprograms.justmath.bignumber.math.CoordinateConversionMath;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -15,7 +14,6 @@ import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.BigNumberValues.CALCULATION_LOCALE;
 
@@ -213,8 +211,11 @@ public class Evaluator {
 			case COSH_F -> operand.cosh(mathContext, CALCULATION_LOCALE);
 			case TANH_F -> operand.tanh(mathContext, CALCULATION_LOCALE);
 			case COTH_F -> operand.coth(mathContext, CALCULATION_LOCALE);
+			/*
+			// TODO
 			case ASIN_AF, ASIN_F -> operand.asin(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOS_AF, ACOS_F -> operand.acos(mathContext, trigonometricMode, CALCULATION_LOCALE);
+			 */
 			case ATAN_AF, ATAN_F -> operand.atan(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOT_AF, ACOT_F -> operand.acot(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ASINH_AF, ASINH_F -> operand.asinh(mathContext, CALCULATION_LOCALE);

@@ -2,7 +2,6 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -10,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
+import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
@@ -52,6 +51,8 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if |x| > 1
 	 */
+	/*
+	// TODO
 	public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		// Domain check: asin is only defined for -1 <= x <= 1
 		if (argument.abs().compareTo(ONE) > 0) {
@@ -93,6 +94,7 @@ public class InverseTrigonometricMath {
 
 		return result.trim();
 	}
+	*/
 
 	/**
 	 * Calculates the arccosine (inverse cosine) of the given argument.
@@ -121,6 +123,8 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
+	/*
+	// TODO
 	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
 		if (trigonometricMode == TrigonometricMode.DEG) {
@@ -128,6 +132,7 @@ public class InverseTrigonometricMath {
 		}
 		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
+	 */
 
 	/**
 	 * Calculates the arctangent (inverse tangent) of the given argument.
