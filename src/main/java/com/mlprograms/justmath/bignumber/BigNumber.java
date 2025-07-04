@@ -218,47 +218,47 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Constructs a BigNumber from another BigNumber and a new locale using the default math context.
 	 *
-	 * @param parsed
+	 * @param bigNumber
 	 * 	the source BigNumber
-	 * @param newLocale
+	 * @param targetLocale
 	 * 	the new locale to use
 	 */
-	public BigNumber(@NonNull final BigNumber parsed, @NonNull final Locale newLocale) {
-		this(parsed, newLocale, DEFAULT_MATH_CONTEXT);
+	public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale) {
+		this(bigNumber, targetLocale, DEFAULT_MATH_CONTEXT);
 	}
 
 	/**
 	 * Constructs a BigNumber from another BigNumber, a new locale, and a math context using the default trigonometric
 	 * mode (DEG).
 	 *
-	 * @param parsed
+	 * @param bigNumber
 	 * 	the source BigNumber
-	 * @param newLocale
+	 * @param targetLocale
 	 * 	the new locale to use
 	 * @param mathContext
 	 * 	the math context to use for precision and rounding
 	 */
-	public BigNumber(@NonNull final BigNumber parsed, @NonNull final Locale newLocale, @NonNull final MathContext mathContext) {
-		this(parsed, newLocale, mathContext, TrigonometricMode.DEG);
+	public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext) {
+		this(bigNumber, targetLocale, mathContext, TrigonometricMode.DEG);
 	}
 
 	/**
 	 * Constructs a BigNumber from another BigNumber, a new locale, a math context, and a trigonometric mode.
 	 *
-	 * @param parsed
+	 * @param bigNumber
 	 * 	the source BigNumber
-	 * @param newLocale
+	 * @param targetLocale
 	 * 	the new locale to use
 	 * @param mathContext
 	 * 	the math context to use for precision and rounding
 	 * @param trigonometricMode
 	 * 	the trigonometric mode to use
 	 */
-	public BigNumber(@NonNull final BigNumber parsed, @NonNull final Locale newLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
-		this.locale = newLocale;
-		this.valueBeforeDecimal = parsed.valueBeforeDecimal;
-		this.valueAfterDecimal = parsed.valueAfterDecimal;
-		this.isNegative = parsed.isNegative;
+	public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		this.locale = targetLocale;
+		this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
+		this.valueAfterDecimal = bigNumber.valueAfterDecimal;
+		this.isNegative = bigNumber.isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
 		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
@@ -346,6 +346,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @param addend
 	 * 	the number to add to this number
+	 * @param locale
+	 * 	the result, which should be parsed to a specific locale
 	 *
 	 * @return a new {@code BigNumber} representing the sum
 	 */
@@ -375,6 +377,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @param subtrahend
 	 * 	the number to subtract from this number
+	 * @param locale
+	 * 	the result, which should be parsed to a specific locale
 	 *
 	 * @return a new {@code BigNumber} representing the difference
 	 */
@@ -551,7 +555,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
+	 * 	the locale to apply for formatting or localization
 	 *
 	 * @return a new {@code BigNumber} representing the result of the exponentiation
 	 */
@@ -600,7 +604,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
+	 * 	the locale to apply for formatting or localization
 	 *
 	 * @return a new {@code BigNumber} representing the factorial
 	 */
@@ -614,6 +618,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing \(e^{this}\)
 	 */
+	// TODO: test
 	public BigNumber exp() {
 		return exp(mathContext);
 	}
@@ -680,7 +685,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
+	 * 	the locale to apply for formatting or localization
 	 *
 	 * @return a new {@code BigNumber} representing the square root
 	 */
@@ -709,7 +714,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
+	 * 	the locale to apply for formatting or localization
 	 *
 	 * @return a new {@code BigNumber} representing the cube root
 	 */
@@ -781,7 +786,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 * @param locale
-	 * 	the locale to apply for formatting or localization (if relevant)
+	 * 	the locale to apply for formatting or localization
 	 *
 	 * @return a new {@code BigNumber} representing the <i>n</i>th root
 	 *
@@ -799,6 +804,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing log₂(this)
 	 */
+	// TODO: test
 	public BigNumber log2() {
 		return log2(mathContext);
 	}
@@ -841,6 +847,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing log₁₀(this)
 	 */
+	// TODO: test
 	public BigNumber log10() {
 		return log10(mathContext);
 	}
@@ -883,6 +890,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing ln(this)
 	 */
+	// TODO: test
 	public BigNumber ln() {
 		return ln(mathContext);
 	}
@@ -931,6 +939,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @throws IllegalArgumentException
 	 * 	if {@code base} is zero or negative
 	 */
+	// TODO: test
 	public BigNumber logBase(@NonNull final BigNumber base) {
 		return logBase(base, mathContext);
 	}
@@ -986,6 +995,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing sin(this)
 	 */
+	// TODO: test
 	public BigNumber sin() {
 		return sin(trigonometricMode);
 	}
@@ -1050,6 +1060,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing cos(this)
 	 */
+	// TODO: test
 	public BigNumber cos() {
 		return cos(trigonometricMode);
 	}
@@ -1114,6 +1125,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing tan(this)
 	 */
+	// TODO: test
 	public BigNumber tan() {
 		return tan(trigonometricMode);
 	}
