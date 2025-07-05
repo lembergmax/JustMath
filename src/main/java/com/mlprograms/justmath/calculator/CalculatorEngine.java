@@ -163,18 +163,14 @@ public class CalculatorEngine {
 	 * @return result as string, rounded if necessary
 	 */
 	public BigNumber evaluate(@NonNull String expression) {
-		try {
-			// Tokenize the input string
-			List<Token> tokens = tokenizer.tokenize(expression);
+		// Tokenize the input string
+		List<Token> tokens = tokenizer.tokenize(expression);
 
-			// Parse to postfix notation using shunting yard algorithm
-			List<Token> postfix = parser.toPostfix(tokens);
+		// Parse to postfix notation using shunting yard algorithm
+		List<Token> postfix = parser.toPostfix(tokens);
 
-			// Evaluate the postfix expression to a BigDecimal result
-			return evaluator.evaluate(postfix).trim();
-		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage());
-		}
+		// Evaluate the postfix expression to a BigDecimal result
+		return evaluator.evaluate(postfix).trim();
 	}
 
 }
