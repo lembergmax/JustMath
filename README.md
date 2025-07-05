@@ -200,14 +200,13 @@ println(result);
 // 20
 ```
 
-## ⚙️ Maven (Coming Soon)
+## ⚙️ Maven
 
 ```xml
-
 <dependency>
-    <groupId>com.mlprograms</groupId>
-    <artifactId>justmath</artifactId>
-    <version>1.0.0</version>
+  <groupId>io.github.lembergmax</groupId>
+  <artifactId>justmath</artifactId>
+  <version>0.0.1</version>
 </dependency>
 ```
 
