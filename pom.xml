@@ -6,7 +6,7 @@
 
     <groupId>com.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -16,10 +16,29 @@
         <pitest.version>1.15.2</pitest.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>github</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                </repository>
+                <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/lembergmax/JustMath</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>GitHub Packages</name>
+            <name>GitHub Max Lemberg Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/lembergmax/JustMath</url>
         </repository>
     </distributionManagement>
