@@ -70,6 +70,48 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings with s
 | **Coordinates**                  | `Pol(x, y)`             | Cartesian → Polar                 |
 |                                  | `Rec(r, θ)`             | Polar → Cartesian                 |
 
+## 📚 Static Utility Methods
+
+JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
+`BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
+
+| Class                                | Method(s)                                                                 | Description                                              |
+|--------------------------------------|---------------------------------------------------------------------------|----------------------------------------------------------|
+| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                | Basic arithmetic operations                              |
+|                                      | `factorial`, `exp`                                                        | Factorial and exponential function                       |
+| `CombinatoricsMath`                  | `combination`, `permutation`                                              | Calculate combinations (nCr) and permutations (nPr)      |
+| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`              | Convert between polar and cartesian coordinates          |
+| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                            | Hyperbolic sine, cosine, tangent, and cotangent          |
+| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                        | Inverse hyperbolic functions                             |
+| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                            | Inverse trigonometric functions                          |
+| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                          | Binary, decimal, natural, and arbitrary base logarithms  |
+| `NumberTheoryMath`                   | `gcd`, `lcm`                                                              | Greatest common divisor and least common multiple        |
+| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                         | Percent calculations                                     |
+| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                      | Compute square, cube, and n-th roots                     |
+| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                               | Trigonometric functions (coth also here for convenience) |
+| `TwoDimensionalMath`                 | `atan2`                                                                   | Two-argument arctangent                                  |
+| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians` | Angle conversions                                        |
+|                                      | `randomIntegerBigNumberInRange`                                           | Random integer generation using `BigNumber`              |
+|                                      | `e`, `pi`                                                                 | Mathematical constants as `BigNumber`                    |
+
+## 📐 Constants
+
+The `BigNumberValues` class provides reusable **high-precision constants** and default configuration values that are
+used throughout JustMath. These can be accessed statically and are ideal for custom calculations or configurations.
+
+| Constant                     | Description                                     |
+|------------------------------|-------------------------------------------------|
+| `CALCULATION_LOCALE`         | Default `Locale` used for parsing/formatting    |
+| `DEFAULT_DIVISION_PRECISION` | Default precision for division operations       |
+| `DEFAULT_MATH_CONTEXT`       | Default `MathContext` with precision & rounding |
+| `NEGATIVE_ONE`               | BigNumber value of -1                           |
+| `ZERO`                       | BigNumber value of 0                            |
+| `ONE`                        | BigNumber value of 1                            |
+| `TWO`                        | BigNumber value of 2                            |
+| `THREE`                      | BigNumber value of 3                            |
+| `ONE_HUNDRED`                | BigNumber value of 100                          |
+| `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
+
 ## 🧑‍💻 Practical Examples
 
 ### ➕ Add Very Large Numbers
@@ -203,10 +245,11 @@ println(result);
 ## ⚙️ Maven (Coming soon)
 
 ```xml
+
 <dependency>
-  <groupId>io.github.lembergmax</groupId>
-  <artifactId>justmath</artifactId>
-  <version></version>
+    <groupId>io.github.lembergmax</groupId>
+    <artifactId>justmath</artifactId>
+    <version></version>
 </dependency>
 ```
 
