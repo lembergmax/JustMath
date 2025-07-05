@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.lembergmax</groupId>
-    <artifactId>JustMath</artifactId>
+    <artifactId>justmath</artifactId>
     <version>1.0.0</version>
 
     <properties>
@@ -20,7 +20,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/lembergmax/JustMath</url>
+            <url>https://maven.pkg.github.com/lembergmax</url>
         </repository>
     </distributionManagement>
 
