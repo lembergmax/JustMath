@@ -510,8 +510,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return BasicMath.modulo(this, divisor, locale);
 	}
 
-	// TODO: füge in jeder methode, in einer mathe klasse, den locale parameter hinzu
-
 	/**
 	 * Raises this {@code BigNumber} to the specified exponent using the default
 	 * {@link MathContext} and {@link Locale} configured in this instance.
