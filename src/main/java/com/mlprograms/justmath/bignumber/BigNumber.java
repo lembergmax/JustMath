@@ -2210,7 +2210,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * Generates a random integer {@link BigNumber} between this number (inclusive) and the given {@code max}
 	 * (exclusive).
 	 * <p>
-	 * Mathematically: returns a value x such that this ≤ x < max, where x is an integer.
+	 * Mathematically: returns a value x such that {@code this ≤ x < max}, where x is an integer.
 	 * <p>
 	 * Both {@code this} and {@code max} must be integers without decimal places, and {@code this < max}.
 	 *
@@ -2387,7 +2387,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *     LCM(a, b) = (a * b) / GCD(a, b)
 	 * </pre>
 	 * where GCD is the greatest common divisor.
-	 * </p>
 	 *
 	 * @param other
 	 * 	the other BigNumber to compute the LCM with
@@ -2406,11 +2405,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * and {@link Locale}.
 	 * <p>
 	 * The LCM is calculated using the formula:
-	 * <pre>
+	 * <pre>{@code
 	 *     LCM(a, b) = (a * b) / GCD(a, b)
-	 * </pre>
+	 * }</pre>
 	 * where GCD is the greatest common divisor.
-	 * </p>
 	 *
 	 * @param other
 	 * 	the other BigNumber to compute the LCM with

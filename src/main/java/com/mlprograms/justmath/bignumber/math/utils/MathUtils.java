@@ -99,7 +99,7 @@ public class MathUtils {
 	/**
 	 * Generates a uniformly distributed random integer {@link BigNumber} within the range [min, max).
 	 * <p>
-	 * Mathematically: returns a value x such that min ≤ x < max, where x is an integer.
+	 * Mathematically: returns a value x such that {@code min ≤ x < max}, where x is an integer.
 	 * <p>
 	 * Both {@code min} and {@code max} must be exact integers (no decimal part), and {@code min < max}.
 	 *

@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumberValues;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 import org.junit.jupiter.api.Test;
