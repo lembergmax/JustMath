@@ -1,8 +1,8 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.bignumber.BigNumberValues;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
  * functions, and operators according to the definitions in {@link ArithmeticOperator}.
  * <p>
  * Typical usage:
- * <pre>
+ * <pre>{@code
  *   Tokenizer tokenizer = new Tokenizer();
  *   List<Token> tokens = tokenizer.tokenize("3 + √(4)");
- * </pre>
+ * }</pre>
  * This results in tokens for NUMBER(3), OPERATOR(+), FUNCTION(√), LEFT_PAREN, NUMBER(4), RIGHT_PAREN.
  */
 @AllArgsConstructor
@@ -99,10 +99,10 @@ public class Tokenizer {
 	 * {@link IllegalArgumentException} is thrown.
 	 * <p>
 	 * Example usage:
-	 * <pre>
+	 * <pre>{@code
 	 *   Tokenizer tokenizer = new Tokenizer();
 	 *   List<Token> tokens = tokenizer.tokenize("3 + (-4) * pi");
-	 * </pre>
+	 * }</pre>
 	 * Produces tokens for NUMBER(3), OPERATOR(+), LEFT_PAREN, OPERATOR(-), NUMBER(4), RIGHT_PAREN,
 	 * OPERATOR(*), NUMBER(3.141592653589793...).
 	 *

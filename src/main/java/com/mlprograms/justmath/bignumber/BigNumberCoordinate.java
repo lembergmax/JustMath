@@ -179,7 +179,6 @@ public class BigNumberCoordinate {
 	 *   <li>{@code POLAR}: {@code "r=<x>; θ=<y>"}</li>
 	 *   <li>Fallback: {@code "<x>, <y>"}</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param locale
 	 * 	the locale to use for formatting
