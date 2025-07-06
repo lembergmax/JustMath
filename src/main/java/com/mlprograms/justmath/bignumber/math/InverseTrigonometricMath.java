@@ -49,52 +49,15 @@ public class InverseTrigonometricMath {
 	 * @return the arcsine of x as a BigNumber
 	 *
 	 * @throws ArithmeticException
-	 * 	if |x| > 1
+	 * 	if argument is outside \[-1, 1\]
 	 */
-	/*
-	// TODO
 	public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		// Domain check: asin is only defined for -1 <= x <= 1
-		if (argument.abs().compareTo(ONE) > 0) {
-			throw new ArithmeticException("asin(x) is only defined for -1 <= x <= 1");
-		}
-
-		// Edge cases: asin(1) = π/2, asin(-1) = -π/2
-		if (argument.compareTo(ONE) == 0) {
-			BigNumber result = MathUtils.pi(mathContext).divide(TWO, mathContext);
-			return trigonometricMode == TrigonometricMode.DEG
-				       ? result.toDegrees(mathContext)
-				       : result;
-		}
-
-		if (argument.compareTo(ONE.negate()) == 0) {
-			BigNumber result = MathUtils.pi(mathContext).divide(TWO, mathContext).negate();
-			return trigonometricMode == TrigonometricMode.DEG
-				       ? result.toDegrees(mathContext)
-				       : result;
-		}
-
-		// Compute sqrt(1 - x^2)
-		BigNumber xSquared = argument.power(TWO, mathContext);
-		BigNumber oneMinusXSquared = ONE.subtract(xSquared);
-
-		// If 1 - x^2 == 0, we already handled it above
-		BigNumber sqrt = oneMinusXSquared.squareRoot(mathContext);
-		if (sqrt.isEqualTo(ZERO)) {
-			throw new ArithmeticException("Division by zero in asin(x) formula");
-		}
-
-		// Compute atan(x / sqrt(1 - x^2))
-		BigNumber quotient = argument.divide(sqrt, mathContext);
-		BigNumber result = new BigNumber(quotient.atan(mathContext, trigonometricMode), locale);
-
+		BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
 		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = result.toDegrees(mathContext);
+			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
-
-		return result.trim();
+		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
-	*/
 
 	/**
 	 * Calculates the arccosine (inverse cosine) of the given argument.
@@ -123,7 +86,6 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
-	/*
 	// TODO
 	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
@@ -132,7 +94,6 @@ public class InverseTrigonometricMath {
 		}
 		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
-	 */
 
 	/**
 	 * Calculates the arctangent (inverse tangent) of the given argument.
