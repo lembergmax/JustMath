@@ -121,9 +121,7 @@ BigNumber num1 = new BigNumber("8736519650165165946166562572365809265462671456")
 BigNumber num2 = new BigNumber("143153651451954101155145145169254155145");
 BigNumber sum = num1.add(num2);
 
-System.out.
-
-println(sum);
+System.out.println(sum);
 // 8736519793318817398120663727510954434716826601
 ```
 
@@ -134,9 +132,7 @@ BigNumber a = new BigNumber("0.0000000001");
 BigNumber b = new BigNumber("0.00000000009");
 BigNumber diff = a.subtract(b);
 
-System.out.
-
-println(diff);
+System.out.println(diff);
 // 0.00000000001
 ```
 
@@ -147,9 +143,7 @@ BigNumber e = new BigNumber("1");
 BigNumber f = new BigNumber("3");
 BigNumber quotient = e.divide(f, new MathContext(50, RoundingMode.HALF_UP));
 
-System.out.
-
-println(quotient);
+System.out.println(quotient);
 // 0.33333333333333333333333333333333333333333333333333
 ```
 
@@ -160,9 +154,7 @@ BigNumber base = new BigNumber("-1.2");
 BigNumber exponent = new BigNumber("-2.99");
 BigNumber result = base.power(exponent);
 
-System.out.
-
-println(result);
+System.out.println(result);
 // -0.579759767...
 ```
 
@@ -181,9 +173,7 @@ BigNumber result = calc.evaluate(
 	"8736519650165165946166562572365809265462671456 + 143153651451954101155145145169254155145"
 );
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 8736519793318817398120663727510954434716826601
 ```
 
@@ -192,9 +182,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("1 / 3");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 0.33333333333333333333333333333333333333333333333333
 ```
 
@@ -203,9 +191,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("sin(90)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 1
 ```
 
@@ -214,9 +200,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("5! + 2^3");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 128
 ```
 
@@ -225,9 +209,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("rootn(27; 3)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 3
 ```
 
@@ -236,9 +218,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("comb(6; 3)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 20
 ```
 
