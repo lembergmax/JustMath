@@ -350,7 +350,6 @@ public class BigNumberTest {
 	@Nested
 	public class InverseTrigonometricMath {
 
-		/*
 		// TODO
 		@ParameterizedTest
 		@CsvSource({
@@ -364,7 +363,7 @@ public class BigNumberTest {
 		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			// TODO: fix this
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
 		}
 
 		@ParameterizedTest
@@ -373,15 +372,14 @@ public class BigNumberTest {
 			"1,DEG,0",
 			"0,RAD,1.570796",
 			"0,DEG,90",
-			"-1,RAD,3.141592",
+			"-1,RAD,3.141593",
 			"-1,DEG,180"
 		})
 		void acosTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			// TODO: fix this
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.acos().toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.acos().round(new MathContext(7)).trim().toString());
 		}
-		 */
 
 		@ParameterizedTest
 		@CsvSource({
