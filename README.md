@@ -44,8 +44,8 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings with s
 |----------------------------------|-------------------------|-----------------------------------|
 | **Arithmetic**                   | `+`, `-`, `*`, `/`      | Basic operations                  |
 |                                  | `%`, `^`, `!`           | Modulo, exponentiation, factorial |
-| **Roots**                        | `√`, `sqrt`             | Square root                       |
-|                                  | `³√`, `cbrt`            | Cube root                         |
+| **Roots**                        | `√(x)`, `sqrt(x)`       | Square root                       |
+|                                  | `³√(x)`, `cbrt(x)`      | Cube root                         |
 |                                  | `rootn(a, n)`           | n-th root                         |
 | **Logarithms**                   | `log2(x)`               | Base-2 logarithm                  |
 |                                  | `log(x)`                | Base-10 logarithm                 |
