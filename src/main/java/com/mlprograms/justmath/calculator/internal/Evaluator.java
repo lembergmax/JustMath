@@ -211,11 +211,8 @@ public class Evaluator {
 			case COSH_F -> operand.cosh(mathContext, CALCULATION_LOCALE);
 			case TANH_F -> operand.tanh(mathContext, CALCULATION_LOCALE);
 			case COTH_F -> operand.coth(mathContext, CALCULATION_LOCALE);
-			/*
-			// TODO
 			case ASIN_AF, ASIN_F -> operand.asin(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOS_AF, ACOS_F -> operand.acos(mathContext, trigonometricMode, CALCULATION_LOCALE);
-			 */
 			case ATAN_AF, ATAN_F -> operand.atan(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ACOT_AF, ACOT_F -> operand.acot(mathContext, trigonometricMode, CALCULATION_LOCALE);
 			case ASINH_AF, ASINH_F -> operand.asinh(mathContext, CALCULATION_LOCALE);
