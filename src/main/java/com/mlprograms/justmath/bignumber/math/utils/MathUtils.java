@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.*;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.
@@ -91,6 +92,24 @@ public class MathUtils {
 	 */
 	public static BigDecimal bigDecimalNumberToRadians(@NonNull final BigDecimal degrees, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return new BigNumber(degrees.multiply(pi(mathContext, locale).toBigDecimal()).divide(ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext), locale).toBigDecimal();
+	}
+
+	/**
+	 * Checks that the provided {@link MathContext} has a precision greater than zero.
+	 * <p>
+	 * Throws an {@link IllegalArgumentException} if the precision is zero or negative,
+	 * ensuring that mathematical operations using this context are valid.
+	 *
+	 * @param mathContext
+	 * 	the {@link MathContext} to validate
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the precision is less than or equal to zero
+	 */
+	public static void checkMathContext(@NonNull final MathContext mathContext) {
+		if (mathContext.getPrecision() <= 0) {
+			throw new IllegalArgumentException("MathContext precision must be greater than zero");
+		}
 	}
 
 }
