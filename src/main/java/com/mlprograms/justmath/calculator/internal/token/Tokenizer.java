@@ -278,6 +278,11 @@ public class Tokenizer {
 		return String.valueOf(c).equals(ArithmeticOperator.SEMICOLON.getOperator());
 	}
 
+	private boolean isOperator(char c) {
+		ArithmeticOperator operator = ArithmeticOperator.findByOperator(String.valueOf(c)).orElse(null);
+		return operator != null && !operator.isFunction();
+	}
+
 	/**
 	 * Parses a number token from the expression starting at {@code startIndex}. This number
 	 * may include an optional leading '+' or '-' sign, followed by digits and at most one decimal point.
@@ -402,24 +407,26 @@ public class Tokenizer {
 
 		for (int length = maxTokenLength; length > 0; length--) {
 			int endIndex = startIndex + length;
-
-			if (endIndex > expression.length()) {
-				continue;
-			}
+			if (endIndex > expression.length()) continue;
 
 			String candidate = expression.substring(startIndex, endIndex);
 
 			if (candidate.equalsIgnoreCase("pi")) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()));
-			} else if (candidate.equalsIgnoreCase("e")) {
+				return length;
+			}
+
+			if (candidate.equalsIgnoreCase("e")) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()));
-			} else if (validOperatorsAndFunctions.contains(candidate)) {
+				return length;
+			}
+
+			if (validOperatorsAndFunctions.contains(candidate)) {
 				ArithmeticOperator operator = ArithmeticOperator.findByOperator(candidate).orElseThrow();
 				Token.Type type = operator.isFunction() ? Token.Type.FUNCTION : Token.Type.OPERATOR;
 				tokens.add(new Token(type, candidate));
+				return length;
 			}
-
-			return length;
 		}
 
 		return 0;
