@@ -1,6 +1,7 @@
 package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -32,6 +33,8 @@ public class PercentageMath {
 	 * @return n percent of m
 	 */
 	public static BigNumber nPercentFromM(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		return m.multiply(n.divide(ONE_HUNDRED, mathContext, locale), locale).trim();
 	}
 
@@ -54,6 +57,8 @@ public class PercentageMath {
 	 * @return the percentage that m is of n
 	 */
 	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		return n.divide(m, mathContext, locale).multiply(ONE_HUNDRED, locale).trim();
 	}
 

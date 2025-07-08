@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -34,6 +35,8 @@ public class RadicalMath {
 	 * @return the square root of the radicand
 	 */
 	public static BigNumber squareRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		return nthRoot(radicand, TWO, mathContext, locale);
 	}
 
@@ -56,6 +59,8 @@ public class RadicalMath {
 	 * @return the cubic root of the radicand
 	 */
 	public static BigNumber cubicRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		return nthRoot(radicand, THREE, mathContext, locale);
 	}
 
@@ -88,6 +93,8 @@ public class RadicalMath {
 	 * 	if the index is zero or if even root of a negative number is requested
 	 */
 	public static BigNumber nthRoot(@NonNull final BigNumber radicand, @NonNull final BigNumber index, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (index.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Index must not be zero");
 		}
