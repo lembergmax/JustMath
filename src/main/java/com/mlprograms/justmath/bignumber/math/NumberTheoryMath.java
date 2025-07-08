@@ -6,7 +6,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Utility class providing number theory operations on {@link BigNumber} integers.

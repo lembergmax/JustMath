@@ -6,7 +6,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED;
 
 /**
  * Utility class for percentage calculations using {@link BigNumber}.

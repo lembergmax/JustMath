@@ -1,8 +1,7 @@
 package com.mlprograms.justmath.bignumber.calculator;
 
-import com.mlprograms.justmath.bignumber.BigNumberValues;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerTest {
 
-	private final MathContext mathContext = BigNumberValues.DEFAULT_MATH_CONTEXT;
+	private final MathContext mathContext = BigNumbers.DEFAULT_MATH_CONTEXT;
 	private final Tokenizer tokenizer = new Tokenizer(mathContext);
 
 	@Test

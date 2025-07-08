@@ -13,7 +13,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.DEFAULT_DIVISION_PRECISION;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
 /**
  * ExactCalculatorEngine.java

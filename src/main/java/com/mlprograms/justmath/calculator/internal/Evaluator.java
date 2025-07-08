@@ -15,7 +15,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.CALCULATION_LOCALE;
+import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.

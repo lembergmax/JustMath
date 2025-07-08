@@ -184,7 +184,7 @@ public class BigNumberTest {
 		void cartesianToPolarCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
-			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumberValues.DEFAULT_MATH_CONTEXT, Locale.US);
+			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
 
 			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
 			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
@@ -363,7 +363,7 @@ public class BigNumberTest {
 		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			// TODO: fix this
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
+			assertEquals(expectedResult, num.asin(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
 		}
 
 		@ParameterizedTest
@@ -408,7 +408,7 @@ public class BigNumberTest {
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			assertEquals(expectedResult, num.acot(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
 		}
 
 		/*
@@ -700,7 +700,7 @@ public class BigNumberTest {
 		})
 		void sinTest(String input, TrigonometricMode mode, String expectedStr) {
 			BigNumber angle = new BigNumber(input, Locale.US);
-			BigNumber result = angle.sin(BigNumberValues.DEFAULT_MATH_CONTEXT, mode, Locale.US);
+			BigNumber result = angle.sin(BigNumbers.DEFAULT_MATH_CONTEXT, mode, Locale.US);
 			BigDecimal actual = result.toBigDecimal();
 			BigDecimal expected = new BigDecimal(expectedStr);
 

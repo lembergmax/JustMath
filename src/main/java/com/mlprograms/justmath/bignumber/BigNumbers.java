@@ -5,7 +5,7 @@ import com.mlprograms.justmath.calculator.CalculatorEngine;
 import java.math.MathContext;
 import java.util.Locale;
 
-public class BigNumberValues {
+public class BigNumbers {
 
 	/**
 	 * Locale used for all calculations to ensure consistent number formatting and parsing.

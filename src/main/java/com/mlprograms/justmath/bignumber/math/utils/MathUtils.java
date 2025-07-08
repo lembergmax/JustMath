@@ -11,7 +11,7 @@ import java.math.MathContext;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
+import static com.mlprograms.justmath.bignumber.BigNumbers.*;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.

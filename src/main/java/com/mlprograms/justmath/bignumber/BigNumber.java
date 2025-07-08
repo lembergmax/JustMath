@@ -15,8 +15,8 @@ import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.DEFAULT_MATH_CONTEXT;
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
