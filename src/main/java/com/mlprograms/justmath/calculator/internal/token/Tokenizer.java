@@ -278,11 +278,6 @@ public class Tokenizer {
 		return String.valueOf(c).equals(ArithmeticOperator.SEMICOLON.getOperator());
 	}
 
-	private boolean isOperator(char c) {
-		ArithmeticOperator operator = ArithmeticOperator.findByOperator(String.valueOf(c)).orElse(null);
-		return operator != null && !operator.isFunction();
-	}
-
 	/**
 	 * Parses a number token from the expression starting at {@code startIndex}. This number
 	 * may include an optional leading '+' or '-' sign, followed by digits and at most one decimal point.
