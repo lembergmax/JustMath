@@ -1,14 +1,13 @@
 package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberValues;
 import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE;
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Provides combinatorial mathematical operations on {@link BigNumber} instances,

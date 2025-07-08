@@ -2,14 +2,14 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberValues;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * A utility class that provides core arithmetic and mathematical operations for {@link BigNumber} instances.
@@ -86,7 +86,7 @@ public class BasicMath {
 	 * 	if the divisor is zero
 	 */
 	public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (divisor.compareTo(BigNumberValues.ZERO) == 0) {
+		if (divisor.compareTo(BigNumbers.ZERO) == 0) {
 			throw new ArithmeticException("Division by zero");
 		}
 
@@ -225,18 +225,18 @@ public class BasicMath {
 			throw new IllegalArgumentException("Factorial is only defined for non-negative integers.");
 		}
 
-		BigNumber result = BigNumberValues.ONE;
+		BigNumber result = BigNumbers.ONE;
 		BigNumber counter = argument.clone();
 
 		// 0! = 1, so if the argument is zero, returns 1 immediately
-		if (counter.isEqualTo(BigNumberValues.ZERO)) {
+		if (counter.isEqualTo(BigNumbers.ZERO)) {
 			return new BigNumber("1", locale, mathContext);
 		}
 
 		// multiply the result by each integer from argument down to 1
-		while (counter.isGreaterThan(BigNumberValues.ONE)) {
+		while (counter.isGreaterThan(BigNumbers.ONE)) {
 			result = result.multiply(counter);
-			counter = counter.subtract(BigNumberValues.ONE);
+			counter = counter.subtract(BigNumbers.ONE);
 		}
 
 		return new BigNumber(result.toString(), locale, mathContext).trim();

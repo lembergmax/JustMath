@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
+import static com.mlprograms.justmath.bignumber.BigNumbers.*;
 
 /**
  * Provides mathematical operations for calculating roots of numbers (radicals).
