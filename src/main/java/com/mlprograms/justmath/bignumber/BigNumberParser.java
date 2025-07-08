@@ -19,7 +19,7 @@ import static com.mlprograms.justmath.bignumber.internal.NumberChecker.isNumber;
  * It supports parsing any arbitrary numeric string and normalizes it into a BigNumber in US format.
  * It also supports converting numbers from one locale format to another.
  */
-public class BigNumberParser {
+class BigNumberParser {
 
     /**
      * Parses a number string using the specified locale.
