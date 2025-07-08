@@ -1,8 +1,7 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
-import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
@@ -413,11 +412,11 @@ public class Tokenizer {
 			String candidate = expression.substring(startIndex, endIndex);
 
 			if (candidate.equalsIgnoreCase("pi")) {
-				tokens.add(new Token(Token.Type.NUMBER, MathUtils.pi(mathContext).toString()));
+				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()));
 				return length;
 			}
 			if (candidate.equalsIgnoreCase("e")) {
-				tokens.add(new Token(Token.Type.NUMBER, MathUtils.e(mathContext).toString()));
+				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()));
 				return length;
 			}
 			if (validOperatorsAndFunctions.contains(candidate)) {
