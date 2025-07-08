@@ -136,7 +136,7 @@ public class Tokenizer {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
 			} else {
-				int lengthOfMatch = matchLongestOperatorOrFunction(expr, index, tokens);
+				int lengthOfMatch = matchOtherOperatorOrFunction(expr, index, tokens);
 				if (lengthOfMatch > 0) {
 					index += lengthOfMatch;
 				} else {
@@ -399,7 +399,7 @@ public class Tokenizer {
 	 * @throws NullPointerException
 	 * 	if {@code expression} or {@code tokens} is null
 	 */
-	private int matchLongestOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
+	private int matchOtherOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
 		int maxTokenLength = validOperatorsAndFunctions.stream()
 			                     .mapToInt(String::length)
 			                     .max()
@@ -407,25 +407,26 @@ public class Tokenizer {
 
 		for (int length = maxTokenLength; length > 0; length--) {
 			int endIndex = startIndex + length;
-			if (endIndex > expression.length()) continue;
+
+			if (endIndex > expression.length()) {
+				continue;
+			}
 
 			String candidate = expression.substring(startIndex, endIndex);
 
 			if (candidate.equalsIgnoreCase("pi")) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()));
-				return length;
-			}
-			if (candidate.equalsIgnoreCase("e")) {
+			} else if (candidate.equalsIgnoreCase("e")) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()));
-				return length;
-			}
-			if (validOperatorsAndFunctions.contains(candidate)) {
+			} else if (validOperatorsAndFunctions.contains(candidate)) {
 				ArithmeticOperator operator = ArithmeticOperator.findByOperator(candidate).orElseThrow();
 				Token.Type type = operator.isFunction() ? Token.Type.FUNCTION : Token.Type.OPERATOR;
 				tokens.add(new Token(type, candidate));
-				return length;
 			}
+
+			return length;
 		}
+
 		return 0;
 	}
 
