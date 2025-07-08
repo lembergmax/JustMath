@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.math;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -86,6 +87,8 @@ public class BasicMath {
 	 * 	if the divisor is zero
 	 */
 	public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (divisor.compareTo(BigNumbers.ZERO) == 0) {
 			throw new ArithmeticException("Division by zero");
 		}
@@ -185,6 +188,8 @@ public class BasicMath {
 	 * @see MathContext
 	 */
 	public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal baseBigDecimal = base.toBigDecimal();
 		BigDecimal exponentBigDecimal = exponent.toBigDecimal();
 
@@ -218,6 +223,8 @@ public class BasicMath {
 	 * 	if {@code argument} is negative or not an integer
 	 */
 	public static BigNumber factorial(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (!argument.isInteger()) {
 			throw new IllegalArgumentException("Factorial is only defined for integers.");
 		}
@@ -291,6 +298,8 @@ public class BasicMath {
 	 * @see java.util.Locale
 	 */
 	public static BigNumber exp(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal result = BigDecimal.ONE;
 		BigDecimal term = BigDecimal.ONE;
 

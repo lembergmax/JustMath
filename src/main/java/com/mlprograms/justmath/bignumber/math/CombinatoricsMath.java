@@ -1,6 +1,7 @@
 package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -41,6 +42,8 @@ public class CombinatoricsMath {
 	 * 	if {@code n} or {@code k} are not integers, or if {@code k > n}
 	 */
 	public static BigNumber combination(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
 		}
@@ -89,6 +92,8 @@ public class CombinatoricsMath {
 	 * 	if {@code n} or {@code k} are not integers, or if {@code k > n}
 	 */
 	public static BigNumber permutation(@NonNull final BigNumber n, @NonNull final BigNumber k, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
 		}

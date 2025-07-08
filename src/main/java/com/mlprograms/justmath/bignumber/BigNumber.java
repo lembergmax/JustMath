@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.math.*;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Builder;
@@ -182,6 +183,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		MathUtils.checkMathContext(mathContext);
 		BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
@@ -254,6 +256,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		MathUtils.checkMathContext(mathContext);
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
 		this.valueAfterDecimal = bigNumber.valueAfterDecimal;
@@ -270,6 +273,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the BigNumber to copy
 	 */
 	public BigNumber(@NonNull final BigNumber other) {
+		MathUtils.checkMathContext(other.mathContext);
 		this.locale = other.locale;
 		this.valueBeforeDecimal = other.valueBeforeDecimal;
 		this.valueAfterDecimal = other.valueAfterDecimal;
@@ -304,6 +308,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		@NonNull final MathContext mathContext,
 		@NonNull final TrigonometricMode trigonometricMode
 	) {
+		MathUtils.checkMathContext(mathContext);
 		this.locale = locale;
 		this.valueBeforeDecimal = valueBeforeDecimal;
 		this.valueAfterDecimal = valueAfterDecimal;

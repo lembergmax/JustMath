@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.math;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -58,6 +59,8 @@ public class CoordinateConversionMath {
 	 * 	if {@code r} is negative
 	 */
 	public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (r.isLessThan(ZERO)) {
 			throw new IllegalArgumentException("r cannot be less than zero");
 		}
@@ -97,6 +100,8 @@ public class CoordinateConversionMath {
 	 * 	if {@code x} or {@code y} is zero
 	 */
 	public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+		
 		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("x or y cannot be zero");
 		}

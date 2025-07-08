@@ -3,6 +3,7 @@ package com.mlprograms.justmath.bignumber.math;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -47,6 +48,8 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
 		}
@@ -77,6 +80,8 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber log10(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
 		}
@@ -107,6 +112,8 @@ public class LogarithmicMath {
 	 * 	if argument is non‐positive
 	 */
 	public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (argument.compareTo(ZERO) <= 0)
 			throw new ArithmeticException("ln(x) undefined for x <= 0");
 
@@ -139,6 +146,8 @@ public class LogarithmicMath {
 	 * 	if number ≤ 0, or if base ≤ 0, or base == 1
 	 */
 	public static BigNumber logBase(@NonNull final BigNumber number, @NonNull final BigNumber base, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (number.isNegative() || number.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Number must be positive and non-zero.");
 		}
