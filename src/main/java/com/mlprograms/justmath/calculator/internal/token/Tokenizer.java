@@ -61,8 +61,8 @@ public class Tokenizer {
 		for (int i = 0; i < tokens.size() - 1; i++) {
 			Token current = tokens.get(i);
 			Token next = tokens.get(i + 1);
-			if (current.type() == Token.Type.RIGHT_PAREN && next.type() == Token.Type.NUMBER) {
-				String value = next.value();
+			if (current.getType() == Token.Type.RIGHT_PAREN && next.getType() == Token.Type.NUMBER) {
+				String value = next.getValue();
 				if ((value.startsWith("+") || value.startsWith("-")) && value.length() > 1) {
 					tokens.set(i + 1, new Token(Token.Type.OPERATOR, value.substring(0, 1)));
 					tokens.add(i + 2, new Token(Token.Type.NUMBER, value.substring(1)));
@@ -170,16 +170,16 @@ public class Tokenizer {
 			Token next = tokens.get(i + 1);
 
 			// Skip if next token is an operator or semicolon – no implicit * needed
-			if (next.type() == Token.Type.OPERATOR || next.type() == Token.Type.SEMICOLON) {
+			if (next.getType() == Token.Type.OPERATOR || next.getType() == Token.Type.SEMICOLON) {
 				continue;
 			}
 
 			// Insert * where implicit multiplication is likely
 			boolean needsMultiplication =
-				current.type() == Token.Type.NUMBER
-					&& (next.type() == Token.Type.LEFT_PAREN || next.type() == Token.Type.FUNCTION)
-					|| current.type() == Token.Type.RIGHT_PAREN
-						   && (next.type() == Token.Type.NUMBER || next.type() == Token.Type.FUNCTION || next.type() == Token.Type.LEFT_PAREN);
+				current.getType() == Token.Type.NUMBER
+					&& (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION)
+					|| current.getType() == Token.Type.RIGHT_PAREN
+						   && (next.getType() == Token.Type.NUMBER || next.getType() == Token.Type.FUNCTION || next.getType() == Token.Type.LEFT_PAREN);
 
 			if (needsMultiplication) {
 				tokens.add(i + 1, new Token(Token.Type.OPERATOR, "*"));
@@ -348,13 +348,13 @@ public class Tokenizer {
 		while (i < tokens.size()) {
 			Token token = tokens.get(i);
 
-			if (token.type() == Token.Type.OPERATOR && (token.value().equals("+") || token.value().equals("-"))) {
+			if (token.getType() == Token.Type.OPERATOR && (token.getValue().equals("+") || token.getValue().equals("-"))) {
 				int minusCount = 0;
 
 				while (i < tokens.size()
-					       && tokens.get(i).type() == Token.Type.OPERATOR
-					       && (tokens.get(i).value().equals("+") || tokens.get(i).value().equals("-"))) {
-					if (tokens.get(i).value().equals("-")) {
+					       && tokens.get(i).getType() == Token.Type.OPERATOR
+					       && (tokens.get(i).getValue().equals("+") || tokens.get(i).getValue().equals("-"))) {
+					if (tokens.get(i).getValue().equals("-")) {
 						minusCount++;
 					}
 					i++;
