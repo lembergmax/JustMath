@@ -1,19 +1,21 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.calculator.internal.ArithmeticOperator;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Optional;
 
 /**
  * Represents a lexical token extracted from a mathematical expression.
  * Tokens can be numbers, operators, functions, parentheses, or special symbols.
- *
- * @param type
- * 	Returns the type of this token.
- * @param value
- * 	Returns the string value of this token.
  */
-public record Token(Token.Type type, String value) {
+@Getter
+@AllArgsConstructor
+public class Token {
+
+	private Token.Type type;
+	private String value;
 
 	/**
 	 * Returns a string representation of this token.

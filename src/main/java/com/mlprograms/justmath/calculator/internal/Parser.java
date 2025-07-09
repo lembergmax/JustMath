@@ -52,14 +52,14 @@ public class Parser {
 		Deque<Token> operatorStack = new ArrayDeque<>();
 
 		for (Token token : tokens) {
-			switch (token.type()) {
+			switch (token.getType()) {
 				case NUMBER -> output.add(token);
 				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					while (!operatorStack.isEmpty()) {
 						Token top = operatorStack.peek();
 
-						if ((top.type() == Token.Type.FUNCTION) || (top.type() == Token.Type.OPERATOR && (hasHigherPrecedence(top, token)
+						if ((top.getType() == Token.Type.FUNCTION) || (top.getType() == Token.Type.OPERATOR && (hasHigherPrecedence(top, token)
 							                                                                                  || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
 							output.add(operatorStack.pop());
 						} else {
@@ -69,7 +69,7 @@ public class Parser {
 					operatorStack.push(token);
 				}
 				case RIGHT_PAREN -> {
-					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
+					while (!operatorStack.isEmpty() && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
 						output.add(operatorStack.pop());
 					}
 					if (operatorStack.isEmpty()) {
@@ -78,12 +78,12 @@ public class Parser {
 					operatorStack.pop(); // Remove '('
 
 					// If there's a function before the '(', pop it
-					if (!operatorStack.isEmpty() && operatorStack.peek().type() == Token.Type.FUNCTION) {
+					if (!operatorStack.isEmpty() && operatorStack.peek().getType() == Token.Type.FUNCTION) {
 						output.add(operatorStack.pop());
 					}
 				}
 				case SEMICOLON -> {
-					while (!operatorStack.isEmpty() && operatorStack.peek().type() != Token.Type.LEFT_PAREN) {
+					while (!operatorStack.isEmpty() && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
 						output.add(operatorStack.pop());
 					}
 					if (operatorStack.isEmpty()) {
@@ -95,7 +95,7 @@ public class Parser {
 
 		while (!operatorStack.isEmpty()) {
 			Token top = operatorStack.pop();
-			if (top.type() == Token.Type.LEFT_PAREN || top.type() == Token.Type.RIGHT_PAREN) {
+			if (top.getType() == Token.Type.LEFT_PAREN || top.getType() == Token.Type.RIGHT_PAREN) {
 				throw new IllegalArgumentException("Mismatched parentheses");
 			}
 			output.add(top);
