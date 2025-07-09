@@ -1,6 +1,6 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
+import com.mlprograms.justmath.calculator.internal.ArithmeticOperator;
 
 import java.util.Optional;
 

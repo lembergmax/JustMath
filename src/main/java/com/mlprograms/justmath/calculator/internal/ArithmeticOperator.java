@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.internal;
+package com.mlprograms.justmath.calculator.internal;
 
 import lombok.Getter;
 
