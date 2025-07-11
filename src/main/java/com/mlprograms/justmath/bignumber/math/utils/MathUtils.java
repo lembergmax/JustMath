@@ -34,7 +34,7 @@ public class MathUtils {
 	 *
 	 * @param angle
 	 * 	the angle to convert, represented as a {@link BigNumber}
-	 * @param context
+	 * @param mathContext
 	 * 	the {@link MathContext} to apply during internal calculations to control precision and rounding
 	 * @param trigonometricMode
 	 * 	the trigonometric mode indicating whether the input angle is in degrees or radians
@@ -43,9 +43,9 @@ public class MathUtils {
 	 *
 	 * @return the angle in radians as a {@link BigDecimal}, computed with the specified precision and locale
 	 */
-	public static BigDecimal convertAngle(@NonNull final BigNumber angle, @NonNull final MathContext context, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+	public static BigDecimal convertAngle(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return (trigonometricMode == TrigonometricMode.DEG)
-			       ? bigDecimalNumberToRadians(angle.toBigDecimal(), context, locale)
+			       ? bigDecimalNumberToRadians(angle.toBigDecimal(), mathContext, locale)
 			       : angle.toBigDecimal();
 	}
 
