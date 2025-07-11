@@ -8,7 +8,7 @@ import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface TrigonometricFunctionOperation {
+public interface OneArgumentTrigonometricFunctionOperation {
 
 	BigNumber apply(BigNumber a, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 

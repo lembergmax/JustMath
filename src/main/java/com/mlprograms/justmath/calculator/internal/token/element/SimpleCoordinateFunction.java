@@ -15,8 +15,8 @@ public class SimpleCoordinateFunction extends CoordinateFunction {
 
 	private final SimpleCoordinateFunctionOperation operation;
 
-	public SimpleCoordinateFunction(String symbol, SimpleCoordinateFunctionOperation operation) {
-		super(symbol, wrap(operation));
+	public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
+		super(symbol, precedence, wrap(operation));
 		this.operation = operation;
 	}
 

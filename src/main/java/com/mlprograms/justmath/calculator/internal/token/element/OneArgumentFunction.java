@@ -14,8 +14,8 @@ public class OneArgumentFunction extends Function {
 
 	private final OneArgumentFunctionOperation operation;
 
-	public OneArgumentFunction(String symbol, OneArgumentFunctionOperation operation) {
-		super(symbol, 6, 1);
+	public OneArgumentFunction(String symbol, int precedence, OneArgumentFunctionOperation operation) {
+		super(symbol, precedence, 1);
 		this.operation = operation;
 	}
 

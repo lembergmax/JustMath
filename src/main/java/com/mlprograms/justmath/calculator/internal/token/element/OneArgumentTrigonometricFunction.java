@@ -2,7 +2,7 @@ package com.mlprograms.justmath.calculator.internal.token.element;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.element.operations.HyperbolicTrigonometricFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.token.element.operations.OneArgumentTrigonometricFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -10,19 +10,19 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class HyperbolicTrigonometricFunction extends Function {
+public class OneArgumentTrigonometricFunction extends Function {
 
-	private final HyperbolicTrigonometricFunctionOperation operation;
+	private final OneArgumentTrigonometricFunctionOperation operation;
 
-	public HyperbolicTrigonometricFunction(String symbol, HyperbolicTrigonometricFunctionOperation operation) {
-		super(symbol, 6, 1);
+	public OneArgumentTrigonometricFunction(String symbol, int precedence, OneArgumentTrigonometricFunctionOperation operation) {
+		super(symbol, precedence, 1);
 		this.operation = operation;
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, mathContext, locale));
+		stack.push(operation.apply(a, mathContext, trigonometricMode, locale));
 	}
 
 }

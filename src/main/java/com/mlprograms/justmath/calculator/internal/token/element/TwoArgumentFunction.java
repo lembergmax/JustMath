@@ -14,8 +14,8 @@ public class TwoArgumentFunction extends Function {
 
 	private final TwoArgumentFunctionOperation operation;
 
-	public TwoArgumentFunction(String symbol, TwoArgumentFunctionOperation operation) {
-		super(symbol, 6, 2);
+	public TwoArgumentFunction(String symbol, int precedence, TwoArgumentFunctionOperation operation) {
+		super(symbol, precedence, 2);
 		this.operation = operation;
 	}
 

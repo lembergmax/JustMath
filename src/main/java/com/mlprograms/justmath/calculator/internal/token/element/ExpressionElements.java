@@ -3,6 +3,7 @@ package com.mlprograms.justmath.calculator.internal.token.element;
 import com.mlprograms.justmath.bignumber.BigNumber;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,67 +12,76 @@ public class ExpressionElements {
 	private static final Map<String, ExpressionElement> registry = new HashMap<>();
 
 	static {
-		register(new Parenthesis(Parenthesis.Type.LEFT));
-		register(new Parenthesis(Parenthesis.Type.RIGHT));
-		register(new Separator(Separator.Type.SEMICOLON));
-		//
-		register(new BinaryOperator("+", 2, (a, b, context, locale) -> a.add(b, locale)));
-		register(new BinaryOperator("-", 2, (a, b, context, locale) -> a.subtract(b, locale)));
-		register(new BinaryOperator("*", 3, (a, b, context, locale) -> a.multiply(b, locale)));
-		register(new BinaryOperator("/", 3, (a, b, context, locale) -> a.divide(b, context, locale)));
-		register(new BinaryOperator("%", 3, (a, b, context, locale) -> a.modulo(b, locale)));
-		register(new BinaryOperator("^", 4, (a, b, context, locale) -> a.power(b, context, locale)));
-		register(new BinaryOperator("nPr", 6, (a, b, context, locale) -> a.permutation(b, context, locale)));
-		register(new BinaryOperator("nCr", 6, (a, b, context, locale) -> a.combination(b, context, locale)));
-		//
-		register(new FactorialFunction("!", BigNumber::factorial));
-		register(new OneArgumentRadicalFunction("sqrt", BigNumber::squareRoot));
-		register(new OneArgumentRadicalFunction("√", BigNumber::squareRoot));
-		register(new OneArgumentRadicalFunction("cbrt", BigNumber::cubicRoot));
-		register(new OneArgumentRadicalFunction("³√", BigNumber::cubicRoot));
-		register(new TwoArgumentRadicalFunction("rootn", BigNumber::nthRoot));
-		//
-		register(new TrigonometricFunction("sin", BigNumber::sin));
-		register(new TrigonometricFunction("cos", BigNumber::cos));
-		register(new TrigonometricFunction("tan", BigNumber::tan));
-		register(new TrigonometricFunction("cot", BigNumber::cot));
-		//
-		register(new HyperbolicTrigonometricFunction("sinh", BigNumber::sinh));
-		register(new HyperbolicTrigonometricFunction("cosh", BigNumber::cosh));
-		register(new HyperbolicTrigonometricFunction("tanh", BigNumber::tanh));
-		register(new HyperbolicTrigonometricFunction("coth", BigNumber::coth));
-		//
-		register(new InverseTrigonometricFunction("asin", BigNumber::asin));
-		register(new InverseTrigonometricFunction("acos", BigNumber::acos));
-		register(new InverseTrigonometricFunction("atan", BigNumber::atan));
-		register(new InverseTrigonometricFunction("acot", BigNumber::acot));
-		register(new InverseTrigonometricFunction("sin⁻¹", BigNumber::asin));
-		register(new InverseTrigonometricFunction("cos⁻¹", BigNumber::acos));
-		register(new InverseTrigonometricFunction("tan⁻¹", BigNumber::atan));
-		register(new InverseTrigonometricFunction("cot⁻¹", BigNumber::acot));
-		//
-		register(new InverseHyperbolicTrigonometricFunction("asinh", BigNumber::asinh));
-		register(new InverseHyperbolicTrigonometricFunction("acosh", BigNumber::acosh));
-		register(new InverseHyperbolicTrigonometricFunction("atanh", BigNumber::atanh));
-		register(new InverseHyperbolicTrigonometricFunction("acoth", BigNumber::acoth));
-		register(new InverseHyperbolicTrigonometricFunction("sinh⁻¹", BigNumber::asinh));
-		register(new InverseHyperbolicTrigonometricFunction("cosh⁻¹", BigNumber::acosh));
-		register(new InverseHyperbolicTrigonometricFunction("tanh⁻¹", BigNumber::atanh));
-		register(new InverseHyperbolicTrigonometricFunction("coth⁻¹", BigNumber::acoth));
-		//
-		register(new OneArgumentFunction("log2", BigNumber::log2));
-		register(new OneArgumentFunction("log10", BigNumber::log10));
-		register(new OneArgumentFunction("ln", BigNumber::ln));
-		register(new TwoArgumentFunction("logbase", BigNumber::logBase));
-		//
-		register(new TwoArgumentFunction("atan2", BigNumber::atan2));
-		register(new TwoArgumentFunction("perm", BigNumber::permutation));
-		register(new TwoArgumentFunction("comb", BigNumber::combination));
-		register(new SimpleCoordinateFunction("Pol", BigNumber::cartesianToPolarCoordinates));
-		register(new CoordinateFunction("Rec", BigNumber::polarToCartesianCoordinates));
-		register(new SimpleTwoArgumentFunction("GCD", BigNumber::gcd));
-		register(new TwoArgumentFunction("LCM", BigNumber::lcm));
-		register(new SimpleTwoArgumentFunction("RandInt", BigNumber::randomIntegerForRange));
+		List<ExpressionElement> expressionElementList = List.of(
+			new Parenthesis(Parenthesis.Type.LEFT),
+			new Parenthesis(Parenthesis.Type.RIGHT),
+			new Separator(Separator.Type.SEMICOLON),
+			//
+			new SimpleBinaryOperator("+", 2, BigNumber::add),
+			new SimpleBinaryOperator("-", 2, BigNumber::subtract),
+			new SimpleBinaryOperator("*", 3, BigNumber::multiply),
+			new BinaryOperator("/", 3, BigNumber::divide),
+			new SimpleBinaryOperator("%", 3, BigNumber::modulo),
+			new BinaryOperator("^", 4, BigNumber::power),
+			new BinaryOperator("nPr", 6, BigNumber::permutation),
+			new BinaryOperator("nCr", 6, BigNumber::combination),
+			//
+			new OneArgumentFunction("!", 5, BigNumber::factorial),
+			new OneArgumentFunction("sqrt", 4, BigNumber::squareRoot),
+			new OneArgumentFunction("√", 4, BigNumber::squareRoot),
+			new OneArgumentFunction("cbrt", 4, BigNumber::cubicRoot),
+			new OneArgumentFunction("³√", 4, BigNumber::cubicRoot),
+			new TwoArgumentFunction("rootn", 4, BigNumber::nthRoot),
+			//
+			new OneArgumentTrigonometricFunction("sin", 6, BigNumber::sin),
+			new OneArgumentTrigonometricFunction("cos", 6, BigNumber::cos),
+			new OneArgumentTrigonometricFunction("tan", 6, BigNumber::tan),
+			new OneArgumentTrigonometricFunction("cot", 6, BigNumber::cot),
+			//
+			new OneArgumentFunction("sinh", 6, BigNumber::sinh),
+			new OneArgumentFunction("cosh", 6, BigNumber::cosh),
+			new OneArgumentFunction("tanh", 6, BigNumber::tanh),
+			new OneArgumentFunction("coth", 6, BigNumber::coth),
+			//
+			new OneArgumentTrigonometricFunction("asin", 6, BigNumber::asin),
+			new OneArgumentTrigonometricFunction("acos", 6, BigNumber::acos),
+			new OneArgumentTrigonometricFunction("atan", 6, BigNumber::atan),
+			new OneArgumentTrigonometricFunction("acot", 6, BigNumber::acot),
+			new OneArgumentTrigonometricFunction("sin⁻¹", 6, BigNumber::asin),
+			new OneArgumentTrigonometricFunction("cos⁻¹", 6, BigNumber::acos),
+			new OneArgumentTrigonometricFunction("tan⁻¹", 6, BigNumber::atan),
+			new OneArgumentTrigonometricFunction("cot⁻¹", 6, BigNumber::acot),
+			//
+			new OneArgumentFunction("asinh", 6, BigNumber::asinh),
+			new OneArgumentFunction("acosh", 6, BigNumber::acosh),
+			new OneArgumentFunction("atanh", 6, BigNumber::atanh),
+			new OneArgumentFunction("acoth", 6, BigNumber::acoth),
+			new OneArgumentFunction("sinh⁻¹", 6, BigNumber::asinh),
+			new OneArgumentFunction("cosh⁻¹", 6, BigNumber::acosh),
+			new OneArgumentFunction("tanh⁻¹", 6, BigNumber::atanh),
+			new OneArgumentFunction("coth⁻¹", 6, BigNumber::acoth),
+			//
+			new OneArgumentFunction("log2", 6, BigNumber::log2),
+			new OneArgumentFunction("log10", 6, BigNumber::log10),
+			new OneArgumentFunction("ln", 6, BigNumber::ln),
+			new TwoArgumentFunction("logbase", 6, BigNumber::logBase),
+			//
+			new TwoArgumentFunction("atan2", 6, BigNumber::atan2),
+			new TwoArgumentFunction("perm", 6, BigNumber::permutation),
+			new TwoArgumentFunction("comb", 6, BigNumber::combination),
+			//
+			new TwoArgumentFunction("LCM", 6, BigNumber::lcm),
+			new SimpleTwoArgumentFunction("GCD", 6, BigNumber::gcd),
+			//
+			new CoordinateFunction("Rec", 6, BigNumber::polarToCartesianCoordinates),
+			new SimpleCoordinateFunction("Pol", 6, BigNumber::cartesianToPolarCoordinates),
+			//
+			new SimpleTwoArgumentFunction("RandInt", 6, BigNumber::randomIntegerForRange)
+		);
+
+		for (ExpressionElement expressionElement : expressionElementList) {
+			register(expressionElement);
+		}
 	}
 
 	public static boolean existsExpressionElement(ExpressionElement element) {
