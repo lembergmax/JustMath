@@ -23,7 +23,7 @@ public class CoordinateFunction extends Function {
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
 		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, locale));
+		stack.push(operation.apply(a, b, mathContext, trigonometricMode, locale));
 	}
 
 }

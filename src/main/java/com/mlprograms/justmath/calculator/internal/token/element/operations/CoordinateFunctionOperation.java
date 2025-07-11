@@ -3,6 +3,7 @@ package com.mlprograms.justmath.calculator.internal.token.element.operations;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -10,6 +11,6 @@ import java.util.Locale;
 @FunctionalInterface
 public interface CoordinateFunctionOperation {
 
-	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
+	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }
