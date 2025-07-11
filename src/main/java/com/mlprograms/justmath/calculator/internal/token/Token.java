@@ -1,7 +1,9 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.calculator.internal.ArithmeticOperator;
+import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElements;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Optional;
@@ -11,6 +13,7 @@ import java.util.Optional;
  * Tokens can be numbers, operators, functions, parentheses, or special symbols.
  */
 @Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 public class Token {
 
@@ -32,8 +35,8 @@ public class Token {
 	 *
 	 * @return Optional of ArithmeticOperator
 	 */
-	public Optional<ArithmeticOperator> asArithmeticOperator() {
-		return ArithmeticOperator.findByOperator(value);
+	public Optional<ExpressionElement> asArithmeticOperator() {
+		return ExpressionElements.findBySymbol(value);
 	}
 
 	/**
