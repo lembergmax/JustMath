@@ -67,12 +67,11 @@ public class ExpressionElements {
 		register(new TwoArgumentFunction("atan2", BigNumber::atan2));
 		register(new TwoArgumentFunction("perm", BigNumber::permutation));
 		register(new TwoArgumentFunction("comb", BigNumber::combination));
-		register(new CoordinateFunction("Pol", BigNumber::cartesianToPolarCoordinates));
-		register(new AdvancedCoordinateFunction("Rec", BigNumber::polarToCartesianCoordinates));
+		register(new SimpleCoordinateFunction("Pol", BigNumber::cartesianToPolarCoordinates));
+		register(new CoordinateFunction("Rec", BigNumber::polarToCartesianCoordinates));
 		register(new SimpleTwoArgumentFunction("GCD", BigNumber::gcd));
 		register(new TwoArgumentFunction("LCM", BigNumber::lcm));
 		register(new SimpleTwoArgumentFunction("RandInt", BigNumber::randomIntegerForRange));
-
 	}
 
 	public static boolean existsExpressionElement(ExpressionElement element) {
