@@ -24,7 +24,7 @@ public class ExpressionElements {
 		register(new BinaryOperator("nPr", 6, (a, b, context, locale) -> a.permutation(b, context, locale)));
 		register(new BinaryOperator("nCr", 6, (a, b, context, locale) -> a.combination(b, context, locale)));
 		//
-		register(new Function("!", 5, 1));
+		register(new FactorialFunction("!", BigNumber::factorial));
 		register(new OneArgumentRadicalFunction("sqrt", BigNumber::squareRoot));
 		register(new OneArgumentRadicalFunction("√", BigNumber::squareRoot));
 		register(new OneArgumentRadicalFunction("cbrt", BigNumber::cubicRoot));
