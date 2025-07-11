@@ -112,4 +112,25 @@ public class MathUtils {
 		}
 	}
 
+	/**
+	 * Ensures that the provided object is an instance of {@link BigNumber}.
+	 * <p>
+	 * If the object is a {@code BigNumber}, it is returned as-is.
+	 * Otherwise, an {@link IllegalArgumentException} is thrown.
+	 *
+	 * @param object
+	 * 	the object to check and cast
+	 *
+	 * @return the object cast to {@link BigNumber} if it is an instance
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the object is not a {@link BigNumber}
+	 */
+	public static BigNumber ensureBigNumber(Object object) {
+		if (object instanceof BigNumber bigNumber) {
+			return bigNumber;
+		}
+		throw new IllegalArgumentException("Expected BigNumber but got: " + object);
+	}
+
 }
