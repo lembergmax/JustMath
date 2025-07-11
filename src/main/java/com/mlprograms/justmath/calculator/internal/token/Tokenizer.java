@@ -1,41 +1,55 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.ArithmeticOperator;
+import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.token.element.Parenthesis;
+import com.mlprograms.justmath.calculator.internal.token.element.Separator;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * The {@code Tokenizer} class provides functionality to parse a mathematical expression string
- * into a sequence of {@link Token} objects. Tokens represent numbers, operators, parentheses,
- * functions, constants, and other lexical units that the expression contains.
+ * Tokenizer for mathematical expressions.
  * <p>
- * The tokenizer handles signed numbers, nested parentheses, constants like π and e,
- * functions, and operators according to the definitions in {@link ArithmeticOperator}.
+ * This class performs lexical analysis of a mathematical expression string,
+ * converting it into a sequence of tokens suitable for parsing and evaluation.
+ * It recognizes numeric literals (including signed and decimal numbers), operators,
+ * functions, constants (e.g., π and e), parentheses, and separators.
  * <p>
- * Typical usage:
- * <pre>{@code
- *   Tokenizer tokenizer = new Tokenizer();
- *   List<Token> tokens = tokenizer.tokenize("3 + √(4)");
- * }</pre>
- * This results in tokens for NUMBER(3), OPERATOR(+), FUNCTION(√), LEFT_PAREN, NUMBER(4), RIGHT_PAREN.
+ * The tokenizer also handles special cases such as:
+ * <ul>
+ *   <li>Splitting signed numbers that appear immediately after closing parentheses into
+ *       separate operator and number tokens (e.g., ") -5" becomes [")", "-", "5"]).</li>
+ *   <li>Inserting implicit multiplication tokens where multiplication is implied by juxtaposition,
+ *       such as between a number and a parenthesis ("2(3)"), or between parentheses and functions.</li>
+ *   <li>Merging consecutive '+' and '-' operators into a single normalized operator token,
+ *       respecting arithmetic sign rules.</li>
+ * </ul>
+ * <p>
+ * The set of valid operators and functions is dynamically populated from the
+ * {@link ExpressionElements} registry, allowing extensibility and consistency
+ * with the overall expression language.
+ * <p>
+ * The tokenizer is locale-agnostic but uses a {@link MathContext} to obtain precise representations
+ * of mathematical constants like π and e.
+ * <p>
+ * This class is not thread-safe; each instance should be used by a single thread or
+ * externally synchronized if shared.
  */
 @AllArgsConstructor
 public class Tokenizer {
 
 	/**
-	 * A set of all valid operator and function strings defined in {@link ArithmeticOperator}.
-	 * This set is used to match substrings in the input expression.
+	 * Set of all valid operator and function symbols recognized by the tokenizer.
+	 * Populated from the registry of {@link ExpressionElement} instances.
+	 * Used to identify operators and functions during tokenization.
 	 */
-	private final Set<String> validOperatorsAndFunctions = Arrays.stream(ArithmeticOperator.values())
-		                                                       .map(ArithmeticOperator::getOperator)
-		                                                       .collect(Collectors.toSet());
+	private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
 
 	/**
 	 * Math context specifying the precision and rounding mode for calculations.
@@ -73,47 +87,25 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Tokenizes the given mathematical expression string into a list of {@link Token} objects.
+	 * Tokenizes the input mathematical expression string into a list of {@link Token} objects.
 	 * <p>
-	 * The tokenizer processes the input string in several stages:
-	 * <ol>
-	 *   <li>Removes all whitespace characters.</li>
-	 *   <li>Scans the cleaned expression character by character to identify tokens:
-	 *       <ul>
-	 *         <li>Signed numbers (e.g. "+3.5", "-2")</li>
-	 *         <li>Parentheses '(' and ')' </li>
-	 *         <li>Semicolons ';'</li>
-	 *         <li>Operators and functions defined in {@link ArithmeticOperator} (e.g. "+", "-", "√")</li>
-	 *         <li>Constants such as "pi" and "e"</li>
-	 *       </ul>
-	 *   </li>
-	 *   <li>Adjusts tokens where a signed number immediately follows a closing parenthesis, splitting
-	 *       the signed number into an operator token and an unsigned number token. For example, "(2)-5"
-	 *       becomes tokens: LEFT_PAREN, NUMBER("2"), RIGHT_PAREN, OPERATOR("-"), NUMBER("5").</li>
-	 *   <li>Collapses consecutive '+' and '-' operator tokens into a single operator token based on parity.
-	 *       For example, "--" becomes "+", "---" becomes "-".</li>
-	 * </ol>
+	 * This method performs lexical analysis by scanning the input expression character by character.
+	 * It recognizes numbers (including signed numbers), parentheses, separators, operators,
+	 * functions, constants (such as pi and e), and inserts implicit multiplication tokens where
+	 * applicable. It also merges consecutive '+' and '-' operators into a single operator token
+	 * for normalization.
 	 * <p>
-	 * If the input contains invalid characters or sequences that cannot be tokenized, an
-	 * {@link IllegalArgumentException} is thrown.
-	 * <p>
-	 * Example usage:
-	 * <pre>{@code
-	 *   Tokenizer tokenizer = new Tokenizer();
-	 *   List<Token> tokens = tokenizer.tokenize("3 + (-4) * pi");
-	 * }</pre>
-	 * Produces tokens for NUMBER(3), OPERATOR(+), LEFT_PAREN, OPERATOR(-), NUMBER(4), RIGHT_PAREN,
-	 * OPERATOR(*), NUMBER(3.141592653589793...).
+	 * The token list returned by this method is suitable for further syntactic parsing and evaluation.
 	 *
 	 * @param input
-	 * 	the mathematical expression string to tokenize, may contain whitespace
+	 * 	the mathematical expression to tokenize, as a string
 	 *
-	 * @return a list of {@link Token} objects representing the tokenized expression, never null
+	 * @return a list of tokens representing the lexemes of the expression
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if the input contains invalid or unrecognized characters
+	 * 	if the input contains invalid characters or malformed expressions
 	 * @throws NullPointerException
-	 * 	if {@code input} is null
+	 * 	if the input string is null
 	 */
 	public List<Token> tokenize(String input) {
 		List<Token> tokens = new ArrayList<>();
@@ -132,7 +124,7 @@ public class Tokenizer {
 			} else if (isRightParenthesis(c)) {
 				tokens.add(new Token(Token.Type.RIGHT_PAREN, String.valueOf(c)));
 				index++;
-			} else if (isSemicolon(c)) {
+			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
 			} else {
@@ -260,27 +252,28 @@ public class Tokenizer {
 	/**
 	 * Returns true if the character is an opening parenthesis.
 	 */
-	private boolean isLeftParenthesis(char c) {
-		return String.valueOf(c).equals(ArithmeticOperator.LEFT_PARENTHESIS.getOperator());
+	private boolean isLeftParenthesis(char character) {
+		return ExpressionElements.findBySymbol(String.valueOf(character))
+			       .filter(element -> element instanceof Parenthesis && ((Parenthesis) element).isLeft())
+			       .isPresent();
 	}
 
 	/**
 	 * Returns true if the character is a closing parenthesis.
 	 */
-	private boolean isRightParenthesis(char c) {
-		return String.valueOf(c).equals(ArithmeticOperator.RIGHT_PARENTHESIS.getOperator());
+	private boolean isRightParenthesis(char character) {
+		return ExpressionElements.findBySymbol(String.valueOf(character))
+			       .filter(element -> element instanceof Parenthesis && ((Parenthesis) element).isRight())
+			       .isPresent();
 	}
 
 	/**
-	 * Returns true if the character is a semicolon.
+	 * Returns true if the character is a separator.
 	 */
-	private boolean isSemicolon(char c) {
-		return String.valueOf(c).equals(ArithmeticOperator.SEMICOLON.getOperator());
-	}
-
-	private boolean isOperator(char c) {
-		ArithmeticOperator operator = ArithmeticOperator.findByOperator(String.valueOf(c)).orElse(null);
-		return operator != null && !operator.isFunction();
+	private boolean isSeparator(char character) {
+		return ExpressionElements.findBySymbol(String.valueOf(character))
+			       .filter(element -> element instanceof Separator)
+			       .isPresent();
 	}
 
 	/**
@@ -373,31 +366,32 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Attempts to match the longest valid operator, function, or constant token starting at
-	 * {@code startIndex} in the input expression. Matching strings include symbols defined
-	 * in {@link ArithmeticOperator} and constants like "pi" and "e".
+	 * Attempts to match and consume an operator, function, or constant symbol from the
+	 * expression starting at the given index. It tries to match the longest possible symbol
+	 * first, based on the known set of valid operators and functions.
 	 * <p>
-	 * If a match is found, the corresponding token is added to {@code tokens}:
-	 * <ul>
-	 *   <li>Functions get {@link Token.Type#FUNCTION}</li>
-	 *   <li>Operators get {@link Token.Type#OPERATOR}</li>
-	 *   <li>Constants "pi" and "e" get {@link Token.Type#NUMBER} tokens with their numeric values</li>
-	 * </ul>
+	 * Special cases are handled for the constants "pi" and "e" which are converted to number tokens
+	 * with their corresponding {@link BigNumbers} values.
 	 * <p>
-	 * Matching is case-insensitive for constants. The method always tries to match
-	 * the longest possible valid token first.
+	 * The method also verifies the validity of the factorial operator '!' to ensure it follows
+	 * a number or closing parenthesis.
+	 * <p>
+	 * If a valid operator or function is matched, a corresponding token is added to the token list.
 	 *
 	 * @param expression
-	 * 	the full expression string to match against
+	 * 	the input mathematical expression string to parse
 	 * @param startIndex
-	 * 	the index in the expression where matching should begin
+	 * 	the position in the expression to start matching from
 	 * @param tokens
-	 * 	the list to which the matched token should be added
+	 * 	the list of tokens to append new tokens to if a match is found
 	 *
-	 * @return the length of the matched substring if a token is matched, otherwise 0
+	 * @return the length of the matched symbol (number of characters consumed),
+	 * 	or 0 if no operator or function matched at the current position
 	 *
+	 * @throws IllegalArgumentException
+	 * 	if the factorial operator '!' is found in an invalid position
 	 * @throws NullPointerException
-	 * 	if {@code expression} or {@code tokens} is null
+	 * 	if expression or tokens is null
 	 */
 	private int matchOtherOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
 		int maxTokenLength = validOperatorsAndFunctions.stream()
@@ -407,7 +401,9 @@ public class Tokenizer {
 
 		for (int length = maxTokenLength; length > 0; length--) {
 			int endIndex = startIndex + length;
-			if (endIndex > expression.length()) continue;
+			if (endIndex > expression.length()) {
+				continue;
+			}
 
 			String candidate = expression.substring(startIndex, endIndex);
 
@@ -422,8 +418,20 @@ public class Tokenizer {
 			}
 
 			if (validOperatorsAndFunctions.contains(candidate)) {
-				ArithmeticOperator operator = ArithmeticOperator.findByOperator(candidate).orElseThrow();
-				Token.Type type = operator.isFunction() ? Token.Type.FUNCTION : Token.Type.OPERATOR;
+				if (candidate.equals("!")) {
+					// must not be in the beginning or after another expressionElement
+					Token previous = tokens.getLast();
+					if (tokens.isEmpty() || (previous.getType() != Token.Type.NUMBER && previous.getType() != Token.Type.RIGHT_PAREN)) {
+						throw new IllegalArgumentException("Factorial '!' must follow a number or closing parenthesis");
+					}
+
+					// always tokenize as an expressionElement
+					tokens.add(new Token(Token.Type.OPERATOR, "!"));
+					return length;
+				}
+
+				ExpressionElement expressionElement = ExpressionElements.findBySymbol(candidate).orElseThrow();
+				Token.Type type = expressionElement.isFunction() ? Token.Type.FUNCTION : Token.Type.OPERATOR;
 				tokens.add(new Token(type, candidate));
 				return length;
 			}
