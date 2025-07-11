@@ -15,8 +15,8 @@ public class SimpleTwoArgumentFunction extends TwoArgumentFunction {
 
 	private final SimpleTwoArgumentFunctionOperation operation;
 
-	public SimpleTwoArgumentFunction(String symbol, SimpleTwoArgumentFunctionOperation operation) {
-		super(symbol, wrap(operation));
+	public SimpleTwoArgumentFunction(String symbol, int precedence, SimpleTwoArgumentFunctionOperation operation) {
+		super(symbol, precedence, wrap(operation));
 		this.operation = operation;
 	}
 

@@ -14,8 +14,8 @@ public class CoordinateFunction extends Function {
 
 	private final CoordinateFunctionOperation operation;
 
-	public CoordinateFunction(String symbol, CoordinateFunctionOperation operation) {
-		super(symbol, 6, 2);
+	public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
+		super(symbol, precedence, 2);
 		this.operation = operation;
 	}
 
