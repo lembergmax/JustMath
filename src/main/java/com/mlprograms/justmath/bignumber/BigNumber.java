@@ -2202,6 +2202,27 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
 	 */
 	public BigNumber randomIntegerForRange(@NonNull final BigNumber max) {
+		return randomIntegerForRange(max, locale);
+	}
+
+	/**
+	 * Generates a random integer {@link BigNumber} between this number (inclusive) and the given {@code max}
+	 * (exclusive),
+	 * using the specified {@link Locale} for any locale-specific formatting.
+	 * <p>
+	 * Both {@code this} and {@code max} must be integers without decimal places, and {@code this < max}.
+	 *
+	 * @param max
+	 * 	the exclusive upper bound
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a random integer {@link BigNumber} in the range [this, max)
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
+	 */
+	public BigNumber randomIntegerForRange(@NonNull final BigNumber max, @NonNull final Locale locale) {
 		return BigNumbers.randomIntegerBigNumberInRange(this, max, locale);
 	}
 
