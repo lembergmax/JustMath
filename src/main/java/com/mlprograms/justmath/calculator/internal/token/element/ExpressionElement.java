@@ -22,38 +22,6 @@ public abstract class ExpressionElement {
 		this.numberOfOperands = numberOfOperands;
 	}
 
-//	/**
-//	 * Applies this expression element to the given stack using the specified locale.
-//	 *
-//	 * @param stack
-//	 * 	the stack to operate on
-//	 * @param locale
-//	 * 	the locale for formatting or parsing
-//	 *
-//	 * @throws UnsupportedOperationException
-//	 * 	if not implemented by subclass
-//	 */
-//	public void apply(Deque<Object> stack, Locale locale) {
-//		throw new UnsupportedOperationException("apply(stack, locale) not supported for: " + symbol);
-//	}
-//
-//	/**
-//	 * Applies this expression element to the given stack using the specified math context and locale.
-//	 *
-//	 * @param stack
-//	 * 	the stack to operate on
-//	 * @param context
-//	 * 	the math context for calculations
-//	 * @param locale
-//	 * 	the locale for formatting or parsing
-//	 *
-//	 * @throws UnsupportedOperationException
-//	 * 	if not implemented by subclass
-//	 */
-//	public void apply(Deque<Object> stack, MathContext mathContext, Locale locale) {
-//		throw new UnsupportedOperationException("apply(stack, mathContext, locale) not supported for: " + symbol);
-//	}
-
 	/**
 	 * Applies this expression element to the given stack using the specified math context, trigonometric mode, and
 	 * locale.
