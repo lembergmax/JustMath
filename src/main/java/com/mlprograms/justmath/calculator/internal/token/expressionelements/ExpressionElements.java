@@ -7,6 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Utility class for managing all supported mathematical expression elements.
+ * <p>
+ * This class defines constants for operator, function, parenthesis, and separator symbols,
+ * and provides a registry for mapping symbols to their corresponding {@link ExpressionElement} implementations.
+ * <p>
+ * The static initializer block registers all supported elements, establishing precedence and availability.
+ */
 public class ExpressionElements {
 
 	public static final Map<String, ExpressionElement> registry = new HashMap<>();
@@ -76,6 +84,15 @@ public class ExpressionElements {
 	//
 	public static final String FUNC_RANDINT = "RandInt";
 
+	/**
+	 * Static initializer block for registering all supported {@link ExpressionElement}s.
+	 * <p>
+	 * This block creates a list of all available expression elements, such as operators,
+	 * functions, parentheses, and separators, and registers each one in the {@link #registry}
+	 * for later lookup by symbol.
+	 * <p>
+	 * The registration order determines operator precedence and function availability.
+	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
 			new Parenthesis(Parenthesis.Type.LEFT),
@@ -149,10 +166,25 @@ public class ExpressionElements {
 		}
 	}
 
+	/**
+	 * Finds an {@link ExpressionElement} by its symbol.
+	 *
+	 * @param symbol
+	 * 	the symbol to look up
+	 *
+	 * @return an {@link Optional} containing the found {@code ExpressionElement}, or empty if not found
+	 */
 	public static Optional<ExpressionElement> findBySymbol(String symbol) {
 		return Optional.ofNullable(registry.get(symbol));
 	}
 
+	/**
+	 * Registers an {@link ExpressionElement} in the registry.
+	 * The element is mapped by its symbol for later lookup.
+	 *
+	 * @param element
+	 * 	the {@code ExpressionElement} to register
+	 */
 	public static void register(ExpressionElement element) {
 		registry.put(element.getSymbol(), element);
 	}
