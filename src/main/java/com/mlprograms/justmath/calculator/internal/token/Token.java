@@ -1,7 +1,7 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.element.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
