@@ -180,7 +180,7 @@ public class ExpressionElements {
 
 	/**
 	 * Registers an {@link ExpressionElement} in the registry.
-	 * The element is mapped by its symbol for later lookup.
+	 * The element is mapped by its symbol for a later lookup.
 	 *
 	 * @param element
 	 * 	the {@code ExpressionElement} to register
