@@ -1,8 +1,8 @@
-package com.mlprograms.justmath.calculator.internal.token.element;
+package com.mlprograms.justmath.calculator.internal.token.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.element.operations.OneArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.token.expressionelements.operations.OneArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
