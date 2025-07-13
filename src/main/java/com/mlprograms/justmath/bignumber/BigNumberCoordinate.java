@@ -47,10 +47,10 @@ public class BigNumberCoordinate {
 
 	/**
 	 * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates.
-	 * Both x and y are set to {@link BigNumberValues#ZERO}.
+	 * Both x and y are set to {@link BigNumbers#ZERO}.
 	 */
 	public BigNumberCoordinate() {
-		this(BigNumberValues.ZERO);
+		this(BigNumbers.ZERO);
 	}
 
 	/**

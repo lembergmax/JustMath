@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -38,6 +39,8 @@ public class TrigonometricMath {
 	 * @return the sine of the angle as a {@link BigNumber}
 	 */
 	public static BigNumber sin(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale).trim();
 	}
@@ -63,6 +66,8 @@ public class TrigonometricMath {
 	 * @return the cosine of the angle as a {@link BigNumber}
 	 */
 	public static BigNumber cos(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 		return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale).trim();
 	}
@@ -89,6 +94,8 @@ public class TrigonometricMath {
 	 * @return the tangent of the angle as a {@link BigNumber}
 	 */
 	public static BigNumber tan(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale).trim();
 	}
@@ -115,6 +122,8 @@ public class TrigonometricMath {
 	 * @return the cotangent of the angle as a {@link BigNumber}
 	 */
 	public static BigNumber cot(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 		return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale).trim();
 	}

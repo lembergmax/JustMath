@@ -2,7 +2,8 @@ package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.BigNumberValues;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -10,7 +11,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Provides mathematical utilities to convert coordinates between
@@ -58,6 +59,8 @@ public class CoordinateConversionMath {
 	 * 	if {@code r} is negative
 	 */
 	public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (r.isLessThan(ZERO)) {
 			throw new IllegalArgumentException("r cannot be less than zero");
 		}
@@ -97,12 +100,14 @@ public class CoordinateConversionMath {
 	 * 	if {@code x} or {@code y} is zero
 	 */
 	public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+		
 		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("x or y cannot be zero");
 		}
 
-		BigNumber r = x.power(BigNumberValues.TWO, mathContext, locale)
-			              .add(y.power(BigNumberValues.TWO, mathContext, locale))
+		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
+			              .add(y.power(BigNumbers.TWO, mathContext, locale))
 			              .squareRoot(mathContext, locale);
 		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees(mathContext);
 

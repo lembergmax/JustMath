@@ -1,12 +1,13 @@
 package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Utility class providing number theory operations on {@link BigNumber} integers.
@@ -74,6 +75,8 @@ public class NumberTheoryMath {
 	 * 	if a or b is not an integer
 	 */
 	public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("LCM requires integer values.");
 		}

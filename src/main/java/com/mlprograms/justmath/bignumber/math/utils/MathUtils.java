@@ -1,17 +1,15 @@
 package com.mlprograms.justmath.bignumber.math.utils;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Locale;
-import java.util.concurrent.ThreadLocalRandom;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.*;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.
@@ -36,7 +34,7 @@ public class MathUtils {
 	 *
 	 * @param angle
 	 * 	the angle to convert, represented as a {@link BigNumber}
-	 * @param context
+	 * @param mathContext
 	 * 	the {@link MathContext} to apply during internal calculations to control precision and rounding
 	 * @param trigonometricMode
 	 * 	the trigonometric mode indicating whether the input angle is in degrees or radians
@@ -45,9 +43,9 @@ public class MathUtils {
 	 *
 	 * @return the angle in radians as a {@link BigDecimal}, computed with the specified precision and locale
 	 */
-	public static BigDecimal convertAngle(@NonNull final BigNumber angle, @NonNull final MathContext context, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+	public static BigDecimal convertAngle(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return (trigonometricMode == TrigonometricMode.DEG)
-			       ? bigDecimalNumberToRadians(angle.toBigDecimal(), context, locale)
+			       ? bigDecimalNumberToRadians(angle.toBigDecimal(), mathContext, locale)
 			       : angle.toBigDecimal();
 	}
 
@@ -97,94 +95,42 @@ public class MathUtils {
 	}
 
 	/**
-	 * Generates a uniformly distributed random integer {@link BigNumber} within the range [min, max).
+	 * Checks that the provided {@link MathContext} has a precision greater than zero.
 	 * <p>
-	 * Mathematically: returns a value x such that {@code min ≤ x < max}, where x is an integer.
-	 * <p>
-	 * Both {@code min} and {@code max} must be exact integers (no decimal part), and {@code min < max}.
+	 * Throws an {@link IllegalArgumentException} if the precision is zero or negative,
+	 * ensuring that mathematical operations using this context are valid.
 	 *
-	 * @param min
-	 * 	the inclusive lower bound (must be an integer)
-	 * @param max
-	 * 	the exclusive upper bound (must be an integer)
-	 * @param locale
-	 * 	* 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
-	 *
-	 * @return a random {@link BigNumber} representing an integer in the range [min, max)
+	 * @param mathContext
+	 * 	the {@link MathContext} to validate
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if {@code min} ≥ {@code max}, or if either value has decimal places
+	 * 	if the precision is less than or equal to zero
 	 */
-	public static BigNumber randomIntegerBigNumberInRange(@NonNull final BigNumber min, @NonNull final BigNumber max, @NonNull final Locale locale) {
-		BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
-		BigInteger maxInt = max.add(ONE).toBigDecimal().toBigIntegerExact();
-
-		if (minInt.compareTo(maxInt) >= 0) {
-			throw new IllegalArgumentException("min must be less than max");
+	public static void checkMathContext(@NonNull final MathContext mathContext) {
+		if (mathContext.getPrecision() <= 0) {
+			throw new IllegalArgumentException("MathContext precision must be greater than zero");
 		}
-
-		BigInteger range = maxInt.subtract(minInt);
-		BigInteger randomInRange = new BigInteger(range.bitLength(), ThreadLocalRandom.current()).mod(range).add(minInt);
-
-		return new BigNumber(randomInRange.toString(), locale);
 	}
 
 	/**
-	 * Returns the mathematical constant e (Euler's number) with the specified precision,
-	 * using the default calculation locale.
-	 *
-	 * @param mathContext
-	 * 	the {@link MathContext} specifying the precision and rounding mode
-	 *
-	 * @return a {@link BigNumber} representing the value of e
-	 */
-	public static BigNumber e(@NonNull final MathContext mathContext) {
-		return e(mathContext, CALCULATION_LOCALE);
-	}
-
-	/**
-	 * Returns the mathematical constant e (Euler's number) with the specified precision.
+	 * Ensures that the provided object is an instance of {@link BigNumber}.
 	 * <p>
-	 * Uses {@link BigDecimalMath#e(MathContext)} to compute the value of e to the desired precision.
+	 * If the object is a {@code BigNumber}, it is returned as-is.
+	 * Otherwise, an {@link IllegalArgumentException} is thrown.
 	 *
-	 * @param mathContext
-	 * 	the {@link MathContext} specifying the precision and rounding mode
-	 * @param locale
-	 * 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
+	 * @param object
+	 * 	the object to check and cast
 	 *
-	 * @return a {@link BigNumber} representing the value of e
+	 * @return the object cast to {@link BigNumber} if it is an instance
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the object is not a {@link BigNumber}
 	 */
-	public static BigNumber e(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.e(mathContext).toPlainString(), locale, mathContext);
-	}
-
-	/**
-	 * Returns the mathematical constant π (pi) with the specified precision,
-	 * using the default calculation locale.
-	 *
-	 * @param mathContext
-	 * 	the {@link MathContext} specifying the precision and rounding mode
-	 *
-	 * @return a {@link BigNumber} representing the value of pi
-	 */
-	public static BigNumber pi(@NonNull final MathContext mathContext) {
-		return pi(mathContext, CALCULATION_LOCALE);
-	}
-
-	/**
-	 * Returns the mathematical constant π (pi) with the specified precision.
-	 * <p>
-	 * Uses {@link BigDecimalMath#pi(MathContext)} to compute the value of pi to the desired precision.
-	 *
-	 * @param mathContext
-	 * 	the {@link MathContext} specifying the precision and rounding mode
-	 * @param locale
-	 * 	The {@link Locale} to use for the returned {@link BigNumber}, ensuring locale-specific formatting.
-	 *
-	 * @return a {@link BigNumber} representing the value of pi
-	 */
-	public static BigNumber pi(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.pi(mathContext).toPlainString(), locale, mathContext);
+	public static BigNumber ensureBigNumber(Object object) {
+		if (object instanceof BigNumber bigNumber) {
+			return bigNumber;
+		}
+		throw new IllegalArgumentException("Expected BigNumber but got: " + object);
 	}
 
 }

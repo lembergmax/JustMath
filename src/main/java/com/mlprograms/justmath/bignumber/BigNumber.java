@@ -15,8 +15,8 @@ import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.DEFAULT_MATH_CONTEXT;
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
@@ -183,6 +183,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		MathUtils.checkMathContext(mathContext);
 		BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
@@ -255,6 +256,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		MathUtils.checkMathContext(mathContext);
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
 		this.valueAfterDecimal = bigNumber.valueAfterDecimal;
@@ -271,6 +273,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the BigNumber to copy
 	 */
 	public BigNumber(@NonNull final BigNumber other) {
+		MathUtils.checkMathContext(other.mathContext);
 		this.locale = other.locale;
 		this.valueBeforeDecimal = other.valueBeforeDecimal;
 		this.valueAfterDecimal = other.valueAfterDecimal;
@@ -305,6 +308,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		@NonNull final MathContext mathContext,
 		@NonNull final TrigonometricMode trigonometricMode
 	) {
+		MathUtils.checkMathContext(mathContext);
 		this.locale = locale;
 		this.valueBeforeDecimal = valueBeforeDecimal;
 		this.valueAfterDecimal = valueAfterDecimal;
@@ -2198,7 +2202,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
 	 */
 	public BigNumber randomIntegerForRange(@NonNull final BigNumber max) {
-		return MathUtils.randomIntegerBigNumberInRange(this, max, locale);
+		return randomIntegerForRange(max, locale);
+	}
+
+	/**
+	 * Generates a random integer {@link BigNumber} between this number (inclusive) and the given {@code max}
+	 * (exclusive),
+	 * using the specified {@link Locale} for any locale-specific formatting.
+	 * <p>
+	 * Both {@code this} and {@code max} must be integers without decimal places, and {@code this < max}.
+	 *
+	 * @param max
+	 * 	the exclusive upper bound
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return a random integer {@link BigNumber} in the range [this, max)
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if {@code this} ≥ {@code max}, or if either value has decimal places
+	 */
+	public BigNumber randomIntegerForRange(@NonNull final BigNumber max, @NonNull final Locale locale) {
+		return BigNumbers.randomIntegerBigNumberInRange(this, max, locale);
 	}
 
 	/**
@@ -2455,7 +2480,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new BigNumber representing the value in degrees
 	 */
 	public BigNumber toDegrees(@NonNull final MathContext mathContext) {
-		return multiply(ONE_HUNDRED_EIGHTY, locale).divide(MathUtils.pi(mathContext), mathContext, locale);
+		return multiply(ONE_HUNDRED_EIGHTY, locale).divide(BigNumbers.pi(mathContext), mathContext, locale);
 	}
 
 	/**
@@ -2464,7 +2489,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new BigNumber representing the value in radians
 	 */
 	public BigNumber toRadians(@NonNull final MathContext mathContext) {
-		return multiply(MathUtils.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY, mathContext);
+		return multiply(BigNumbers.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY, mathContext);
 	}
 
 	/**
