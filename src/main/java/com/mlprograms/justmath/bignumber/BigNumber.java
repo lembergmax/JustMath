@@ -2609,6 +2609,18 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Rounds the value after the decimal point to the specified precision.
+	 *
+	 * @param precision
+	 * 	the number of decimal places to round to
+	 *
+	 * @return a new {@code BigNumber} rounded to the given precision after the decimal point
+	 */
+	public BigNumber roundAfterDecimals(final int precision) {
+		return roundAfterDecimals(new MathContext(precision));
+	}
+
+	/**
 	 * Rounds the value after the decimal point of this {@code BigNumber} using the specified {@link MathContext}.
 	 *
 	 * @param mathContext
@@ -2617,7 +2629,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} representing the rounded value after the decimal
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-		return round(new BigNumber(getValueAfterDecimal()), mathContext);
+		this.valueAfterDecimal = round(new BigNumber(getValueAfterDecimal()), mathContext).toString();
+		return this;
 	}
 
 	/**
