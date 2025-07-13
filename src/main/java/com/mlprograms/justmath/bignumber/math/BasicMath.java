@@ -190,15 +190,48 @@ public class BasicMath {
 	public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		BigDecimal baseBigDecimal = base.toBigDecimal();
-		BigDecimal exponentBigDecimal = exponent.toBigDecimal();
+		BigDecimal bigDecimalBase = base.toBigDecimal();
+		BigDecimal bigDecimalValue = exponent.toBigDecimal();
 
-		BigDecimal ln = BigDecimalMath.log(baseBigDecimal.abs(), mathContext);
-		BigDecimal powAbs = BigDecimalMath.exp(exponentBigDecimal.multiply(ln, mathContext), mathContext);
+		// Exponent == 0 → result = 1
+		if (BigDecimal.ZERO.compareTo(bigDecimalValue) == 0) {
+			return new BigNumber("1", locale, mathContext);
+		}
 
-		BigDecimal signed = baseBigDecimal.signum() < 0 ? powAbs.negate() : powAbs;
+		// Exponent == 1 → result = base
+		if (BigDecimal.ONE.compareTo(bigDecimalValue) == 0) {
+			return base.trim();
+		}
 
-		return new BigNumber(signed.toPlainString(), locale, mathContext).trim();
+		// Exponent == -1 → result = 1 / base
+		if (BigDecimal.ONE.negate().compareTo(bigDecimalValue) == 0) {
+			BigDecimal reciprocal = BigDecimal.ONE.divide(bigDecimalBase, mathContext);
+			return new BigNumber(reciprocal.toPlainString(), locale, mathContext).trim();
+		}
+
+		// Exact integer exponent → use pow(int) to avoid rounding issues
+		try {
+			int integerExponent = bigDecimalValue.intValueExact();
+			BigDecimal powResult = bigDecimalBase.pow(integerExponent, mathContext);
+			return new BigNumber(powResult.toPlainString(), locale, mathContext).trim();
+		} catch (ArithmeticException ignored) {
+			// exponent is not an exact integer → use general formula
+		}
+
+		// Check for invalid log(0)
+		if (bigDecimalBase.signum() == 0 && bigDecimalValue.signum() <= 0) {
+			throw new ArithmeticException("Cannot compute 0^" + bigDecimalValue + " (log undefined)");
+		}
+
+		// General case: a^b = exp(b * ln|a|)
+		BigDecimal lnAbsBase = BigDecimalMath.log(bigDecimalBase.abs(), mathContext);
+		BigDecimal exponentTimesLn = bigDecimalValue.multiply(lnAbsBase, mathContext);
+		BigDecimal absResult = BigDecimalMath.exp(exponentTimesLn, mathContext);
+
+		// Re-apply sign if base was negative and exponent is an integer
+		BigDecimal signedResult = bigDecimalBase.signum() < 0 ? absResult.negate() : absResult;
+
+		return new BigNumber(signedResult.toPlainString(), locale, mathContext).trim();
 	}
 
 	/**
