@@ -1875,7 +1875,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Computes the two-argument arctangent of this number and the specified x number.
 	 *
-	 * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for quadrant-aware result,
+	 * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for a quadrant-aware result,
 	 * then wraps the result in a new {@code BigNumber} with the specified {@code locale}.</p>
 	 *
 	 * @param x
@@ -2614,23 +2614,23 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @param precision
 	 * 	the number of decimal places to round to
 	 *
-	 * @return a new {@code BigNumber} rounded to the given precision after the decimal point
+	 * @return a new {@code BigNumber} rounded to the given precision
 	 */
 	public BigNumber roundAfterDecimals(final int precision) {
 		return roundAfterDecimals(new MathContext(precision));
 	}
 
 	/**
-	 * Rounds the value after the decimal point of this {@code BigNumber} using the specified {@link MathContext}.
+	 * Rounds the value after the decimal point using the provided {@link MathContext}.
 	 *
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 *
-	 * @return a new {@code BigNumber} representing the rounded value after the decimal
+	 * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
 		this.valueAfterDecimal = round(new BigNumber(getValueAfterDecimal()), mathContext).toString();
-		return this;
+		return this.trim();
 	}
 
 	/**
