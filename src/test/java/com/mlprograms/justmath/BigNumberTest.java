@@ -81,13 +81,14 @@ public class BigNumberTest {
 			"2,10,1024",
 			"5,0,1",
 			"1.1,2,1.21",
-			"-1.2,-2.99,-0.579759767"
+			"-1.2,-2.99,-0.57976",
+			"20,2,400"
 		})
 		void powerTest(String inputNum1, String inputNum2, String inputExpectedResultPrefix) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber exponent = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.power(exponent);
-			assertEquals(inputExpectedResultPrefix, result.trim().toString().substring(0, inputExpectedResultPrefix.length()));
+			assertEquals(inputExpectedResultPrefix, result.roundAfterDecimals(5).trim().toString());
 		}
 
 		@ParameterizedTest
@@ -167,8 +168,8 @@ public class BigNumberTest {
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.polarToCartesianCoordinates(num2);
 
-			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
-			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
+			assertEquals(expectedX, result.getX().toString());
+			assertEquals(expectedY, result.getY().toString());
 		}
 
 		@Test
@@ -189,8 +190,8 @@ public class BigNumberTest {
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
 
-			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
-			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
+			assertEquals(expectedX, result.getX().toString());
+			assertEquals(expectedY, result.getY().toString());
 		}
 
 		@Test
@@ -217,7 +218,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.sinh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -231,7 +232,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.cosh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -245,7 +246,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.tanh();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -282,7 +283,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.asinh();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -295,7 +296,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acosh();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@Test
@@ -312,7 +313,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.atanh();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -334,7 +335,7 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acoth();
 
-			assertEquals(expectedResult, result.toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, result.toString());
 		}
 
 		@ParameterizedTest
@@ -394,7 +395,7 @@ public class BigNumberTest {
 		})
 		void atanTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.atan().toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.atan().toString());
 		}
 
 		@ParameterizedTest
@@ -408,7 +409,7 @@ public class BigNumberTest {
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString());
 		}
 
 		@ParameterizedTest
@@ -456,7 +457,7 @@ public class BigNumberTest {
 		void log2Test(String input, String expectedPrefix) {
 			BigNumber arg = new BigNumber(input);
 			BigNumber result = arg.log2(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+			assertEquals(expectedPrefix, result.toString());
 		}
 
 		@Test
@@ -475,7 +476,7 @@ public class BigNumberTest {
 		void log10Test(String input, String expectedPrefix) {
 			BigNumber arg = new BigNumber(input);
 			BigNumber result = arg.log10(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+			assertEquals(expectedPrefix, result.toString());
 		}
 
 		@Test
@@ -493,7 +494,7 @@ public class BigNumberTest {
 		void lnTest(String input, String expectedPrefix) {
 			BigNumber arg = new BigNumber(input);
 			BigNumber result = arg.ln(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+			assertEquals(expectedPrefix, result.toString());
 		}
 
 		@Test
@@ -513,7 +514,7 @@ public class BigNumberTest {
 			BigNumber arg = new BigNumber(number);
 			BigNumber b = new BigNumber(base);
 			BigNumber result = arg.logBase(b, new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString().substring(0, expectedPrefix.length()));
+			assertEquals(expectedPrefix, result.toString());
 		}
 
 		@ParameterizedTest
@@ -614,63 +615,47 @@ public class BigNumberTest {
 	@Nested
 	public class RadicalMath {
 
-		@Test
-		void squareRootTest() {
-			BigNumber num = new BigNumber("9", Locale.US);
+		@ParameterizedTest
+		@CsvSource({
+			"9,3",
+			"2,1.41421",
+			"0,0"
+		})
+		void squareRootTest(String input, String expectedResult) {
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.squareRoot();
-			assertEquals("3", result.toString(), "Square root of 9 should be 3");
-
-			num = new BigNumber("2", Locale.US);
-			result = num.squareRoot();
-			assertEquals("1.41421356237309504880168872420969807856967187537694", result.toString().substring(0, 52),
-				"Square root of 2 should be accurate");
-
-			num = new BigNumber("0", Locale.US);
-			result = num.squareRoot();
-			assertEquals("0", result.toString(), "Square root of 0 should be 0");
+			assertEquals(expectedResult, result.roundAfterDecimals(5).trim().toString());
 		}
 
-		@Test
-		void cubicRootTest() {
-			BigNumber num = new BigNumber("27", Locale.US);
+		@ParameterizedTest
+		@CsvSource({
+			"27,3",
+			"0,0",
+			"8,2",
+			"-27,-3"
+		})
+		void cubicRootTest(String input, String expectedResult) {
+			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.cubicRoot();
-			assertEquals("3", result.toString(), "Cubic root of 27 should be 3");
+			assertEquals(expectedResult, result.toString());
+		}
 
-			num = new BigNumber("0", Locale.US);
-			result = num.cubicRoot();
-			assertEquals("0", result.toString(), "Cubic root of 0 should be 0");
-
-			num = new BigNumber("8", Locale.US);
-			result = num.cubicRoot();
-			assertEquals("2", result.toString(), "Cubic root of 8 should be 2");
-
-			num = new BigNumber("-27", Locale.US);
-			result = num.cubicRoot();
-			assertEquals("-3", result.toString(), "Cubic root of -27 should be -3");
+		@ParameterizedTest
+		@CsvSource({
+			"81,4,3",
+			"32,5,2",
+			"1,100,1",
+			"8,-12,0.84089"
+		})
+		void nthRootTest(String inputNum, String rootNum, String expectedResult) {
+			BigNumber num = new BigNumber(inputNum, Locale.US);
+			BigNumber root = new BigNumber(rootNum, Locale.US);
+			BigNumber result = num.nthRoot(root);
+			assertEquals(expectedResult, result.roundAfterDecimals(5).trim().toString());
 		}
 
 		@Test
-		void nthRootTest() {
-			BigNumber num = new BigNumber("81", Locale.US);
-			BigNumber root = new BigNumber("4", Locale.US);
-			BigNumber result = num.nthRoot(root);
-			assertEquals("3", result.toString(), "4th root of 81 should be 3");
-
-			num = new BigNumber("32", Locale.US);
-			root = new BigNumber("5", Locale.US);
-			result = num.nthRoot(root);
-			assertEquals("2", result.toString(), "5th root of 32 should be 2");
-
-			num = new BigNumber("1", Locale.US);
-			root = new BigNumber("100", Locale.US);
-			result = num.nthRoot(root);
-			assertEquals("1", result.toString(), "Any root of 1 should be 1");
-
-			num = new BigNumber("8", Locale.US);
-			root = new BigNumber("-12", Locale.US);
-			result = num.nthRoot(root);
-			assertEquals("0.840896415", result.trim().toString().substring(0, 11), "-12th root of 8 should be (rounded) 0.840896415");
-
+		void nthRootNegativeEvenRootTest() {
 			BigNumber finalNum = new BigNumber("-16");
 			BigNumber finalRoot = new BigNumber("4");
 			assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
@@ -735,17 +720,17 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"1,1,0.78539",
-			"1,-1,2.35619",
-			"-1,-1,-2.3561",
-			"-1,1,-0.7853",
+			"1,1,0.785398163397448309615660845819875721049292349843776455243736148076954101571552249657008706335529267",
+			"1,-1,2.356194490192344928846982537459627163147877049531329365731208444230862304714656748971026119006587801",
+			"-1,-1,-2.356194490192344928846982537459627163147877049531329365731208444230862304714656748971026119006587801",
+			"-1,1,-0.785398163397448309615660845819875721049292349843776455243736148076954101571552249657008706335529267",
 		})
 		void atan2Test(String inputY, String inputX, String expected) {
 			BigNumber y = new BigNumber(inputY, Locale.US);
 			BigNumber x = new BigNumber(inputX, Locale.US);
 
 			BigNumber result = y.atan2(x);
-			assertEquals(expected, result.toString().substring(0, 7));
+			assertEquals(expected, result.toString());
 		}
 
 		@ParameterizedTest
