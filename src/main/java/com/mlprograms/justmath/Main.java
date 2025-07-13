@@ -15,6 +15,7 @@ public class Main {
 
 	public static void main(String[] args) {
 
+		// TODO: only for developing purpose
 		testCalculator();
 
 	}

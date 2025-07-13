@@ -2,12 +2,13 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Provides two-dimensional mathematical functions.
@@ -47,6 +48,8 @@ public class TwoDimensionalMath {
 	 * 	if {@code x} or {@code y} is zero (undefined result at origin)
 	 */
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("x or y cannot be zero");
 		}
