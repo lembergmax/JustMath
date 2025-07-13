@@ -1,19 +1,24 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.bignumber.internal.ArithmeticOperator;
+import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.Optional;
 
 /**
  * Represents a lexical token extracted from a mathematical expression.
  * Tokens can be numbers, operators, functions, parentheses, or special symbols.
- *
- * @param type
- * 	Returns the type of this token.
- * @param value
- * 	Returns the string value of this token.
  */
-public record Token(Token.Type type, String value) {
+@Getter
+@EqualsAndHashCode
+@AllArgsConstructor
+public class Token {
+
+	private Token.Type type;
+	private String value;
 
 	/**
 	 * Returns a string representation of this token.
@@ -30,8 +35,8 @@ public record Token(Token.Type type, String value) {
 	 *
 	 * @return Optional of ArithmeticOperator
 	 */
-	public Optional<ArithmeticOperator> asArithmeticOperator() {
-		return ArithmeticOperator.findByOperator(value);
+	public Optional<ExpressionElement> asArithmeticOperator() {
+		return ExpressionElements.findBySymbol(value);
 	}
 
 	/**

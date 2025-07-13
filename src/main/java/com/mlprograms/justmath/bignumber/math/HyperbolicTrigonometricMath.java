@@ -2,12 +2,13 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumberValues.ZERO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
  * Provides high-precision implementations of hyperbolic trigonometric functions
@@ -48,6 +49,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing sinh(argument) calculated with the specified precision
 	 */
 	public static BigNumber sinh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
 		return new BigNumber(BigDecimalMath.sinh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -69,6 +71,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing cosh(argument) calculated with the specified precision
 	 */
 	public static BigNumber cosh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
 		return new BigNumber(BigDecimalMath.cosh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -90,6 +93,7 @@ public class HyperbolicTrigonometricMath {
 	 * @return a {@link BigNumber} representing tanh(argument) calculated with the specified precision
 	 */
 	public static BigNumber tanh(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
 		return new BigNumber(BigDecimalMath.tanh(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -120,6 +124,8 @@ public class HyperbolicTrigonometricMath {
 	 * 	if {@code argument} is zero (undefined result due to division by zero)
 	 */
 	public static BigNumber coth(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		if (argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("argument cannot be zero");
 		}
