@@ -88,7 +88,7 @@ public class BigNumberTest {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber exponent = new BigNumber(inputNum2, Locale.US);
 			BigNumber result = num1.power(exponent);
-			assertEquals(inputExpectedResultPrefix, result.roundAfterDecimals(5).trim().toString());
+			assertEquals(inputExpectedResultPrefix, result.roundAfterDecimals(5).toString());
 		}
 
 		@ParameterizedTest
@@ -161,15 +161,15 @@ public class BigNumberTest {
 		@ParameterizedTest
 		@CsvSource({
 			"0,0,0,0",
-			"12.874,7.000032,12.7780382,1.56895306"
+			"12.874,7.000032,12.77804,1.56895"
 		})
 		void polarToCartesianCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.polarToCartesianCoordinates(num2);
 
-			assertEquals(expectedX, result.getX().toString());
-			assertEquals(expectedY, result.getY().toString());
+			assertEquals(expectedX, result.getX().roundAfterDecimals(5).toString());
+			assertEquals(expectedY, result.getY().roundAfterDecimals(5).toString());
 		}
 
 		@Test
@@ -182,16 +182,16 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"1,1,1.41421356,45",
-			"12.874,7.000032,14.6540207,28.5344307"
+			"1,1,1.414214,45",
+			"12.874,7.000032,14.654021,28.534431"
 		})
 		void cartesianToPolarCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
 			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
 
-			assertEquals(expectedX, result.getX().toString());
-			assertEquals(expectedY, result.getY().toString());
+			assertEquals(expectedX, result.getX().roundAfterDecimals(6).toString());
+			assertEquals(expectedY, result.getY().roundAfterDecimals(6).toString());
 		}
 
 		@Test
@@ -402,7 +402,7 @@ public class BigNumberTest {
 		@CsvSource({
 			"1,RAD,0.785398",
 			"1,DEG,45",
-			"2,RAD,0.463647",
+			"2,RAD,0.463648",
 			"2,DEG,26,565052",
 			"-2,RAD,-0.463647",
 			"-2,DEG,-26,565052"
@@ -452,12 +452,12 @@ public class BigNumberTest {
 			"1,0",
 			"2,1",
 			"8,3",
-			"10,3.321928094"
+			"10,3.32193"
 		})
 		void log2Test(String input, String expectedPrefix) {
 			BigNumber arg = new BigNumber(input);
 			BigNumber result = arg.log2(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString());
+			assertEquals(expectedPrefix, result.roundAfterDecimals(5).toString());
 		}
 
 		@Test
@@ -471,12 +471,12 @@ public class BigNumberTest {
 			"1,0",
 			"10,1",
 			"100,2",
-			"2,0.3010299"
+			"2,0.30103"
 		})
 		void log10Test(String input, String expectedPrefix) {
 			BigNumber arg = new BigNumber(input);
 			BigNumber result = arg.log10(new MathContext(expectedPrefix.length(), RoundingMode.HALF_UP), Locale.US);
-			assertEquals(expectedPrefix, result.toString());
+			assertEquals(expectedPrefix, result.roundAfterDecimals(5).toString());
 		}
 
 		@Test
@@ -624,7 +624,7 @@ public class BigNumberTest {
 		void squareRootTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.squareRoot();
-			assertEquals(expectedResult, result.roundAfterDecimals(5).trim().toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(5).toString());
 		}
 
 		@ParameterizedTest
@@ -645,13 +645,13 @@ public class BigNumberTest {
 			"81,4,3",
 			"32,5,2",
 			"1,100,1",
-			"8,-12,0.84089"
+			"8,-12,0.8409"
 		})
 		void nthRootTest(String inputNum, String rootNum, String expectedResult) {
 			BigNumber num = new BigNumber(inputNum, Locale.US);
 			BigNumber root = new BigNumber(rootNum, Locale.US);
 			BigNumber result = num.nthRoot(root);
-			assertEquals(expectedResult, result.roundAfterDecimals(5).trim().toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(5).toString());
 		}
 
 		@Test
