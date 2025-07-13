@@ -70,6 +70,48 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings with s
 | **Coordinates**                  | `Pol(x, y)`             | Cartesian → Polar                 |
 |                                  | `Rec(r, θ)`             | Polar → Cartesian                 |
 
+## 📚 Static Utility Methods
+
+JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
+`BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
+
+| Class                                | Method(s)                                                                 | Description                                              |
+|--------------------------------------|---------------------------------------------------------------------------|----------------------------------------------------------|
+| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                | Basic arithmetic operations                              |
+|                                      | `factorial`, `exp`                                                        | Factorial and exponential function                       |
+| `CombinatoricsMath`                  | `combination`, `permutation`                                              | Calculate combinations (nCr) and permutations (nPr)      |
+| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`              | Convert between polar and cartesian coordinates          |
+| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                            | Hyperbolic sine, cosine, tangent, and cotangent          |
+| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                        | Inverse hyperbolic functions                             |
+| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                            | Inverse trigonometric functions                          |
+| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                          | Binary, decimal, natural, and arbitrary base logarithms  |
+| `NumberTheoryMath`                   | `gcd`, `lcm`                                                              | Greatest common divisor and least common multiple        |
+| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                         | Percent calculations                                     |
+| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                      | Compute square, cube, and n-th roots                     |
+| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                               | Trigonometric functions (coth also here for convenience) |
+| `TwoDimensionalMath`                 | `atan2`                                                                   | Two-argument arctangent                                  |
+| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians` | Angle conversions                                        |
+|                                      | `randomIntegerBigNumberInRange`                                           | Random integer generation using `BigNumber`              |
+|                                      | `e`, `pi`                                                                 | Mathematical constants as `BigNumber`                    |
+
+## 📐 Constants
+
+The `BigNumberValues` class provides reusable **high-precision constants** and default configuration values that are
+used throughout JustMath. These can be accessed statically and are ideal for custom calculations or configurations.
+
+| Constant                     | Description                                     |
+|------------------------------|-------------------------------------------------|
+| `CALCULATION_LOCALE`         | Default `Locale` used for parsing/formatting    |
+| `DEFAULT_DIVISION_PRECISION` | Default precision for division operations       |
+| `DEFAULT_MATH_CONTEXT`       | Default `MathContext` with precision & rounding |
+| `NEGATIVE_ONE`               | BigNumber value of -1                           |
+| `ZERO`                       | BigNumber value of 0                            |
+| `ONE`                        | BigNumber value of 1                            |
+| `TWO`                        | BigNumber value of 2                            |
+| `THREE`                      | BigNumber value of 3                            |
+| `ONE_HUNDRED`                | BigNumber value of 100                          |
+| `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
+
 ## 🧑‍💻 Practical Examples
 
 ### ➕ Add Very Large Numbers
@@ -79,9 +121,7 @@ BigNumber num1 = new BigNumber("8736519650165165946166562572365809265462671456")
 BigNumber num2 = new BigNumber("143153651451954101155145145169254155145");
 BigNumber sum = num1.add(num2);
 
-System.out.
-
-println(sum);
+System.out.println(sum);
 // 8736519793318817398120663727510954434716826601
 ```
 
@@ -92,9 +132,7 @@ BigNumber a = new BigNumber("0.0000000001");
 BigNumber b = new BigNumber("0.00000000009");
 BigNumber diff = a.subtract(b);
 
-System.out.
-
-println(diff);
+System.out.println(diff);
 // 0.00000000001
 ```
 
@@ -105,9 +143,7 @@ BigNumber e = new BigNumber("1");
 BigNumber f = new BigNumber("3");
 BigNumber quotient = e.divide(f, new MathContext(50, RoundingMode.HALF_UP));
 
-System.out.
-
-println(quotient);
+System.out.println(quotient);
 // 0.33333333333333333333333333333333333333333333333333
 ```
 
@@ -118,9 +154,7 @@ BigNumber base = new BigNumber("-1.2");
 BigNumber exponent = new BigNumber("-2.99");
 BigNumber result = base.power(exponent);
 
-System.out.
-
-println(result);
+System.out.println(result);
 // -0.579759767...
 ```
 
@@ -139,9 +173,7 @@ BigNumber result = calc.evaluate(
 	"8736519650165165946166562572365809265462671456 + 143153651451954101155145145169254155145"
 );
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 8736519793318817398120663727510954434716826601
 ```
 
@@ -150,9 +182,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("1 / 3");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 0.33333333333333333333333333333333333333333333333333
 ```
 
@@ -161,9 +191,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("sin(90)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 1
 ```
 
@@ -172,9 +200,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("5! + 2^3");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 128
 ```
 
@@ -183,9 +209,7 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("rootn(27; 3)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 3
 ```
 
@@ -194,19 +218,18 @@ println(result);
 ```java
 BigNumber result = calc.evaluate("comb(6; 3)");
 
-System.out.
-
-println(result);
+System.out.println(result);
 // 20
 ```
 
 ## ⚙️ Maven (Coming soon)
 
 ```xml
+
 <dependency>
-  <groupId>io.github.lembergmax</groupId>
-  <artifactId>justmath</artifactId>
-  <version></version>
+    <groupId>io.github.lembergmax</groupId>
+    <artifactId>justmath</artifactId>
+    <version></version>
 </dependency>
 ```
 

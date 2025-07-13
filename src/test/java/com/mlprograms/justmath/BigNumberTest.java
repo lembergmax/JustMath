@@ -1,5 +1,8 @@
-package com.mlprograms.justmath.bignumber;
+package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -109,7 +112,7 @@ public class BigNumberTest {
 		@CsvSource({
 			"0,0,1",
 			"1,1,1",
-			// TODO: funktioniert nicht: "12,7,792"
+			"12,7,792"
 		})
 		void combinationTest(String inputNum1, String inputNum2, String inputExpectedResult) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
@@ -184,7 +187,7 @@ public class BigNumberTest {
 		void cartesianToPolarCoordinateTest(String inputNum1, String inputNum2, String expectedX, String expectedY) {
 			BigNumber num1 = new BigNumber(inputNum1, Locale.US);
 			BigNumber num2 = new BigNumber(inputNum2, Locale.US);
-			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumberValues.DEFAULT_MATH_CONTEXT, Locale.US);
+			BigNumberCoordinate result = num1.cartesianToPolarCoordinates(num2, BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
 
 			assertEquals(expectedX, result.getX().toString().substring(0, expectedX.length()));
 			assertEquals(expectedY, result.getY().toString().substring(0, expectedY.length()));
@@ -350,8 +353,6 @@ public class BigNumberTest {
 	@Nested
 	public class InverseTrigonometricMath {
 
-		/*
-		// TODO
 		@ParameterizedTest
 		@CsvSource({
 			"0,RAD,0",
@@ -362,9 +363,8 @@ public class BigNumberTest {
 			"-1,DEG,-90"
 		})
 		void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			// TODO: fix this
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.asin(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.asin(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
 		}
 
 		@ParameterizedTest
@@ -373,15 +373,13 @@ public class BigNumberTest {
 			"1,DEG,0",
 			"0,RAD,1.570796",
 			"0,DEG,90",
-			"-1,RAD,3.141592",
+			"-1,RAD,3.141593",
 			"-1,DEG,180"
 		})
 		void acosTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
-			// TODO: fix this
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.acos().toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.acos().round(new MathContext(7)).trim().toString());
 		}
-		 */
 
 		@ParameterizedTest
 		@CsvSource({
@@ -410,11 +408,9 @@ public class BigNumberTest {
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			assertEquals(expectedResult, num.acot(BigNumberValues.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
+			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString().substring(0, expectedResult.length()));
 		}
 
-		/*
-		// TODO
 		@ParameterizedTest
 		@CsvSource({
 			"2,RAD",
@@ -434,7 +430,6 @@ public class BigNumberTest {
 			BigNumber num = new BigNumber(input, trigonometricMode);
 			assertThrows(ArithmeticException.class, num::acos);
 		}
-		 */
 
 		@ParameterizedTest
 		@CsvSource({
@@ -702,7 +697,7 @@ public class BigNumberTest {
 		})
 		void sinTest(String input, TrigonometricMode mode, String expectedStr) {
 			BigNumber angle = new BigNumber(input, Locale.US);
-			BigNumber result = angle.sin(BigNumberValues.DEFAULT_MATH_CONTEXT, mode, Locale.US);
+			BigNumber result = angle.sin(BigNumbers.DEFAULT_MATH_CONTEXT, mode, Locale.US);
 			BigDecimal actual = result.toBigDecimal();
 			BigDecimal expected = new BigDecimal(expectedStr);
 
@@ -713,7 +708,7 @@ public class BigNumberTest {
 				() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
 		}
 
-		/*
+		/* TODO
 		@ParameterizedTest
 		@CsvSource({
 		})
