@@ -228,7 +228,7 @@ public class BasicMath {
 		BigDecimal exponentTimesLn = bigDecimalValue.multiply(lnAbsBase, mathContext);
 		BigDecimal absResult = BigDecimalMath.exp(exponentTimesLn, mathContext);
 
-		// Re-apply sign if base was negative and exponent is an integer
+		// Re-apply sign if the base was negative and the exponent is an integer
 		BigDecimal signedResult = bigDecimalBase.signum() < 0 ? absResult.negate() : absResult;
 
 		return new BigNumber(signedResult.toPlainString(), locale, mathContext).trim();
