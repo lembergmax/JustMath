@@ -173,14 +173,22 @@ public class InverseTrigonometricMath {
 			throw new ArithmeticException("acot(x) is undefined for x = 0");
 		}
 
-		BigDecimal oneOverX = BigDecimal.ONE.divide(argument.toBigDecimal(), mathContext);
-		BigDecimal result = BigDecimalMath.atan(oneOverX, mathContext);
+		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
 
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
 
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
+
+//		BigDecimal oneOverX = BigDecimal.ONE.divide(argument.toBigDecimal(), mathContext);
+//		BigDecimal result = BigDecimalMath.atan(oneOverX, mathContext);
+
+//		if (trigonometricMode == TrigonometricMode.DEG) {
+//			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+//		}
+
+		// return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 }
