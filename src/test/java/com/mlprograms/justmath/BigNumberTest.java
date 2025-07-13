@@ -1,5 +1,8 @@
-package com.mlprograms.justmath.bignumber;
+package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

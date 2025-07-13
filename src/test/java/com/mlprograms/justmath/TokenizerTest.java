@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.bignumber.calculator;
+package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.token.Token;
