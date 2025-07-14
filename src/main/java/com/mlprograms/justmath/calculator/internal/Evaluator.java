@@ -3,9 +3,9 @@ package com.mlprograms.justmath.calculator.internal;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
-import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -49,7 +49,7 @@ public class Evaluator {
 	 * while still supporting polar and Cartesian coordinates.
 	 * </p>
 	 *
-	 * @param rpnTokens
+	 * @param reversePolishNotationTokens
 	 * 	a list of {@link Token} objects in Reverse Polish Notation
 	 *
 	 * @return the result of evaluating the expression as a {@link BigNumber}
@@ -59,10 +59,10 @@ public class Evaluator {
 	 * @throws IllegalStateException
 	 * 	if the expression does not reduce to a single result or has an unsupported result type
 	 */
-	public BigNumber evaluate(List<Token> rpnTokens) {
+	public BigNumber evaluate(List<Token> reversePolishNotationTokens) {
 		Deque<Object> stack = new ArrayDeque<>();
 
-		for (Token token : rpnTokens) {
+		for (Token token : reversePolishNotationTokens) {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case OPERATOR, FUNCTION -> {
