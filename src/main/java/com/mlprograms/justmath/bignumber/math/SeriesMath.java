@@ -4,6 +4,7 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -58,8 +59,10 @@ public class SeriesMath {
 	//  - Tokenizer anpassen, so das er ∑(number1; number2; berechnung) tokenisieren kann
 	//    -> vielleicht auch den parser und den evaluator anpassen?
 	//  - Tests schreiben
-	public static BigNumber summation(BigNumber kStart, BigNumber kEnd, String kCalculation, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+	public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
+		BigNumber result = BigNumbers.ZERO;
+		BigNumber kStartClone = kStart.clone();
 
 		if (!kCalculation.contains("k")) {
 			throw new IllegalArgumentException("kCalculation must contain the variable 'k'");
@@ -73,12 +76,10 @@ public class SeriesMath {
 			throw new IllegalArgumentException("kStart and kEnd must be an integer");
 		}
 
-		BigNumber result = BigNumbers.ZERO;
-
-		while (kStart.isLessThanOrEqualTo(kEnd)) {
+		while (kStartClone.isLessThanOrEqualTo(kEnd)) {
 			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation.replace("k", kStart.toString(locale)));
 			result = result.add(currentCalculation);
-			kStart = kStart.add(BigNumbers.ONE);
+			kStartClone = kStartClone.add(BigNumbers.ONE);
 		}
 
 		return new BigNumber(result, locale, mathContext, trigonometricMode);
