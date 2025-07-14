@@ -83,6 +83,9 @@ public class ExpressionElements {
 	public static final String FUNC_POL = "Pol";
 	//
 	public static final String FUNC_RANDINT = "RandInt";
+	//
+	public static final String FUNC_SUMM = "∑";
+	public static final String FUNC_SUMM_S = "summ";
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
@@ -158,7 +161,10 @@ public class ExpressionElements {
 			new CoordinateFunction(FUNC_REC, 6, BigNumber::polarToCartesianCoordinates),
 			new SimpleCoordinateFunction(FUNC_POL, 6, BigNumber::cartesianToPolarCoordinates),
 			//
-			new SimpleTwoArgumentFunction(FUNC_RANDINT, 6, BigNumber::randomIntegerForRange)
+			new SimpleTwoArgumentFunction(FUNC_RANDINT, 6, BigNumber::randomIntegerForRange),
+			//
+			new ThreeArgumentSummationFunction(FUNC_SUMM, 6, BigNumber::summation),
+			new ThreeArgumentSummationFunction(FUNC_SUMM_S, 6, BigNumber::summation)
 		);
 
 		for (ExpressionElement expressionElement : expressionElementList) {
