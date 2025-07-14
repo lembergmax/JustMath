@@ -1,5 +1,6 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
@@ -407,12 +408,12 @@ public class Tokenizer {
 
 			String candidate = expression.substring(startIndex, endIndex);
 
-			if (candidate.equalsIgnoreCase("pi")) {
+			if (candidate.equalsIgnoreCase(ExpressionElements.PI)) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()));
 				return length;
 			}
 
-			if (candidate.equalsIgnoreCase("e")) {
+			if (candidate.equalsIgnoreCase(ExpressionElements.EULERS_NUMBER)) {
 				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()));
 				return length;
 			}
