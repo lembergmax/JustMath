@@ -89,7 +89,6 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
-	// TODO
 	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
