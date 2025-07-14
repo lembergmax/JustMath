@@ -1,8 +1,8 @@
 package com.mlprograms.justmath.calculator.internal;
 
 import com.mlprograms.justmath.calculator.internal.token.Token;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayDeque;

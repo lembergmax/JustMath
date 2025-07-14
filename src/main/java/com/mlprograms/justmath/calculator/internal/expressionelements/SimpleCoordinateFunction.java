@@ -1,9 +1,9 @@
-package com.mlprograms.justmath.calculator.internal.token.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.operations.CoordinateFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.operations.SimpleCoordinateFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expressionelements.operations.CoordinateFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expressionelements.operations.SimpleCoordinateFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
