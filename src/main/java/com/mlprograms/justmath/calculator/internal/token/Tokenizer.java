@@ -1,10 +1,10 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.Parenthesis;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.Separator;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expressionelements.Parenthesis;
+import com.mlprograms.justmath.calculator.internal.expressionelements.Separator;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;

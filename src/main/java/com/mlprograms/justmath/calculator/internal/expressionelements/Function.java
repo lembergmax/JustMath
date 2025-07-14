@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.internal.token.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 public class Function extends ExpressionElement {
 

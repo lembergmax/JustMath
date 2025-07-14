@@ -1,7 +1,7 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,7 +48,8 @@ public class Token {
 		FUNCTION,
 		LEFT_PAREN,
 		RIGHT_PAREN,
-		SEMICOLON
+		SEMICOLON,
+		SUMMATION
 	}
 
 }
