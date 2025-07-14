@@ -19,6 +19,9 @@ public class ExpressionElements {
 
 	public static final Map<String, ExpressionElement> registry = new HashMap<>();
 
+	public static final String PI = "pi";
+	public static final String EULERS_NUMBER = "e";
+	//
 	public static final String SEP_SEMICOLON = ";";
 	public static final String PAR_LEFT = "(";
 	public static final String PAR_RIGHT = ")";
@@ -84,8 +87,8 @@ public class ExpressionElements {
 	//
 	public static final String FUNC_RANDINT = "RandInt";
 	//
-	public static final String FUNC_SUMM = "∑";
-	public static final String FUNC_SUMM_S = "summ";
+	public static final String FUNC_SUMM = "summ";
+	public static final String FUNC_SUMM_S = "∑";
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
