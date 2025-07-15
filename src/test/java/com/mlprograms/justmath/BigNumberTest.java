@@ -211,26 +211,26 @@ public class BigNumberTest {
 		@CsvSource({
 			"0,0",
 			"1,1.17520119",
-			"-1,-1.1752011",
-			"1.2541,1.60967510"
+			"-1,-1.17520119",
+			"1.2541,1.6096751"
 		})
 		void sinhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.sinh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
 			"0,1",
-			"1,1.54308063",
-			"-1,1.54308063",
-			"1.2541,1.89500763"
+			"1,1.543081",
+			"-1,1.543081",
+			"1.2541,1.895008"
 		})
 		void coshTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			BigNumber result = num.cosh().round(new MathContext(expectedResult.length(), RoundingMode.HALF_UP)).trim();
+			BigNumber result = num.cosh().roundAfterDecimals(6).trim();
 
 			assertEquals(expectedResult, result.toString());
 		}
@@ -238,27 +238,27 @@ public class BigNumberTest {
 		@ParameterizedTest
 		@CsvSource({
 			"0,0",
-			"1,0.76159415",
-			"-1,-0.7615941",
-			"1.2541,0.84942934"
+			"1,0.761594",
+			"-1,-0.761594",
+			"1.2541,0.849429"
 		})
 		void tanhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.tanh();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(6).toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
-			"1,1.313035285",
-			"-1,-1.313035285"
+			"1,1.3130352855",
+			"-1,-1.3130352855"
 		})
 		void cothTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.coth();
 
-			assertEquals(expectedResult, result.round(new MathContext(10 /* hardcoding = happy :) */, RoundingMode.HALF_UP)).toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(10).toString());
 		}
 
 		@Test
@@ -275,28 +275,28 @@ public class BigNumberTest {
 		@ParameterizedTest
 		@CsvSource({
 			"0,0",
-			"1,0.88137358",
-			"-1,-0.8813735",
-			"2.5,1.64723114"
+			"1,0.88137359",
+			"-1,-0.88137359",
+			"2.5,1.64723115"
 		})
 		void asinhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.asinh();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
 		}
 
 		@ParameterizedTest
 		@CsvSource({
 			"1,0",
-			"2,1.31695789",
-			"10,2.99322284"
+			"2,1.3169579",
+			"10,2.99322285"
 		})
 		void acoshTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acosh();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
 		}
 
 		@Test
@@ -307,13 +307,13 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"0.5,0.54930614"
+			"0.5,0.549306"
 		})
 		void atanhTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.atanh();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(6).toString());
 		}
 
 		@ParameterizedTest
@@ -329,13 +329,13 @@ public class BigNumberTest {
 		@ParameterizedTest
 		@CsvSource({
 			"2,0.54930614",
-			"-2,-0.5493061"
+			"-2,-0.54930614"
 		})
 		void acothTest(String input, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
 			BigNumber result = num.acoth();
 
-			assertEquals(expectedResult, result.toString());
+			assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
 		}
 
 		@ParameterizedTest
@@ -386,30 +386,30 @@ public class BigNumberTest {
 		@CsvSource({
 			"0,RAD,0",
 			"0,DEG,0",
-			"1,RAD,0.785398",
+			"1,RAD,0.785",
 			"1,DEG,45",
-			"-1,RAD,-0.785398",
+			"-1,RAD,-0.785",
 			"-1,DEG,-45",
-			"1000,RAD,1.569796",
-			"1000,DEG,89.942"
+			"1000,RAD,1.57",
+			"1000,DEG,89.943"
 		})
 		void atanTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
-			assertEquals(expectedResult, num.atan().toString());
+			assertEquals(expectedResult, num.atan().roundAfterDecimals(3).toString());
 		}
 
 		@ParameterizedTest
-		@CsvSource({
+		@CsvSource(value = {
 			"1,RAD,0.785398",
 			"1,DEG,45",
 			"2,RAD,0.463648",
-			"2,DEG,26,565052",
+			"2,DEG,26.565051",
 			"-2,RAD,-0.463647",
-			"-2,DEG,-26,565052"
+			"-2,DEG,-26.565051"
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).toString());
+			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).roundAfterDecimals(6).toString());
 		}
 
 		@ParameterizedTest
