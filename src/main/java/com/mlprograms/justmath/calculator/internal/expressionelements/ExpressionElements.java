@@ -1,6 +1,8 @@
 package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +103,9 @@ public class ExpressionElements {
 	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
+			new ZeroArgumentFunction(PI, 1, BigNumbers::pi),
+			new ZeroArgumentFunction(EULERS_NUMBER, 1, BigNumbers::e),
+			//
 			new Parenthesis(Parenthesis.Type.LEFT),
 			new Parenthesis(Parenthesis.Type.RIGHT),
 			new Separator(SEP_SEMICOLON),
