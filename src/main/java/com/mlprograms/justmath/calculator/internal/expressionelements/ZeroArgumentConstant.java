@@ -1,17 +1,17 @@
 package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.ZeroArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expressionelements.operations.ZeroArgumentConstantOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
 
-public class ZeroArgumentFunction extends Function {
+public class ZeroArgumentConstant extends Function {
 
-	private final ZeroArgumentFunctionOperation operation;
+	private final ZeroArgumentConstantOperation operation;
 
-	public ZeroArgumentFunction(String symbol, ZeroArgumentFunctionOperation operation) {
+	public ZeroArgumentConstant(String symbol, ZeroArgumentConstantOperation operation) {
 		super(symbol, 1, 0);
 		this.operation = operation;
 	}
