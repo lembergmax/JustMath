@@ -11,8 +11,8 @@ public class ZeroArgumentFunction extends Function {
 
 	private final ZeroArgumentFunctionOperation operation;
 
-	public ZeroArgumentFunction(String symbol, int precedence, ZeroArgumentFunctionOperation operation) {
-		super(symbol, precedence, 0);
+	public ZeroArgumentFunction(String symbol, ZeroArgumentFunctionOperation operation) {
+		super(symbol, 1, 0);
 		this.operation = operation;
 	}
 
