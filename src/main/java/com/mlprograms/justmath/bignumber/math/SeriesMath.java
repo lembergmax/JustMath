@@ -9,6 +9,7 @@ import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Utility class for performing mathematical series operations with arbitrary precision.
@@ -80,7 +81,7 @@ public class SeriesMath {
 		}
 
 		while (kStartClone.isLessThanOrEqualTo(kEnd)) {
-			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation.replace("k", kStartClone.toString(locale)));
+			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, Map.of("k", kStartClone));
 			result = result.add(currentCalculation);
 			kStartClone = kStartClone.add(BigNumbers.ONE);
 		}
