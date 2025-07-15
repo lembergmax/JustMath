@@ -9,7 +9,9 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.Map;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.TWO;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
@@ -126,11 +128,22 @@ public class InverseTrigonometricMath {
 	public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		BigDecimal result = BigDecimalMath.atan(argument.toBigDecimal(), mathContext);
+		// TODO: check calculation result
+
+		BigNumber result = SeriesMath.summation(
+			ZERO,
+			new BigNumber(String.valueOf(mathContext.getPrecision())),
+			"((-1)^k)*(" + argument + "^(2k+1))/(2k+1)",
+			mathContext,
+			trigonometricMode,
+			locale
+		);
+
 		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+			result = new BigNumber(bigDecimalRadiansToDegrees(result.toBigDecimal(), mathContext, locale).toPlainString(), locale, mathContext);
 		}
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+
+		return result;
 	}
 
 	/**
@@ -168,17 +181,20 @@ public class InverseTrigonometricMath {
 	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (argument.isEqualTo(ZERO)) {
-			throw new ArithmeticException("acot(x) is undefined for x = 0");
-		}
+		// TODO
+		return null;
 
-		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
-
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-		}
-
-		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
+//		if (argument.isEqualTo(ZERO)) {
+//			throw new ArithmeticException("acot(x) is undefined for x = 0");
+//		}
+//
+//		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
+//
+//		if (trigonometricMode == TrigonometricMode.DEG) {
+//			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+//		}
+//
+//		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
 	}
 
 }
