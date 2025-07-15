@@ -7,7 +7,7 @@ import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface ZeroArgumentFunctionOperation {
+public interface ZeroArgumentConstantOperation {
 
 	BigNumber apply(MathContext mathContext, Locale locale);
 
