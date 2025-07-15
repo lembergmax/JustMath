@@ -65,6 +65,7 @@ public class SeriesMath {
 		MathUtils.checkMathContext(mathContext);
 
 		CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
+
 		BigNumber result = BigNumbers.ZERO;
 		BigNumber kStartClone = kStart.clone();
 
