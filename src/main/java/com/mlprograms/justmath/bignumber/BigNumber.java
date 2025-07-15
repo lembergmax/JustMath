@@ -88,7 +88,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the string representation of the number
 	 */
 	public BigNumber(@NonNull final String number) {
-		this(number, Locale.getDefault());
+		this(number, Locale.US);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
-		this(number, Locale.getDefault(), DEFAULT_MATH_CONTEXT, trigonometricMode);
+		this(number, Locale.US, DEFAULT_MATH_CONTEXT, trigonometricMode);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the math context to use for precision and rounding
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
-		this(number, Locale.getDefault(), mathContext);
+		this(number, Locale.US, mathContext);
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the BigDecimal value to convert
 	 */
 	public BigNumber(@NonNull final BigDecimal bigDecimal) {
-		this(bigDecimal, Locale.getDefault());
+		this(bigDecimal, Locale.US);
 	}
 
 	/**
