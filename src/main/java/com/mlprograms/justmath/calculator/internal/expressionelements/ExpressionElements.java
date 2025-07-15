@@ -102,8 +102,8 @@ public class ExpressionElements {
 	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
-			new ZeroArgumentFunction(PI, BigNumbers::pi),
-			new ZeroArgumentFunction(EULERS_NUMBER, BigNumbers::e),
+			new ZeroArgumentConstant(PI, BigNumbers::pi),
+			new ZeroArgumentConstant(EULERS_NUMBER, BigNumbers::e),
 			//
 			new Parenthesis(Parenthesis.Type.LEFT),
 			new Parenthesis(Parenthesis.Type.RIGHT),
