@@ -12,6 +12,7 @@ import lombok.NonNull;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
@@ -119,14 +120,55 @@ public class CalculatorEngine {
 	 * @return result as string, rounded if necessary
 	 */
 	public BigNumber evaluate(@NonNull String expression) {
+		return evaluate(expression, Map.of());
+	}
+
+	/**
+	 * Evaluates a mathematical expression with optional variable substitution.
+	 *
+	 * @param expression
+	 * 	the input string expression to evaluate
+	 * @param variables
+	 * 	a map of variable names with their BigNumber values
+	 *
+	 * @return the result as a BigNumber, trimmed of trailing zeros
+	 */
+	public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
 		// Tokenize the input string
 		List<Token> tokens = tokenizer.tokenize(expression);
+
+		replaceVariables(tokens, variables);
 
 		// Parse to postfix notation using shunting yard algorithm
 		List<Token> postfix = parser.toPostfix(tokens);
 
 		// Evaluate the postfix expression to a BigDecimal result
 		return evaluator.evaluate(postfix).trim();
+	}
+
+	/**
+	 * Replaces variable tokens in the provided list with their corresponding values from the variable map.
+	 * If a variable is not defined in the map, throws an IllegalArgumentException.
+	 *
+	 * @param tokens
+	 * 	the list of tokens to process and replace variables in
+	 * @param variables
+	 * 	a map of variable names with their BigNumber values
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if a variable token does not have a corresponding value in the map
+	 */
+	private void replaceVariables(List<Token> tokens, Map<String, BigNumber> variables) {
+		for (int i = 0; i < tokens.size(); i++) {
+			Token token = tokens.get(i);
+			if (token.getType() == Token.Type.VARIABLE) {
+				BigNumber value = variables.get(token.getValue());
+				if (value == null) {
+					throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
+				}
+				tokens.set(i, new Token(Token.Type.NUMBER, value.toString()));
+			}
+		}
 	}
 
 }
