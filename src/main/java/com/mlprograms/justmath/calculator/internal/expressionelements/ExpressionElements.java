@@ -2,7 +2,6 @@ package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +88,7 @@ public class ExpressionElements {
 	//
 	public static final String FUNC_RANDINT = "RandInt";
 	//
-	public static final String FUNC_SUMM = "summ";
+	public static final String FUNC_SUMM = "sum";
 	public static final String FUNC_SUMM_S = "∑";
 
 	/*
@@ -103,8 +102,8 @@ public class ExpressionElements {
 	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
-			new ZeroArgumentFunction(PI, 1, BigNumbers::pi),
-			new ZeroArgumentFunction(EULERS_NUMBER, 1, BigNumbers::e),
+			new ZeroArgumentFunction(PI, BigNumbers::pi),
+			new ZeroArgumentFunction(EULERS_NUMBER, BigNumbers::e),
 			//
 			new Parenthesis(Parenthesis.Type.LEFT),
 			new Parenthesis(Parenthesis.Type.RIGHT),
