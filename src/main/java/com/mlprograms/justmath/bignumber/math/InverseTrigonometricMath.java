@@ -179,15 +179,6 @@ public class InverseTrigonometricMath {
 		}
 
 		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
-
-//		BigDecimal oneOverX = BigDecimal.ONE.divide(argument.toBigDecimal(), mathContext);
-//		BigDecimal result = BigDecimalMath.atan(oneOverX, mathContext);
-
-//		if (trigonometricMode == TrigonometricMode.DEG) {
-//			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-//		}
-
-		// return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
 }
