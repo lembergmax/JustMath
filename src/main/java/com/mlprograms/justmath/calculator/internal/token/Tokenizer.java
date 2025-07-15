@@ -171,7 +171,11 @@ public class Tokenizer {
 
 	/**
 	 * Inserts implicit multiplication tokens into the token list where a multiplication is implied
-	 * by adjacent tokens like "(2)3", "2(3)", or "π(4)". Does not insert '*' if an explicit operator exists.
+	 * by adjacent tokens like "(2)3", "2(3)", "π(4)", or "ka".
+	 * <p>
+	 * <strong>Note:</strong> Implicit multiplication for constants only works for symbols
+	 * already defined as {@link ExpressionElements} in the registry. New or unregistered symbols
+	 * will not be recognized and may lead to an {@link IllegalArgumentException}.
 	 *
 	 * @param tokens
 	 * 	the list of tokens to scan and modify
@@ -218,13 +222,14 @@ public class Tokenizer {
 			(current.getType() == Token.Type.NUMBER
 				 && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION))
 				|| (current.getType() == Token.Type.RIGHT_PAREN
-					    && (next.getType() == Token.Type.NUMBER
-						        || next.getType() == Token.Type.FUNCTION
-						        || next.getType() == Token.Type.LEFT_PAREN))
-				|| ((current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
-					    && isZeroArgConstant(next))
+					    && (next.getType() == Token.Type.NUMBER || next.getType() == Token.Type.FUNCTION || next.getType() == Token.Type.LEFT_PAREN))
+				|| ((current.getType() == Token.Type.NUMBER || isZeroArgConstant(current)) && isZeroArgConstant(next))
 				|| (isZeroArgConstant(current) && next.getType() == Token.Type.NUMBER)
-				|| (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.FUNCTION);
+				|| (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.FUNCTION)
+				|| (current.getType() == Token.Type.VARIABLE && next.getType() == Token.Type.VARIABLE)
+				|| (current.getType() == Token.Type.VARIABLE && next.getType() == Token.Type.CONSTANT)
+				|| (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.VARIABLE)
+			;
 	}
 
 	/**
@@ -519,8 +524,12 @@ public class Tokenizer {
 				if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
 					// must not be in the beginning or after another expressionElement
 					Token previous = tokens.getLast();
-					if (tokens.isEmpty() || (previous.getType() != Token.Type.NUMBER && previous.getType() != Token.Type.RIGHT_PAREN)) {
-						throw new IllegalArgumentException("Factorial '!' must follow a number or closing parenthesis");
+					if (tokens.isEmpty() ||
+						    !(previous.getType() == Token.Type.NUMBER
+							      || previous.getType() == Token.Type.RIGHT_PAREN
+							      || previous.getType() == Token.Type.VARIABLE
+							      || previous.getType() == Token.Type.CONSTANT)) {
+						throw new IllegalArgumentException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
 					}
 
 					// always tokenize as an expressionElement
@@ -533,6 +542,16 @@ public class Tokenizer {
 				tokens.add(new Token(type, candidate));
 				return length;
 			}
+		}
+
+		StringBuilder variable = new StringBuilder();
+		while (startIndex < expression.length() && Character.isLetter(expression.charAt(startIndex))) {
+			variable.append(expression.charAt(startIndex));
+			startIndex++;
+		}
+		if (!variable.isEmpty()) {
+			tokens.add(new Token(Token.Type.VARIABLE, variable.toString()));
+			return variable.length();
 		}
 
 		return 0;
