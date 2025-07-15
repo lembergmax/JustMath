@@ -49,7 +49,8 @@ public class Token {
 		LEFT_PAREN,
 		RIGHT_PAREN,
 		SEMICOLON,
-		STRING
+		STRING,
+		CONSTANT
 	}
 
 }
