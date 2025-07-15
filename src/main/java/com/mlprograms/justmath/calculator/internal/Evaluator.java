@@ -66,7 +66,7 @@ public class Evaluator {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case STRING -> stack.push(token.getValue());
-				case OPERATOR, FUNCTION -> {
+				case OPERATOR, FUNCTION, CONSTANT -> {
 					ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
 						                                      .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
 
