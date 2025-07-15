@@ -48,7 +48,8 @@ public class Token {
 		FUNCTION,
 		LEFT_PAREN,
 		RIGHT_PAREN,
-		SEMICOLON
+		SEMICOLON,
+		STRING
 	}
 
 }
