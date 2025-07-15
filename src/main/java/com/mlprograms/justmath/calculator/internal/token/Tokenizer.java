@@ -223,7 +223,8 @@ public class Tokenizer {
 						        || next.getType() == Token.Type.LEFT_PAREN))
 				|| ((current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
 					    && isZeroArgConstant(next))
-				|| (isZeroArgConstant(current) && next.getType() == Token.Type.NUMBER);
+				|| (isZeroArgConstant(current) && next.getType() == Token.Type.NUMBER)
+				|| (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.FUNCTION);
 	}
 
 	/**
@@ -279,8 +280,8 @@ public class Tokenizer {
 		char c = expression.charAt(index);
 		String cString = String.valueOf(c);
 
-		if (cString.equals(ExpressionElements.OP_MINUS) || cString.equals(ExpressionElements.OP_PLUS)
-			                                                   && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
+		if ((cString.equals(ExpressionElements.OP_MINUS) || cString.equals(ExpressionElements.OP_PLUS))
+			    && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
 			if (index == 0) {
 				return true; // Start of expression
 			}
