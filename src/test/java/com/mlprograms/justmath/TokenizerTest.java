@@ -325,8 +325,15 @@ class TokenizerTest {
 
 	@Test
 	void testUpperCaseConstants() {
-		assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize("PI"));
-		assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize("E"));
+		List<Token> piTokens = tokenizer.tokenize("PI");
+		assertEquals(List.of(
+			new Token(Token.Type.VARIABLE, "PI")
+		), piTokens);
+
+		List<Token> eTokens = tokenizer.tokenize("E");
+		assertEquals(List.of(
+			new Token(Token.Type.VARIABLE, "E")
+		), eTokens);
 	}
 
 	@Test
