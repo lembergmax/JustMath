@@ -2,6 +2,7 @@ package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -60,6 +61,8 @@ public class SeriesMath {
 	//    -> vielleicht auch den parser und den evaluator anpassen?
 	//  - Tests schreiben
 	public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
 		CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
 		BigNumber result = BigNumbers.ZERO;
 		BigNumber kStartClone = kStart.clone();
@@ -77,7 +80,7 @@ public class SeriesMath {
 		}
 
 		while (kStartClone.isLessThanOrEqualTo(kEnd)) {
-			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation.replace("k", kStart.toString(locale)));
+			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation.replace("k", kStartClone.toString(locale)));
 			result = result.add(currentCalculation);
 			kStartClone = kStartClone.add(BigNumbers.ONE);
 		}
