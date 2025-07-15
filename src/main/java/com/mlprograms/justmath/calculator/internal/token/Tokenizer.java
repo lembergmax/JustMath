@@ -1,16 +1,13 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.expressionelements.Parenthesis;
-import com.mlprograms.justmath.calculator.internal.expressionelements.Separator;
+import com.mlprograms.justmath.calculator.internal.expressionelements.*;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -110,15 +107,14 @@ public class Tokenizer {
 	 */
 	public List<Token> tokenize(String input) {
 		List<Token> tokens = new ArrayList<>();
-		String expr = removeWhitespace(input);
+		String expression = removeWhitespace(input);
 		int index = 0;
 
-		// Tokenize expression character by character
-		while (index < expr.length()) {
-			char c = expr.charAt(index);
+		while (index < expression.length()) {
+			char c = expression.charAt(index);
 
-			if (isSignedNumberStart(expr, index)) {
-				index = tokenizeNumber(expr, index, tokens);
+			if (isSignedNumberStart(expression, index)) {
+				index = tokenizeNumber(expression, index, tokens);
 			} else if (isLeftParenthesis(c)) {
 				tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(c)));
 				index++;
@@ -128,8 +124,31 @@ public class Tokenizer {
 			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
+			} else if (isSummation(expression, index)) {
+				String functionSymbol = expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index)
+					                        ? ExpressionElements.FUNC_SUMM_S
+					                        : ExpressionElements.FUNC_SUMM;
+
+				int functionLength = functionSymbol.length();
+				int closingParenthesis = findClosingParenthesis(expression, index + functionLength);
+				if (closingParenthesis < 0) {
+					throw new IllegalArgumentException("Unmatched '(' in summation");
+				}
+
+				String inside = expression.substring(index + functionLength + 1, closingParenthesis);
+				String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
+				if (parts.length != 3) {
+					throw new IllegalArgumentException("Summation must have three arguments");
+				}
+
+				tokens.add(new Token(Token.Type.NUMBER, parts[ 0 ].trim()));
+				tokens.add(new Token(Token.Type.NUMBER, parts[ 1 ].trim()));
+				tokens.add(new Token(Token.Type.STRING, parts[ 2 ].trim()));
+
+				tokens.add(new Token(Token.Type.FUNCTION, functionSymbol));
+				index = closingParenthesis + 1;
 			} else {
-				int lengthOfMatch = matchOtherOperatorOrFunction(expr, index, tokens);
+				int lengthOfMatch = matchOtherOperatorOrFunction(expression, index, tokens);
 				if (lengthOfMatch > 0) {
 					index += lengthOfMatch;
 				} else {
@@ -162,23 +181,65 @@ public class Tokenizer {
 			Token current = tokens.get(i);
 			Token next = tokens.get(i + 1);
 
-			// Skip if next token is an operator or semicolon – no implicit * needed
+			// Skip if the next token is an operator or semicolon – no implicit * needed
 			if (next.getType() == Token.Type.OPERATOR || next.getType() == Token.Type.SEMICOLON) {
 				continue;
 			}
 
 			// Insert * where implicit multiplication is likely
-			boolean needsMultiplication =
-				current.getType() == Token.Type.NUMBER
-					&& (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION)
-					|| current.getType() == Token.Type.RIGHT_PAREN
-						   && (next.getType() == Token.Type.NUMBER || next.getType() == Token.Type.FUNCTION || next.getType() == Token.Type.LEFT_PAREN);
-
-			if (needsMultiplication) {
+			if (needsMultiplication(current, next)) {
 				tokens.add(i + 1, new Token(Token.Type.OPERATOR, "*"));
 				i++; // Skip the inserted token
 			}
 		}
+	}
+
+	/**
+	 * Determines whether implicit multiplication should be inserted between two tokens.
+	 * <p>
+	 * Returns true if the combination of `current` and `next` tokens represents a context
+	 * where multiplication is implied, such as:
+	 * <ul>
+	 *   <li>Number followed by left parenthesis or function</li>
+	 *   <li>Right parenthesis followed by number, function, or left parenthesis</li>
+	 *   <li>Number, variable, or zero-argument constant followed by a zero-argument function</li>
+	 *   <li>Zero-argument function followed by number or variable</li>
+	 * </ul>
+	 *
+	 * @param current
+	 * 	the current token in the sequence
+	 * @param next
+	 * 	the next token in the sequence
+	 *
+	 * @return true if implicit multiplication is needed, false otherwise
+	 */
+	private boolean needsMultiplication(Token current, Token next) {
+		return
+			(current.getType() == Token.Type.NUMBER
+				 && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION))
+				|| (current.getType() == Token.Type.RIGHT_PAREN
+					    && (next.getType() == Token.Type.NUMBER
+						        || next.getType() == Token.Type.FUNCTION
+						        || next.getType() == Token.Type.LEFT_PAREN))
+				|| ((current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
+					    && isZeroArgConstant(next))
+				|| (isZeroArgConstant(current) && next.getType() == Token.Type.NUMBER);
+	}
+
+	/**
+	 * Checks if the given token represents a zero-argument constant.
+	 * <p>
+	 * This method looks up the token's symbol in the {@link ExpressionElements} registry
+	 * and verifies if the associated {@link ExpressionElement} is an instance of {@link ZeroArgumentConstant}.
+	 *
+	 * @param token
+	 * 	the token to check
+	 *
+	 * @return true if the token is a zero-argument constant, false otherwise
+	 */
+	private boolean isZeroArgConstant(Token token) {
+		Optional<ExpressionElement> expressionElementOptional = ExpressionElements.findBySymbol(token.getValue());
+		return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == ZeroArgumentConstant.class;
 	}
 
 	/**
@@ -216,8 +277,10 @@ public class Tokenizer {
 	 */
 	private boolean isSignedNumberStart(String expression, int index) {
 		char c = expression.charAt(index);
+		String cString = String.valueOf(c);
 
-		if ((c == '-' || c == '+') && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
+		if (cString.equals(ExpressionElements.OP_MINUS) || cString.equals(ExpressionElements.OP_PLUS)
+			                                                   && index + 1 < expression.length() && isDigitOrDecimal(expression.charAt(index + 1))) {
 			if (index == 0) {
 				return true; // Start of expression
 			}
@@ -237,21 +300,48 @@ public class Tokenizer {
 	}
 
 	/**
+	 * Checks if the given character represents a summation function symbol.
+	 *
+	 * @param expression
+	 * 	the expression to check
+	 *
+	 * @return true if the character matches the summation function symbol, false otherwise
+	 */
+	private boolean isSummation(String expression, int index) {
+		return expression.startsWith(ExpressionElements.FUNC_SUMM + ExpressionElements.PAR_LEFT, index) || expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index);
+	}
+
+	/**
 	 * Removes all whitespace characters from the input string.
+	 *
+	 * @param input
+	 * 	the string to process
+	 *
+	 * @return the input string with all whitespace removed
 	 */
 	private String removeWhitespace(String input) {
 		return input.replaceAll("\\s+", "");
 	}
 
 	/**
-	 * Returns true if the character is a digit or a decimal separator.
+	 * Checks if the given character is a digit or a decimal point.
+	 *
+	 * @param c
+	 * 	the character to check
+	 *
+	 * @return true if the character is a digit or '.', false otherwise
 	 */
 	private boolean isDigitOrDecimal(char c) {
 		return Character.isDigit(c) || c == '.';
 	}
 
 	/**
-	 * Returns true if the character is an opening parenthesis.
+	 * Determines if the given character is a left parenthesis, according to the expression elements registry.
+	 *
+	 * @param character
+	 * 	the character to check
+	 *
+	 * @return true if the character is a left parenthesis, false otherwise
 	 */
 	private boolean isLeftParenthesis(char character) {
 		return ExpressionElements.findBySymbol(String.valueOf(character))
@@ -260,7 +350,12 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Returns true if the character is a closing parenthesis.
+	 * Determines if the given character is a right parenthesis, according to the expression elements registry.
+	 *
+	 * @param character
+	 * 	the character to check
+	 *
+	 * @return true if the character is a right parenthesis, false otherwise
 	 */
 	private boolean isRightParenthesis(char character) {
 		return ExpressionElements.findBySymbol(String.valueOf(character))
@@ -269,7 +364,12 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Returns true if the character is a separator.
+	 * Determines if the given character is a separator, according to the expression elements registry.
+	 *
+	 * @param character
+	 * 	the character to check
+	 *
+	 * @return true if the character is a separator, false otherwise
 	 */
 	private boolean isSeparator(char character) {
 		return ExpressionElements.findBySymbol(String.valueOf(character))
@@ -408,18 +508,14 @@ public class Tokenizer {
 
 			String candidate = expression.substring(startIndex, endIndex);
 
-			if (candidate.equalsIgnoreCase(ExpressionElements.PI)) {
-				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()));
-				return length;
-			}
-
-			if (candidate.equalsIgnoreCase(ExpressionElements.EULERS_NUMBER)) {
-				tokens.add(new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()));
+			Optional<ExpressionElement> zeroArg = ExpressionElements.findBySymbol(candidate).filter(element -> element instanceof ZeroArgumentConstant);
+			if (zeroArg.isPresent()) {
+				tokens.add(new Token(Token.Type.CONSTANT, zeroArg.get().getSymbol()));
 				return length;
 			}
 
 			if (validOperatorsAndFunctions.contains(candidate)) {
-				if (candidate.equals("!")) {
+				if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
 					// must not be in the beginning or after another expressionElement
 					Token previous = tokens.getLast();
 					if (tokens.isEmpty() || (previous.getType() != Token.Type.NUMBER && previous.getType() != Token.Type.RIGHT_PAREN)) {
@@ -427,7 +523,7 @@ public class Tokenizer {
 					}
 
 					// always tokenize as an expressionElement
-					tokens.add(new Token(Token.Type.OPERATOR, "!"));
+					tokens.add(new Token(Token.Type.OPERATOR, ExpressionElements.OP_FACTORIAL));
 					return length;
 				}
 
@@ -439,6 +535,40 @@ public class Tokenizer {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Finds the index of the closing parenthesis that matches the opening parenthesis
+	 * at the specified position in the expression string.
+	 * <p>
+	 * This method tracks the nesting depth of parentheses starting from {@code openIndex}.
+	 * It increments the depth for each left parenthesis and decrements for each right parenthesis.
+	 * When the depth returns to zero, the matching closing parenthesis is found.
+	 *
+	 * @param expression
+	 * 	the expression string to search
+	 * @param openIndex
+	 * 	the index of the opening parenthesis to match
+	 *
+	 * @return the index of the matching closing parenthesis, or -1 if not found
+	 */
+	private int findClosingParenthesis(String expression, int openIndex) {
+		int depth = 0;
+		for (int i = openIndex; i < expression.length(); i++) {
+			char c = expression.charAt(i);
+
+			if (isLeftParenthesis(c)) {
+				depth++;
+			} else if (isRightParenthesis(c)) {
+				depth--;
+			}
+
+			if (depth == 0) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 }
