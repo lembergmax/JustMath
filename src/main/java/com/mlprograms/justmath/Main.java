@@ -1,14 +1,9 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.math.CoordinateConversionMath;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
@@ -16,7 +11,13 @@ public class Main {
 	public static void main(String[] args) {
 
 		// TODO: only for developing purpose
-		testCalculator();
+
+		CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
+		System.out.println(calculator.evaluate("e*pi"));
+		System.out.println(calculator.evaluate("∑(0;4;2^k)"));
+		// System.out.println(calculator.evaluate("summ(0;4;2^k)"));
+
+		// testCalculator();
 
 	}
 
