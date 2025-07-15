@@ -187,7 +187,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "4"),
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.OPERATOR, "-"),
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "pi"),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.OPERATOR, "-"),
 			new Token(Token.Type.FUNCTION, "√"),
@@ -195,7 +195,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "9"),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.SEMICOLON, ";"),
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString())
+			new Token(Token.Type.CONSTANT, "e")
 		), tokens);
 	}
 
@@ -373,9 +373,9 @@ class TokenizerTest {
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.NUMBER, "2"),
 			new Token(Token.Type.OPERATOR, "+"),
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "pi"),
 			new Token(Token.Type.OPERATOR, "*"),
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "e"),
 			new Token(Token.Type.OPERATOR, "+"),
 			new Token(Token.Type.FUNCTION, "√"),
 			new Token(Token.Type.LEFT_PAREN, "("),
