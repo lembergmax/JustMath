@@ -65,12 +65,14 @@ public class Evaluator {
 		for (Token token : reversePolishNotationTokens) {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
+				case STRING -> stack.push(token.getValue());
 				case OPERATOR, FUNCTION -> {
 					ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
 						                                      .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
 
 					expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
 				}
+
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
 		}
