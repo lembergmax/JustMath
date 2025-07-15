@@ -56,7 +56,7 @@ public class Parser {
 
 		for (Token token : tokens) {
 			switch (token.getType()) {
-				case NUMBER, STRING -> output.add(token);
+				case NUMBER, STRING, CONSTANT -> output.add(token);
 				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					// Factorial is a postfix operator → add directly to the output
