@@ -12,7 +12,7 @@ public class SummationToken extends Token {
 	private final String expression;
 
 	public SummationToken(BigNumber start, BigNumber end, String expression) {
-		super(Type.SUMMATION, ExpressionElements.FUNC_SUMM_S);
+		super(Type.FUNCTION, ExpressionElements.FUNC_SUMM_S);
 		this.start = start;
 		this.end = end;
 		this.expression = expression;
