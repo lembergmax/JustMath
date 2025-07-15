@@ -50,7 +50,8 @@ public class Token {
 		RIGHT_PAREN,
 		SEMICOLON,
 		STRING,
-		CONSTANT
+		CONSTANT,
+		VARIABLE
 	}
 
 }
