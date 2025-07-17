@@ -3,11 +3,7 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -19,15 +15,19 @@ public class Main {
 		CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
 		// System.out.println(calculator.evaluate("e*pi"));
 		// System.out.println(calculator.evaluate("∑(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
-		//System.out.println(calculator.evaluate("sum(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
+		// System.out.println(calculator.evaluate("sum(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
 		// System.out.println(calculator.evaluate("summ(0;4;2^k)"));
 
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("∑(0;4;2^(k!-k))"));
 		// System.out.println(calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+ka))", Map.of("a", new BigNumber("0.5"), "ka", new BigNumber("2"))));
 
-		System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("a^2-∑(0;4;2^(k!-k*a+k^a))"));
+		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("a^2-∑(0;4;2^(k!-k*a+k^a))"));
 
-		System.out.println(calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+k^a))", Map.of("a", new BigNumber("0.5"))));
+
+		// BigNumber result = calculator.evaluate("∑(0;4;2^(a*k))", Map.of("a", new BigNumber("1.872<")));
+
+		// 11.242640687119285146405066172629094235709015626130844219530039213972197435386321116551162602982924718
+		// System.out.println(result);
 
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("piea"));
 		// System.out.println(calculator.evaluate("piea", Map.of("a", new BigNumber("0.5"))));

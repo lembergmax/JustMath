@@ -21,6 +21,8 @@ public class ThreeArgumentSummationFunction extends Function {
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		System.out.println("stack: " + stack);
+
 		String c = String.valueOf(stack.pop());
 		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
