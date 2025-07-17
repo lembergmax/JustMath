@@ -4,6 +4,7 @@ import com.mlprograms.justmath.calculator.internal.expressionelements.Expression
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a summation token in a mathematical expression.
@@ -57,6 +58,17 @@ public class SummationToken extends Token {
 
 		sb.append(ExpressionElements.PAR_RIGHT);
 		return sb.toString();
+	}
+
+	/**
+	 * Returns the concatenated string representation of all tokens in the summation expression.
+	 *
+	 * @return a string representing the calculation part of the summation
+	 */
+	public String getKCalculation() {
+		return expressionTokens.stream()
+			       .map(Token::toString)
+			       .collect(Collectors.joining());
 	}
 
 }
