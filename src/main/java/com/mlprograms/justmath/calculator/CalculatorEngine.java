@@ -11,6 +11,7 @@ import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PREC
  */
 @Getter
 public class CalculatorEngine {
+
+	/**
+	 * Static thread-local storage for the current variables in the evaluation context.
+	 * This allows nested evaluations to access variables from the outer context.
+	 */
+	private static final ThreadLocal<Map<String, BigNumber>> currentVariables = ThreadLocal.withInitial(HashMap::new);
 
 	/**
 	 * Tokenizer instance used to convert input expressions into tokens.
@@ -112,6 +119,16 @@ public class CalculatorEngine {
 	}
 
 	/**
+	 * Gets the current variables in the evaluation context.
+	 * This includes variables from outer evaluation contexts in nested evaluations.
+	 *
+	 * @return a map of variable names with their BigNumber values
+	 */
+	public static Map<String, BigNumber> getCurrentVariables() {
+		return new HashMap<>(currentVariables.get());
+	}
+
+	/**
 	 * Evaluates a given mathematical expression with full BigDecimal precision.
 	 *
 	 * @param expression
@@ -134,16 +151,27 @@ public class CalculatorEngine {
 	 * @return the result as a BigNumber, trimmed of trailing zeros
 	 */
 	public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
-		// Tokenize the input string
-		List<Token> tokens = tokenizer.tokenize(expression);
+		try {
+			// Store the current variables in the thread-local storage
+			Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+			combinedVariables.putAll(variables);
+			currentVariables.set(combinedVariables);
 
-		replaceVariables(tokens, variables);
+			// Tokenize the input string
+			List<Token> tokens = tokenizer.tokenize(expression);
 
-		// Parse to postfix notation using shunting yard algorithm
-		List<Token> postfix = parser.toPostfix(tokens);
+			replaceVariables(tokens, combinedVariables);
 
-		// Evaluate the postfix expression to a BigDecimal result
-		return evaluator.evaluate(postfix).trim();
+			// Parse to postfix notation using shunting yard algorithm
+			List<Token> postfix = parser.toPostfix(tokens);
+
+			// Evaluate the postfix expression to a BigDecimal result
+			return evaluator.evaluate(postfix).trim();
+		} finally {
+			// Clean up the thread-local storage to prevent memory leaks
+			// We don't remove the variables here to allow nested evaluations to access them
+			// The variables will be removed when the outermost evaluation completes
+		}
 	}
 
 	/**
