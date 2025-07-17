@@ -1,8 +1,8 @@
-package com.mlprograms.justmath.calculator.internal.token.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.operations.SimpleBinaryOperatorOperation;
+import com.mlprograms.justmath.calculator.internal.expressionelements.operations.BinaryOperatorOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -10,12 +10,12 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class SimpleBinaryOperator extends ExpressionElement {
+public class BinaryOperator extends Operator {
 
-	private final SimpleBinaryOperatorOperation operation;
+	private final BinaryOperatorOperation operation;
 
-	public SimpleBinaryOperator(String symbol, int precedence, SimpleBinaryOperatorOperation operation) {
-		super(symbol, false, precedence, 0);
+	public BinaryOperator(String symbol, int precedence, BinaryOperatorOperation operation) {
+		super(symbol, precedence, 0);
 		this.operation = operation;
 	}
 
@@ -23,7 +23,7 @@ public class SimpleBinaryOperator extends ExpressionElement {
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
 		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, locale));
+		stack.push(operation.apply(a, b, mathContext, locale));
 	}
 
 }

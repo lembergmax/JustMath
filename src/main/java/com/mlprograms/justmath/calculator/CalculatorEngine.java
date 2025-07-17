@@ -11,7 +11,9 @@ import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
@@ -23,6 +25,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PREC
  */
 @Getter
 public class CalculatorEngine {
+
+	/**
+	 * Static thread-local storage for the current variables in the evaluation context.
+	 * This allows nested evaluations to access variables from the outer context.
+	 */
+	private static final ThreadLocal<Map<String, BigNumber>> currentVariables = ThreadLocal.withInitial(HashMap::new);
 
 	/**
 	 * Tokenizer instance used to convert input expressions into tokens.
@@ -99,50 +107,6 @@ public class CalculatorEngine {
 	}
 
 	/**
-	 * Evaluates a mathematical expression with the specified trigonometric mode and math context.
-	 *
-	 * @param expression
-	 * 	the input mathematical expression as a string
-	 * @param trigonometricMode
-	 * 	the trigonometric mode (DEG or RAD)
-	 * @param mathContext
-	 * 	the MathContext specifying precision and rounding mode
-	 *
-	 * @return the result as a BigNumber
-	 */
-	public static BigNumber evaluate(@NonNull String expression, @NonNull TrigonometricMode trigonometricMode, @NonNull MathContext mathContext) {
-		return new CalculatorEngine(mathContext, trigonometricMode).evaluate(expression);
-	}
-
-	/**
-	 * Evaluates a mathematical expression with the specified trigonometric mode and default math context.
-	 *
-	 * @param expression
-	 * 	the input mathematical expression as a string
-	 * @param trigonometricMode
-	 * 	the trigonometric mode (DEG or RAD)
-	 *
-	 * @return the result as a BigNumber
-	 */
-	public static BigNumber evaluate(@NonNull String expression, @NonNull TrigonometricMode trigonometricMode) {
-		return CalculatorEngine.evaluate(expression, trigonometricMode, getDefaultMathContext(DEFAULT_DIVISION_PRECISION));
-	}
-
-	/**
-	 * Evaluates a mathematical expression with the specified math context and default trigonometric mode (DEG).
-	 *
-	 * @param expression
-	 * 	the input mathematical expression as a string
-	 * @param mathContext
-	 * 	the MathContext specifying precision and rounding mode
-	 *
-	 * @return the result as a BigNumber
-	 */
-	public static BigNumber evaluate(@NonNull String expression, @NonNull MathContext mathContext) {
-		return CalculatorEngine.evaluate(expression, TrigonometricMode.DEG, mathContext);
-	}
-
-	/**
 	 * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
 	 *
 	 * @param divisionPrecision
@@ -155,6 +119,16 @@ public class CalculatorEngine {
 	}
 
 	/**
+	 * Gets the current variables in the evaluation context.
+	 * This includes variables from outer evaluation contexts in nested evaluations.
+	 *
+	 * @return a map of variable names with their BigNumber values
+	 */
+	public static Map<String, BigNumber> getCurrentVariables() {
+		return new HashMap<>(currentVariables.get());
+	}
+
+	/**
 	 * Evaluates a given mathematical expression with full BigDecimal precision.
 	 *
 	 * @param expression
@@ -163,14 +137,66 @@ public class CalculatorEngine {
 	 * @return result as string, rounded if necessary
 	 */
 	public BigNumber evaluate(@NonNull String expression) {
-		// Tokenize the input string
-		List<Token> tokens = tokenizer.tokenize(expression);
+		return evaluate(expression, Map.of());
+	}
 
-		// Parse to postfix notation using shunting yard algorithm
-		List<Token> postfix = parser.toPostfix(tokens);
+	/**
+	 * Evaluates a mathematical expression with optional variable substitution.
+	 *
+	 * @param expression
+	 * 	the input string expression to evaluate
+	 * @param variables
+	 * 	a map of variable names with their BigNumber values
+	 *
+	 * @return the result as a BigNumber, trimmed of trailing zeros
+	 */
+	public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+		try {
+			// Store the current variables in the thread-local storage
+			Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+			combinedVariables.putAll(variables);
+			currentVariables.set(combinedVariables);
 
-		// Evaluate the postfix expression to a BigDecimal result
-		return evaluator.evaluate(postfix).trim();
+			// Tokenize the input string
+			List<Token> tokens = tokenizer.tokenize(expression);
+
+			replaceVariables(tokens, combinedVariables);
+
+			// Parse to postfix notation using shunting yard algorithm
+			List<Token> postfix = parser.toPostfix(tokens);
+
+			// Evaluate the postfix expression to a BigDecimal result
+			return evaluator.evaluate(postfix).trim();
+		} finally { // TODO
+			// Clean up the thread-local storage to prevent memory leaks
+			// We don't remove the variables here to allow nested evaluations to access them
+			// The variables will be removed when the outermost evaluation completes
+		}
+	}
+
+	/**
+	 * Replaces variable tokens in the provided list with their corresponding values from the variable map.
+	 * If a variable is not defined in the map, throws an IllegalArgumentException.
+	 *
+	 * @param tokens
+	 * 	the list of tokens to process and replace variables in
+	 * @param variables
+	 * 	a map of variable names with their BigNumber values
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if a variable token does not have a corresponding value in the map
+	 */
+	private void replaceVariables(List<Token> tokens, Map<String, BigNumber> variables) {
+		for (int i = 0; i < tokens.size(); i++) {
+			Token token = tokens.get(i);
+			if (token.getType() == Token.Type.VARIABLE) {
+				BigNumber value = variables.get(token.getValue());
+				if (value == null) {
+					throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
+				}
+				tokens.set(i, new Token(Token.Type.NUMBER, value.toString()));
+			}
+		}
 	}
 
 }

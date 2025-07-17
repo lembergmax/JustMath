@@ -132,7 +132,7 @@ class TokenizerTest {
 		List<Token> tokens = tokenizer.tokenize("pi");
 
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString())
+			new Token(Token.Type.CONSTANT, "pi")
 		), tokens);
 	}
 
@@ -141,7 +141,7 @@ class TokenizerTest {
 		List<Token> tokens = tokenizer.tokenize("e");
 
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString())
+			new Token(Token.Type.CONSTANT, "e")
 		), tokens);
 	}
 
@@ -187,7 +187,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "4"),
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.OPERATOR, "-"),
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "pi"),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.OPERATOR, "-"),
 			new Token(Token.Type.FUNCTION, "√"),
@@ -195,7 +195,7 @@ class TokenizerTest {
 			new Token(Token.Type.NUMBER, "9"),
 			new Token(Token.Type.RIGHT_PAREN, ")"),
 			new Token(Token.Type.SEMICOLON, ";"),
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString())
+			new Token(Token.Type.CONSTANT, "e")
 		), tokens);
 	}
 
@@ -327,12 +327,12 @@ class TokenizerTest {
 	void testUpperCaseConstants() {
 		List<Token> piTokens = tokenizer.tokenize("PI");
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString())
+			new Token(Token.Type.VARIABLE, "PI")
 		), piTokens);
 
 		List<Token> eTokens = tokenizer.tokenize("E");
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString())
+			new Token(Token.Type.VARIABLE, "E")
 		), eTokens);
 	}
 
@@ -371,7 +371,7 @@ class TokenizerTest {
 
 	@Test
 	void testLongExpressionWithAllFeatures() {
-		String expr = "(-.5)2+PI*e--√(16);(3)4";
+		String expr = "(-.5)2+pi*e--√(16);(3)4";
 		List<Token> tokens = tokenizer.tokenize(expr);
 		assertEquals(List.of(
 			new Token(Token.Type.LEFT_PAREN, "("),
@@ -380,9 +380,9 @@ class TokenizerTest {
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.NUMBER, "2"),
 			new Token(Token.Type.OPERATOR, "+"),
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "pi"),
 			new Token(Token.Type.OPERATOR, "*"),
-			new Token(Token.Type.NUMBER, BigNumbers.e(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "e"),
 			new Token(Token.Type.OPERATOR, "+"),
 			new Token(Token.Type.FUNCTION, "√"),
 			new Token(Token.Type.LEFT_PAREN, "("),
@@ -448,7 +448,7 @@ class TokenizerTest {
 	void testImplicitMultiplicationPiFunction() {
 		List<Token> tokens = tokenizer.tokenize("pi√(4)");
 		assertEquals(List.of(
-			new Token(Token.Type.NUMBER, BigNumbers.pi(mathContext).toString()),
+			new Token(Token.Type.CONSTANT, "pi"),
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.FUNCTION, "√"),
 			new Token(Token.Type.LEFT_PAREN, "("),

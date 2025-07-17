@@ -14,26 +14,13 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
- * <p>
- * The {@code BigNumber} class encapsulates decimal numbers with arbitrarily high precision and supports a wide
- * range of mathematical functions, including:
- * </p>
- * <ul>
- *   <li>Basic arithmetic (add, subtract, multiply, divide, modulo)</li>
- *   <li>Exponentiation and root operations (power, square root, cube root, nth root)</li>
- *   <li>Logarithmic functions (base-10, base-e, base-2, arbitrary base)</li>
- *   <li>Trigonometric and inverse trigonometric functions in degrees/radians/grad</li>
- *   <li>Hyperbolic and inverse hyperbolic functions</li>
- *   <li>Coordinate system conversions (polar ↔ cartesian)</li>
- *   <li>Combinatorics (factorial, combinations, permutations)</li>
- *   <li>Percentages, GCD, LCM, random integers</li>
- * </ul>
  *
  * <p>This class supports locale-specific formatting, configurable {@link MathContext} for precision,
  * and flexible angle measurement via {@link TrigonometricMode}. Input strings can be automatically
@@ -102,7 +89,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the string representation of the number
 	 */
 	public BigNumber(@NonNull final String number) {
-		this(number, Locale.getDefault());
+		this(number, Locale.US);
 	}
 
 	/**
@@ -114,7 +101,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the trigonometric mode to use
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
-		this(number, Locale.getDefault(), DEFAULT_MATH_CONTEXT, trigonometricMode);
+		this(number, Locale.US, DEFAULT_MATH_CONTEXT, trigonometricMode);
 	}
 
 	/**
@@ -152,7 +139,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the math context to use for precision and rounding
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
-		this(number, Locale.getDefault(), mathContext);
+		this(number, Locale.US, mathContext);
 	}
 
 	/**
@@ -201,7 +188,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * 	the BigDecimal value to convert
 	 */
 	public BigNumber(@NonNull final BigDecimal bigDecimal) {
-		this(bigDecimal, Locale.getDefault());
+		this(bigDecimal, Locale.US);
 	}
 
 	/**
@@ -1875,7 +1862,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Computes the two-argument arctangent of this number and the specified x number.
 	 *
-	 * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for quadrant-aware result,
+	 * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for a quadrant-aware result,
 	 * then wraps the result in a new {@code BigNumber} with the specified {@code locale}.</p>
 	 *
 	 * @param x
@@ -2183,6 +2170,185 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return CoordinateConversionMath.cartesianToPolarCoordinates(this, y, mathContext, locale);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to itself using the provided calculation string.
+	 *
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final String kCalculation) {
+		return summation(this, kCalculation);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to itself using the provided calculation string
+	 * and external variables.
+	 *
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+		return summation(this, kCalculation, externalVariables);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string and
+	 * default {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation) {
+		return summation(kEnd, kCalculation, mathContext);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * default {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+		return summation(kEnd, kCalculation, mathContext, externalVariables);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string and
+	 * {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext) {
+		return summation(kEnd, kCalculation, mathContext, trigonometricMode);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+		return summation(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and {@link TrigonometricMode}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		return summation(kEnd, kCalculation, mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+		return summation(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and {@link Locale}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
+	}
+
+	/**
+	 * Computes the summation of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, {@link Locale}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the summation
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the series
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the summation as a {@code BigNumber}
+	 */
+	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+		return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
 
 	/**
@@ -2609,15 +2775,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Rounds the value after the decimal point of this {@code BigNumber} using the specified {@link MathContext}.
+	 * Rounds the value after the decimal point to the specified precision.
+	 *
+	 * @param precision
+	 * 	the number of decimal places to round to
+	 *
+	 * @return a new {@code BigNumber} rounded to the given precision
+	 */
+	public BigNumber roundAfterDecimals(final int precision) {
+		return roundAfterDecimals(new MathContext(precision));
+	}
+
+	/**
+	 * Rounds the value after the decimal point using the provided {@link MathContext}.
 	 *
 	 * @param mathContext
 	 * 	the context specifying precision and rounding mode
 	 *
-	 * @return a new {@code BigNumber} representing the rounded value after the decimal
+	 * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-		return round(new BigNumber(getValueAfterDecimal()), mathContext);
+		this.valueAfterDecimal = round(new BigNumber(getValueAfterDecimal()), mathContext).toString();
+		return this.trim();
 	}
 
 	/**
