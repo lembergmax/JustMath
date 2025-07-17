@@ -132,6 +132,7 @@ public class InverseTrigonometricMath {
 
 		CalculatorEngine calculator = new CalculatorEngine(mathContext, trigonometricMode);
 		String semicolon = ExpressionElements.SEP_SEMICOLON;
+
 		BigNumber result =
 			calculator.evaluate(
 				ExpressionElements.FUNC_SUMM_S +
