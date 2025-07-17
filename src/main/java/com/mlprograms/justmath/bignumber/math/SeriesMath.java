@@ -59,11 +59,6 @@ public class SeriesMath {
 	 * @see BigNumber
 	 * @see TrigonometricMode
 	 */
-	// TODO:
-	//  - in ExpressionElements hinzufügen -> ThreeArgumentFunction (oder so) hinzufügen
-	//  - Tokenizer anpassen, so das er ∑(number1; number2; berechnung) tokenisieren kann
-	//    -> vielleicht auch den parser und den evaluator anpassen?
-	//  - Tests schreiben
 	public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return summation(kStart, kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
 	}
