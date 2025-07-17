@@ -6,7 +6,6 @@ import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
 import com.mlprograms.justmath.bignumber.math.SeriesMath;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.SummationToken;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -86,7 +85,7 @@ public class Evaluator {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case STRING -> stack.push(token.getValue());
-				case SUMMATION -> {
+				/*case SUMMATION -> {
 					// TODO: try to use the ExpressionElement.apply method
 					SummationToken summationToken = (SummationToken) token;
 
@@ -98,8 +97,8 @@ public class Evaluator {
 					BigNumber result = evaluateSummation(start, end, summationToken.getKCalculation());
 
 					stack.push(result);
-				}
-				case OPERATOR, FUNCTION, CONSTANT -> {
+				}*/
+				case OPERATOR, FUNCTION, CONSTANT, SUMMATION -> {
 					ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
 						                                      .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
 
