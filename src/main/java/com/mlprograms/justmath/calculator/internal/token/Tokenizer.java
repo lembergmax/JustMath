@@ -141,11 +141,16 @@ public class Tokenizer {
 					throw new IllegalArgumentException("Summation must have three arguments");
 				}
 
-				tokens.add(new Token(Token.Type.NUMBER, parts[ 0 ].trim()));
-				tokens.add(new Token(Token.Type.NUMBER, parts[ 1 ].trim()));
-				tokens.add(new Token(Token.Type.STRING, parts[ 2 ].trim()));
+				String start = parts[0].trim();
+				String end = parts[1].trim();
+				String expressionPart = parts[2].trim();
 
-				tokens.add(new Token(Token.Type.FUNCTION, functionSymbol));
+				// Recursively tokenize the expression part
+				List<Token> expressionTokens = tokenize(expressionPart);
+
+				// Create a SummationToken with the start, end, and expression tokens
+				tokens.add(new SummationToken(functionSymbol, start, end, expressionTokens));
+
 				index = closingParenthesis + 1;
 			} else {
 				int lengthOfMatch = matchOtherOperatorOrFunction(expression, index, tokens);
