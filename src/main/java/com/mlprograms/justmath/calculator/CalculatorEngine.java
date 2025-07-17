@@ -167,7 +167,7 @@ public class CalculatorEngine {
 
 			// Evaluate the postfix expression to a BigDecimal result
 			return evaluator.evaluate(postfix).trim();
-		} finally {
+		} finally { // TODO
 			// Clean up the thread-local storage to prevent memory leaks
 			// We don't remove the variables here to allow nested evaluations to access them
 			// The variables will be removed when the outermost evaluation completes
