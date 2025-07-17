@@ -141,16 +141,6 @@ public class Tokenizer {
 					throw new IllegalArgumentException("Summation must have three arguments");
 				}
 
-				String start = parts[ 0 ].trim();
-				String end = parts[ 1 ].trim();
-				String expressionPart = parts[ 2 ].trim();
-
-				// Recursively tokenize the expression part
-				List<Token> expressionTokens = tokenize(expressionPart);
-
-				// Create a SummationToken with the start, end, and expression tokens
-				// tokens.add(new SummationToken(functionSymbol, start, end, expressionTokens));
-
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 0 ]));
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 1 ]));
 				tokens.add(new Token(Token.Type.STRING, parts[ 2 ]));
