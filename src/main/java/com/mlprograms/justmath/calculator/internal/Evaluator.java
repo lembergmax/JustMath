@@ -85,19 +85,6 @@ public class Evaluator {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case STRING -> stack.push(token.getValue());
-				/*case SUMMATION -> {
-					// TODO: try to use the ExpressionElement.apply method
-					SummationToken summationToken = (SummationToken) token;
-
-					// Get the start and end values
-					BigNumber start = new BigNumber(summationToken.getStart());
-					BigNumber end = new BigNumber(summationToken.getEnd());
-
-					// Evaluate the expression tokens for each value of k
-					BigNumber result = evaluateSummation(start, end, summationToken.getKCalculation());
-
-					stack.push(result);
-				}*/
 				case OPERATOR, FUNCTION, CONSTANT, SUMMATION -> {
 					ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
 						                                      .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
