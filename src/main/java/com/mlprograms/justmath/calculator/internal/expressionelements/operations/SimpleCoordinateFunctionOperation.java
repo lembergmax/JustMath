@@ -1,4 +1,4 @@
-package com.mlprograms.justmath.calculator.internal.token.expressionelements.operations;
+package com.mlprograms.justmath.calculator.internal.expressionelements.operations;
 
 
 import com.mlprograms.justmath.bignumber.BigNumber;

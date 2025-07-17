@@ -2,15 +2,17 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
@@ -89,7 +91,6 @@ public class InverseTrigonometricMath {
 	 * @throws ArithmeticException
 	 * 	if argument is outside [-1, 1]
 	 */
-	// TODO
 	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
@@ -127,11 +128,28 @@ public class InverseTrigonometricMath {
 	public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		BigDecimal result = BigDecimalMath.atan(argument.toBigDecimal(), mathContext);
+		// TODO: check calculation result
+
+		CalculatorEngine calculator = new CalculatorEngine(mathContext, trigonometricMode);
+		String semicolon = ExpressionElements.SEP_SEMICOLON;
+
+		BigNumber result =
+			calculator.evaluate(
+				ExpressionElements.FUNC_SUMM_S +
+					ExpressionElements.PAR_LEFT +
+					BigNumbers.ZERO +
+					semicolon +
+					mathContext.getPrecision() +
+					semicolon +
+					"((-1)^k)*(" + argument + "^(2*k+1))/(2*k+1)" +
+					ExpressionElements.PAR_RIGHT
+			);
+
 		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+			result = new BigNumber(bigDecimalRadiansToDegrees(result.toBigDecimal(), mathContext, locale).toPlainString(), locale, mathContext);
 		}
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+
+		return result;
 	}
 
 	/**
@@ -169,18 +187,20 @@ public class InverseTrigonometricMath {
 	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (argument.isEqualTo(ZERO)) {
-			throw new ArithmeticException("acot(x) is undefined for x = 0");
-		}
+		// TODO
+		return null;
 
-		BigDecimal oneOverX = BigDecimal.ONE.divide(argument.toBigDecimal(), mathContext);
-		BigDecimal result = BigDecimalMath.atan(oneOverX, mathContext);
-
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-		}
-
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+//		if (argument.isEqualTo(ZERO)) {
+//			throw new ArithmeticException("acot(x) is undefined for x = 0");
+//		}
+//
+//		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
+//
+//		if (trigonometricMode == TrigonometricMode.DEG) {
+//			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+//		}
+//
+//		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
 	}
 
 }

@@ -1,10 +1,11 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.Optional;
 
@@ -14,21 +15,12 @@ import java.util.Optional;
  */
 @Getter
 @EqualsAndHashCode
+@ToString
 @AllArgsConstructor
 public class Token {
 
-	private Token.Type type;
+	private Type type;
 	private String value;
-
-	/**
-	 * Returns a string representation of this token.
-	 *
-	 * @return token as a string
-	 */
-	@Override
-	public String toString() {
-		return type + "(" + value + ")";
-	}
 
 	/**
 	 * Returns the matching ArithmeticOperator if available.
@@ -48,7 +40,10 @@ public class Token {
 		FUNCTION,
 		LEFT_PAREN,
 		RIGHT_PAREN,
-		SEMICOLON
+		SEMICOLON,
+		STRING,
+		CONSTANT,
+		VARIABLE,
+		SUMMATION
 	}
-
 }

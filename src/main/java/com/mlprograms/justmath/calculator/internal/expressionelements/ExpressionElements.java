@@ -1,6 +1,7 @@
-package com.mlprograms.justmath.calculator.internal.token.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,9 @@ public class ExpressionElements {
 
 	public static final Map<String, ExpressionElement> registry = new HashMap<>();
 
+	public static final String PI = "pi";
+	public static final String EULERS_NUMBER = "e";
+	//
 	public static final String SEP_SEMICOLON = ";";
 	public static final String PAR_LEFT = "(";
 	public static final String PAR_RIGHT = ")";
@@ -83,6 +87,9 @@ public class ExpressionElements {
 	public static final String FUNC_POL = "Pol";
 	//
 	public static final String FUNC_RANDINT = "RandInt";
+	//
+	public static final String FUNC_SUMM = "sum";
+	public static final String FUNC_SUMM_S = "∑";
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
@@ -95,6 +102,9 @@ public class ExpressionElements {
 	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
+			new ZeroArgumentConstant(PI, BigNumbers::pi),
+			new ZeroArgumentConstant(EULERS_NUMBER, BigNumbers::e),
+			//
 			new Parenthesis(Parenthesis.Type.LEFT),
 			new Parenthesis(Parenthesis.Type.RIGHT),
 			new Separator(SEP_SEMICOLON),
@@ -158,7 +168,10 @@ public class ExpressionElements {
 			new CoordinateFunction(FUNC_REC, 6, BigNumber::polarToCartesianCoordinates),
 			new SimpleCoordinateFunction(FUNC_POL, 6, BigNumber::cartesianToPolarCoordinates),
 			//
-			new SimpleTwoArgumentFunction(FUNC_RANDINT, 6, BigNumber::randomIntegerForRange)
+			new SimpleTwoArgumentFunction(FUNC_RANDINT, 6, BigNumber::randomIntegerForRange),
+			//
+			new ThreeArgumentSummationFunction(FUNC_SUMM, 6, BigNumber::summation),
+			new ThreeArgumentSummationFunction(FUNC_SUMM_S, 6, BigNumber::summation)
 		);
 
 		for (ExpressionElement expressionElement : expressionElementList) {

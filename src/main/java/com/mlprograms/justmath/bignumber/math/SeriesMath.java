@@ -1,0 +1,143 @@
+package com.mlprograms.justmath.bignumber.math;
+
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.NonNull;
+
+import java.math.MathContext;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static com.mlprograms.justmath.calculator.CalculatorEngine.getCurrentVariables;
+
+/**
+ * Utility class for performing mathematical series operations with arbitrary precision.
+ */
+public class SeriesMath {
+
+	/**
+	 * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+	 * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
+	 * <p>
+	 * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
+	 * integer {@code k} in the range {@code [kStart, kEnd]}, and accumulates the result. The expression must contain
+	 * the variable {@code "k"} as a placeholder, which will be replaced by the current value of {@code k} in each
+	 * iteration.
+	 * <p>
+	 * Example usage:
+	 * <pre>{@code
+	 * summation(new BigNumber("1"), new BigNumber("3"), "2*k + 1", mathContext, TrigonometricMode.RAD, Locale.US);
+	 * // Output: 15  → since 2*1+1 + 2*2+1 + 2*3+1 = 3 + 5 + 7 = 15
+	 * }</pre>
+	 *
+	 * @param kStart
+	 * 	The lower bound of the summation range (inclusive). Must be an integer.
+	 * @param kEnd
+	 * 	The upper bound of the summation range (inclusive). Must be an integer and not less than {@code kStart}.
+	 * @param kCalculation
+	 * 	A mathematical expression as a string that includes the variable {@code "k"}.
+	 * 	This expression is evaluated for each value of {@code k} from {@code kStart} to {@code kEnd}.
+	 * @param mathContext
+	 * 	The {@link MathContext} to define precision and rounding for the calculations.
+	 * @param trigonometricMode
+	 * 	The {@link TrigonometricMode} (e.g., RAD or DEG) used by the calculator engine if trigonometric functions are
+	 * 	involved.
+	 * @param locale
+	 * 	The {@link Locale} used to format {@code BigNumber} values (e.g., for decimal separators).
+	 *
+	 * @throws IllegalArgumentException
+	 * 	If {@code kCalculation} does not contain the variable {@code "k"}.
+	 * @throws IllegalArgumentException
+	 * 	If {@code kStart} is greater than {@code kEnd}.
+	 * @throws IllegalArgumentException
+	 * 	If either {@code kStart} or {@code kEnd} is not an integer.
+	 * @see CalculatorEngine
+	 * @see BigNumber
+	 * @see TrigonometricMode
+	 */
+	public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		return summation(kStart, kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
+	}
+
+	/**
+	 * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+	 * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
+	 * <p>
+	 * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
+	 * integer {@code k} in the range {@code [kStart, kEnd]}, and accumulates the result. The expression must contain
+	 * the variable {@code "k"} as a placeholder, which will be replaced by the current value of {@code k} in each
+	 * iteration.
+	 * <p>
+	 * This overload allows passing external variables that can be used in the calculation alongside the 'k' variable.
+	 * <p>
+	 * Example usage:
+	 * <pre>{@code
+	 * Map<String, BigNumber> variables = Map.of("a", new BigNumber("0.5"));
+	 * summation(new BigNumber("0"), new BigNumber("4"), "2^(k!-k*a)", mathContext, TrigonometricMode.RAD, Locale.US, variables);
+	 * }</pre>
+	 *
+	 * @param kStart
+	 * 	The lower bound of the summation range (inclusive). Must be an integer.
+	 * @param kEnd
+	 * 	The upper bound of the summation range (inclusive). Must be an integer and not less than {@code kStart}.
+	 * @param kCalculation
+	 * 	A mathematical expression as a string that includes the variable {@code "k"}.
+	 * 	This expression is evaluated for each value of {@code k} from {@code kStart} to {@code kEnd}.
+	 * @param mathContext
+	 * 	The {@link MathContext} to define precision and rounding for the calculations.
+	 * @param trigonometricMode
+	 * 	The {@link TrigonometricMode} (e.g., RAD or DEG) used by the calculator engine if trigonometric functions are
+	 * 	involved.
+	 * @param locale
+	 * 	The {@link Locale} used to format {@code BigNumber} values (e.g., for decimal separators).
+	 * @param externalVariables
+	 * 	A map of external variable names with their BigNumber values that can be used in the calculation.
+	 *
+	 * @throws IllegalArgumentException
+	 * 	If {@code kCalculation} does not contain the variable {@code "k"}.
+	 * @throws IllegalArgumentException
+	 * 	If {@code kStart} is greater than {@code kEnd}.
+	 * @throws IllegalArgumentException
+	 * 	If either {@code kStart} or {@code kEnd} is not an integer.
+	 * @see CalculatorEngine
+	 * @see BigNumber
+	 * @see TrigonometricMode
+	 */
+	public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+		MathUtils.checkMathContext(mathContext);
+
+		CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
+
+		BigNumber result = BigNumbers.ZERO;
+		BigNumber kStartClone = kStart.clone();
+
+		if (!kCalculation.contains("k")) {
+			throw new IllegalArgumentException("kCalculation must contain the variable 'k'");
+		}
+
+		if (kStart.isGreaterThan(kEnd)) {
+			throw new IllegalArgumentException("kEnd must be greater than or equal to kStart");
+		}
+
+		if (!kStart.isInteger() || !kEnd.isInteger()) {
+			throw new IllegalArgumentException("kStart and kEnd must be an integer");
+		}
+
+		while (kStartClone.isLessThanOrEqualTo(kEnd)) {
+			Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+			combinedVariables.putAll(externalVariables);
+			combinedVariables.put("k", kStartClone);
+
+			BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
+			result = result.add(currentCalculation);
+			kStartClone = kStartClone.add(BigNumbers.ONE);
+		}
+
+		return new BigNumber(result, locale, mathContext, trigonometricMode);
+	}
+
+}

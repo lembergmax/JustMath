@@ -1,8 +1,8 @@
 package com.mlprograms.justmath.calculator.internal;
 
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.token.expressionelements.ExpressionElements;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayDeque;
@@ -56,7 +56,7 @@ public class Parser {
 
 		for (Token token : tokens) {
 			switch (token.getType()) {
-				case NUMBER -> output.add(token);
+				case NUMBER, STRING, CONSTANT, SUMMATION -> output.add(token);
 				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					// Factorial is a postfix operator → add directly to the output
@@ -170,4 +170,3 @@ public class Parser {
 	}
 
 }
-
