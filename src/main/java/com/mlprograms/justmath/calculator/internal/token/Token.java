@@ -5,6 +5,7 @@ import com.mlprograms.justmath.calculator.internal.expressionelements.Expression
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import java.util.Optional;
  */
 @Getter
 @EqualsAndHashCode
+@ToString
 @AllArgsConstructor
 public class Token {
 
@@ -27,23 +29,6 @@ public class Token {
 	 */
 	public Optional<ExpressionElement> asArithmeticOperator() {
 		return ExpressionElements.findBySymbol(value);
-	}
-
-	/**
-	 * Returns a string representation of this token.
-	 *
-	 * @return token as a string
-	 */
-	@Override
-	public String toString() {
-		return switch (type) {
-			case NUMBER, VARIABLE, CONSTANT, OPERATOR, STRING -> value;
-			case FUNCTION -> value + ExpressionElements.PAR_LEFT;
-			case LEFT_PAREN -> ExpressionElements.PAR_LEFT;
-			case RIGHT_PAREN -> ExpressionElements.PAR_RIGHT;
-			case SEMICOLON -> ExpressionElements.SEP_SEMICOLON;
-			default -> throw new IllegalStateException("Unexpected value: " + type);
-		};
 	}
 
 	/**
