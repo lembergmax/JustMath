@@ -37,18 +37,20 @@ public class Evaluator {
 	 */
 	private TrigonometricMode trigonometricMode;
 
+
 	/**
-	 * Evaluates a summation expression for a range of values.
+	 * Evaluates the summation of a mathematical expression for integer values from start to end.
 	 *
 	 * @param start
-	 * 	the start value of the summation range
+	 * 	the starting value of the summation (inclusive)
 	 * @param end
-	 * 	the end value of the summation range
+	 * 	the ending value of the summation (inclusive)
 	 * @param kCalculation
-	 * 	TODO
+	 * 	the expression to evaluate for each value of the summation variable
 	 *
-	 * @return the sum of the expression evaluated for each value of k from start to end
+	 * @return the result of the summation as a {@link BigNumber}
 	 */
+	// TODO: dont use this methode => im trying to use the ExpressionElement.apply
 	private BigNumber evaluateSummation(BigNumber start, BigNumber end, String kCalculation) {
 		return SeriesMath.summation(start, end, kCalculation, mathContext, trigonometricMode, CALCULATION_LOCALE);
 	}
@@ -85,6 +87,7 @@ public class Evaluator {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case STRING -> stack.push(token.getValue());
 				case SUMMATION -> {
+					// TODO: try to use the ExpressionElement.apply method
 					SummationToken summationToken = (SummationToken) token;
 
 					// Get the start and end values
@@ -102,7 +105,6 @@ public class Evaluator {
 
 					expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
 				}
-
 				default -> throw new IllegalArgumentException("Unexpected token: " + token);
 			}
 		}

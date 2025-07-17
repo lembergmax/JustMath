@@ -78,7 +78,7 @@ public class Tokenizer {
 				if ((value.startsWith("+") || value.startsWith("-")) && value.length() > 1) {
 					tokens.set(i + 1, new Token(Token.Type.OPERATOR, value.substring(0, 1)));
 					tokens.add(i + 2, new Token(Token.Type.NUMBER, value.substring(1)));
-					i++; // skip the inserted number token to avoid infinite loop
+					i++; // skip the inserted number token to avoid an infinite loop
 				}
 			}
 		}
