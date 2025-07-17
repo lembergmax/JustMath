@@ -3,12 +3,10 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -27,12 +25,9 @@ public class Main {
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("∑(0;4;2^(k!-k))"));
 		// System.out.println(calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+ka))", Map.of("a", new BigNumber("0.5"), "ka", new BigNumber("2"))));
 
-		List<Token> tokens = new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("a^2-∑(0;4;2^(k!-k*a+k^a))");
-		System.out.println("Tokenized expression: " + tokens);
+		System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("a^2-∑(0;4;2^(k!-k*a+k^a))"));
 
-		System.out.println("Evaluating expression with a=0.5");
-		BigNumber result = calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+k^a))", Map.of("a", new BigNumber("0.5")));
-		System.out.println("Result: " + result);
+		System.out.println(calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+k^a))", Map.of("a", new BigNumber("0.5"))));
 
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("piea"));
 		// System.out.println(calculator.evaluate("piea", Map.of("a", new BigNumber("0.5"))));
