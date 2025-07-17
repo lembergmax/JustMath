@@ -2,17 +2,17 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
-import java.util.Map;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.TWO;
-import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
@@ -130,14 +130,19 @@ public class InverseTrigonometricMath {
 
 		// TODO: check calculation result
 
-		BigNumber result = SeriesMath.summation(
-			ZERO,
-			new BigNumber(String.valueOf(mathContext.getPrecision())),
-			"((-1)^k)*(" + argument + "^(2k+1))/(2k+1)",
-			mathContext,
-			trigonometricMode,
-			locale
-		);
+		CalculatorEngine calculator = new CalculatorEngine(mathContext, trigonometricMode);
+		String semicolon = ExpressionElements.SEP_SEMICOLON;
+		BigNumber result =
+			calculator.evaluate(
+				ExpressionElements.FUNC_SUMM_S +
+					ExpressionElements.PAR_LEFT +
+					BigNumbers.ZERO +
+					semicolon +
+					mathContext.getPrecision() +
+					semicolon +
+					"((-1)^k)*(" + argument + "^(2*k+1))/(2*k+1)" +
+					ExpressionElements.PAR_RIGHT
+			);
 
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = new BigNumber(bigDecimalRadiansToDegrees(result.toBigDecimal(), mathContext, locale).toPlainString(), locale, mathContext);
