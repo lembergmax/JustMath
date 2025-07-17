@@ -3,8 +3,10 @@ package com.mlprograms.justmath.calculator.internal;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
+import com.mlprograms.justmath.bignumber.math.SeriesMath;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.token.SummationToken;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,22 @@ public class Evaluator {
 	 * The mode used for trigonometric calculations (e.g., degrees or radians).
 	 */
 	private TrigonometricMode trigonometricMode;
+
+	/**
+	 * Evaluates a summation expression for a range of values.
+	 *
+	 * @param start
+	 * 	the start value of the summation range
+	 * @param end
+	 * 	the end value of the summation range
+	 * @param kCalculation
+	 * 	TODO
+	 *
+	 * @return the sum of the expression evaluated for each value of k from start to end
+	 */
+	private BigNumber evaluateSummation(BigNumber start, BigNumber end, String kCalculation) {
+		return SeriesMath.summation(start, end, kCalculation, mathContext, trigonometricMode, CALCULATION_LOCALE);
+	}
 
 	/**
 	 * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result as a {@link BigNumber}.
@@ -66,6 +84,18 @@ public class Evaluator {
 			switch (token.getType()) {
 				case NUMBER -> stack.push(new BigNumber(token.getValue()));
 				case STRING -> stack.push(token.getValue());
+				case SUMMATION -> {
+					SummationToken summationToken = (SummationToken) token;
+
+					// Get the start and end values
+					BigNumber start = new BigNumber(summationToken.getStart());
+					BigNumber end = new BigNumber(summationToken.getEnd());
+
+					// Evaluate the expression tokens for each value of k
+					BigNumber result = evaluateSummation(start, end, summationToken.getKCalculation());
+
+					stack.push(result);
+				}
 				case OPERATOR, FUNCTION, CONSTANT -> {
 					ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
 						                                      .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
