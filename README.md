@@ -23,7 +23,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Hyperbolic Functions**         | `sinh`, `cosh`, `tanh`, `coth`                                         |
 | **Inverse Hyperbolic Functions** | `asinh`, `acosh`, `atanh`, `acoth`                                     |
 | **Combinatorics**                | `combination`, `permutation`                                           |
-| **Summation**                    | Used via `evaluate("∑(...)")` or `evaluate("sum(...)")`                |
+| **Summation**                    | `summation`                                                            |
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
 
