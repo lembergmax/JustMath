@@ -22,9 +22,10 @@ public class Main {
 		//System.out.println(calculator.evaluate("sum(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
 		// System.out.println(calculator.evaluate("summ(0;4;2^k)"));
 
-		// funktioniert hier nicht
-		System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("∑(0;4;2^(k!-k))"));
-		System.out.println(calculator.evaluate("∑(0;4;2^(k!-k))", Map.of("a", new BigNumber("0.5"))));
+		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("∑(0;4;2^(k!-k))"));
+		// System.out.println(calculator.evaluate("a^2-∑(0;4;2^(k!-k*a+ka))", Map.of("a", new BigNumber("0.5"), "ka", new BigNumber("2"))));
+
+		System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("a^2-∑(0;4;2^(k!-k*a+ka))"));
 
 		// aber hier schon
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("piea"));
