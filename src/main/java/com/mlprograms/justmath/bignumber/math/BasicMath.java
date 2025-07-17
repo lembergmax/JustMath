@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 /**
@@ -195,7 +196,7 @@ public class BasicMath {
 
 		// Exponent == 0 → result = 1
 		if (BigDecimal.ZERO.compareTo(bigDecimalValue) == 0) {
-			return new BigNumber("1", locale, mathContext);
+			return ONE;
 		}
 
 		// Exponent == 1 → result = base
@@ -219,8 +220,13 @@ public class BasicMath {
 		}
 
 		// Check for invalid log(0)
-		if (bigDecimalBase.signum() == 0 && bigDecimalValue.signum() <= 0) {
-			throw new ArithmeticException("Cannot compute 0^" + bigDecimalValue + " (log undefined)");
+		if (bigDecimalBase.signum() == 0) {
+			if (bigDecimalValue.signum() < 0) {
+				throw new ArithmeticException("Cannot compute 0^" + bigDecimalValue + " (log undefined)");
+			} else if (bigDecimalValue.signum() > 0) {
+				return ZERO; // 0^positive = 0
+			}
+			// 0^0 is handled above (returns 1)
 		}
 
 		// General case: a^b = exp(b * ln|a|)
