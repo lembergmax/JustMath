@@ -8,7 +8,7 @@ import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface ThreeArgumentSummationFunctionOperation {
+public interface ThreeArgumentFunctionOperation {
 
 	BigNumber apply(BigNumber a, BigNumber b, String c, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
