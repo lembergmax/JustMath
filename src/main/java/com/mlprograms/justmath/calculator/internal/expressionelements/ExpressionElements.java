@@ -90,6 +90,8 @@ public class ExpressionElements {
 	//
 	public static final String FUNC_SUMM = "sum";
 	public static final String FUNC_SUMM_S = "∑";
+	public static final String FUNC_PROD = "prod";
+	public static final String FUNC_PROD_S = "∏";
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
@@ -170,8 +172,10 @@ public class ExpressionElements {
 			//
 			new SimpleTwoArgumentFunction(FUNC_RANDINT, 6, BigNumber::randomIntegerForRange),
 			//
-			new ThreeArgumentSummationFunction(FUNC_SUMM, 6, BigNumber::summation),
-			new ThreeArgumentSummationFunction(FUNC_SUMM_S, 6, BigNumber::summation)
+			new ThreeArgumentFunction(FUNC_SUMM, 6, BigNumber::summation),
+			new ThreeArgumentFunction(FUNC_SUMM_S, 6, BigNumber::summation),
+			new ThreeArgumentFunction(FUNC_PROD, 6, BigNumber::product),
+			new ThreeArgumentFunction(FUNC_PROD_S, 6, BigNumber::product)
 		);
 
 		for (ExpressionElement expressionElement : expressionElementList) {
