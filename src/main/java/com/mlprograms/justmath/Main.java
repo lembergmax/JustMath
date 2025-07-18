@@ -12,7 +12,11 @@ public class Main {
 
 		// TODO: only for developing purpose
 
-		// CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
+		CalculatorEngine calculator = new CalculatorEngine();
+
+		System.out.println(calculator.evaluate("∑(1;4;k^2)"));
+		System.out.println(calculator.evaluate("∏(1;4;k^2)"));
+
 		// System.out.println(calculator.evaluate("e*pi"));
 		// System.out.println(calculator.evaluate("∑(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
 		// System.out.println(calculator.evaluate("sum(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
