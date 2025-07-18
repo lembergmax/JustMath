@@ -5,10 +5,7 @@ import com.mlprograms.justmath.calculator.internal.expressionelements.*;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -124,27 +121,33 @@ public class Tokenizer {
 			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
-			} else if (isSummation(expression, index)) {
-				String functionSymbol = expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index)
-					                        ? ExpressionElements.FUNC_SUMM_S
-					                        : ExpressionElements.FUNC_SUMM;
+			} else if (matchThreeArgumentFunction(expression, index).isPresent()) {
+				Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
-				int functionLength = functionSymbol.length();
-				int closingParenthesis = findClosingParenthesis(expression, index + functionLength);
-				if (closingParenthesis < 0) {
-					throw new IllegalArgumentException("Unmatched '(' in summation");
+				if (matchedFunction.isEmpty()) {
+					throw new IllegalArgumentException("Invalid function at position " + index);
 				}
 
-				String inside = expression.substring(index + functionLength + 1, closingParenthesis);
+				ExpressionElement expressionElement = matchedFunction.get();
+				String symbol = expressionElement.getSymbol();
+
+				int functionStart = index + symbol.length();
+				int closingParenthesis = findClosingParenthesis(expression, functionStart);
+				if (closingParenthesis < 0) {
+					throw new IllegalArgumentException("Unmatched '(' in function: " + symbol);
+				}
+
+				String inside = expression.substring(functionStart + 1, closingParenthesis);
+
 				String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
 				if (parts.length != 3) {
-					throw new IllegalArgumentException("Summation must have three arguments");
+					throw new IllegalArgumentException("Three-argument function '" + symbol + "' must have three arguments");
 				}
 
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 0 ]));
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 1 ]));
 				tokens.add(new Token(Token.Type.STRING, parts[ 2 ]));
-				tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_SUMM));
+				tokens.add(new Token(Token.Type.FUNCTION, symbol));
 
 				index = closingParenthesis + 1;
 			} else {
@@ -306,15 +309,26 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Checks if the given character represents a summation function symbol.
+	 * Tries to match a three-argument function starting at the given index.
 	 *
 	 * @param expression
-	 * 	the expression to check
+	 * 	the full input expression
+	 * @param index
+	 * 	the index to start checking from
 	 *
-	 * @return true if the character matches the summation function symbol, false otherwise
+	 * @return an Optional containing the matched function symbol, or empty if not found
 	 */
-	private boolean isSummation(String expression, int index) {
-		return expression.startsWith(ExpressionElements.FUNC_SUMM + ExpressionElements.PAR_LEFT, index) || expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index);
+	private Optional<ExpressionElement> matchThreeArgumentFunction(String expression, int index) {
+		for (Map.Entry<String, ExpressionElement> entry : ExpressionElements.registry.entrySet()) {
+			String symbol = entry.getKey();
+			ExpressionElement expressionElement = entry.getValue();
+
+			if (expressionElement instanceof ThreeArgumentFunction &&
+				    expression.startsWith(symbol + ExpressionElements.PAR_LEFT, index)) {
+				return Optional.of(expressionElement);
+			}
+		}
+		return Optional.empty();
 	}
 
 	/**
