@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Locale;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -434,12 +435,12 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"0,RAD",
-			"0,DEG"
+			"0,RAD,1,5707964",
+			"0,DEG,90"
 		})
-		void acotInvalidTest(String input, TrigonometricMode trigonometricMode) {
+		void acotInvalidTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, trigonometricMode);
-			assertThrows(ArithmeticException.class, num::acot);
+			assertEquals(expectedResult, num.acot(trigonometricMode).toString());
 		}
 
 	}
@@ -792,6 +793,89 @@ public class BigNumberTest {
 			BigNumber x = new BigNumber(inputX, Locale.US);
 
 			assertThrows(IllegalArgumentException.class, () -> y.atan2(x));
+		}
+
+	}
+
+	@Nested
+	public class SeriesMath {
+
+		@Test
+		void summationSingleValue_noVariables() {
+			BigNumber start = new BigNumber("3");
+			BigNumber result = start.summation("k");
+			assertEquals("3", result.toString());
+		}
+
+		@Test
+		void summationRange_noVariables() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("4");
+			BigNumber result = start.summation(end, "k");
+			assertEquals("10", result.toString());
+		}
+
+		@Test
+		void summationRange_withMathContext() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("5");
+			BigNumber result = start.summation(end, "1/k", BigNumbers.DEFAULT_MATH_CONTEXT);
+			assertEquals("2.2833", result.roundAfterDecimals(4).toString());
+		}
+
+		@Test
+		void summationRange_withTrigonometricMode_DEG() {
+			BigNumber start = new BigNumber("0");
+			BigNumber end = new BigNumber("2");
+			BigNumber result = start.summation(end, "sin(k)", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.DEG);
+			assertEquals("0.05235", result.roundAfterDecimals(5).toString());
+		}
+
+		@Test
+		void summationRange_withLocale() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("3");
+			BigNumber result = start.summation(end, "k^2", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.GERMAN);
+			assertEquals("14", result.toString());
+		}
+
+		@Test
+		void summation_withExternalVariables_linearFunction() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("3");
+			Map<String, BigNumber> vars = Map.of("a", new BigNumber("2"));
+			BigNumber result = start.summation(end, "a*k", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
+			assertEquals("12", result.toString());
+		}
+
+		@Test
+		void summation_withExternalVariables_polynomial() {
+			BigNumber start = new BigNumber("0");
+			BigNumber end = new BigNumber("2");
+			Map<String, BigNumber> vars = Map.of("b", new BigNumber("1.5"), "c", new BigNumber("0.5"));
+			BigNumber result = start.summation(end, "b*k^2 + c", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
+			assertEquals("9", result.toString());
+		}
+
+		@Test
+		void summation_endLessThanStart_returnsZero() {
+			BigNumber start = new BigNumber("5");
+			BigNumber end = new BigNumber("3");
+			assertThrows(IllegalArgumentException.class, () -> start.summation(end, "k"));
+		}
+
+		@Test
+		void summation_emptyExpression_throws() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("5");
+			assertThrows(IllegalArgumentException.class, () -> start.summation(end, ""));
+		}
+
+		@Test
+		void summation_invalidExpression_throws() {
+			BigNumber start = new BigNumber("1");
+			BigNumber end = new BigNumber("3");
+			assertThrows(RuntimeException.class, () -> start.summation(end, "invalidExpr(k)"));
 		}
 
 	}
