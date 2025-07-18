@@ -693,25 +693,73 @@ public class BigNumberTest {
 				() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
 		}
 
-		/* TODO
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, 1",
+			"0, DEG, 1",
+			"1, RAD, 0.5403023059",
+			"1, DEG, 0.9998476952",
+			"3.14159265359, RAD, -1",
+			"180, DEG, -1",
+			"-1, RAD, 0.5403023059",
+			"-1, DEG, 0.9998476952"
 		})
-		void cosTest(String input, TrigonometricMode trigonometricMode, String expected) {
+		void cosTest(String input, TrigonometricMode trigonometricMode, String expectedStr) {
+			BigNumber angle = new BigNumber(input, Locale.US);
+			BigNumber result = angle.cos(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US);
+			BigDecimal actual = result.toBigDecimal();
+			BigDecimal expected = new BigDecimal(expectedStr);
+			BigDecimal tolerance = new BigDecimal("1E-9");
+			BigDecimal diff = actual.subtract(expected).abs();
+			assertTrue(diff.compareTo(tolerance) <= 0,
+				() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"0, RAD, 0",
+			"0, DEG, 0",
+			"0.7853981633974483, RAD, 1",       // π/4 rad = 45°
+			"45, DEG, 1",
+			"1, RAD, 1.55740772465",
+			"1, DEG, 0.017455064928",
+			"-1, RAD, -1.55740772465",
+			"-1, DEG, -0.01745506492"
 		})
-		void tanTest(String input, TrigonometricMode trigonometricMode, String expected) {
+		void tanTest(String input, TrigonometricMode trigonometricMode, String expectedStr) {
+			BigNumber angle = new BigNumber(input, Locale.US);
+			BigNumber result = angle.tan(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US);
+			BigDecimal actual = result.toBigDecimal();
+			BigDecimal expected = new BigDecimal(expectedStr);
+			BigDecimal tolerance = new BigDecimal("1E-8");
+			BigDecimal diff = actual.subtract(expected).abs();
+			assertTrue(diff.compareTo(tolerance) <= 0,
+				() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
 		}
 
 		@ParameterizedTest
 		@CsvSource({
+			"1, RAD, 0.6420926159",  // cot(1 rad) ≈ 0.6420926159
+			"1, DEG, 57.28996163",  // cot(1°) ≈ cot(0.01745 rad) ~ 57.29
+			"0.7853981633974483, RAD, 1", // cot(π/4) = 1
+			"45, DEG, 1",
+			"-1, RAD, -0.6420926159",
+			"-1, DEG, -57.28996163",
 		})
-		void cotTest(String input, TrigonometricMode trigonometricMode, String expected) {
+		void cotTest(String input, TrigonometricMode trigonometricMode, String expectedStr) {
+			BigNumber angle = new BigNumber(input, Locale.US);
+			if ("Infinity".equals(expectedStr)) {
+				assertThrows(ArithmeticException.class, () -> angle.cot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US));
+			} else {
+				BigNumber result = angle.cot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US);
+				BigDecimal actual = result.toBigDecimal();
+				BigDecimal expected = new BigDecimal(expectedStr);
+				BigDecimal tolerance = new BigDecimal("1E-8");
+				BigDecimal diff = actual.subtract(expected).abs();
+				assertTrue(diff.compareTo(tolerance) <= 0,
+					() -> String.format("Expected approx: %s, but was: %s (diff = %s)", expected, actual, diff));
+			}
 		}
-		*/
 
 	}
 
