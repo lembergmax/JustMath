@@ -541,4 +541,86 @@ class TokenizerTest {
 		), tokens);
 	}
 
+	@Test
+	void testFunctionSin() {
+		List<Token> tokens = tokenizer.tokenize("sin(30)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "sin"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "30"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testFunctionAcos() {
+		List<Token> tokens = tokenizer.tokenize("acos(0.5)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "acos"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "0.5"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testFunctionAcot() {
+		List<Token> tokens = tokenizer.tokenize("acot(1)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "acot"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "1"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testFunctionCot() {
+		List<Token> tokens = tokenizer.tokenize("cot(pi/4)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "cot"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.CONSTANT, "pi"),
+			new Token(Token.Type.OPERATOR, "/"),
+			new Token(Token.Type.NUMBER, "4"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testFunctionSinh() {
+		List<Token> tokens = tokenizer.tokenize("sinh(2)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "sinh"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "2"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testFunctionAcosh() {
+		List<Token> tokens = tokenizer.tokenize("acosh(1.5)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "acosh"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "1.5"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
+	@Test
+	void testNestedFunctions() {
+		List<Token> tokens = tokenizer.tokenize("sin(acot(1))");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "sin"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.FUNCTION, "acot"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "1"),
+			new Token(Token.Type.RIGHT_PAREN, ")"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens);
+	}
+
 }
