@@ -3,7 +3,6 @@ package com.mlprograms.justmath.calculator.internal;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
-import com.mlprograms.justmath.bignumber.math.SeriesMath;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -36,23 +35,6 @@ public class Evaluator {
 	 */
 	private TrigonometricMode trigonometricMode;
 
-
-	/**
-	 * Evaluates the summation of a mathematical expression for integer values from start to end.
-	 *
-	 * @param start
-	 * 	the starting value of the summation (inclusive)
-	 * @param end
-	 * 	the ending value of the summation (inclusive)
-	 * @param kCalculation
-	 * 	the expression to evaluate for each value of the summation variable
-	 *
-	 * @return the result of the summation as a {@link BigNumber}
-	 */
-	// TODO: dont use this methode => im trying to use the ExpressionElement.apply
-	private BigNumber evaluateSummation(BigNumber start, BigNumber end, String kCalculation) {
-		return SeriesMath.summation(start, end, kCalculation, mathContext, trigonometricMode, CALCULATION_LOCALE);
-	}
 
 	/**
 	 * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result as a {@link BigNumber}.
