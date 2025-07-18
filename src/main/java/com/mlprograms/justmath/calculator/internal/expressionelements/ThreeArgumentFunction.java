@@ -2,7 +2,7 @@ package com.mlprograms.justmath.calculator.internal.expressionelements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.ThreeArgumentSummationFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expressionelements.operations.ThreeArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -10,11 +10,11 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class ThreeArgumentSummationFunction extends Function {
+public class ThreeArgumentFunction extends Function {
 
-	private final ThreeArgumentSummationFunctionOperation operation;
+	private final ThreeArgumentFunctionOperation operation;
 
-	public ThreeArgumentSummationFunction(String symbol, int precedence, ThreeArgumentSummationFunctionOperation operation) {
+	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
 		super(symbol, precedence, 3);
 		this.operation = operation;
 	}
