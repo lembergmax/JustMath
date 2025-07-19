@@ -1,13 +1,9 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.math.InverseTrigonometricMath;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
