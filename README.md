@@ -15,7 +15,7 @@ unlimited precision**, avoiding the limitations of primitive types like `double`
 The `BigNumber` class supports a wide range of mathematical operations:
 
 | Category                         | Methods                                                                |
-| -------------------------------- | ---------------------------------------------------------------------- |
+|----------------------------------|------------------------------------------------------------------------|
 | **Basic Arithmetic**             | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`             |
 | **Roots & Powers**               | `squareRoot`, `cubicRoot`, `nthRoot`, `exp`, `factorial`               |
 | **Logarithms**                   | `log2`, `log10`, `ln`, `logBase`                                       |
@@ -23,7 +23,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Hyperbolic Functions**         | `sinh`, `cosh`, `tanh`, `coth`                                         |
 | **Inverse Hyperbolic Functions** | `asinh`, `acosh`, `atanh`, `acoth`                                     |
 | **Combinatorics**                | `combination`, `permutation`                                           |
-| **Summation**                    | `summation`                                                            |
+| **Series**                       | `summation`, `product`                                                 |
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
 
@@ -41,37 +41,39 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings with s
 
 ### ✅ Supported Operators & Functions
 
-| Category                         | Operator / Function     | Description                        |
-| -------------------------------- | ----------------------- | ---------------------------------- |
-| **Arithmetic**                   | `+`, `-`, `*`, `/`      | Basic operations                   |
-|                                  | `%`, `^`, `!`           | Modulo, exponentiation, factorial  |
-| **Roots**                        | `√(x)`, `sqrt(x)`       | Square root                        |
-|                                  | `³√(x)`, `cbrt(x)`      | Cube root                          |
-|                                  | `rootn(a, n)`           | n-th root                          |
-| **Logarithms**                   | `log2(x)`               | Base-2 logarithm                   |
-|                                  | `log(x)`                | Base-10 logarithm                  |
-|                                  | `ln(x)`                 | Natural logarithm                  |
-|                                  | `logbase(x, b)`         | Logarithm with arbitrary base      |
-| **Trigonometry**                 | `sin(x)`, `cos(x)`      | Sine, cosine                       |
-|                                  | `tan(x)`, `cot(x)`      | Tangent, cotangent                 |
-|                                  | `atan(x)`, `tan⁻¹(x)`   | Arctangent                         |
-|                                  | `acot(x)`, `cot⁻¹(x)`   | Arccotangent                       |
-|                                  | `atan2(y, x)`           | Two-argument arctangent            |
-| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`    | Hyperbolic sine, cosine            |
-|                                  | `tanh(x)`, `coth(x)`    | Hyperbolic tangent, cotangent      |
-| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)` | Inverse hyperbolic sine            |
-|                                  | `acosh(x)`, `cosh⁻¹(x)` | Inverse hyperbolic cosine          |
-|                                  | `atanh(x)`, `tanh⁻¹(x)` | Inverse hyperbolic tangent         |
-|                                  | `acoth(x)`, `coth⁻¹(x)` | Inverse hyperbolic cotangent       |
-| **Combinatorics**                | `nCr`, `comb(n, r)`     | Combinations                       |
-|                                  | `nPr`, `perm(n, r)`     | Permutations                       |
-| **Summation**                    | `∑(start; end; expr)`   | Sigma notation (e.g., ∑(0;10;2^k)) |
-|                                  | `sum(start; end; expr)` | Named summation function           |
-| **Number Theory**                | `GCD(a, b)`             | Greatest common divisor            |
-|                                  | `LCM(a, b)`             | Least common multiple              |
-| **Random Generator**             | `RandInt(min, max)`     | Random integer in a given range    |
-| **Coordinates**                  | `Pol(x, y)`             | Cartesian → Polar                  |
-|                                  | `Rec(r, θ)`             | Polar → Cartesian                  |
+| Category                         | Operator / Function      | Description                        |
+|----------------------------------|--------------------------|------------------------------------|
+| **Arithmetic**                   | `+`, `-`, `*`, `/`       | Basic operations                   |
+|                                  | `%`, `^`, `!`            | Modulo, exponentiation, factorial  |
+| **Roots**                        | `√(x)`, `sqrt(x)`        | Square root                        |
+|                                  | `³√(x)`, `cbrt(x)`       | Cube root                          |
+|                                  | `rootn(a, n)`            | n-th root                          |
+| **Logarithms**                   | `log2(x)`                | Base-2 logarithm                   |
+|                                  | `log(x)`                 | Base-10 logarithm                  |
+|                                  | `ln(x)`                  | Natural logarithm                  |
+|                                  | `logbase(x, b)`          | Logarithm with arbitrary base      |
+| **Trigonometry**                 | `sin(x)`, `cos(x)`       | Sine, cosine                       |
+|                                  | `tan(x)`, `cot(x)`       | Tangent, cotangent                 |
+|                                  | `atan(x)`, `tan⁻¹(x)`    | Arctangent                         |
+|                                  | `acot(x)`, `cot⁻¹(x)`    | Arccotangent                       |
+|                                  | `atan2(y, x)`            | Two-argument arctangent            |
+| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`     | Hyperbolic sine, cosine            |
+|                                  | `tanh(x)`, `coth(x)`     | Hyperbolic tangent, cotangent      |
+| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`  | Inverse hyperbolic sine            |
+|                                  | `acosh(x)`, `cosh⁻¹(x)`  | Inverse hyperbolic cosine          |
+|                                  | `atanh(x)`, `tanh⁻¹(x)`  | Inverse hyperbolic tangent         |
+|                                  | `acoth(x)`, `coth⁻¹(x)`  | Inverse hyperbolic cotangent       |
+| **Combinatorics**                | `nCr`, `comb(n, r)`      | Combinations                       |
+|                                  | `nPr`, `perm(n, r)`      | Permutations                       |
+| **Series**                       | `∑(start; end; expr)`    | Sigma notation (e.g., ∑(0;10;2^k)) |
+|                                  | `sum(start; end; expr)`  | Named summation function           |
+|                                  | `∏(start; end; expr)`    | Product notation (e.g., ∏(1;4;k))  |
+|                                  | `prod(start; end; expr)` | Named product function             |
+| **Number Theory**                | `GCD(a, b)`              | Greatest common divisor            |
+|                                  | `LCM(a, b)`              | Least common multiple              |
+| **Random Generator**             | `RandInt(min, max)`      | Random integer in a given range    |
+| **Coordinates**                  | `Pol(x, y)`              | Cartesian → Polar                  |
+|                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
 
 ## 📚 Static Utility Methods
 
@@ -79,7 +81,7 @@ JustMath provides a suite of **static utility methods** grouped in dedicated cla
 `BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
 
 | Class                                | Method(s)                                                                 | Description                                              |
-| ------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------- |
+|--------------------------------------|---------------------------------------------------------------------------|----------------------------------------------------------|
 | `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                | Basic arithmetic operations                              |
 |                                      | `factorial`, `exp`                                                        | Factorial and exponential function                       |
 | `CombinatoricsMath`                  | `combination`, `permutation`                                              | Calculate combinations (nCr) and permutations (nPr)      |
@@ -96,7 +98,8 @@ JustMath provides a suite of **static utility methods** grouped in dedicated cla
 | `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians` | Angle conversions                                        |
 |                                      | `randomIntegerBigNumberInRange`                                           | Random integer generation using `BigNumber`              |
 |                                      | `e`, `pi`                                                                 | Mathematical constants as `BigNumber`                    |
-| `SeriesMath`                         | `summation`                                                               | High-precision summation logic)			      |
+| `SeriesMath`                         | `summation`                                                               | Summation logic                                          |
+|                                      | `product`                                                                 | Product logic                                            |
 
 ## 📐 Constants
 
@@ -104,7 +107,7 @@ The `BigNumberValues` class provides reusable **high-precision constants** and d
 used throughout JustMath. These can be accessed statically and are ideal for custom calculations or configurations.
 
 | Constant                     | Description                                     |
-| ---------------------------- | ----------------------------------------------- |
+|------------------------------|-------------------------------------------------|
 | `CALCULATION_LOCALE`         | Default `Locale` used for parsing/formatting    |
 | `DEFAULT_DIVISION_PRECISION` | Default precision for division operations       |
 | `DEFAULT_MATH_CONTEXT`       | Default `MathContext` with precision & rounding |
@@ -176,6 +179,7 @@ System.out.println(result);
 ## ⚙️ Maven (Coming soon)
 
 ```xml
+
 <dependency>
     <groupId>io.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
