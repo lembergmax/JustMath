@@ -253,20 +253,13 @@ public class InverseTrigonometricMath {
 	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		// TODO
-		return null;
+		if (argument.isEqualTo(BigNumbers.ZERO)) {
+			throw new ArithmeticException("acot(x) is undefined for x = 0");
+		}
 
-//		if (argument.isEqualTo(ZERO)) {
-//			throw new ArithmeticException("acot(x) is undefined for x = 0");
-//		}
-//
-//		BigDecimal result = BigDecimalMath.acot(argument.toBigDecimal(), mathContext);
-//
-//		if (trigonometricMode == TrigonometricMode.DEG) {
-//			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-//		}
-//
-//		return new BigNumber(result.toPlainString(), locale, mathContext, trigonometricMode);
+		// Compute acot(x) = atan(1 / x)
+		final BigNumber reciprocal = BigNumbers.ONE.divide(argument, mathContext);
+		return atan(reciprocal, mathContext, trigonometricMode, locale);
 	}
 
 }

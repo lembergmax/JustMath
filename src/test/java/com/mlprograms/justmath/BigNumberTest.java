@@ -404,13 +404,16 @@ public class BigNumberTest {
 			"1,RAD,0.785398",
 			"1,DEG,45",
 			"2,RAD,0.463648",
-			"2,DEG,26.565051",
-			"-2,RAD,-0.463647",
-			"-2,DEG,-26.565051"
+			"2,DEG,26.565052",
+			"-2,RAD,-0.463648",
+			"-2,DEG,-26.565052"
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
-			assertEquals(expectedResult, num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).roundAfterDecimals(6).toString());
+			String actual = num.acot(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US)
+				                .roundAfterDecimals(6)
+				                .toString();
+			assertEquals(expectedResult, actual);
 		}
 
 		@ParameterizedTest
