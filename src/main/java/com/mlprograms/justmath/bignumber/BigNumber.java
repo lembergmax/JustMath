@@ -2835,7 +2835,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		BigDecimal bigDecimal = new BigDecimal(this.toString());
 		bigDecimal = bigDecimal.setScale(mathContext.getPrecision(), mathContext.getRoundingMode());
 		return new BigNumber(bigDecimal.toPlainString()).trim();
-
 	}
 
 	/**
