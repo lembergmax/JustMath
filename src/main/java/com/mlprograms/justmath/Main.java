@@ -1,9 +1,13 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.math.InverseTrigonometricMath;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
@@ -14,8 +18,8 @@ public class Main {
 
 		CalculatorEngine calculator = new CalculatorEngine();
 
-		System.out.println(calculator.evaluate("∑(1;4;k^2)"));
-		System.out.println(calculator.evaluate("∏(1;4;k^2)"));
+		// System.out.println(calculator.evaluate("∑(1;4;k^2)"));
+		// System.out.println(calculator.evaluate("∏(1;4;k^2)"));
 
 		// System.out.println(calculator.evaluate("e*pi"));
 		// System.out.println(calculator.evaluate("∑(0;8;2^(k*k))-∑(0;4;2^(k*k))").formatToLocale(Locale.GERMAN).toStringWithGrouping());
