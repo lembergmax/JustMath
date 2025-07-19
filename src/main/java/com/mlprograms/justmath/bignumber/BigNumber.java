@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
@@ -2351,6 +2352,38 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
 
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation) {
+		return product(kEnd, kCalculation, mathContext);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, externalVariables);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
+	}
+
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+		return SeriesMath.product(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
+	}
+
 	/**
 	 * Generates a random integer {@link BigNumber} between this number (inclusive) and the given {@code max}
 	 * (exclusive).
@@ -2632,8 +2665,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigDecimal toBigDecimal() {
 		StringBuilder sb = new StringBuilder();
-		if (isNegative) sb.append('-');
+		if (isNegative) {
+			sb.append('-');
+		}
+
 		sb.append(valueBeforeDecimal);
+
 		if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
 			sb.append('.').append(valueAfterDecimal);
 		}
@@ -2783,7 +2820,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} rounded to the given precision
 	 */
 	public BigNumber roundAfterDecimals(final int precision) {
-		return roundAfterDecimals(new MathContext(precision));
+		return roundAfterDecimals(new MathContext(precision, RoundingMode.HALF_UP));
 	}
 
 	/**
@@ -2795,8 +2832,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-		this.valueAfterDecimal = round(new BigNumber(getValueAfterDecimal()), mathContext).toString();
-		return this.trim();
+		BigDecimal bigDecimal = new BigDecimal(this.toString());
+		bigDecimal = bigDecimal.setScale(mathContext.getPrecision(), mathContext.getRoundingMode());
+		return new BigNumber(bigDecimal.toPlainString()).trim();
+
 	}
 
 	/**
@@ -2995,6 +3034,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Checks if this {@code BigNumber} is positive.
+	 *
+	 * @return true if the number is positive (not negative), false otherwise
+	 */
+	public boolean isPositive() {
+		return !isNegative;
+	}
+
+	/**
 	 * Returns a string representation of this {@code BigNumber} using the current locale.
 	 *
 	 * @return the string representation of this number
@@ -3088,6 +3136,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		String localized = integerPart + decimalSeparator + newValueAfterDecimal;
 		return isNegative ? "-" + localized : localized;
 	}
+
 
 	/**
 	 * Compares this {@code BigNumber} with the specified {@code BigNumber} for order.
