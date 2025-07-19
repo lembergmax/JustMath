@@ -2832,9 +2832,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-		BigDecimal bigDecimal = new BigDecimal(this.toString());
-		bigDecimal = bigDecimal.setScale(mathContext.getPrecision(), mathContext.getRoundingMode());
-		return new BigNumber(bigDecimal.toPlainString()).trim();
+		BigDecimal value = toBigDecimal();
+		int precisionAfterDecimal = mathContext.getPrecision();
+
+		// scale = digits after the decimal point
+		if (precisionAfterDecimal <= 0) {
+			return new BigNumber(value.setScale(0, mathContext.getRoundingMode()).toPlainString()).trim();
+		}
+
+		return new BigNumber(value.setScale(precisionAfterDecimal, mathContext.getRoundingMode()).toPlainString()).trim();
 	}
 
 	/**
