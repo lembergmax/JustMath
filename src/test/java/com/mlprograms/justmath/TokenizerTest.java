@@ -496,7 +496,7 @@ class TokenizerTest {
 			new Token(Token.Type.OPERATOR, "*"),
 			new Token(Token.Type.OPERATOR, "/"),
 			new Token(Token.Type.NUMBER, "2")
-			), tokens);
+		), tokens);
 	}
 
 	@Test
