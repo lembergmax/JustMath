@@ -4,6 +4,8 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Scanner;
 
 public class Main {
@@ -12,7 +14,10 @@ public class Main {
 
 		// TODO: only for developing purpose
 
-		CalculatorEngine calculator = new CalculatorEngine();
+		CalculatorEngine calculator = new CalculatorEngine(50, TrigonometricMode.DEG);
+		BigNumber result = calculator.evaluate("∑(0;5;k^2+1)");
+
+		System.out.println(result);
 
 		// System.out.println(calculator.evaluate("∑(1;4;k^2)"));
 		// System.out.println(calculator.evaluate("∏(1;4;k^2)"));
