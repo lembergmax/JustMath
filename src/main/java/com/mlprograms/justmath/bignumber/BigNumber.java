@@ -2135,8 +2135,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return CoordinateConversionMath.polarToCartesianCoordinates(this, theta, mathContext, trigonometricMode, locale);
 	}
 
-	// TODO: polar and cartesian coordinates in 3d
-
 	/**
 	 * Converts Cartesian coordinates (x, y) to polar coordinates (r, θ in degrees) using the default settings.
 	 *
