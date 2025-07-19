@@ -71,5 +71,4 @@ public class CalculusMath {
 		return new BigNumber(result, locale, mathContext, trigonometricMode);
 	}
 
-
 }
