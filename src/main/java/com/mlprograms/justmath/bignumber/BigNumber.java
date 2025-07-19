@@ -2626,6 +2626,60 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Computes the beta function (B(x, y)) for this value and the given y, using the default MathContext.
+	 * <p>
+	 * The beta function is defined as:
+	 * <pre>
+	 *     B(x, y) = ∫₀¹ t^(x-1) (1-t)^(y-1) dt
+	 * </pre>
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y) {
+		return beta(y, mathContext);
+	}
+
+	/**
+	 * Computes the beta function (B(x, y)) for this value and the given y, using the specified MathContext.
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y, @NonNull final MathContext mathContext) {
+		return SpecialFunctionMath.beta(this, y, mathContext);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma(x)) for this value, using the default MathContext.
+	 * <p>
+	 * The gamma function generalizes the factorial function for real and complex numbers.
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma() {
+		return gamma(mathContext);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma(x)) for this value, using the specified MathContext.
+	 *
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma(@NonNull final MathContext mathContext) {
+		return SpecialFunctionMath.gamma(this, mathContext);
+	}
+
+	/**
 	 * Parses this BigNumber into a new targetLocale and mutates the current object.
 	 *
 	 * @param targetLocale
