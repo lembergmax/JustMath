@@ -916,13 +916,13 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"1, 1",               // Γ(1) = 0! = 1
-			"2, 1",               // Γ(2) = 1! = 1
-			"3, 2",               // Γ(3) = 2! = 2
-			"4, 6",               // Γ(4) = 3! = 6
-			"5, 24",              // Γ(5) = 4! = 24
-			"0.5, 1.772454",      // Γ(0.5) = √π ≈ 1.77245385091
-			"1.5, 0.886227"       // Γ(1.5) = 0.5·√π ≈ 0.88622692545
+			"1, 1",
+			"2, 1",
+			"3, 2",
+			"4, 6",
+			"5, 24",
+			"0.5, 1.772454",
+			"1.5, 0.886227"
 		})
 		void testGamma(String input, String expected) {
 			BigNumber x = new BigNumber(input, locale, mc, mode);
@@ -932,10 +932,10 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"1, 1, 1",             // β(1,1) = Γ(1)·Γ(1)/Γ(2) = 1·1/1 = 1
-			"2, 2, 0.166667",      // β(2,2) = Γ(2)·Γ(2)/Γ(4) = 1·1/6 = 0.166666...
-			"0.5, 0.5, 3.141593",  // β(0.5,0.5) = π
-			"5, 2, 0.033333"       // β(5,2) = Γ(5)·Γ(2)/Γ(7) = 24·1/720 = 0.033333...
+			"1, 1, 1",
+			"2, 2, 0.166667",
+			"0.5, 0.5, 3.141593",
+			"5, 2, 0.033333"
 		})
 		void testBeta(String xVal, String yVal, String expected) {
 			BigNumber x = new BigNumber(xVal, locale, mc, mode);
@@ -946,8 +946,8 @@ public class BigNumberTest {
 
 		@ParameterizedTest
 		@CsvSource({
-			"1, 2, 0.5",          // β(1,2) = 1/2
-			"0.5, 1.5, 1.570796", // β(0.5,1.5) = π / 2 ≈ 1.570796
+			"1, 2, 0.5",
+			"0.5, 1.5, 1.570796",
 		})
 		void testBetaSymmetry(String a, String b, String expected) {
 			BigNumber x = new BigNumber(a, locale, mc, mode);
