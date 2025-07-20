@@ -26,7 +26,6 @@ package com.mlprograms.justmath.bignumber.math;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -86,9 +85,9 @@ public class SpecialFunctionMath {
 	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		BigNumber xClone = x.clone();
 
-		if (xClone.isInteger() && xClone.isLessThanOrEqualTo(BigNumbers.ZERO)) {
-			throw new ArithmeticException("Gamma function is undefined for non-positive integers");
-		}
+		//	if (xClone.isInteger() && xClone.isLessThanOrEqualTo(BigNumbers.ZERO)) {
+		//	   throw new ArithmeticException("Gamma function is undefined for non-positive integers");
+		// }
 
 		// return xClone.subtract(BigNumbers.ONE).factorial(mathContext);
 		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
