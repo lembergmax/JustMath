@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.bignumber.math;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
@@ -88,59 +89,8 @@ public class SpecialFunctionMath {
 			throw new ArithmeticException("Gamma function is undefined for non-positive integers");
 		}
 
-		// Reflection for x < 1: Γ(x) = π / (sin(πx) * Γ(1-x))
-		if (xClone.isLessThan(BigNumbers.ONE)) {
-			BigNumber pi = BigNumbers.pi(mathContext);
-			BigNumber sin = xClone.multiply(pi).sin();
-			BigNumber g1m = gamma(BigNumbers.ONE.subtract(xClone), mathContext);
-			return pi.divide(sin.multiply(g1m), mathContext);
-		}
-
-		// Lanczos coefficients
-		final double[] p = {
-			0.99999999999980993,
-			676.5203681218851,
-			-1259.1392167224028,
-			771.32342877765313,
-			-176.61502916214059,
-			12.507343278686905,
-			-0.13857109526572012,
-			9.9843695780195716e-6,
-			1.5056327351493116e-7
-		};
-
-		BigNumber g = new BigNumber("7", mathContext);
-		BigNumber z = xClone.subtract(BigNumbers.ONE);
-
-		// build the Lanczos sum: A = p0 + Σ_{i=1}^n p_i/(z+i)
-		BigNumber sum = new BigNumber(String.valueOf(p[ 0 ]), mathContext);
-		for (int i = 1; i < p.length; i++) {
-			BigNumber term = new BigNumber(String.valueOf(p[ i ]), mathContext)
-				                 .divide(z.add(new BigNumber(String.valueOf(i))), mathContext);
-			sum = sum.add(term);
-		}
-
-		// t = z + g + 0.5
-		BigNumber half = new BigNumber("0.5", mathContext);
-		BigNumber t = z.add(g).add(half);
-
-		// √(2π)
-		BigNumber sqrtTwoPi = BigNumbers.TWO.multiply(BigNumbers.pi(mathContext))
-			                      .squareRoot(mathContext);
-
-		// compute t^(z+0.5) via exp((z+0.5)*ln(t))
-		BigNumber lnT = t.ln(mathContext);
-		BigNumber exponent = lnT.multiply(z.add(half));
-		BigNumber tPow = exponent.exp(mathContext);
-
-		// e^(−t)
-		BigNumber expNegT = t.negate().exp(mathContext);
-
-		// final result: √(2π) * t^(z+0.5) * e^(−t) * sum
-		return sqrtTwoPi
-			       .multiply(tPow)
-			       .multiply(expNegT)
-			       .multiply(sum);
+		// return xClone.subtract(BigNumbers.ONE).factorial(mathContext);
+		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString());
 	}
 
 	/**

@@ -288,6 +288,9 @@ public class BasicMath {
 	public static BigNumber factorial(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
+		return new BigNumber(BigDecimalMath.factorial(argument.toBigDecimal(), mathContext).toPlainString());
+
+		/*
 		if (!argument.isInteger()) {
 			throw new IllegalArgumentException("Factorial is only defined for integers.");
 		}
@@ -310,6 +313,7 @@ public class BasicMath {
 		}
 
 		return new BigNumber(result.toString(), locale, mathContext).trim();
+		 */
 	}
 
 	/**

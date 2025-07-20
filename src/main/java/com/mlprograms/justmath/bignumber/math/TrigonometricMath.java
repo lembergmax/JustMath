@@ -66,6 +66,7 @@ public class TrigonometricMath {
 		MathUtils.checkMathContext(mathContext);
 
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+
 		return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale).trim();
 	}
 
@@ -93,6 +94,7 @@ public class TrigonometricMath {
 		MathUtils.checkMathContext(mathContext);
 
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+
 		return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale).trim();
 	}
 
@@ -121,6 +123,7 @@ public class TrigonometricMath {
 		MathUtils.checkMathContext(mathContext);
 
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+
 		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale).trim();
 	}
 
@@ -149,6 +152,7 @@ public class TrigonometricMath {
 		MathUtils.checkMathContext(mathContext);
 
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+
 		return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale).trim();
 	}
 

@@ -84,6 +84,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
+
 		return new BigNumber(result.toPlainString(), locale, mathContext).roundAfterDecimals(mathContext).trim();
 	}
 
@@ -121,6 +122,7 @@ public class InverseTrigonometricMath {
 		if (trigonometricMode == TrigonometricMode.DEG) {
 			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
 		}
+
 		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
 	}
 
