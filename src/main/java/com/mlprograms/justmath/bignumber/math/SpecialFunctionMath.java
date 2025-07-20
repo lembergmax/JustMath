@@ -83,7 +83,7 @@ public class SpecialFunctionMath {
 	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined.
 	 */
 	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		BigNumber xClone = x.clone();
+		// BigNumber xClone = x.clone();
 
 		//	if (xClone.isInteger() && xClone.isLessThanOrEqualTo(BigNumbers.ZERO)) {
 		//	   throw new ArithmeticException("Gamma function is undefined for non-positive integers");
