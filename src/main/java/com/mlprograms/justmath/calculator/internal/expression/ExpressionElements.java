@@ -117,6 +117,11 @@ public class ExpressionElements {
 	public static final String FUNC_SUMM_S = "∑";
 	public static final String FUNC_PROD = "prod";
 	public static final String FUNC_PROD_S = "∏";
+	//
+	public static final String FUNC_GAMMA = "Γ";
+	public static final String FUNC_GAMMA_S = "gamma";
+	public static final String FUNC_BETA = "B";
+	public static final String FUNC_BETA_S = "beta";
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
@@ -200,7 +205,12 @@ public class ExpressionElements {
 			new ThreeArgumentFunction(FUNC_SUMM, 6, BigNumber::summation),
 			new ThreeArgumentFunction(FUNC_SUMM_S, 6, BigNumber::summation),
 			new ThreeArgumentFunction(FUNC_PROD, 6, BigNumber::product),
-			new ThreeArgumentFunction(FUNC_PROD_S, 6, BigNumber::product)
+			new ThreeArgumentFunction(FUNC_PROD_S, 6, BigNumber::product),
+			//
+			new OneArgumentFunction(FUNC_GAMMA, 6, BigNumber::gamma),
+			new OneArgumentFunction(FUNC_GAMMA_S, 6, BigNumber::gamma),
+			new TwoArgumentFunction(FUNC_BETA, 6, BigNumber::beta),
+			new TwoArgumentFunction(FUNC_BETA_S, 6, BigNumber::beta)
 		);
 
 		for (ExpressionElement expressionElement : expressionElementList) {
