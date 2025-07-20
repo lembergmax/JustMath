@@ -25,7 +25,11 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.expressionelements.*;
+import com.mlprograms.justmath.calculator.internal.expression.*;
+import com.mlprograms.justmath.calculator.internal.expression.elements.Parenthesis;
+import com.mlprograms.justmath.calculator.internal.expression.elements.Separator;
+import com.mlprograms.justmath.calculator.internal.expression.elements.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.internal.expression.elements.ZeroArgumentConstant;
 import lombok.AllArgsConstructor;
 
 import java.math.MathContext;

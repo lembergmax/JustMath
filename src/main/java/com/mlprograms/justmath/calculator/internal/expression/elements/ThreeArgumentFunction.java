@@ -22,18 +22,33 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.operations.ThreeArgumentFunctionOperation;
 
 import java.math.MathContext;
+import java.util.Deque;
 import java.util.Locale;
 
-@FunctionalInterface
-public interface CoordinateFunctionOperation {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
+public class ThreeArgumentFunction extends Function {
+
+	private final ThreeArgumentFunctionOperation operation;
+
+	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
+		super(symbol, precedence, 3);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		String c = String.valueOf(stack.pop());
+		BigNumber b = ensureBigNumber(stack.pop());
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
+	}
 
 }

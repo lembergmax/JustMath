@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements.operations;
+package com.mlprograms.justmath.calculator.internal.expression.operations;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 
@@ -30,7 +30,7 @@ import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface BinaryOperatorOperation {
+public interface TwoArgumentFunctionOperation {
 
 	BigNumber apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
 

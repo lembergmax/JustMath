@@ -22,30 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.operations;
 
-import lombok.Getter;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-@Getter
-public class Parenthesis extends ExpressionElement {
+import java.util.Locale;
 
-	private final Type type;
+@FunctionalInterface
+public interface SimpleTwoArgumentFunctionOperation {
 
-	public Parenthesis(Parenthesis.Type type) {
-		super(type == Type.LEFT ? ExpressionElements.PAR_LEFT : ExpressionElements.PAR_RIGHT, false, 0, 0);
-		this.type = type;
-	}
-
-	public boolean isLeft() {
-		return this.type == Type.LEFT;
-	}
-
-	public boolean isRight() {
-		return this.type == Type.RIGHT;
-	}
-
-	public enum Type {
-		LEFT, RIGHT
-	}
+	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
 
 }

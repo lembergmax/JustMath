@@ -22,31 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.OneArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 
-import java.math.MathContext;
-import java.util.Deque;
-import java.util.Locale;
+public class Separator extends ExpressionElement {
 
-import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
-
-public class OneArgumentFunction extends Function {
-
-	private final OneArgumentFunctionOperation operation;
-
-	public OneArgumentFunction(String symbol, int precedence, OneArgumentFunctionOperation operation) {
-		super(symbol, precedence, 1);
-		this.operation = operation;
-	}
-
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, mathContext, locale));
+	public Separator(String separator) {
+		super(separator, false, 0, 0);
 	}
 
 }

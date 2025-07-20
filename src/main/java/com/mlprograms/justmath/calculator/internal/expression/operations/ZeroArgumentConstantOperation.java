@@ -22,15 +22,16 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements.operations;
+package com.mlprograms.justmath.calculator.internal.expression.operations;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 
+import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface SimpleBinaryOperatorOperation {
+public interface ZeroArgumentConstantOperation {
 
-	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
+	BigNumber apply(MathContext mathContext, Locale locale);
 
 }

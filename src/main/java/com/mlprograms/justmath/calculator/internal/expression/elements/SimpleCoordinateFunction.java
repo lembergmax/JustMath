@@ -22,27 +22,46 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.ZeroArgumentConstantOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.CoordinateFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.SimpleCoordinateFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
 
-public class ZeroArgumentConstant extends Function {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-	private final ZeroArgumentConstantOperation operation;
+public class SimpleCoordinateFunction extends CoordinateFunction {
 
-	public ZeroArgumentConstant(String symbol, ZeroArgumentConstantOperation operation) {
-		super(symbol, 1, 0);
+	private final SimpleCoordinateFunctionOperation operation;
+
+	public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
+		super(symbol, precedence, wrap(operation));
 		this.operation = operation;
+	}
+
+	/**
+	 * Wraps a SimpleCoordinateFunctionOperation into a CoordinateFunctionOperation.
+	 * Ignores the trigonometricMode parameter, delegating to the underlying operation.
+	 *
+	 * @param operation
+	 * 	the SimpleCoordinateFunctionOperation to wrap
+	 *
+	 * @return a CoordinateFunctionOperation that delegates to the given operation
+	 */
+	private static CoordinateFunctionOperation wrap(SimpleCoordinateFunctionOperation operation) {
+		return (a, b, mathContext, trigonometricMode, locale) -> operation.apply(a, b, mathContext, locale);
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		stack.push(operation.apply(mathContext, locale));
+		BigNumber b = ensureBigNumber(stack.pop());
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, b, mathContext, locale));
 	}
 
 }

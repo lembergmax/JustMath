@@ -22,17 +22,31 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.operations.OneArgumentFunctionOperation;
 
 import java.math.MathContext;
+import java.util.Deque;
 import java.util.Locale;
 
-@FunctionalInterface
-public interface ThreeArgumentFunctionOperation {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-	BigNumber apply(BigNumber a, BigNumber b, String c, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
+public class OneArgumentFunction extends Function {
+
+	private final OneArgumentFunctionOperation operation;
+
+	public OneArgumentFunction(String symbol, int precedence, OneArgumentFunctionOperation operation) {
+		super(symbol, precedence, 1);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, mathContext, locale));
+	}
 
 }
