@@ -71,7 +71,7 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 | **Coordinates**                  | `Pol(x, y)`              | Cartesian → Polar                  |
 |                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
 | **Special Functions**            | `Γ`, `gamma(x)`          | Gamma                              |
-|                                  | `B`, `beta(x)`           | Beta                               |
+|                                  | `B`, `beta(x, y)`        | Beta                               |
 
 ## 📚 Static Utility Methods
 
