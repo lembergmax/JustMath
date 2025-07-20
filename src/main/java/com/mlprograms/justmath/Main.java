@@ -36,11 +36,6 @@ public class Main {
 
 		// TODO: only for developing purpose
 
-		CalculatorEngine calculator = new CalculatorEngine(50, TrigonometricMode.DEG);
-		BigNumber result = calculator.evaluate("∑(0;5;k^2+1)");
-
-		System.out.println(result);
-
 		// System.out.println(calculator.evaluate("∑(1;4;k^2)"));
 		// System.out.println(calculator.evaluate("∏(1;4;k^2)"));
 
@@ -65,7 +60,7 @@ public class Main {
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pie*a"));
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pieapi"));
 
-		// testCalculator();
+		testCalculator();
 
 
 	}
