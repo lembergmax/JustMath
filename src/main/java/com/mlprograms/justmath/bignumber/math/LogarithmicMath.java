@@ -77,6 +77,7 @@ public class LogarithmicMath {
 		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
 		}
+
 		return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
@@ -109,6 +110,7 @@ public class LogarithmicMath {
 		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
 		}
+
 		return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
 	}
 
