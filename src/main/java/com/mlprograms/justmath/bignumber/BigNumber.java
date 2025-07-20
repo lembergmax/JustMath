@@ -2675,7 +2675,31 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the beta function value as a {@code BigNumber}
 	 */
 	public BigNumber beta(@NonNull final BigNumber y, @NonNull final MathContext mathContext) {
-		return SpecialFunctionMath.beta(this, y, mathContext);
+		return beta(y, mathContext, locale);
+	}
+
+	/**
+	 * Computes the beta function \( B(x, y) \) for this value and the given \( y \), using the specified
+	 * {@link MathContext} and {@link Locale}.
+	 * <p>
+	 * The beta function is defined as:
+	 * <pre>
+	 *     B(x, y) = ∫₀¹ t^(x-1) (1-t)^(y-1) dt
+	 * </pre>
+	 * This method delegates the calculation to
+	 * {@link SpecialFunctionMath#beta(BigNumber, BigNumber, MathContext, Locale)}.
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return SpecialFunctionMath.beta(this, y, mathContext, locale);
 	}
 
 	/**
@@ -2698,7 +2722,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the gamma function value as a {@code BigNumber}
 	 */
 	public BigNumber gamma(@NonNull final MathContext mathContext) {
-		return SpecialFunctionMath.gamma(this, mathContext);
+		return gamma(mathContext, locale);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma\(x\)) for this value, using the specified {@link MathContext} and
+	 * {@link Locale}.
+	 * <p>
+	 * The gamma function generalizes the factorial function for real and complex numbers.
+	 *
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return SpecialFunctionMath.gamma(this, mathContext, locale);
 	}
 
 	/**
