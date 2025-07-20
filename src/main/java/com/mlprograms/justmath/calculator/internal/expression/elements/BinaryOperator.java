@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.CoordinateFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.expressionelements.operations.SimpleCoordinateFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.BinaryOperatorOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -35,26 +34,13 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class SimpleCoordinateFunction extends CoordinateFunction {
+public class BinaryOperator extends Operator {
 
-	private final SimpleCoordinateFunctionOperation operation;
+	private final BinaryOperatorOperation operation;
 
-	public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
-		super(symbol, precedence, wrap(operation));
+	public BinaryOperator(String symbol, int precedence, BinaryOperatorOperation operation) {
+		super(symbol, precedence, 0);
 		this.operation = operation;
-	}
-
-	/**
-	 * Wraps a SimpleCoordinateFunctionOperation into a CoordinateFunctionOperation.
-	 * Ignores the trigonometricMode parameter, delegating to the underlying operation.
-	 *
-	 * @param operation
-	 * 	the SimpleCoordinateFunctionOperation to wrap
-	 *
-	 * @return a CoordinateFunctionOperation that delegates to the given operation
-	 */
-	private static CoordinateFunctionOperation wrap(SimpleCoordinateFunctionOperation operation) {
-		return (a, b, mathContext, trigonometricMode, locale) -> operation.apply(a, b, mathContext, locale);
 	}
 
 	@Override

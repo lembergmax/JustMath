@@ -22,48 +22,32 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.Getter;
+import com.mlprograms.justmath.calculator.internal.expression.operations.CoordinateFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
 
-@Getter
-public abstract class ExpressionElement {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-	private final String symbol;
-	private final boolean isFunction;
-	private final int precedence;
-	private final int numberOfOperands;
+public class CoordinateFunction extends Function {
 
-	public ExpressionElement(String symbol, boolean isFunction, int precedence, int numberOfOperands) {
-		this.symbol = symbol;
-		this.isFunction = isFunction;
-		this.precedence = precedence;
-		this.numberOfOperands = numberOfOperands;
+	private final CoordinateFunctionOperation operation;
+
+	public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
+		super(symbol, precedence, 2);
+		this.operation = operation;
 	}
 
-	/**
-	 * Applies this expression element to the given stack using the specified math context, trigonometric mode, and
-	 * locale.
-	 *
-	 * @param stack
-	 * 	the stack to operate on
-	 * @param mathContext
-	 * 	the math context for calculations
-	 * @param trigonometricMode
-	 * 	the trigonometric mode to use
-	 * @param locale
-	 * 	the locale for formatting or parsing
-	 *
-	 * @throws UnsupportedOperationException
-	 * 	if not implemented by subclass
-	 */
+	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		throw new UnsupportedOperationException("apply(stack, mathContext, trigonometricMode, locale) not supported for: " + symbol);
+		BigNumber b = ensureBigNumber(stack.pop());
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, b, mathContext, trigonometricMode, locale));
 	}
 
 }

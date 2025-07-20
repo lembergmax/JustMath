@@ -22,12 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expressionelements;
+package com.mlprograms.justmath.calculator.internal.expression.operations;
 
-public class Operator extends ExpressionElement {
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-	public Operator(String symbol, int precedence, int numberOfOperands) {
-		super(symbol, false, precedence, numberOfOperands);
-	}
+import java.math.MathContext;
+import java.util.Locale;
+
+@FunctionalInterface
+public interface ThreeArgumentFunctionOperation {
+
+	BigNumber apply(BigNumber a, BigNumber b, String c, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }

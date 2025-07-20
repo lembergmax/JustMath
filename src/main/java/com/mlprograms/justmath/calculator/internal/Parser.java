@@ -24,8 +24,8 @@
 
 package com.mlprograms.justmath.calculator.internal;
 
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 
