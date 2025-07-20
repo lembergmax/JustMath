@@ -30,6 +30,7 @@ import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
 import java.math.MathContext;
+import java.util.Locale;
 
 /**
  * Provides implementations of special functions from advanced mathematics,
@@ -82,7 +83,7 @@ public class SpecialFunctionMath {
 	 * @throws ArithmeticException
 	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined.
 	 */
-	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext) {
+	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		BigNumber xClone = x.clone();
 
 		if (xClone.isInteger() && xClone.isLessThanOrEqualTo(BigNumbers.ZERO)) {
@@ -90,7 +91,7 @@ public class SpecialFunctionMath {
 		}
 
 		// return xClone.subtract(BigNumbers.ONE).factorial(mathContext);
-		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString());
+		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
 	/**
@@ -127,13 +128,13 @@ public class SpecialFunctionMath {
 	 * @throws ArithmeticException
 	 * 	If x or y are ≤ 0 or lead to undefined Γ evaluations.
 	 */
-	public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext) {
+	public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		BigNumber xClone = x.clone();
 		BigNumber yClone = y.clone();
 
-		BigNumber gammaX = gamma(xClone, mathContext);
-		BigNumber gammaY = gamma(yClone, mathContext);
-		BigNumber gammaXY = gamma(xClone.add(yClone), mathContext);
+		BigNumber gammaX = gamma(xClone, mathContext, locale);
+		BigNumber gammaY = gamma(yClone, mathContext, locale);
+		BigNumber gammaXY = gamma(xClone.add(yClone), mathContext, locale);
 
 		return gammaX.multiply(gammaY).divide(gammaXY, mathContext);
 	}
