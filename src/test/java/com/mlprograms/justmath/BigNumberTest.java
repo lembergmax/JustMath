@@ -428,9 +428,9 @@ public class BigNumberTest {
 			"1,RAD,0.785398",
 			"1,DEG,45",
 			"2,RAD,0.463648",
-			"2,DEG,26.565052",
+			"2,DEG,26.565051",
 			"-2,RAD,-0.463648",
-			"-2,DEG,-26.565052"
+			"-2,DEG,-26.565051"
 		})
 		void acotTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, Locale.US);
@@ -467,7 +467,8 @@ public class BigNumberTest {
 		})
 		void acotInvalidTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
 			BigNumber num = new BigNumber(input, trigonometricMode);
-			assertEquals(expectedResult, num.acot(trigonometricMode).toString());
+			// assertEquals(expectedResult, num.acot(trigonometricMode).toString());
+			assertThrows(ArithmeticException.class, () -> num.acot(trigonometricMode));
 		}
 
 	}
