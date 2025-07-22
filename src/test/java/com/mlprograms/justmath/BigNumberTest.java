@@ -27,6 +27,7 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -968,6 +969,29 @@ public class BigNumberTest {
 			assertThrows(ArithmeticException.class, () -> zero.gamma(mc));
 			assertThrows(ArithmeticException.class, () -> minusOne.gamma(mc));
 		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"|-5|,5",
+			"|sin(pi/2)|,0.02741213359204429351778848819645260450178515252721841044049369475521833086990385942156241331617943135",
+			"3+|-2|,5"
+		})
+		void absoluteValueWithPipes(String expr, String expected) {
+			BigNumber result = new CalculatorEngine().evaluate(expr);
+			assertEquals(expected, result.toString());
+		}
+
+		@ParameterizedTest
+		@CsvSource({
+			"abs(-5),5",
+			"abs(sin(pi/2)),0.02741213359204429351778848819645260450178515252721841044049369475521833086990385942156241331617943135",
+			"3+abs(-2),5"
+		})
+		void absoluteValue(String expr, String expected) {
+			BigNumber result = new CalculatorEngine().evaluate(expr);
+			assertEquals(expected, result.toString());
+		}
+
 	}
 
 }
