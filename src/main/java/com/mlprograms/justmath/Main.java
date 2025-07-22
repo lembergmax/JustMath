@@ -62,7 +62,6 @@ public class Main {
 
 		testCalculator();
 
-
 	}
 
 	private static void testCalculator() {
