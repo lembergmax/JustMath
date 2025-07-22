@@ -25,7 +25,8 @@
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.expression.*;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.expression.elements.Parenthesis;
 import com.mlprograms.justmath.calculator.internal.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.internal.expression.elements.ThreeArgumentFunction;
@@ -64,7 +65,6 @@ import java.util.stream.Collectors;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-@AllArgsConstructor
 public class Tokenizer {
 
 	/**
@@ -73,6 +73,9 @@ public class Tokenizer {
 	 * Used to identify operators and functions during tokenization.
 	 */
 	private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
+
+	// TODO: doc
+	private boolean nextAbsoluteIsOpen = true;
 
 	/**
 	 * Scans the given token list for occurrences where a signed number directly follows
@@ -143,6 +146,17 @@ public class Tokenizer {
 				index++;
 			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
+				index++;
+			} else if (isAbsoluteValueSign(c)) { // TODO
+				if (nextAbsoluteIsOpen) {
+					// aufmachen: abs(
+					tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_ABS));
+					tokens.add(new Token(Token.Type.LEFT_PAREN, ExpressionElements.PAR_LEFT));
+				} else {
+					// zumachen: )
+					tokens.add(new Token(Token.Type.RIGHT_PAREN, ExpressionElements.PAR_RIGHT));
+				}
+				nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
 				index++;
 			} else if (matchThreeArgumentFunction(expression, index).isPresent()) {
 				Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
@@ -272,6 +286,18 @@ public class Tokenizer {
 	private boolean isZeroArgConstant(Token token) {
 		Optional<ExpressionElement> expressionElementOptional = ExpressionElements.findBySymbol(token.getValue());
 		return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == ZeroArgumentConstant.class;
+	}
+
+	/**
+	 * Checks if the given character represents the absolute value sign.
+	 *
+	 * @param c
+	 * 	the character to check
+	 *
+	 * @return true if the character is the absolute value sign, false otherwise
+	 */
+	private boolean isAbsoluteValueSign(char c) {
+		return String.valueOf(c).equals(ExpressionElements.SURRFUNC_ABS_S);
 	}
 
 	/**
