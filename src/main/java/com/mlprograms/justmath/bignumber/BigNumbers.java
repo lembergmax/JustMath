@@ -40,15 +40,49 @@ public class BigNumbers {
 	 */
 	public static final Locale CALCULATION_LOCALE = Locale.US;
 
+	/**
+	 * Default precision (number of decimal digits) used for division operations.
+	 */
 	public static final int DEFAULT_DIVISION_PRECISION = 100;
+
+	/**
+	 * Default {@link MathContext} used for calculations, based on {@link #DEFAULT_DIVISION_PRECISION}.
+	 */
 	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
+	/**
+	 * Constant representing the value -1 as a {@link BigNumber}.
+	 */
 	public static final BigNumber NEGATIVE_ONE = new BigNumber("-1", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 0 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ZERO = new BigNumber("0", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 1 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE = new BigNumber("1", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 2 as a {@link BigNumber}.
+	 */
 	public static final BigNumber TWO = new BigNumber("2", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 3 as a {@link BigNumber}.
+	 */
 	public static final BigNumber THREE = new BigNumber("3", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 100 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE_HUNDRED = new BigNumber("100", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 180 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180", DEFAULT_MATH_CONTEXT);
 
 	/**
