@@ -647,4 +647,36 @@ class TokenizerTest {
 		), tokens);
 	}
 
+	@Test
+	void testAbsFunctionAndPipes() {
+		// abs(x) syntax
+		List<Token> tokens1 = tokenizer.tokenize("abs(-5)");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "abs"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "-5"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens1);
+
+		// pipe syntax for absolute value
+		List<Token> tokens2 = tokenizer.tokenize("|-5|");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "abs"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "-5"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens2);
+
+		// nested expression inside pipes
+		List<Token> tokens3 = tokenizer.tokenize("|3-7|");
+		assertEquals(List.of(
+			new Token(Token.Type.FUNCTION, "abs"),
+			new Token(Token.Type.LEFT_PAREN, "("),
+			new Token(Token.Type.NUMBER, "3"),
+			new Token(Token.Type.OPERATOR, "-"),
+			new Token(Token.Type.NUMBER, "7"),
+			new Token(Token.Type.RIGHT_PAREN, ")")
+		), tokens3);
+	}
+
 }
