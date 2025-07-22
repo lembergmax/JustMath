@@ -26,7 +26,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Series**                       | `summation`, `product`                                                 |
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
-| **Special Functions**            | `gamma`, `beta`                                                        |
+| **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
 
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
@@ -72,6 +72,7 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 |                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
 | **Special Functions**            | `Γ`, `gamma(x)`          | Gamma                              |
 |                                  | `B`, `beta(x, y)`        | Beta                               |
+|                                  | `\|x\|`, `abs(x)`        | Absolute value                     |
 
 ## 📚 Static Utility Methods
 
