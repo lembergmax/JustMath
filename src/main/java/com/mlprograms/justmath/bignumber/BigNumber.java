@@ -2374,34 +2374,154 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string
+	 * and the default {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation) {
 		return product(kEnd, kCalculation, mathContext);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * default {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
 		return product(kEnd, kCalculation, mathContext, externalVariables);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string
+	 * and {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext) {
 		return product(kEnd, kCalculation, mathContext, trigonometricMode);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
 		return product(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and {@link TrigonometricMode}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
 		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
 		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and {@link Locale}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
 	}
 
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, {@link Locale}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
 	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
 		return SeriesMath.product(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
@@ -2740,6 +2860,30 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber gamma(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		return SpecialFunctionMath.gamma(this, mathContext, locale);
+	}
+
+	/**
+	 * Returns a new {@code BigNumber} whose value is the largest integer less than or equal to this number.
+	 * This operation sets the value after the decimal point to zero.
+	 *
+	 * @return this {@code BigNumber} with the fractional part removed
+	 */
+	public BigNumber floor() {
+		this.valueAfterDecimal = "0";
+		return this;
+	}
+
+	/**
+	 * Returns a new {@code BigNumber} whose value is the smallest integer greater than or equal to this number.
+	 * This operation adds one to the integer part and sets the value before the decimal point to zero,
+	 * then updates the internal state to reflect the new value.
+	 *
+	 * @return this {@code BigNumber} rounded up to the next integer
+	 */
+	public BigNumber ceil() {
+		this.valueBeforeDecimal = this.add(BigNumbers.ONE).getValueBeforeDecimal();
+		this.valueAfterDecimal = "0";
+		return this;
 	}
 
 	/**
