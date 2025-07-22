@@ -67,7 +67,6 @@ public class Token {
 		SEMICOLON,
 		STRING,
 		CONSTANT,
-		VARIABLE,
-		SUMMATION
+		VARIABLE
 	}
 }
