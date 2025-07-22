@@ -80,7 +80,7 @@ public class Parser {
 
 		for (Token token : tokens) {
 			switch (token.getType()) {
-				case NUMBER, STRING, CONSTANT, SUMMATION -> output.add(token);
+				case NUMBER, STRING, CONSTANT -> output.add(token);
 				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					// Factorial is a postfix operator → add directly to the output
@@ -140,29 +140,29 @@ public class Parser {
 	/**
 	 * Checks if the precedence of the first operator token is higher than the second.
 	 *
-	 * @param op1
+	 * @param token1
 	 * 	the first operator token
-	 * @param op2
+	 * @param token2
 	 * 	the second operator token
 	 *
-	 * @return true if op1 has higher precedence than op2, false otherwise
+	 * @return true if token1 has higher precedence than token2, false otherwise
 	 */
-	private boolean hasHigherPrecedence(Token op1, Token op2) {
-		return getPrecedence(op1) > getPrecedence(op2);
+	private boolean hasHigherPrecedence(Token token1, Token token2) {
+		return getPrecedence(token1) > getPrecedence(token2);
 	}
 
 	/**
 	 * Checks if two operator tokens have equal precedence.
 	 *
-	 * @param op1
-	 * 	the first operator token
-	 * @param op2
-	 * 	the second operator token
+	 * @param token1
+	 * 	the first operator token1
+	 * @param token2
+	 * 	the second operator token1
 	 *
 	 * @return true if both operators have equal precedence, false otherwise
 	 */
-	private boolean hasEqualPrecedence(Token op1, Token op2) {
-		return getPrecedence(op1) == getPrecedence(op2);
+	private boolean hasEqualPrecedence(Token token1, Token token2) {
+		return getPrecedence(token1) == getPrecedence(token2);
 	}
 
 	/**
