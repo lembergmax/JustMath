@@ -180,10 +180,9 @@ public class InverseTrigonometricMath {
 	public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		final BigNumber absArgument = argument.abs();
 		BigNumber result;
 
-		if (absArgument.isLessThanOrEqualTo(BigNumbers.ONE)) {
+		if (argument.isLessThanOrEqualTo(BigNumbers.ONE)) {
 			result = computeAtanSeries(argument, mathContext);
 		} else {
 			BigNumber oneOverX = BigNumbers.ONE.divide(argument, mathContext);
