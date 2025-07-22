@@ -73,7 +73,10 @@ public class Tokenizer {
 	 */
 	private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
 
-	// TODO: doc
+	/**
+	 * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
+	 * Used to alternate between opening and closing absolute value contexts during tokenization.
+	 */
 	private boolean nextAbsoluteIsOpen = true;
 
 	/**
