@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TokenizerTest {
 
 	private final MathContext mathContext = BigNumbers.DEFAULT_MATH_CONTEXT;
-	private final Tokenizer tokenizer = new Tokenizer(mathContext);
+	private final Tokenizer tokenizer = new Tokenizer();
 
 	@Test
 	void testSimpleExpression() {
@@ -423,7 +423,7 @@ class TokenizerTest {
 
 	@Test
 	void testValidFactorial() {
-		var tokens = new Tokenizer(MathContext.DECIMAL64).tokenize("5!");
+		var tokens = new Tokenizer().tokenize("5!");
 		assertEquals(List.of(
 			new Token(Token.Type.NUMBER, "5"),
 			new Token(Token.Type.OPERATOR, "!")
@@ -432,13 +432,13 @@ class TokenizerTest {
 
 	@Test
 	void testInvalidPrefixFactorial() {
-		var tokenizer = new Tokenizer(MathContext.DECIMAL64);
+		var tokenizer = new Tokenizer();
 		assertThrows(Exception.class, () -> tokenizer.tokenize("!5"));
 	}
 
 	@Test
 	void testFactorialAfterParenthesis() {
-		var tokens = new Tokenizer(MathContext.DECIMAL64).tokenize("(3+2)!");
+		var tokens = new Tokenizer().tokenize("(3+2)!");
 		assertEquals(List.of(
 			new Token(Token.Type.LEFT_PAREN, "("),
 			new Token(Token.Type.NUMBER, "3"),
