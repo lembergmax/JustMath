@@ -75,11 +75,6 @@ public class Tokenizer {
 	private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
 
 	/**
-	 * Math context specifying the precision and rounding mode for calculations.
-	 */
-	private MathContext mathContext;
-
-	/**
 	 * Scans the given token list for occurrences where a signed number directly follows
 	 * a closing parenthesis token (e.g. ") -5"). In such cases, the signed number token
 	 * is split into an operator token ('+' or '-') and a separate unsigned number token.
