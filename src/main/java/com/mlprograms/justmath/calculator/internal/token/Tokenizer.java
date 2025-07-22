@@ -188,7 +188,7 @@ public class Tokenizer {
 
 				index = closingParenthesis + 1;
 			} else {
-				int lengthOfMatch = matchOtherOperatorOrFunction(expression, index, tokens);
+				int lengthOfMatch = getLengthOfMatchingOperatorOrFunction(expression, index, tokens);
 				if (lengthOfMatch > 0) {
 					index += lengthOfMatch;
 				} else {
@@ -345,7 +345,7 @@ public class Tokenizer {
 
 			char prev = expression.charAt(index - 1);
 
-			// If prev is digit or right paren, then + or - is operator, not sign of number
+			// If prev is a digit or right paren, then + or - is operator, not sign of number
 			if (Character.isDigit(prev) || isRightParenthesis(prev)) {
 				return false;
 			}
@@ -563,7 +563,7 @@ public class Tokenizer {
 	 * @throws NullPointerException
 	 * 	if expression or tokens is null
 	 */
-	private int matchOtherOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
+	private int getLengthOfMatchingOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
 		int maxTokenLength = validOperatorsAndFunctions.stream()
 			                     .mapToInt(String::length)
 			                     .max()
@@ -595,7 +595,6 @@ public class Tokenizer {
 						throw new IllegalArgumentException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
 					}
 
-					// always tokenize as an expressionElement
 					tokens.add(new Token(Token.Type.OPERATOR, ExpressionElements.OP_FACTORIAL));
 					return length;
 				}
