@@ -122,6 +122,9 @@ public class ExpressionElements {
 	public static final String FUNC_GAMMA_S = "gamma";
 	public static final String FUNC_BETA = "B";
 	public static final String FUNC_BETA_S = "beta";
+	//
+	public static final String FUNC_ABS = "abs";
+	public static final String SURRFUNC_ABS_S = "|"; // that is special
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
@@ -210,7 +213,10 @@ public class ExpressionElements {
 			new OneArgumentFunction(FUNC_GAMMA, 6, BigNumber::gamma),
 			new OneArgumentFunction(FUNC_GAMMA_S, 6, BigNumber::gamma),
 			new TwoArgumentFunction(FUNC_BETA, 6, BigNumber::beta),
-			new TwoArgumentFunction(FUNC_BETA_S, 6, BigNumber::beta)
+			new TwoArgumentFunction(FUNC_BETA_S, 6, BigNumber::beta),
+			//
+			new OneArgumentZeroParamFunction(FUNC_ABS, 6, BigNumber::abs),
+			new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs)
 		);
 
 		for (ExpressionElement expressionElement : expressionElementList) {
