@@ -2959,17 +2959,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Returns the absolute value of this {@code BigNumber}.
 	 * <p>
-	 * If this number is negative, a new {@code BigNumber} instance is returned with the same value but positive sign.
-	 * If this number is already non-negative, the current instance is returned directly.
-	 * </p>
+	 * If the number is negative, sets the sign to positive and returns this instance.
 	 *
-	 * @return the absolute value of this {@code BigNumber}; either a new instance or {@code this} if already non-negative
+	 * @return this {@code BigNumber} as a non-negative value
 	 */
 	public BigNumber abs() {
 		if (isNegative) {
-			BigNumber abs = new BigNumber(toString());
-			abs.isNegative = false;
-			return abs;
+			isNegative = false;
 		}
 		return this;
 	}
