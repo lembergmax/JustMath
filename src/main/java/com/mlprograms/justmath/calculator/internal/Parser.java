@@ -140,29 +140,29 @@ public class Parser {
 	/**
 	 * Checks if the precedence of the first operator token is higher than the second.
 	 *
-	 * @param token1
+	 * @param operator1
 	 * 	the first operator token
-	 * @param token2
+	 * @param operator2
 	 * 	the second operator token
 	 *
-	 * @return true if token1 has higher precedence than token2, false otherwise
+	 * @return true if operator1 has higher precedence than operator2, false otherwise
 	 */
-	private boolean hasHigherPrecedence(Token token1, Token token2) {
-		return getPrecedence(token1) > getPrecedence(token2);
+	private boolean hasHigherPrecedence(Token operator1, Token operator2) {
+		return getPrecedence(operator1) > getPrecedence(operator2);
 	}
 
 	/**
 	 * Checks if two operator tokens have equal precedence.
 	 *
-	 * @param token1
-	 * 	the first operator token1
-	 * @param token2
-	 * 	the second operator token1
+	 * @param operator1
+	 * 	the first operator token
+	 * @param operator2
+	 * 	the second operator token
 	 *
 	 * @return true if both operators have equal precedence, false otherwise
 	 */
-	private boolean hasEqualPrecedence(Token token1, Token token2) {
-		return getPrecedence(token1) == getPrecedence(token2);
+	private boolean hasEqualPrecedence(Token operator1, Token operator2) {
+		return getPrecedence(operator1) == getPrecedence(operator2);
 	}
 
 	/**
