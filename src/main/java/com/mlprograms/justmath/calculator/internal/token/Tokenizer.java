@@ -31,7 +31,6 @@ import com.mlprograms.justmath.calculator.internal.expression.elements.Parenthes
 import com.mlprograms.justmath.calculator.internal.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.internal.expression.elements.ThreeArgumentFunction;
 import com.mlprograms.justmath.calculator.internal.expression.elements.ZeroArgumentConstant;
-import lombok.AllArgsConstructor;
 
 import java.math.MathContext;
 import java.util.*;
@@ -147,13 +146,11 @@ public class Tokenizer {
 			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
-			} else if (isAbsoluteValueSign(c)) { // TODO
+			} else if (isAbsoluteValueSign(c)) {
 				if (nextAbsoluteIsOpen) {
-					// aufmachen: abs(
 					tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_ABS));
 					tokens.add(new Token(Token.Type.LEFT_PAREN, ExpressionElements.PAR_LEFT));
 				} else {
-					// zumachen: )
 					tokens.add(new Token(Token.Type.RIGHT_PAREN, ExpressionElements.PAR_RIGHT));
 				}
 				nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
