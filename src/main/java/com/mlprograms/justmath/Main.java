@@ -25,9 +25,12 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberMatrix;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
@@ -60,8 +63,7 @@ public class Main {
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pie*a"));
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pieapi"));
 
-		testCalculator();
-
+		// testCalculator();
 	}
 
 	private static void testCalculator() {
