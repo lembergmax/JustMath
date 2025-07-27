@@ -2,13 +2,13 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberMatrix;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BigNumberMatrixTest {
 
@@ -16,6 +16,10 @@ class BigNumberMatrixTest {
 
 	private static void assertMatrixEquals(BigNumberMatrix expected, BigNumberMatrix actual) {
 		assertEquals(expected.toPlainDataString(), actual.toPlainDataString());
+	}
+
+	private static BigNumberMatrix matrix(String str) {
+		return new BigNumberMatrix(str, locale);
 	}
 
 	@ParameterizedTest(name = "[{index}] Add {0} + {1} = {2}")
@@ -152,6 +156,118 @@ class BigNumberMatrixTest {
 	})
 	void testInvalidMatrixConstructor(String input) {
 		assertThrows(IllegalArgumentException.class, () -> new BigNumberMatrix(input, locale));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,2;3,4', true",
+		"'1,2,3;4,5,6', false",
+		"'1,0;0,1', true"
+	})
+	void testIsSquare(String matrixStr, boolean expected) {
+		assertEquals(expected, matrix(matrixStr).isSquare());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'0,0;0,0', true",
+		"'1,0;0,1', false",
+		"'0', true",
+		"'0,1', false"
+	})
+	void testIsZeroMatrix(String matrixStr, boolean expected) {
+		assertEquals(expected, matrix(matrixStr).isZeroMatrix());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,0;0,1', true",
+		"'1,2;2,1', true",
+		"'1,2;3,1', false",
+		"'1,2,3;2,4,5;3,5,6', true"
+	})
+	void testIsSymmetric(String matrixStr, boolean expected) {
+		BigNumberMatrix m = matrix(matrixStr);
+		boolean result;
+		try {
+			result = m.isSymmetric();
+		} catch (IllegalStateException e) {
+			result = false;
+		}
+		assertEquals(expected, result);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,0;0,1', true",
+		"'1,2;3,4', false",
+		"'1', true",
+		"'1,0,0;0,1,0;0,0,1', true",
+		"'0,0;0,0', false"
+	})
+	void testIsIdentityMatrix(String matrixStr, boolean expected) {
+		assertEquals(expected, matrix(matrixStr).isIdentityMatrix());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,2;3,4', '10'",
+		"'0,0;0,0', '0'",
+		"'1', '1'",
+		"'2,3,4', '9'"
+	})
+	void testSumElements(String matrixStr, String expectedSum) {
+		BigNumberMatrix m = matrix(matrixStr);
+		assertEquals(new BigNumber(expectedSum, locale), m.sumElements());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,2;3,4', '4'",
+		"'-5,-6;-7,-8', '-5'",
+		"'0,100;200,3', '200'",
+		"'3.14,2.71;0.99,4.01', '4.01'"
+	})
+	void testMax(String matrixStr, String expectedMax) {
+		assertEquals(new BigNumber(expectedMax, locale), matrix(matrixStr).max());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,2;3,4', '1,2,3,4'",
+		"'5', '5'",
+		"'1,0,0;0,1,0;0,0,1', '1,0,0,0,1,0,0,0,1'"
+	})
+	void testFlatten(String matrixStr, String expectedFlat) {
+		BigNumberMatrix m = matrix(matrixStr);
+		String result = String.join(",", m.flatten().stream().map(BigNumber::toString).toList());
+		assertEquals(expectedFlat, result);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"'1,2;3,4', '1,2;3,4', true",
+		"'1,2;3,4', '4,3;2,1', false",
+		"'1,2;3,4', '1,2;3,5', false"
+	})
+	void testEqualsMatrix(String a, String b, boolean expected) {
+		BigNumberMatrix m1 = matrix(a);
+		BigNumberMatrix m2 = matrix(b);
+		boolean result;
+		try {
+			result = m1.equalsMatrix(m2);
+		} catch (IllegalStateException e) {
+			result = false;
+		}
+		assertEquals(expected, result);
+	}
+
+	@Test
+	void testCloneCreatesEqualMatrix() {
+		BigNumberMatrix m1 = matrix("1,2;3,4");
+		BigNumberMatrix m2 = m1.clone();
+		assertNotSame(m1, m2);
+		assertMatrixEquals(m1, m2);
 	}
 
 	@ParameterizedTest(name = "[{index}] Zero-sized Matrix {0}")
