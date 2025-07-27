@@ -341,6 +341,46 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Constructs a BigNumber from an int value using the default locale.
+	 *
+	 * @param number
+	 * 	the int value to convert
+	 */
+	public BigNumber(final int number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a double value using the default locale.
+	 *
+	 * @param number
+	 * 	the double value to convert
+	 */
+	public BigNumber(final double number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a float value using the default locale.
+	 *
+	 * @param number
+	 * 	the float value to convert
+	 */
+	public BigNumber(final float number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a long value using the default locale.
+	 *
+	 * @param number
+	 * 	the long value to convert
+	 */
+	public BigNumber(final long number) {
+		this(String.valueOf(number));
+	}
+
+	/**
 	 * Adds the specified {@link BigNumber} to this number using the current locale.
 	 *
 	 * <p>This is a convenience method that delegates to {@link #add(BigNumber, Locale)}.</p>
