@@ -31,7 +31,7 @@ import java.util.function.BiConsumer;
  * </ul>
  */
 @Getter
-public class BigNumberMatrix {
+public class BigNumberMatrix implements Cloneable {
 
 	/**
 	 * The number of rows in this matrix.
@@ -76,6 +76,7 @@ public class BigNumberMatrix {
 		this.columns = columns;
 		this.locale = locale;
 		this.data = new ArrayList<>();
+
 		validateDimensions();
 		fillWithZeroes();
 	}
@@ -120,6 +121,23 @@ public class BigNumberMatrix {
 	}
 
 	/**
+	 * Copy constructor.
+	 * Creates a new BigNumberMatrix by copying the locale, data, rows, and columns from the given matrix.
+	 * Note: The data list is shallow-copied; the inner lists and BigNumber elements are not deeply cloned.
+	 *
+	 * @param bigNumberMatrix
+	 * 	the matrix to copy
+	 */
+	public BigNumberMatrix(@NonNull final BigNumberMatrix bigNumberMatrix) {
+		this.locale = bigNumberMatrix.getLocale();
+		this.rows = bigNumberMatrix.getRows();
+		this.columns = bigNumberMatrix.getColumns();
+		this.data = new ArrayList<>();
+
+		deepCopyData(bigNumberMatrix);
+	}
+
+	/**
 	 * Parses a string-based matrix representation into a nested list of strings.
 	 * Rows are separated by semicolons (;) and columns by commas (,).
 	 *
@@ -132,7 +150,7 @@ public class BigNumberMatrix {
 	 * 	if the input is empty, rows have inconsistent column counts,
 	 * 	or any matrix entry is empty
 	 */
-	private static List<List<String>> parseMatrixString(String input) {
+	private static List<List<String>> parseMatrixString(@NonNull final String input) {
 		List<List<String>> result = new ArrayList<>();
 		if (input.trim().isEmpty()) {
 			throw new IllegalArgumentException("Matrix string must not be empty.");
@@ -143,6 +161,7 @@ public class BigNumberMatrix {
 
 		for (String row : rows) {
 			String[] cols = row.trim().split(",");
+
 			if (expectedCols == -1) {
 				expectedCols = cols.length;
 			} else if (cols.length != expectedCols) {
@@ -161,6 +180,26 @@ public class BigNumberMatrix {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Performs a deep copy of the matrix data from the given {@code bigNumberMatrix}.
+	 * Each {@link BigNumber} element is individually copied to ensure immutability.
+	 * The resulting {@code data} list contains new row lists and new {@code BigNumber} instances.
+	 *
+	 * @param bigNumberMatrix
+	 * 	the matrix from which to copy the data
+	 */
+	private void deepCopyData(@NonNull final BigNumberMatrix bigNumberMatrix) {
+		for (List<BigNumber> row : bigNumberMatrix.getData()) {
+			List<BigNumber> newRow = new ArrayList<>(row.size());
+
+			for (BigNumber value : row) {
+				newRow.add(new BigNumber(value));
+			}
+
+			bigNumberMatrix.getData().add(newRow);
+		}
 	}
 
 	/**
@@ -208,7 +247,7 @@ public class BigNumberMatrix {
 	 * @throws IllegalArgumentException
 	 * 	if any row has a different number of columns
 	 */
-	private void fillFromStringList(List<List<String>> values) {
+	private void fillFromStringList(@NonNull final List<List<String>> values) {
 		for (List<String> row : values) {
 			if (row.size() != columns.intValue()) {
 				throw new IllegalArgumentException("Inconsistent column count in row.");
@@ -237,9 +276,10 @@ public class BigNumberMatrix {
 	 * @throws IndexOutOfBoundsException
 	 * 	if either index is out of range
 	 */
-	public void set(BigNumber row, BigNumber col, BigNumber value) {
+	public void set(@NonNull final BigNumber row, @NonNull final BigNumber col, @NonNull final BigNumber value) {
 		validateIndex(row, rows, "row");
 		validateIndex(col, columns, "column");
+
 		data.get(row.intValue()).set(col.intValue(), value);
 	}
 
@@ -256,9 +296,10 @@ public class BigNumberMatrix {
 	 * @throws IndexOutOfBoundsException
 	 * 	if either index is out of range
 	 */
-	public BigNumber get(BigNumber row, BigNumber col) {
+	public BigNumber get(@NonNull final BigNumber row, @NonNull final BigNumber col) {
 		validateIndex(row, rows, "row");
 		validateIndex(col, columns, "column");
+
 		return data.get(row.intValue()).get(col.intValue());
 	}
 
@@ -276,7 +317,7 @@ public class BigNumberMatrix {
 	 * @throws IndexOutOfBoundsException
 	 * 	if the index is out of bounds or invalid
 	 */
-	private void validateIndex(BigNumber index, BigNumber max, String type) {
+	private void validateIndex(@NonNull final BigNumber index, @NonNull final BigNumber max, @NonNull final String type) {
 		if (!index.isInteger() || index.isNegative() || index.isGreaterThanOrEqualTo(max)) {
 			throw new IndexOutOfBoundsException(type + " index out of bounds: " + index);
 		}
@@ -293,7 +334,7 @@ public class BigNumberMatrix {
 	 * @throws IllegalArgumentException
 	 * 	if dimensions do not match
 	 */
-	public BigNumberMatrix add(@NonNull BigNumberMatrix other) {
+	public BigNumberMatrix add(@NonNull final BigNumberMatrix other) {
 		return MatrixMath.add(this, other, locale);
 	}
 
@@ -308,7 +349,7 @@ public class BigNumberMatrix {
 	 * @throws IllegalArgumentException
 	 * 	if dimensions do not match
 	 */
-	public BigNumberMatrix subtract(@NonNull BigNumberMatrix other) {
+	public BigNumberMatrix subtract(@NonNull final BigNumberMatrix other) {
 		return MatrixMath.subtract(this, other);
 	}
 
@@ -323,7 +364,7 @@ public class BigNumberMatrix {
 	 * @throws IllegalArgumentException
 	 * 	if dimensions are incompatible
 	 */
-	public BigNumberMatrix multiply(@NonNull BigNumberMatrix other) {
+	public BigNumberMatrix multiply(@NonNull final BigNumberMatrix other) {
 		return MatrixMath.multiply(this, other);
 	}
 
@@ -338,7 +379,7 @@ public class BigNumberMatrix {
 	 * @throws IllegalArgumentException
 	 * 	if dimensions do not match or division by zero occurs
 	 */
-	public BigNumberMatrix divide(@NonNull BigNumberMatrix other) {
+	public BigNumberMatrix divide(@NonNull final BigNumberMatrix other) {
 		return MatrixMath.divide(this, other);
 	}
 
@@ -359,7 +400,7 @@ public class BigNumberMatrix {
 	 *
 	 * @return the scaled matrix
 	 */
-	public BigNumberMatrix scalarMultiply(BigNumber scalar) {
+	public BigNumberMatrix scalarMultiply(@NonNull final BigNumber scalar) {
 		return MatrixMath.scalarMultiply(this, scalar);
 	}
 
@@ -370,6 +411,164 @@ public class BigNumberMatrix {
 	 */
 	public BigNumberMatrix negate() {
 		return MatrixMath.scalarMultiply(this, new BigNumber("-1", locale));
+	}
+
+	/**
+	 * Computes the determinant of this matrix using LU decomposition or a recursive strategy,
+	 * depending on the implementation of {@link MatrixMath}.
+	 * <p>
+	 * The determinant is a scalar value that describes properties such as:
+	 * <ul>
+	 *   <li>Whether the matrix is invertible (non-zero determinant)</li>
+	 *   <li>Volume scaling factor in linear transformations</li>
+	 *   <li>The sign and orientation of basis vectors</li>
+	 * </ul>
+	 *
+	 * @return the determinant as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square
+	 */
+	public BigNumber determinant() {
+		if (!isSquare()) {
+			throw new IllegalArgumentException("Determinant is only defined for square matrices.");
+		}
+
+		return MatrixMath.determinant(this);
+	}
+
+	/**
+	 * Computes the inverse of this matrix.
+	 * <p>
+	 * The inverse matrix {@code A⁻¹} satisfies the condition: {@code A × A⁻¹ = I}, where {@code I}
+	 * is the identity matrix. This operation is only defined for square and invertible matrices.
+	 *
+	 * @return the inverse of this matrix
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square or not invertible
+	 */
+	public BigNumberMatrix inverse() {
+		if (!isSquare()) {
+			throw new IllegalArgumentException("Only square matrices can be inverted.");
+		}
+
+		return MatrixMath.inverse(this);
+	}
+
+	/**
+	 * Computes the matrix raised to the power of a given exponent.
+	 * <p>
+	 * This operation performs repeated matrix multiplication:
+	 * <pre>
+	 * A^0 = I (identity matrix)
+	 * A^1 = A
+	 * A^2 = A × A
+	 * A^n = A × A × ... × A (n times)
+	 * </pre>
+	 * <p>
+	 * Only square matrices can be exponentiated. If the exponent is zero,
+	 * the result is the identity matrix of the same dimension.
+	 *
+	 * @param exponent
+	 * 	the {@link BigNumber} exponent
+	 *
+	 * @return a new matrix representing this matrix raised to the given power
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square or the exponent is negative
+	 */
+	public BigNumberMatrix power(@NonNull final BigNumber exponent) {
+		if (!isSquare()) {
+			throw new IllegalArgumentException("Matrix power only defined for square matrices.");
+		}
+
+		return MatrixMath.power(this, exponent);
+	}
+
+	/**
+	 * Computes the trace of the matrix, defined as the sum of the diagonal elements.
+	 * <p>
+	 * The trace has several mathematical applications:
+	 * <ul>
+	 *   <li>Used in matrix invariants</li>
+	 *   <li>Important in linear algebra and quantum mechanics</li>
+	 *   <li>Equal to the sum of eigenvalues of a matrix</li>
+	 * </ul>
+	 *
+	 * @return the trace as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square
+	 */
+	public BigNumber trace() {
+		if (!isSquare()) {
+			throw new IllegalArgumentException("Trace only defined for square matrices.");
+		}
+
+		BigNumber sum = BigNumbers.ZERO;
+
+		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(rows); i = i.add(BigNumbers.ONE)) {
+			sum = sum.add(get(i, i));
+		}
+
+		return sum;
+	}
+
+	/**
+	 * Checks whether the matrix is symmetric.
+	 * <p>
+	 * A matrix is symmetric if it is equal to its transpose, i.e., {@code A[i][j] == A[j][i]}
+	 * for all valid indices {@code i, j}.
+	 *
+	 * @return {@code true} if the matrix is symmetric; {@code false} otherwise
+	 */
+	public boolean isSymmetric() {
+		if (!isSquare()) {
+			return false;
+		}
+
+		forEachIndex((i, j) -> {
+			if (!get(i, j).isEqualTo(get(j, i))) throw new IllegalStateException();
+		});
+
+		return true;
+	}
+
+	/**
+	 * Computes the sum of all elements in the matrix.
+	 * <p>
+	 * This is useful for statistical calculations, checksum operations,
+	 * or simple aggregate evaluations of matrix content.
+	 *
+	 * @return the total sum of all matrix entries
+	 */
+	public BigNumber sumElements() {
+		BigNumber[] sum = new BigNumber[] { BigNumbers.ZERO };
+
+		forEachElement((i, j, value) -> sum[ 0 ] = sum[ 0 ].add(value));
+
+		return sum[ 0 ];
+	}
+
+	/**
+	 * Returns the maximum value among all elements in the matrix.
+	 * <p>
+	 * This method iterates over all matrix entries and compares their values
+	 * using {@link BigNumber#isGreaterThan(BigNumber)} to determine the maximum.
+	 *
+	 * @return the largest {@link BigNumber} present in the matrix
+	 */
+	public BigNumber max() {
+		BigNumber[] currentMax = new BigNumber[] { get(BigNumbers.ZERO, BigNumbers.ZERO) };
+
+		forEachElement((i, j, value) -> {
+			if (value.isGreaterThan(currentMax[ 0 ])) {
+				currentMax[ 0 ] = value;
+			}
+		});
+
+		return currentMax[ 0 ];
 	}
 
 	/**
@@ -394,14 +593,42 @@ public class BigNumberMatrix {
 				}
 			}
 		}
+
 		return true;
 	}
 
 	/**
-	 * Checks whether this matrix is an identity matrix:
-	 * all diagonal elements are 1 and all off-diagonal elements are 0.
+	 * Checks whether this matrix is an <strong>identity matrix</strong>.
+	 * <p>
+	 * An <em>identity matrix</em> is a special kind of square matrix in which all the elements
+	 * on the <strong>main diagonal</strong> (i.e., positions where the row index equals the column index)
+	 * are equal to one (1), and all other elements are equal to zero (0).
+	 * It is denoted by the symbol {@code I<sub>n</sub>} for an {@code n × n} matrix.
+	 * </p>
 	 *
-	 * @return true if the matrix is an identity matrix, false otherwise
+	 * <p>Mathematically, an identity matrix satisfies the condition:</p>
+	 * <pre>
+	 * I * A = A * I = A
+	 * </pre>
+	 * for any matrix {@code A} of compatible dimensions, where {@code *} denotes matrix multiplication.
+	 *
+	 * <p>
+	 * This method first verifies that the matrix is square, since identity matrices must have the same
+	 * number of rows and columns. It then iterates over all elements and checks:
+	 * </p>
+	 * <ul>
+	 *   <li>All diagonal elements {@code A[i][i]} are equal to one (1)</li>
+	 *   <li>All off-diagonal elements {@code A[i][j]} for {@code i ≠ j} are equal to zero (0)</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * This method is locale-aware: the values 0 and 1 are parsed using the matrix's configured {@link Locale}.
+	 * </p>
+	 *
+	 * @return {@code true} if the matrix is an identity matrix; {@code false} otherwise
+	 *
+	 * @see #isSquare()
+	 * @see #isZeroMatrix()
 	 */
 	public boolean isIdentityMatrix() {
 		if (!isSquare()) {
@@ -425,6 +652,47 @@ public class BigNumberMatrix {
 				}
 			}
 		}
+
+		return true;
+	}
+
+	/**
+	 * Returns a flattened list of all elements in the matrix in row-major order.
+	 * <p>
+	 * This is useful for serialization, vectorization, or converting a 2D structure
+	 * into a linear representation.
+	 *
+	 * @return a list of all matrix elements, row by row
+	 */
+	public List<BigNumber> flatten() {
+		List<BigNumber> list = new ArrayList<>();
+		forEachElement((i, j, value) -> list.add(value));
+
+		return list;
+	}
+
+	/**
+	 * Compares this matrix with another matrix for structural and numerical equality.
+	 * <p>
+	 * Two matrices are considered equal if they have the same dimensions and
+	 * corresponding elements are numerically equal via {@link BigNumber#isEqualTo(BigNumber)}.
+	 *
+	 * @param other
+	 * 	the matrix to compare against
+	 *
+	 * @return {@code true} if both matrices are equal; {@code false} otherwise
+	 */
+
+	public boolean equalsMatrix(@NonNull BigNumberMatrix other) {
+		if (!rows.equals(other.getRows()) || !columns.equals(other.getColumns())) {
+			return false;
+		}
+
+		forEachIndex((i, j) -> {
+			if (!get(i, j).isEqualTo(other.get(i, j))) {
+				throw new IllegalStateException();
+			}
+		});
 
 		return true;
 	}
@@ -523,6 +791,19 @@ public class BigNumberMatrix {
 		}
 
 		return sb.append("\n]").toString();
+	}
+
+	/**
+	 * Creates a deep copy of this matrix.
+	 * <p>
+	 * Equivalent to the copy constructor {@link #BigNumberMatrix(BigNumberMatrix)}.
+	 * All internal {@link BigNumber} instances are also cloned.
+	 *
+	 * @return a new matrix that is a deep copy of this matrix
+	 */
+	@Override
+	public BigNumberMatrix clone() {
+		return new BigNumberMatrix(this);
 	}
 
 }
