@@ -238,6 +238,205 @@ public class MatrixMath {
 	}
 
 	/**
+	 * Computes the determinant of a square matrix.
+	 * <p>
+	 * For 1×1 and 2×2 matrices, this method uses a direct formula.
+	 * For larger matrices, it recursively computes the determinant via Laplace expansion
+	 * along the first row.
+	 * </p>
+	 *
+	 * @param matrix
+	 * 	the square matrix whose determinant is to be computed
+	 *
+	 * @return the determinant as a {@link BigNumber}
+	 *
+	 * @throws NullPointerException
+	 * 	if {@code matrix} is {@code null}
+	 */
+	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix) {
+		BigNumber n = matrix.getRows();
+
+		if (n.isEqualTo(BigNumbers.ONE)) {
+			return matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
+		}
+
+		if (n.isEqualTo(BigNumbers.TWO)) {
+			BigNumber a = matrix.get(new BigNumber("0"), new BigNumber("0"));
+			BigNumber b = matrix.get(new BigNumber("0"), new BigNumber("1"));
+			BigNumber c = matrix.get(new BigNumber("1"), new BigNumber("0"));
+			BigNumber d = matrix.get(new BigNumber("1"), new BigNumber("1"));
+
+			return a.multiply(d).subtract(b.multiply(c));
+		}
+
+		BigNumber det = BigNumbers.ZERO;
+
+		for (BigNumber col = BigNumbers.ZERO; col.isLessThan(n); col = col.add(BigNumbers.ONE)) {
+			BigNumber sign = (col.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ZERO)) ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
+			BigNumber element = matrix.get(new BigNumber("0"), new BigNumber(String.valueOf(col)));
+			BigNumberMatrix minor = minor(matrix, BigNumbers.ZERO, col);
+
+			det = det.add(sign.multiply(element).multiply(determinant(minor)));
+		}
+
+		return det;
+	}
+
+	/**
+	 * Computes the inverse of a square matrix.
+	 * <p>
+	 * The inverse of a matrix <em>A</em> is the matrix <em>A<sup>-1</sup></em> such that
+	 * <em>A × A<sup>-1</sup> = I</em>, where <em>I</em> is the identity matrix.
+	 * This method calculates the inverse using the adjugate and determinant:
+	 * <em>A<sup>-1</sup> = adj(A) / det(A)</em>.
+	 * </p>
+	 *
+	 * @param matrix
+	 * 	the square matrix to invert
+	 *
+	 * @return the inverse of the matrix
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not invertible (determinant is zero)
+	 * @throws NullPointerException
+	 * 	if {@code matrix} is {@code null}
+	 */
+	public static BigNumberMatrix inverse(@NonNull final BigNumberMatrix matrix) {
+		BigNumber determinant = determinant(matrix);
+
+		if (determinant.isEqualTo(BigNumbers.ZERO)) {
+			throw new IllegalArgumentException("Matrix is not invertible (determinant is zero).");
+		}
+
+		return scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant));
+	}
+
+	/**
+	 * Raises a square matrix to a non-negative integer power.
+	 * <p>
+	 * This method computes <em>base<sup>exponent</sup></em> using exponentiation by squaring,
+	 * which is efficient for large exponents. The exponent must be a non-negative integer.
+	 * </p>
+	 *
+	 * @param base
+	 * 	the square matrix to be exponentiated
+	 * @param exponent
+	 * 	the non-negative integer exponent
+	 *
+	 * @return the matrix raised to the given power
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the exponent is negative or not an integer
+	 * @throws NullPointerException
+	 * 	if any argument is {@code null}
+	 */
+	public static BigNumberMatrix power(@NonNull final BigNumberMatrix base, @NonNull final BigNumber exponent) {
+		if (!exponent.isInteger() || exponent.isNegative()) {
+			throw new IllegalArgumentException("Matrix exponent must be a non-negative integer.");
+		}
+
+		BigNumberMatrix result = identity(base.getRows(), base.getLocale());
+		BigNumberMatrix temp = base.clone();
+		BigNumber exp = exponent;
+
+		while (exp.isGreaterThan(BigNumbers.ZERO)) {
+			if (exp.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ONE)) {
+				result = multiply(result, temp);
+			}
+
+			temp = multiply(temp, temp);
+			exp = exp.divide(BigNumbers.TWO).floor();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the minor of the matrix by removing the specified row and column.
+	 *
+	 * @param matrix
+	 * 	the original matrix
+	 * @param rowToRemove
+	 * 	the row index to remove
+	 * @param colToRemove
+	 * 	the column index to remove
+	 *
+	 * @return the resulting minor matrix
+	 */
+	public static BigNumberMatrix minor(@NonNull final BigNumberMatrix matrix, @NonNull final BigNumber rowToRemove, @NonNull final BigNumber colToRemove) {
+		BigNumber size = matrix.getRows();
+
+		BigNumberMatrix result = new BigNumberMatrix(size.subtract(BigNumbers.ONE), size.subtract(BigNumbers.ONE), matrix.getLocale());
+
+		BigNumber newRow = BigNumbers.ZERO;
+		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(size); row = row.add(BigNumbers.ONE)) {
+			if (row.isEqualTo(rowToRemove)) {
+				continue;
+			}
+
+			BigNumber newCol = BigNumbers.ZERO;
+			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(size); col = col.add(BigNumbers.ONE)) {
+				if (col.isEqualTo(colToRemove)) {
+					continue;
+				}
+
+				BigNumber value = matrix.get(new BigNumber(row), new BigNumber(col));
+				result.set(new BigNumber(newRow), new BigNumber(newCol), value);
+				newCol = newCol.add(BigNumbers.ONE);
+			}
+			newRow = newRow.add(BigNumbers.ONE);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Creates an identity matrix of the given size and locale.
+	 *
+	 * @param size
+	 * 	the size (number of rows and columns) of the identity matrix
+	 * @param locale
+	 * 	the locale for number formatting
+	 *
+	 * @return an identity matrix of dimension size × size
+	 */
+	public static BigNumberMatrix identity(@NonNull BigNumber size, @NonNull Locale locale) {
+		int n = size.intValue();
+		BigNumberMatrix result = new BigNumberMatrix(size, size, locale);
+
+		for (int i = 0; i < n; i++) {
+			result.set(new BigNumber(String.valueOf(i)), new BigNumber(String.valueOf(i)), BigNumbers.ONE);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Computes the adjugate (adjoint) of a square matrix.
+	 * The adjugate is the transpose of the cofactor matrix.
+	 *
+	 * @param matrix
+	 * 	the input square matrix
+	 *
+	 * @return the adjugate matrix
+	 */
+	public static BigNumberMatrix adjugate(@NonNull BigNumberMatrix matrix) {
+		BigNumber n = matrix.getRows();
+		BigNumberMatrix cofactorMatrix = new BigNumberMatrix(n, n, matrix.getLocale());
+
+		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(n); row = row.add(BigNumbers.ONE)) {
+			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(n); col = col.add(BigNumbers.ONE)) {
+				BigNumber sign = (row.add(col).modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ZERO)) ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
+				BigNumber minorDet = MatrixMath.determinant(minor(matrix, row, col));
+
+				cofactorMatrix.set(new BigNumber(String.valueOf(row)), new BigNumber(String.valueOf(col)), sign.multiply(minorDet));
+			}
+		}
+
+		return MatrixMath.transpose(cofactorMatrix);
+	}
+
+	/**
 	 * Checks if two matrices are valid for addition or subtraction.
 	 * Ensures both matrices have the same dimensions and that their dimensions are greater than zero.
 	 *
