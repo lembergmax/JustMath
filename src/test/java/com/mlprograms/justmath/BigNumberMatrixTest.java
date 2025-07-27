@@ -106,6 +106,39 @@ class BigNumberMatrixTest {
 		assertMatrixEquals(expectedMatrix, result);
 	}
 
+	@ParameterizedTest(name = "[{index}] Scalar multiply {0} * {1} = {2}")
+	@CsvSource({
+		"'1,2;3,4', '2', '2,4;6,8'",
+		"'5', '-3', '-15'",
+		"'0,0;0,0', '100', '0,0;0,0'",
+		"'1.5,2.5;3.5,4.5', '2', '3.0,5.0;7.0,9.0'",
+		"'1,2,3;4,5,6', '0', '0,0,0;0,0,0'"
+	})
+	void testScalarMultiply(String matrixStr, String scalarStr, String expectedStr) {
+		BigNumberMatrix matrix = new BigNumberMatrix(matrixStr, locale);
+		BigNumber scalar = new BigNumber(scalarStr, locale);
+		BigNumberMatrix expected = new BigNumberMatrix(expectedStr, locale);
+
+		BigNumberMatrix result = matrix.scalarMultiply(scalar);
+		assertMatrixEquals(expected, result);
+	}
+
+	@ParameterizedTest(name = "[{index}] Negate {0} = {1}")
+	@CsvSource({
+		"'1,2;3,4', '-1,-2;-3,-4'",
+		"'0', '0'",
+		"'-1,-2,-3;4,5,6', '1,2,3;-4,-5,-6'",
+		"'0,0;0,0', '0,0;0,0'",
+		"'7.7,-8.8;9.9,-10.1', '-7.7,8.8;-9.9,10.1'"
+	})
+	void testNegate(String input, String expectedStr) {
+		BigNumberMatrix matrix = new BigNumberMatrix(input, locale);
+		BigNumberMatrix expected = new BigNumberMatrix(expectedStr, locale);
+
+		BigNumberMatrix result = matrix.negate();
+		assertMatrixEquals(expected, result);
+	}
+
 	@ParameterizedTest(name = "[{index}] Invalid Matrix Constructor input: {0}")
 	@CsvSource({
 		"'1,2;3'",
