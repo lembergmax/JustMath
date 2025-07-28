@@ -59,8 +59,8 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 |                                  | `acosh(x)`, `cosh⁻¹(x)`  | Inverse hyperbolic cosine          |
 |                                  | `atanh(x)`, `tanh⁻¹(x)`  | Inverse hyperbolic tangent         |
 |                                  | `acoth(x)`, `coth⁻¹(x)`  | Inverse hyperbolic cotangent       |
-| **Combinatorics**                | `nCr`, `comb(n, r)`      | Combinations                       |
-|                                  | `nPr`, `perm(n, r)`      | Permutations                       |
+| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`| Combinations                       |
+|                                  | `nPr(n, r)`, `perm(n, r)`| Permutations                       |
 | **Series**                       | `∑(start; end; expr)`    | Sigma notation (e.g., ∑(0;10;2^k)) |
 |                                  | `sum(start; end; expr)`  | Named summation function           |
 |                                  | `∏(start; end; expr)`    | Product notation (e.g., ∏(1;4;k))  |
@@ -70,8 +70,8 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 | **Random Generator**             | `RandInt(min, max)`      | Random integer in a given range    |
 | **Coordinates**                  | `Pol(x, y)`              | Cartesian → Polar                  |
 |                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
-| **Special Functions**            | `Γ`, `gamma(x)`          | Gamma                              |
-|                                  | `B`, `beta(x, y)`        | Beta                               |
+| **Special Functions**            | `Γ(x, y)`, `gamma(x)`    | Gamma                              |
+|                                  | `B(x, y)`, `beta(x, y)`  | Beta                               |
 |                                  | `\|x\|`, `abs(x)`        | Absolute value                     |
 
 ## 📚 Static Utility Methods
