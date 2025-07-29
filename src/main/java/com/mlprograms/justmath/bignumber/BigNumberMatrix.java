@@ -8,6 +8,7 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 /**
@@ -83,23 +84,21 @@ public class BigNumberMatrix implements Cloneable {
 
 	/**
 	 * Constructs a matrix from a nested list of strings, where each sublist represents a row.
-	 * All values are parsed into {@link BigNumber} using the provided locale.
+	 * All data are parsed into {@link BigNumber} using the provided locale.
 	 *
-	 * @param values
-	 * 	2D list of string values; all rows must have equal length
+	 * @param data
+	 * 	2D list of {@link BigNumber} data; all rows must have equal length
 	 * @param locale
-	 * 	the locale used to parse the strings into {@link BigNumber} values
+	 * 	the locale used to parse the strings into {@link BigNumber} data
 	 *
 	 * @throws IllegalArgumentException
 	 * 	if any value is invalid or dimensions are inconsistent
 	 */
-	public BigNumberMatrix(@NonNull List<List<String>> values, @NonNull Locale locale) {
+	public BigNumberMatrix(@NonNull List<List<BigNumber>> data, @NonNull Locale locale) {
 		this.locale = locale;
-		this.data = new ArrayList<>();
-		this.rows = new BigNumber(String.valueOf(values.size()), locale);
-		this.columns = new BigNumber(String.valueOf(values.getFirst().size()), locale);
-
-		fillFromStringList(values);
+		this.data = data;
+		this.rows = new BigNumber(String.valueOf(data.size()), locale);
+		this.columns = new BigNumber(String.valueOf(data.getFirst().size()), locale);
 	}
 
 	/**
@@ -150,11 +149,8 @@ public class BigNumberMatrix implements Cloneable {
 	 * 	if the input is empty, rows have inconsistent column counts,
 	 * 	or any matrix entry is empty
 	 */
-	private static List<List<String>> parseMatrixString(@NonNull final String input) {
-		List<List<String>> result = new ArrayList<>();
-		if (input.trim().isEmpty()) {
-			throw new IllegalArgumentException("Matrix string must not be empty.");
-		}
+	private static List<List<BigNumber>> parseMatrixString(@NonNull final String input) {
+		List<List<BigNumber>> result = new ArrayList<>();
 
 		String[] rows = input.split(";");
 		int expectedCols = -1;
@@ -168,12 +164,14 @@ public class BigNumberMatrix implements Cloneable {
 				throw new IllegalArgumentException("All rows must have same column count.");
 			}
 
-			List<String> parsedRow = new ArrayList<>();
+			List<BigNumber> parsedRow = new ArrayList<>();
 
 			for (String col : cols) {
 				String trimmed = col.trim();
-				if (trimmed.isEmpty()) throw new IllegalArgumentException("Matrix entry must not be empty.");
-				parsedRow.add(trimmed);
+				if (trimmed.isEmpty()) {
+					throw new IllegalArgumentException("Matrix entry must not be empty.");
+				}
+				parsedRow.add(new BigNumber(trimmed));
 			}
 
 			result.add(parsedRow);
@@ -198,7 +196,7 @@ public class BigNumberMatrix implements Cloneable {
 				newRow.add(new BigNumber(value));
 			}
 
-			bigNumberMatrix.getData().add(newRow);
+			data.add(newRow);
 		}
 	}
 
@@ -528,11 +526,14 @@ public class BigNumberMatrix implements Cloneable {
 			return false;
 		}
 
+		AtomicBoolean symmetric = new AtomicBoolean(true);
 		forEachIndex((i, j) -> {
-			if (!get(i, j).isEqualTo(get(j, i))) throw new IllegalStateException();
+			if (!get(i, j).isEqualTo(get(j, i))) {
+				symmetric.set(false);
+			}
 		});
 
-		return true;
+		return symmetric.get();
 	}
 
 	/**
@@ -577,7 +578,7 @@ public class BigNumberMatrix implements Cloneable {
 	 * @return true if the matrix is square, false otherwise
 	 */
 	public boolean isSquare() {
-		return rows.equals(columns);
+		return rows.isEqualTo(columns);
 	}
 
 	/**
@@ -641,7 +642,7 @@ public class BigNumberMatrix implements Cloneable {
 		for (BigNumber i = BigNumbers.ZERO; i.isLessThan(rows); i = i.add(BigNumbers.ONE)) {
 			for (BigNumber j = BigNumbers.ZERO; j.isLessThan(columns); j = j.add(BigNumbers.ONE)) {
 				BigNumber value = get(i, j);
-				if (i.equals(j)) {
+				if (i.isEqualTo(j)) {
 					if (!value.isEqualTo(one)) {
 						return false;
 					}
@@ -684,17 +685,18 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 
 	public boolean equalsMatrix(@NonNull BigNumberMatrix other) {
-		if (!rows.equals(other.getRows()) || !columns.equals(other.getColumns())) {
+		if (!rows.isEqualTo(other.getRows()) || !columns.isEqualTo(other.getColumns())) {
 			return false;
 		}
 
+		AtomicBoolean equal = new AtomicBoolean(true);
 		forEachIndex((i, j) -> {
 			if (!get(i, j).isEqualTo(other.get(i, j))) {
-				throw new IllegalStateException();
+				equal.set(false);
 			}
 		});
 
-		return true;
+		return equal.get();
 	}
 
 	/**
