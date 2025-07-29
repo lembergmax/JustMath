@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -31,7 +32,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
-import static com.mlprograms.justmath.bignumber.internal.LocalesConfig.getSupportedLocales;
 import static com.mlprograms.justmath.bignumber.internal.NumberChecker.isNumber;
 
 /**
@@ -80,7 +80,7 @@ class BigNumberParser {
 	 * @return a {@link BigNumber} formatted for the target locale, or zero if parsing fails
 	 */
 	public BigNumber parseAndFormat(@NonNull final String input, @NonNull final Locale targetLocale) {
-		for (Locale sourceLocale : getSupportedLocales()) {
+		for (Locale sourceLocale : LocalesConfig.SUPPORTED_LOCALES) {
 			if (isNumber(input, sourceLocale)) {
 				return format(parse(input, sourceLocale), targetLocale);
 			}
