@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.bignumber.math.utils;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -154,6 +155,11 @@ public class MathUtils {
 		if (object instanceof BigNumber bigNumber) {
 			return bigNumber;
 		}
+
+		if (object instanceof BigNumberCoordinate bigNumberCoordinate) {
+			return bigNumberCoordinate.getX();
+		}
+
 		throw new IllegalArgumentException("Expected BigNumber but got: " + object);
 	}
 
