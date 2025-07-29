@@ -85,6 +85,7 @@ class BigNumberParser {
 				return format(parse(input, sourceLocale), targetLocale);
 			}
 		}
+
 		return BigNumbers.ZERO;
 	}
 
