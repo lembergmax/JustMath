@@ -156,6 +156,7 @@ public class Tokenizer {
 				} else {
 					tokens.add(new Token(Token.Type.RIGHT_PAREN, ExpressionElements.PAR_RIGHT));
 				}
+
 				nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
 				index++;
 			} else if (matchThreeArgumentFunction(expression, index).isPresent()) {
