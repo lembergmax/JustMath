@@ -31,13 +31,9 @@ import java.util.Locale;
  */
 public final class LocalesConfig {
 
-	/**
-	 * A wide range of Locales for detecting number formats.
-	 *
-	 * @return an array of Locales
-	 */
-	public static Locale[] getSupportedLocales() {
-		return Locale.getAvailableLocales();
-	}
+    public static final Locale[] SUPPORTED_LOCALES = {
+            Locale.US,
+    };
+
 }
 
