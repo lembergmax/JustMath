@@ -203,7 +203,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.isNegative = parsedAndFormatted.isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -275,7 +275,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.isNegative = bigNumber.isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -327,7 +327,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.isNegative = isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -2909,7 +2909,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return this {@code BigNumber} with the fractional part removed
 	 */
 	public BigNumber floor() {
-		this.valueAfterDecimal = "0";
+		valueAfterDecimal = "0";
 		return this;
 	}
 
@@ -2921,8 +2921,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return this {@code BigNumber} rounded up to the next integer
 	 */
 	public BigNumber ceil() {
-		this.valueBeforeDecimal = this.add(BigNumbers.ONE).getValueBeforeDecimal();
-		this.valueAfterDecimal = "0";
+		valueBeforeDecimal = add(BigNumbers.ONE).getValueBeforeDecimal();
+		valueAfterDecimal = "0";
 		return this;
 	}
 
@@ -2950,10 +2950,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		char groupingSeparator = symbols.getGroupingSeparator();
 
 		return BigNumber.builder()
-			       .locale(this.locale)
+			       .locale(locale)
 			       .valueBeforeDecimal(bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator).toString())
-			       .valueAfterDecimal(this.valueAfterDecimal)
-			       .isNegative(this.isNegative)
+			       .valueAfterDecimal(valueAfterDecimal)
+			       .isNegative(isNegative)
 			       .build();
 	}
 
@@ -3019,7 +3019,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if both numbers are equal, false otherwise
 	 */
 	public boolean isEqualTo(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) == 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) == 0;
 	}
 
 	/**
@@ -3031,7 +3031,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is less than other, false otherwise
 	 */
 	public boolean isLessThan(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) < 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) < 0;
 	}
 
 	/**
@@ -3043,7 +3043,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is less than or equal to other, false otherwise
 	 */
 	public boolean isLessThanOrEqualTo(@NonNull final BigNumber other) {
-		return this.isLessThan(other) || this.isEqualTo(other);
+		return isLessThan(other) || isEqualTo(other);
 	}
 
 	/**
@@ -3055,7 +3055,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is greater than other, false otherwise
 	 */
 	public boolean isGreaterThan(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) > 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) > 0;
 	}
 
 	/**
@@ -3067,7 +3067,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is greater than or equal to other, false otherwise
 	 */
 	public boolean isGreaterThanOrEqualTo(@NonNull final BigNumber other) {
-		return this.isGreaterThan(other) || this.isEqualTo(other);
+		return isGreaterThan(other) || isEqualTo(other);
 	}
 
 	/**
@@ -3080,7 +3080,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} with the opposite sign of this number
 	 */
 	public BigNumber negate() {
-		return new BigNumber(this.clone().negateThis());
+		return new BigNumber(clone().negateThis());
 	}
 
 	/**
@@ -3153,7 +3153,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	public BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
 		BigDecimal bigDecimal = new BigDecimal(number.toString());
 		BigDecimal rounded = bigDecimal.round(mathContext);
-		return new BigNumber(rounded.toPlainString(), this.locale);
+		return new BigNumber(rounded.toPlainString(), locale);
 	}
 
 	/**
@@ -3301,7 +3301,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the smaller of this and other; if other is null, returns this
 	 */
 	public BigNumber min(@NonNull final BigNumber other) {
-		return this.isLessThan(other) ? this : other;
+		return isLessThan(other) ? this : other;
 	}
 
 	/**
@@ -3313,7 +3313,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the greater of this and other; if other is null, returns this
 	 */
 	public BigNumber max(@NonNull final BigNumber other) {
-		return this.isGreaterThan(other) ? this : other;
+		return isGreaterThan(other) ? this : other;
 	}
 
 	/**
@@ -3351,7 +3351,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	@Override
 	public String toString() {
-		return formatToString(this.locale, false);
+		return formatToString(locale, false);
 	}
 
 	/**
@@ -3392,7 +3392,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return string representation in the current locale
 	 */
 	public String toString(final boolean useGrouping) {
-		return formatToString(this.locale, useGrouping);
+		return formatToString(locale, useGrouping);
 	}
 
 	/**
@@ -3402,7 +3402,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return string representation in the object's locale
 	 */
 	public String toStringWithGrouping() {
-		return formatToString(this.locale, true);
+		return formatToString(locale, true);
 	}
 
 	/**
@@ -3451,7 +3451,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	@Override
 	public int compareTo(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal());
+		return toBigDecimal().compareTo(other.toBigDecimal());
 	}
 
 	/**
