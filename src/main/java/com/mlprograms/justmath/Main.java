@@ -25,12 +25,9 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberMatrix;
-import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
@@ -74,18 +71,15 @@ public class Main {
 		while (true) {
 			System.out.print(">> ");
 			String input = scanner.nextLine().trim();
+
 			if (input.equalsIgnoreCase("exit")) {
 				System.out.println("Exiting JustMath Calculator. Goodbye!");
 				break;
 			}
 
-			try {
-				CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
-				BigNumber result = calculator.evaluate(input);
-				System.out.println("Result: " + result);
-			} catch (Exception e) {
-				System.err.println(e.getMessage());
-			}
+			CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
+			BigNumber result = calculator.evaluate(input);
+			System.out.println("Result: " + result);
 		}
 	}
 
