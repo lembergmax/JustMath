@@ -188,13 +188,7 @@ class BigNumberMatrixTest {
 	})
 	void testIsSymmetric(String matrixStr, boolean expected) {
 		BigNumberMatrix m = matrix(matrixStr);
-		boolean result;
-		try {
-			result = m.isSymmetric();
-		} catch (IllegalStateException e) {
-			result = false;
-		}
-		assertEquals(expected, result);
+		assertEquals(expected, m.isSymmetric());
 	}
 
 	@ParameterizedTest
@@ -218,7 +212,7 @@ class BigNumberMatrixTest {
 	})
 	void testSumElements(String matrixStr, String expectedSum) {
 		BigNumberMatrix m = matrix(matrixStr);
-		assertEquals(new BigNumber(expectedSum, locale), m.sumElements());
+		assertEquals(expectedSum, m.sumElements().toString());
 	}
 
 	@ParameterizedTest
@@ -229,7 +223,7 @@ class BigNumberMatrixTest {
 		"'3.14,2.71;0.99,4.01', '4.01'"
 	})
 	void testMax(String matrixStr, String expectedMax) {
-		assertEquals(new BigNumber(expectedMax, locale), matrix(matrixStr).max());
+		assertEquals(expectedMax, matrix(matrixStr).max().toString());
 	}
 
 	@ParameterizedTest
@@ -253,13 +247,7 @@ class BigNumberMatrixTest {
 	void testEqualsMatrix(String a, String b, boolean expected) {
 		BigNumberMatrix m1 = matrix(a);
 		BigNumberMatrix m2 = matrix(b);
-		boolean result;
-		try {
-			result = m1.equalsMatrix(m2);
-		} catch (IllegalStateException e) {
-			result = false;
-		}
-		assertEquals(expected, result);
+		assertEquals(expected, m1.equalsMatrix(m2));
 	}
 
 	@Test
