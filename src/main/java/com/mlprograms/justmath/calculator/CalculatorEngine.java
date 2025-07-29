@@ -175,27 +175,21 @@ public class CalculatorEngine {
 	 * @return the result as a BigNumber, trimmed of trailing zeros
 	 */
 	public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
-		try {
-			// Store the current variables in the thread-local storage
-			Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
-			combinedVariables.putAll(variables);
-			currentVariables.set(combinedVariables);
+		// Store the current variables in the thread-local storage
+		Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+		combinedVariables.putAll(variables);
+		currentVariables.set(combinedVariables);
 
-			// Tokenize the input string
-			List<Token> tokens = tokenizer.tokenize(expression);
+		// Tokenize the input string
+		List<Token> tokens = tokenizer.tokenize(expression);
 
-			replaceVariables(tokens, combinedVariables);
+		replaceVariables(tokens, combinedVariables);
 
-			// Parse to postfix notation using shunting yard algorithm
-			List<Token> postfix = parser.toPostfix(tokens);
+		// Parse to postfix notation using shunting yard algorithm
+		List<Token> postfix = parser.toPostfix(tokens);
 
-			// Evaluate the postfix expression to a BigDecimal result
-			return evaluator.evaluate(postfix).trim();
-		} finally { // TODO
-			// Clean up the thread-local storage to prevent memory leaks
-			// We don't remove the variables here to allow nested evaluations to access them
-			// The variables will be removed when the outermost evaluation completes
-		}
+		// Evaluate the postfix expression to a BigDecimal result
+		return evaluator.evaluate(postfix).trim();
 	}
 
 	/**
