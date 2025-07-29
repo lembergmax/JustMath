@@ -63,7 +63,7 @@ public class Main {
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pie*a"));
 		// System.out.println(new Tokenizer(new MathContext(10, RoundingMode.HALF_UP)).tokenize("pieapi"));
 
-		// testCalculator();
+		testCalculator();
 	}
 
 	private static void testCalculator() {
