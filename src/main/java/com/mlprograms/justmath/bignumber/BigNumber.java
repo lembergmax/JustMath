@@ -196,7 +196,9 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
 		MathUtils.checkMathContext(mathContext);
+
 		BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
+
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
 		this.valueAfterDecimal = parsedAndFormatted.valueAfterDecimal;
