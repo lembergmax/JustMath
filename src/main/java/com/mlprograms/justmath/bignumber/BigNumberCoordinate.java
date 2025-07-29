@@ -218,7 +218,7 @@ public class BigNumberCoordinate {
 		return switch (type) {
 			case CARTESIAN -> "x=" + xCoordinate + "; y=" + yCoordinate;
 			case POLAR -> "r=" + xCoordinate + "; θ=" + yCoordinate;
-			// default -> xCoordinate + ", " + yCoordinate; // not needed yet
+			default -> xCoordinate + ", " + yCoordinate; // not needed yet
 		};
 	}
 
