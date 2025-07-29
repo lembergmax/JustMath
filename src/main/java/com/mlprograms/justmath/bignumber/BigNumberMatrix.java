@@ -168,9 +168,11 @@ public class BigNumberMatrix implements Cloneable {
 
 			for (String col : cols) {
 				String trimmed = col.trim();
+
 				if (trimmed.isEmpty()) {
 					throw new IllegalArgumentException("Matrix entry must not be empty.");
 				}
+
 				parsedRow.add(new BigNumber(trimmed));
 			}
 
