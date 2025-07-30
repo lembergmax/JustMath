@@ -152,6 +152,10 @@ public class BigNumberMatrix implements Cloneable {
 	private static List<List<BigNumber>> parseMatrixString(@NonNull final String input) {
 		List<List<BigNumber>> result = new ArrayList<>();
 
+		if (input.trim().endsWith(";") || input.trim().endsWith(",")) {
+			throw new IllegalArgumentException("Matrix entries must not end with ';' or ','.");
+		}
+
 		String[] rows = input.split(";");
 		int expectedCols = -1;
 
