@@ -65,16 +65,18 @@ public class BigNumberCoordinate {
 	@NonNull
 	private final CoordinateType type;
 	@NonNull
+	private final Locale locale;
+	@NonNull
 	private BigNumber x;
 	@NonNull
 	private BigNumber y;
 
 	/**
-	 * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates.
-	 * Both x and y are set to {@link BigNumbers#ZERO}.
+	 * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates
+	 * using the default system {@link Locale}.
 	 */
 	public BigNumberCoordinate() {
-		this(BigNumbers.ZERO);
+		this(BigNumbers.ZERO, BigNumbers.ZERO, CoordinateType.CARTESIAN, Locale.getDefault());
 	}
 
 	/**
@@ -85,12 +87,25 @@ public class BigNumberCoordinate {
 	 * 	the value for both x and y
 	 */
 	public BigNumberCoordinate(BigNumber xy) {
-		this(xy, xy);
+		this(xy, xy, CoordinateType.CARTESIAN, xy.getLocale());
+	}
+
+	/**
+	 * Constructs a {@code BigNumberCoordinate} where both x and y are set to the same value.
+	 * The coordinate type defaults to {@link CoordinateType#CARTESIAN} and the given {@link Locale} is used.
+	 *
+	 * @param xy
+	 * 	the value for both x and y
+	 * @param locale
+	 * 	the locale to use for number formatting
+	 */
+	public BigNumberCoordinate(BigNumber xy, Locale locale) {
+		this(xy, xy, CoordinateType.CARTESIAN, locale);
 	}
 
 	/**
 	 * Constructs a {@code BigNumberCoordinate} with the specified x and y values,
-	 * using {@link CoordinateType#CARTESIAN} as the default type.
+	 * using {@link CoordinateType#CARTESIAN} and locale inferred from x.
 	 *
 	 * @param x
 	 * 	the x-coordinate or radius (depending on type)
@@ -98,12 +113,27 @@ public class BigNumberCoordinate {
 	 * 	the y-coordinate or angle (depending on type)
 	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y) {
-		this(x, y, CoordinateType.CARTESIAN);
+		this(x, y, CoordinateType.CARTESIAN, x.getLocale());
 	}
 
 	/**
-	 * Constructs a {@code BigNumberCoordinate} with the specified x, y, and coordinate type,
-	 * using the system default {@link Locale}.
+	 * Constructs a {@code BigNumberCoordinate} with the specified x and y values,
+	 * using {@link CoordinateType#CARTESIAN} and the specified locale.
+	 *
+	 * @param x
+	 * 	the x-coordinate or radius
+	 * @param y
+	 * 	the y-coordinate or angle
+	 * @param locale
+	 * 	the locale to use for number formatting
+	 */
+	public BigNumberCoordinate(BigNumber x, BigNumber y, Locale locale) {
+		this(x, y, CoordinateType.CARTESIAN, locale);
+	}
+
+	/**
+	 * Constructs a {@code BigNumberCoordinate} with the specified x, y, and coordinate type.
+	 * The locale is inferred from x.
 	 *
 	 * @param x
 	 * 	the x-coordinate or radius
@@ -113,7 +143,7 @@ public class BigNumberCoordinate {
 	 * 	the coordinate type (CARTESIAN or POLAR)
 	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type) {
-		this(x, y, type, Locale.getDefault());
+		this(x, y, type, x.getLocale());
 	}
 
 	/**
@@ -129,9 +159,43 @@ public class BigNumberCoordinate {
 	 * 	the locale to use for number formatting
 	 */
 	public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type, Locale locale) {
+		this.type = type;
+		this.locale = locale;
 		this.x = new BigNumber(x, locale);
 		this.y = new BigNumber(y, locale);
-		this.type = type;
+	}
+
+	/**
+	 * Constructs a {@code BigNumberCoordinate} from two strings and a locale.
+	 * Useful for parsing string inputs with locale-specific number formats.
+	 *
+	 * @param xStr
+	 * 	the x value as string
+	 * @param yStr
+	 * 	the y value as string
+	 * @param type
+	 * 	the coordinate type (CARTESIAN or POLAR)
+	 * @param locale
+	 * 	the locale to use for parsing and formatting
+	 */
+	public BigNumberCoordinate(String xStr, String yStr, CoordinateType type, Locale locale) {
+		this(new BigNumber(xStr, locale), new BigNumber(yStr, locale), type, locale);
+	}
+
+	/**
+	 * Constructs a {@code BigNumberCoordinate} from two string representations and a locale.
+	 * Both x and y values are parsed from the provided strings using the specified locale.
+	 * The coordinate type defaults to {@link CoordinateType#CARTESIAN}.
+	 *
+	 * @param xStr
+	 * 	the x value as a string
+	 * @param yStr
+	 * 	the y value as a string
+	 * @param locale
+	 * 	the locale to use for parsing and formatting
+	 */
+	public BigNumberCoordinate(String xStr, String yStr, Locale locale) {
+		this(new BigNumber(xStr, locale), new BigNumber(yStr, locale), CoordinateType.CARTESIAN, locale);
 	}
 
 	/**
