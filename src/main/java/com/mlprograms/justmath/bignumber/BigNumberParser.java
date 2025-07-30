@@ -83,6 +83,8 @@ class BigNumberParser {
 		for (Locale sourceLocale : LocalesConfig.SUPPORTED_LOCALES) {
 			if (isNumber(input, sourceLocale)) {
 				return format(parse(input, sourceLocale), targetLocale);
+			} else {
+				throw new IllegalArgumentException("Input is not a valid number in any supported locale: " + input);
 			}
 		}
 
