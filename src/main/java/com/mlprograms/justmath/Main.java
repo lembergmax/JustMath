@@ -25,9 +25,13 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberMatrix;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
@@ -77,7 +81,7 @@ public class Main {
 				break;
 			}
 
-			CalculatorEngine calculator = new CalculatorEngine(TrigonometricMode.DEG);
+			CalculatorEngine calculator = new CalculatorEngine(new MathContext(1000, RoundingMode.HALF_UP), TrigonometricMode.DEG);
 			BigNumber result = calculator.evaluate(input);
 			System.out.println("Result: " + result);
 		}

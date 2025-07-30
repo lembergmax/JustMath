@@ -150,9 +150,11 @@ class BigNumberMatrixTest {
 		"'  '",
 		"'1,,2;3,4'",
 		"'1,2;3,4,5'",
+		"';1;2;3'",
 		"'1;2;3;'",
 		"'1,2;3,abc'",
 		"'1,2;3,'",
+		"''",
 	})
 	void testInvalidMatrixConstructor(String input) {
 		assertThrows(IllegalArgumentException.class, () -> new BigNumberMatrix(input, locale));
