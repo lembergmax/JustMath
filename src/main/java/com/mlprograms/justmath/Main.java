@@ -64,7 +64,7 @@ public class Main {
 	}
 
 	private static void testCalculator() {
-		System.out.println("Welcome to   JustMath Calculator!");
+		System.out.println("Welcome to JustMath Calculator!");
 		System.out.println("Type your mathematical expression below:");
 		Scanner scanner = new Scanner(System.in);
 
