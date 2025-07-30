@@ -124,7 +124,7 @@ public class ExpressionElements {
 	public static final String FUNC_BETA_S = "beta";
 	//
 	public static final String FUNC_ABS = "abs";
-	public static final String SURRFUNC_ABS_S = "|"; // that is special
+	public static final String SURRFUNC_ABS_S = "|"; // that is special :0
 
 	/*
 	  Static initializer block for registering all supported {@link ExpressionElement}s.
