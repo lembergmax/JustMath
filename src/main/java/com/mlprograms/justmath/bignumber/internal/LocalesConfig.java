@@ -33,7 +33,8 @@ public final class LocalesConfig {
 
 	public static final Locale[] SUPPORTED_LOCALES = {
 		Locale.US,
-		Locale.GERMAN
+		Locale.GERMAN,
+		Locale.GERMANY
 	};
 
 }
