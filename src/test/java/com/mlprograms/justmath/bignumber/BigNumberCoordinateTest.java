@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

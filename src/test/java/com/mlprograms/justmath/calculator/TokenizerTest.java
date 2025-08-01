@@ -22,21 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 import org.junit.jupiter.api.Test;
 
-import java.math.MathContext;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerTest {
 
-	private final MathContext mathContext = BigNumbers.DEFAULT_MATH_CONTEXT;
 	private final Tokenizer tokenizer = new Tokenizer();
 
 	@Test
