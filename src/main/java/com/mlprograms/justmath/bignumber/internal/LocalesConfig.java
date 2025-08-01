@@ -31,9 +31,10 @@ import java.util.Locale;
  */
 public final class LocalesConfig {
 
-    public static final Locale[] SUPPORTED_LOCALES = {
-            Locale.US,
-    };
+	public static final Locale[] SUPPORTED_LOCALES = {
+		Locale.US,
+		Locale.GERMAN
+	};
 
 }
 
