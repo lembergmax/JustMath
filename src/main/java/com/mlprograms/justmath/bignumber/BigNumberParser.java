@@ -144,11 +144,13 @@ class BigNumberParser {
 		for (int i = len - 1; i >= 0; i--) {
 			grouped.insert(0, integerPart.charAt(i));
 			count++;
+
 			if (count == 3 && i != 0) {
 				grouped.insert(0, groupingSeparator);
 				count = 0;
 			}
 		}
+
 		return grouped;
 	}
 
