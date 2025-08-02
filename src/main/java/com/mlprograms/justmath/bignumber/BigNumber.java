@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
@@ -12,6 +36,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
@@ -171,14 +196,16 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
 		MathUtils.checkMathContext(mathContext);
+
 		BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
+
 		this.locale = targetLocale;
 		this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
 		this.valueAfterDecimal = parsedAndFormatted.valueAfterDecimal;
 		this.isNegative = parsedAndFormatted.isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -250,7 +277,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.isNegative = bigNumber.isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -302,7 +329,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		this.isNegative = isNegative;
 		this.mathContext = mathContext;
 		this.trigonometricMode = trigonometricMode;
-		this.calculatorEngine = new CalculatorEngine(this.trigonometricMode);
+		this.calculatorEngine = new CalculatorEngine(trigonometricMode);
 	}
 
 	/**
@@ -313,6 +340,46 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber(@NonNull final Locale locale) {
 		this(locale, "0", "0", false, DEFAULT_MATH_CONTEXT, TrigonometricMode.DEG);
+	}
+
+	/**
+	 * Constructs a BigNumber from an int value using the default locale.
+	 *
+	 * @param number
+	 * 	the int value to convert
+	 */
+	public BigNumber(final int number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a double value using the default locale.
+	 *
+	 * @param number
+	 * 	the double value to convert
+	 */
+	public BigNumber(final double number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a float value using the default locale.
+	 *
+	 * @param number
+	 * 	the float value to convert
+	 */
+	public BigNumber(final float number) {
+		this(String.valueOf(number));
+	}
+
+	/**
+	 * Constructs a BigNumber from a long value using the default locale.
+	 *
+	 * @param number
+	 * 	the long value to convert
+	 */
+	public BigNumber(final long number) {
+		this(String.valueOf(number));
 	}
 
 	/**
@@ -2110,8 +2177,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return CoordinateConversionMath.polarToCartesianCoordinates(this, theta, mathContext, trigonometricMode, locale);
 	}
 
-	// TODO: polar and cartesian coordinates in 3d
-
 	/**
 	 * Converts Cartesian coordinates (x, y) to polar coordinates (r, θ in degrees) using the default settings.
 	 *
@@ -2349,6 +2414,158 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
 		return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string
+	 * and the default {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation) {
+		return product(kEnd, kCalculation, mathContext);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * default {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, externalVariables);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string
+	 * and {@link MathContext}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, and {@link TrigonometricMode}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, and {@link Locale}.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+		return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, Map.of());
+	}
+
+	/**
+	 * Computes the product of a series from this value to {@code kEnd} using the provided calculation string,
+	 * {@link MathContext}, {@link TrigonometricMode}, {@link Locale}, and external variables.
+	 *
+	 * @param kEnd
+	 * 	the end value of the product
+	 * @param kCalculation
+	 * 	the calculation to perform for each term in the product
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param trigonometricMode
+	 * 	the trigonometric mode (degrees, radians, or grads)
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 * @param externalVariables
+	 * 	a map of external variable names with their BigNumber values that can be used in the calculation
+	 *
+	 * @return the result of the product as a {@code BigNumber}
+	 */
+	public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+		return SeriesMath.product(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
 	}
 
 	/**
@@ -2593,6 +2810,125 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Computes the beta function (B(x, y)) for this value and the given y, using the default MathContext.
+	 * <p>
+	 * The beta function is defined as:
+	 * <pre>
+	 *     B(x, y) = ∫₀¹ t^(x-1) (1-t)^(y-1) dt
+	 * </pre>
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y) {
+		return beta(y, mathContext);
+	}
+
+	/**
+	 * Computes the beta function (B(x, y)) for this value and the given y, using the specified MathContext.
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y, @NonNull final MathContext mathContext) {
+		return beta(y, mathContext, locale);
+	}
+
+	/**
+	 * Computes the beta function \( B(x, y) \) for this value and the given \( y \), using the specified
+	 * {@link MathContext} and {@link Locale}.
+	 * <p>
+	 * The beta function is defined as:
+	 * <pre>
+	 *     B(x, y) = ∫₀¹ t^(x-1) (1-t)^(y-1) dt
+	 * </pre>
+	 * This method delegates the calculation to
+	 * {@link SpecialFunctionMath#beta(BigNumber, BigNumber, MathContext, Locale)}.
+	 *
+	 * @param y
+	 * 	the second parameter of the beta function
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the beta function value as a {@code BigNumber}
+	 */
+	public BigNumber beta(@NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return SpecialFunctionMath.beta(this, y, mathContext, locale);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma(x)) for this value, using the default MathContext.
+	 * <p>
+	 * The gamma function generalizes the factorial function for real and complex numbers.
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma() {
+		return gamma(mathContext);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma(x)) for this value, using the specified MathContext.
+	 *
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma(@NonNull final MathContext mathContext) {
+		return gamma(mathContext, locale);
+	}
+
+	/**
+	 * Computes the gamma function (Gamma\(x\)) for this value, using the specified {@link MathContext} and
+	 * {@link Locale}.
+	 * <p>
+	 * The gamma function generalizes the factorial function for real and complex numbers.
+	 *
+	 * @param mathContext
+	 * 	the context specifying precision and rounding mode
+	 * @param locale
+	 * 	the locale used for any locale-specific formatting
+	 *
+	 * @return the gamma function value as a {@code BigNumber}
+	 */
+	public BigNumber gamma(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		return SpecialFunctionMath.gamma(this, mathContext, locale);
+	}
+
+	/**
+	 * Returns a new {@code BigNumber} whose value is the largest integer less than or equal to this number.
+	 * This operation sets the value after the decimal point to zero.
+	 *
+	 * @return this {@code BigNumber} with the fractional part removed
+	 */
+	public BigNumber floor() {
+		valueAfterDecimal = "0";
+		return this;
+	}
+
+	/**
+	 * Returns a new {@code BigNumber} whose value is the smallest integer greater than or equal to this number.
+	 * This operation adds one to the integer part and sets the value before the decimal point to zero,
+	 * then updates the internal state to reflect the new value.
+	 *
+	 * @return this {@code BigNumber} rounded up to the next integer
+	 */
+	public BigNumber ceil() {
+		valueBeforeDecimal = add(BigNumbers.ONE).getValueBeforeDecimal();
+		valueAfterDecimal = "0";
+		return this;
+	}
+
+	/**
 	 * Parses this BigNumber into a new targetLocale and mutates the current object.
 	 *
 	 * @param targetLocale
@@ -2616,10 +2952,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		char groupingSeparator = symbols.getGroupingSeparator();
 
 		return BigNumber.builder()
-			       .locale(this.locale)
+			       .locale(locale)
 			       .valueBeforeDecimal(bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator).toString())
-			       .valueAfterDecimal(this.valueAfterDecimal)
-			       .isNegative(this.isNegative)
+			       .valueAfterDecimal(valueAfterDecimal)
+			       .isNegative(isNegative)
 			       .build();
 	}
 
@@ -2632,8 +2968,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	public BigDecimal toBigDecimal() {
 		StringBuilder sb = new StringBuilder();
-		if (isNegative) sb.append('-');
+		if (isNegative) {
+			sb.append('-');
+		}
+
 		sb.append(valueBeforeDecimal);
+
 		if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
 			sb.append('.').append(valueAfterDecimal);
 		}
@@ -2661,17 +3001,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	/**
 	 * Returns the absolute value of this {@code BigNumber}.
 	 * <p>
-	 * If this number is negative, a new {@code BigNumber} instance is returned with the same value but positive sign.
-	 * If this number is already non-negative, the current instance is returned directly.
-	 * </p>
+	 * If the number is negative, sets the sign to positive and returns this instance.
 	 *
-	 * @return the absolute value of this {@code BigNumber}; either a new instance or {@code this} if already non-negative
+	 * @return this {@code BigNumber} as a non-negative value
 	 */
 	public BigNumber abs() {
 		if (isNegative) {
-			BigNumber abs = new BigNumber(toString());
-			abs.isNegative = false;
-			return abs;
+			isNegative = false;
 		}
 		return this;
 	}
@@ -2685,7 +3021,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if both numbers are equal, false otherwise
 	 */
 	public boolean isEqualTo(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) == 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) == 0;
 	}
 
 	/**
@@ -2697,7 +3033,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is less than other, false otherwise
 	 */
 	public boolean isLessThan(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) < 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) < 0;
 	}
 
 	/**
@@ -2709,7 +3045,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is less than or equal to other, false otherwise
 	 */
 	public boolean isLessThanOrEqualTo(@NonNull final BigNumber other) {
-		return this.isLessThan(other) || this.isEqualTo(other);
+		return isLessThan(other) || isEqualTo(other);
 	}
 
 	/**
@@ -2721,7 +3057,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is greater than other, false otherwise
 	 */
 	public boolean isGreaterThan(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal()) > 0;
+		return toBigDecimal().compareTo(other.toBigDecimal()) > 0;
 	}
 
 	/**
@@ -2733,7 +3069,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return true if this is greater than or equal to other, false otherwise
 	 */
 	public boolean isGreaterThanOrEqualTo(@NonNull final BigNumber other) {
-		return this.isGreaterThan(other) || this.isEqualTo(other);
+		return isGreaterThan(other) || isEqualTo(other);
 	}
 
 	/**
@@ -2746,7 +3082,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} with the opposite sign of this number
 	 */
 	public BigNumber negate() {
-		return new BigNumber(this.clone().negateThis());
+		return new BigNumber(clone().negateThis());
 	}
 
 	/**
@@ -2783,7 +3119,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return a new {@code BigNumber} rounded to the given precision
 	 */
 	public BigNumber roundAfterDecimals(final int precision) {
-		return roundAfterDecimals(new MathContext(precision));
+		return roundAfterDecimals(new MathContext(precision, RoundingMode.HALF_UP));
 	}
 
 	/**
@@ -2795,8 +3131,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
 	 */
 	public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-		this.valueAfterDecimal = round(new BigNumber(getValueAfterDecimal()), mathContext).toString();
-		return this.trim();
+		BigDecimal value = toBigDecimal();
+		int precisionAfterDecimal = mathContext.getPrecision();
+
+		// scale = digits after the decimal point
+		if (precisionAfterDecimal <= 0) {
+			return new BigNumber(value.setScale(0, mathContext.getRoundingMode()).toPlainString()).trim();
+		}
+
+		return new BigNumber(value.setScale(precisionAfterDecimal, mathContext.getRoundingMode()).toPlainString()).trim();
 	}
 
 	/**
@@ -2812,7 +3155,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	public BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
 		BigDecimal bigDecimal = new BigDecimal(number.toString());
 		BigDecimal rounded = bigDecimal.round(mathContext);
-		return new BigNumber(rounded.toPlainString(), this.locale);
+		return new BigNumber(rounded.toPlainString(), locale);
 	}
 
 	/**
@@ -2960,7 +3303,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the smaller of this and other; if other is null, returns this
 	 */
 	public BigNumber min(@NonNull final BigNumber other) {
-		return this.isLessThan(other) ? this : other;
+		return isLessThan(other) ? this : other;
 	}
 
 	/**
@@ -2972,7 +3315,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return the greater of this and other; if other is null, returns this
 	 */
 	public BigNumber max(@NonNull final BigNumber other) {
-		return this.isGreaterThan(other) ? this : other;
+		return isGreaterThan(other) ? this : other;
 	}
 
 	/**
@@ -2995,13 +3338,22 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
+	 * Checks if this {@code BigNumber} is positive.
+	 *
+	 * @return true if the number is positive (not negative), false otherwise
+	 */
+	public boolean isPositive() {
+		return !isNegative;
+	}
+
+	/**
 	 * Returns a string representation of this {@code BigNumber} using the current locale.
 	 *
 	 * @return the string representation of this number
 	 */
 	@Override
 	public String toString() {
-		return formatToString(this.locale, false);
+		return formatToString(locale, false);
 	}
 
 	/**
@@ -3042,7 +3394,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return string representation in the current locale
 	 */
 	public String toString(final boolean useGrouping) {
-		return formatToString(this.locale, useGrouping);
+		return formatToString(locale, useGrouping);
 	}
 
 	/**
@@ -3052,7 +3404,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @return string representation in the object's locale
 	 */
 	public String toStringWithGrouping() {
-		return formatToString(this.locale, true);
+		return formatToString(locale, true);
 	}
 
 	/**
@@ -3089,6 +3441,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 		return isNegative ? "-" + localized : localized;
 	}
 
+
 	/**
 	 * Compares this {@code BigNumber} with the specified {@code BigNumber} for order.
 	 *
@@ -3100,7 +3453,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 */
 	@Override
 	public int compareTo(@NonNull final BigNumber other) {
-		return this.toBigDecimal().compareTo(other.toBigDecimal());
+		return toBigDecimal().compareTo(other.toBigDecimal());
 	}
 
 	/**

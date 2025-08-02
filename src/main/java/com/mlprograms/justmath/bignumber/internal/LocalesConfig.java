@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.bignumber.internal;
 
 import java.util.Locale;
@@ -7,60 +31,7 @@ import java.util.Locale;
  */
 public final class LocalesConfig {
 
-	/**
-	 * A wide range of Locales for detecting number formats.
-	 *
-	 * @return an array of Locales
-	 */
-	public static Locale[] getSupportedLocales() {
-		return new Locale[] {
-			Locale.ENGLISH,
-			Locale.FRENCH,
-			Locale.GERMAN,
-			Locale.ITALIAN,
-			Locale.JAPANESE,
-			Locale.KOREAN,
-			Locale.CHINESE,
-			Locale.SIMPLIFIED_CHINESE,
-			Locale.TRADITIONAL_CHINESE,
-			Locale.FRANCE,
-			Locale.GERMANY,
-			Locale.ITALY,
-			Locale.JAPAN,
-			Locale.KOREA,
-			Locale.UK,
-			Locale.US,
-			Locale.CANADA,
-			Locale.CANADA_FRENCH,
-			Locale.forLanguageTag("ru-RU"),
-			Locale.forLanguageTag("pl-PL"),
-			Locale.forLanguageTag("pt-BR"),
-			Locale.forLanguageTag("es-ES"),
-			Locale.forLanguageTag("nl-NL"),
-			Locale.forLanguageTag("sv-SE"),
-			Locale.forLanguageTag("da-DK"),
-			Locale.forLanguageTag("fi-FI"),
-			Locale.forLanguageTag("cs-CZ"),
-			Locale.forLanguageTag("hu-HU"),
-			Locale.forLanguageTag("zh-CN"),
-			Locale.forLanguageTag("tr-TR"),
-			Locale.forLanguageTag("ar-AE"),
-			Locale.forLanguageTag("el-GR"),
-			Locale.forLanguageTag("he-IL"),
-			Locale.forLanguageTag("th-TH"),
-			Locale.forLanguageTag("id-ID"),
-			Locale.forLanguageTag("vi-VN"),
-			Locale.forLanguageTag("no-NO"),
-			Locale.forLanguageTag("uk-UA"),
-			Locale.forLanguageTag("ro-RO"),
-			Locale.forLanguageTag("sk-SK"),
-			Locale.forLanguageTag("bg-BG"),
-			Locale.forLanguageTag("hr-HR"),
-			Locale.forLanguageTag("lt-LT"),
-			Locale.forLanguageTag("lv-LV"),
-			Locale.forLanguageTag("sl-SI"),
-			Locale.forLanguageTag("et-EE")
-		};
-	}
+	public static final Locale[] SUPPORTED_LOCALES = Locale.getAvailableLocales();
+
 }
 

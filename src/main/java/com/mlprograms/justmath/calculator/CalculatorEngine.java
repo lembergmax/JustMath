@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -101,7 +125,7 @@ public class CalculatorEngine {
 	 * 	the trigonometric mode (DEG or RAD)
 	 */
 	public CalculatorEngine(@NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
-		this.tokenizer = new Tokenizer(mathContext);
+		this.tokenizer = new Tokenizer();
 		this.evaluator = new Evaluator(mathContext, trigonometricMode);
 		this.parser = new Parser();
 	}
@@ -151,27 +175,21 @@ public class CalculatorEngine {
 	 * @return the result as a BigNumber, trimmed of trailing zeros
 	 */
 	public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
-		try {
-			// Store the current variables in the thread-local storage
-			Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
-			combinedVariables.putAll(variables);
-			currentVariables.set(combinedVariables);
+		// Store the current variables in the thread-local storage
+		Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+		combinedVariables.putAll(variables);
+		currentVariables.set(combinedVariables);
 
-			// Tokenize the input string
-			List<Token> tokens = tokenizer.tokenize(expression);
+		// Tokenize the input string
+		List<Token> tokens = tokenizer.tokenize(expression);
 
-			replaceVariables(tokens, combinedVariables);
+		replaceVariables(tokens, combinedVariables);
 
-			// Parse to postfix notation using shunting yard algorithm
-			List<Token> postfix = parser.toPostfix(tokens);
+		// Parse to postfix notation using shunting yard algorithm
+		List<Token> postfix = parser.toPostfix(tokens);
 
-			// Evaluate the postfix expression to a BigDecimal result
-			return evaluator.evaluate(postfix).trim();
-		} finally { // TODO
-			// Clean up the thread-local storage to prevent memory leaks
-			// We don't remove the variables here to allow nested evaluations to access them
-			// The variables will be removed when the outermost evaluation completes
-		}
+		// Evaluate the postfix expression to a BigDecimal result
+		return evaluator.evaluate(postfix).trim();
 	}
 
 	/**
