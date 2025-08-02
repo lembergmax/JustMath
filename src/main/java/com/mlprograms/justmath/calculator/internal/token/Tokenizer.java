@@ -1,14 +1,39 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.calculator.internal.token;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.expressionelements.*;
-import lombok.AllArgsConstructor;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expression.elements.Parenthesis;
+import com.mlprograms.justmath.calculator.internal.expression.elements.Separator;
+import com.mlprograms.justmath.calculator.internal.expression.elements.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.internal.expression.elements.ZeroArgumentConstant;
 
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +64,6 @@ import java.util.stream.Collectors;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-@AllArgsConstructor
 public class Tokenizer {
 
 	/**
@@ -50,9 +74,10 @@ public class Tokenizer {
 	private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
 
 	/**
-	 * Math context specifying the precision and rounding mode for calculations.
+	 * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
+	 * Used to alternate between opening and closing absolute value contexts during tokenization.
 	 */
-	private MathContext mathContext;
+	private boolean nextAbsoluteIsOpen = true;
 
 	/**
 	 * Scans the given token list for occurrences where a signed number directly follows
@@ -124,31 +149,47 @@ public class Tokenizer {
 			} else if (isSeparator(c)) {
 				tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
 				index++;
-			} else if (isSummation(expression, index)) {
-				String functionSymbol = expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index)
-					                        ? ExpressionElements.FUNC_SUMM_S
-					                        : ExpressionElements.FUNC_SUMM;
-
-				int functionLength = functionSymbol.length();
-				int closingParenthesis = findClosingParenthesis(expression, index + functionLength);
-				if (closingParenthesis < 0) {
-					throw new IllegalArgumentException("Unmatched '(' in summation");
+			} else if (isAbsoluteValueSign(c)) {
+				if (nextAbsoluteIsOpen) {
+					tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_ABS));
+					tokens.add(new Token(Token.Type.LEFT_PAREN, ExpressionElements.PAR_LEFT));
+				} else {
+					tokens.add(new Token(Token.Type.RIGHT_PAREN, ExpressionElements.PAR_RIGHT));
 				}
 
-				String inside = expression.substring(index + functionLength + 1, closingParenthesis);
+				nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
+				index++;
+			} else if (matchThreeArgumentFunction(expression, index).isPresent()) {
+				Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
+
+				if (matchedFunction.isEmpty()) {
+					throw new IllegalArgumentException("Invalid function at position " + index);
+				}
+
+				ExpressionElement expressionElement = matchedFunction.get();
+				String symbol = expressionElement.getSymbol();
+
+				int functionStart = index + symbol.length();
+				int closingParenthesis = findClosingParenthesis(expression, functionStart);
+				if (closingParenthesis < 0) {
+					throw new IllegalArgumentException("Unmatched '(' in function: " + symbol);
+				}
+
+				String inside = expression.substring(functionStart + 1, closingParenthesis);
+
 				String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
 				if (parts.length != 3) {
-					throw new IllegalArgumentException("Summation must have three arguments");
+					throw new IllegalArgumentException("Three-argument function '" + symbol + "' must have three arguments");
 				}
 
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 0 ]));
 				tokens.add(new Token(Token.Type.NUMBER, parts[ 1 ]));
 				tokens.add(new Token(Token.Type.STRING, parts[ 2 ]));
-				tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_SUMM));
+				tokens.add(new Token(Token.Type.FUNCTION, symbol));
 
 				index = closingParenthesis + 1;
 			} else {
-				int lengthOfMatch = matchOtherOperatorOrFunction(expression, index, tokens);
+				int lengthOfMatch = getLengthOfMatchingOperatorOrFunction(expression, index, tokens);
 				if (lengthOfMatch > 0) {
 					index += lengthOfMatch;
 				} else {
@@ -249,6 +290,18 @@ public class Tokenizer {
 	}
 
 	/**
+	 * Checks if the given character represents the absolute value sign.
+	 *
+	 * @param c
+	 * 	the character to check
+	 *
+	 * @return true if the character is the absolute value sign, false otherwise
+	 */
+	private boolean isAbsoluteValueSign(char c) {
+		return String.valueOf(c).equals(ExpressionElements.SURRFUNC_ABS_S);
+	}
+
+	/**
 	 * Determines whether the character at the specified index in the given expression
 	 * marks the beginning of a number, including the case of a negative number.
 	 * <p>
@@ -293,7 +346,7 @@ public class Tokenizer {
 
 			char prev = expression.charAt(index - 1);
 
-			// If prev is digit or right paren, then + or - is operator, not sign of number
+			// If prev is a digit or right paren, then + or - is operator, not sign of number
 			if (Character.isDigit(prev) || isRightParenthesis(prev)) {
 				return false;
 			}
@@ -306,15 +359,26 @@ public class Tokenizer {
 	}
 
 	/**
-	 * Checks if the given character represents a summation function symbol.
+	 * Tries to match a three-argument function starting at the given index.
 	 *
 	 * @param expression
-	 * 	the expression to check
+	 * 	the full input expression
+	 * @param index
+	 * 	the index to start checking from
 	 *
-	 * @return true if the character matches the summation function symbol, false otherwise
+	 * @return an Optional containing the matched function symbol, or empty if not found
 	 */
-	private boolean isSummation(String expression, int index) {
-		return expression.startsWith(ExpressionElements.FUNC_SUMM + ExpressionElements.PAR_LEFT, index) || expression.startsWith(ExpressionElements.FUNC_SUMM_S + ExpressionElements.PAR_LEFT, index);
+	private Optional<ExpressionElement> matchThreeArgumentFunction(String expression, int index) {
+		for (Map.Entry<String, ExpressionElement> entry : ExpressionElements.registry.entrySet()) {
+			String symbol = entry.getKey();
+			ExpressionElement expressionElement = entry.getValue();
+
+			if (expressionElement instanceof ThreeArgumentFunction &&
+				    expression.startsWith(symbol + ExpressionElements.PAR_LEFT, index)) {
+				return Optional.of(expressionElement);
+			}
+		}
+		return Optional.empty();
 	}
 
 	/**
@@ -500,7 +564,7 @@ public class Tokenizer {
 	 * @throws NullPointerException
 	 * 	if expression or tokens is null
 	 */
-	private int matchOtherOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
+	private int getLengthOfMatchingOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
 		int maxTokenLength = validOperatorsAndFunctions.stream()
 			                     .mapToInt(String::length)
 			                     .max()
@@ -532,7 +596,6 @@ public class Tokenizer {
 						throw new IllegalArgumentException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
 					}
 
-					// always tokenize as an expressionElement
 					tokens.add(new Token(Token.Type.OPERATOR, ExpressionElements.OP_FACTORIAL));
 					return length;
 				}

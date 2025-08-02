@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
@@ -16,15 +40,49 @@ public class BigNumbers {
 	 */
 	public static final Locale CALCULATION_LOCALE = Locale.US;
 
+	/**
+	 * Default precision (number of decimal digits) used for division operations.
+	 */
 	public static final int DEFAULT_DIVISION_PRECISION = 100;
+
+	/**
+	 * Default {@link MathContext} used for calculations, based on {@link #DEFAULT_DIVISION_PRECISION}.
+	 */
 	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
+	/**
+	 * Constant representing the value -1 as a {@link BigNumber}.
+	 */
 	public static final BigNumber NEGATIVE_ONE = new BigNumber("-1", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 0 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ZERO = new BigNumber("0", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 1 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE = new BigNumber("1", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 2 as a {@link BigNumber}.
+	 */
 	public static final BigNumber TWO = new BigNumber("2", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 3 as a {@link BigNumber}.
+	 */
 	public static final BigNumber THREE = new BigNumber("3", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 100 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE_HUNDRED = new BigNumber("100", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 180 as a {@link BigNumber}.
+	 */
 	public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180", DEFAULT_MATH_CONTEXT);
 
 	/**

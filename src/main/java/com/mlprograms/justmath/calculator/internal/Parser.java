@@ -1,7 +1,31 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.calculator.internal;
 
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expressionelements.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 import lombok.NoArgsConstructor;
 
@@ -56,7 +80,7 @@ public class Parser {
 
 		for (Token token : tokens) {
 			switch (token.getType()) {
-				case NUMBER, STRING, CONSTANT, SUMMATION -> output.add(token);
+				case NUMBER, STRING, CONSTANT -> output.add(token);
 				case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
 				case OPERATOR -> {
 					// Factorial is a postfix operator → add directly to the output
@@ -116,29 +140,29 @@ public class Parser {
 	/**
 	 * Checks if the precedence of the first operator token is higher than the second.
 	 *
-	 * @param op1
+	 * @param operator1
 	 * 	the first operator token
-	 * @param op2
+	 * @param operator2
 	 * 	the second operator token
 	 *
-	 * @return true if op1 has higher precedence than op2, false otherwise
+	 * @return true if operator1 has higher precedence than operator2, false otherwise
 	 */
-	private boolean hasHigherPrecedence(Token op1, Token op2) {
-		return getPrecedence(op1) > getPrecedence(op2);
+	private boolean hasHigherPrecedence(Token operator1, Token operator2) {
+		return getPrecedence(operator1) > getPrecedence(operator2);
 	}
 
 	/**
 	 * Checks if two operator tokens have equal precedence.
 	 *
-	 * @param op1
+	 * @param operator1
 	 * 	the first operator token
-	 * @param op2
+	 * @param operator2
 	 * 	the second operator token
 	 *
 	 * @return true if both operators have equal precedence, false otherwise
 	 */
-	private boolean hasEqualPrecedence(Token op1, Token op2) {
-		return getPrecedence(op1) == getPrecedence(op2);
+	private boolean hasEqualPrecedence(Token operator1, Token operator2) {
+		return getPrecedence(operator1) == getPrecedence(operator2);
 	}
 
 	/**

@@ -3,6 +3,7 @@
     <words>
       <w>acot</w>
       <w>acoth</w>
+      <w>adjugate</w>
       <w>cartesiantopolar</w>
       <w>coth</w>
       <w>expressionelements</w>
@@ -11,6 +12,7 @@
       <w>polartocartesian</w>
       <w>randint</w>
       <w>rootn</w>
+      <w>surrfunc</w>
     </words>
   </dictionary>
 </component>
