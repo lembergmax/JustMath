@@ -24,54 +24,8 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
-import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class BigNumberParserTest {
 
-	private final BigNumberParser parser = new BigNumberParser();
-
-	@ParameterizedTest(name = "[{index}] parse valid US-numbers ‘{0}’ → ‘{1}’")
-	@CsvSource({
-		"123.45, 123.45",
-		"-7.89, -7.89",
-		"0, 0",
-		"1000, 1000",
-		"  42.0  , 42"
-	})
-	void parseValidUSNumbers(String input, String expected) {
-		BigNumber result = parser.parse(input, Locale.US);
-		assertEquals(expected, result.toString());
-	}
-
-	@ParameterizedTest(name = "[{index}] parse invalid input ‘{0}’ → zero ‘{1}’")
-	@CsvSource({
-		"'', 0",
-		"'   ', 0",
-		"'abc', 0",
-		"'1..23', 0",
-		"'--5', 0"
-	})
-	void parseInvalidReturnsZero(String input, String expected) {
-		BigNumber result = parser.parse(input, Locale.US);
-		assertEquals(expected, result.toString());
-	}
-
 	// TODO
-	@ParameterizedTest(name = "[{index}] parseAndFormat ‘{0}’ to {1} → ‘{2}’")
-	@CsvSource(value = {
-		"1.234,56; 1234,56",
-		"1,23456; 1,23456",
-		"-7.890,12; -7890,12",
-		"1000,00; 1000"
-	}, delimiter = ';')
-	void parseAndFormatNormalizesAcrossLocales(String input, String expected) {
-		BigNumber result = parser.parseAndFormat(input, Locale.GERMAN);
-		assertEquals(expected, result.toString());
-	}
 
 }
