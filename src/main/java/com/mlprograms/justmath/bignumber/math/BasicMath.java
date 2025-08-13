@@ -317,52 +317,59 @@ public class BasicMath {
 	}
 
 	/**
-	 * Computes the exponential function <code>e<sup>x</sup></code> for a given {@link BigNumber} argument using
-	 * its Maclaurin (Taylor) series expansion.
+	 * Computes the exponential function <code>e<sup>x</sup></code> for the given {@link BigNumber} argument
+	 * with high precision, using the specified {@link MathContext} for precision and rounding.
 	 * <p>
-	 * The exponential function is defined mathematically as:
+	 * This method implements the Taylor series expansion of the exponential function:
 	 * <pre>
-	 *     exp(x) = e^x = Σ (x^n / n!) from n = 0 to ∞
+	 *     e<sup>x</sup> = 1 + x/1! + x<sup>2</sup>/2! + x<sup>3</sup>/3! + ...
 	 * </pre>
-	 * where:
-	 * <ul>
-	 *   <li><code>x</code> is the real number input (in this case represented by a {@link BigNumber})</li>
-	 *   <li><code>n!</code> is the factorial of n</li>
-	 * </ul>
-	 * This implementation uses a loop to iteratively compute and sum terms of the Maclaurin series until the
-	 * absolute value of the current term is smaller than the numerical precision defined by the provided
-	 * {@link MathContext}.
+	 * The calculation proceeds by iteratively computing each term of the series until
+	 * the absolute value of the next term is smaller than the threshold defined by the
+	 * {@link MathContext} precision (i.e., less than 10<sup>-precision</sup>).
 	 * <p>
-	 * The computation proceeds as follows:
+	 * For example:
+	 * <ul>
+	 *     <li><code>exp(0) → 1</code></li>
+	 *     <li><code>exp(1) → e ≈ 2.71828...</code></li>
+	 *     <li><code>exp(-1) → 1/e ≈ 0.36788...</code></li>
+	 * </ul>
+	 * <p>
+	 * <b>Algorithm:</b>
 	 * <ol>
-	 *   <li>Initialize the result with the first term of the series (1)</li>
-	 *   <li>Iteratively compute each term using the recurrence relation:
-	 *       <code>term = term * x / n</code> to avoid recomputing powers and factorials from scratch</li>
-	 *   <li>Stop the iteration once the absolute value of the current term is less than
-	 *       <code>10<sup>-precision</sup></code>, as defined by the {@link MathContext}</li>
+	 *     <li>Initialize the result to 1 (the first term of the series).</li>
+	 *     <li>Initialize the current term to 1.</li>
+	 *     <li>For n = 1, 2, 3, ...:
+	 *         <ul>
+	 *             <li>Multiply the current term by <code>x</code> and divide by <code>n</code>.</li>
+	 *             <li>Add the term to the result.</li>
+	 *             <li>Stop when the term's absolute value is below the precision threshold.</li>
+	 *         </ul>
+	 *     </li>
 	 * </ol>
 	 * <p>
-	 * This method ensures correct handling of precision and rounding through the specified {@link MathContext}.
-	 * The result is returned as a new {@link BigNumber} instance using the specified {@link Locale}, which may
-	 * influence formatting or parsing behavior elsewhere in the application.
+	 * This approach guarantees that the result converges to the desired precision for any real input.
+	 * It is particularly effective for small to moderate values of <code>x</code>. For very large
+	 * arguments, more numerically stable methods (e.g., scaling and squaring) may be more efficient,
+	 * but this implementation prioritizes correctness and simplicity.
 	 * <p>
-	 * <b>Note:</b> This method computes <code>e^x</code> only for real numbers. For complex exponents, a different
-	 * implementation involving Euler's formula would be required.
+	 * The method is locale-aware, meaning the returned {@link BigNumber} is formatted and parsed
+	 * according to the specified {@link Locale}.
 	 *
 	 * @param argument
-	 * 	the exponent x in the expression <code>e^x</code>, must not be null
+	 * 	the exponent <code>x</code> in <code>e<sup>x</sup></code>; must not be {@code null}
 	 * @param mathContext
-	 * 	the precision and rounding context to be used during computation must not be null
+	 * 	the {@link MathContext} specifying the precision and rounding behavior;
+	 * 	must not be {@code null} and must have a positive precision
 	 * @param locale
-	 * 	the locale to be associated with the resulting {@link BigNumber}, must not be null
+	 * 	the {@link Locale} used for parsing and formatting the resulting {@link BigNumber}; must not be {@code null}
 	 *
-	 * @return the computed value of <code>e^x</code> as a {@link BigNumber}
+	 * @return a new {@link BigNumber} representing the computed exponential value <code>e<sup>x</sup></code>
 	 *
 	 * @throws NullPointerException
-	 * 	if any of the parameters is null
-	 * @see java.math.BigDecimal
-	 * @see java.math.MathContext
-	 * @see java.util.Locale
+	 * 	if any of the parameters is {@code null}
+	 * @see BigDecimalMath#exp(BigDecimal, MathContext)
+	 * @see Math#exp(double)
 	 */
 	public static BigNumber exp(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
@@ -378,6 +385,7 @@ public class BasicMath {
 			if (term.abs().compareTo(BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision())) < 0) {
 				break;
 			}
+
 			n++;
 		}
 
