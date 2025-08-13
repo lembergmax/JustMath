@@ -860,7 +860,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing log₂(this)
 	 */
-	// TODO: test
 	public BigNumber log2() {
 		return log2(mathContext);
 	}
@@ -903,7 +902,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing log₁₀(this)
 	 */
-	// TODO: test
 	public BigNumber log10() {
 		return log10(mathContext);
 	}
@@ -946,7 +944,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing ln(this)
 	 */
-	// TODO: test
 	public BigNumber ln() {
 		return ln(mathContext);
 	}
@@ -995,7 +992,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 * @throws IllegalArgumentException
 	 * 	if {@code base} is zero or negative
 	 */
-	// TODO: test
 	public BigNumber logBase(@NonNull final BigNumber base) {
 		return logBase(base, mathContext);
 	}
@@ -1051,7 +1047,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing sin(this)
 	 */
-	// TODO: test
 	public BigNumber sin() {
 		return sin(trigonometricMode);
 	}
@@ -1116,7 +1111,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing cos(this)
 	 */
-	// TODO: test
 	public BigNumber cos() {
 		return cos(trigonometricMode);
 	}
@@ -1181,7 +1175,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing tan(this)
 	 */
-	// TODO: test
 	public BigNumber tan() {
 		return tan(trigonometricMode);
 	}
