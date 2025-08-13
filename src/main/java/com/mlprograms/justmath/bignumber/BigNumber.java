@@ -669,23 +669,23 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the exponential function \(e^x\), where \(x\) is this {@code BigNumber} instance,
+	 * Computes the exponential function (e^x), where (x) is this {@code BigNumber} instance,
 	 * using the default {@link MathContext} and {@link Locale} configured in this instance.
 	 *
-	 * @return a new {@code BigNumber} representing \(e^{this}\)
+	 * @return a new {@code BigNumber} representing (e^{this})
 	 */
 	public BigNumber exp() {
 		return exp(mathContext);
 	}
 
 	/**
-	 * Computes the exponential function \(e^x\), where \(x\) is this {@code BigNumber} instance,
+	 * Computes the exponential function (e^x), where (x) is this {@code BigNumber} instance,
 	 * using the specified {@link MathContext} and the current locale.
 	 *
 	 * @param mathContext
 	 * 	the context defining precision and rounding
 	 *
-	 * @return a new {@code BigNumber} representing \(e^{this}\)
+	 * @return a new {@code BigNumber} representing (e^{this})
 	 */
 	public BigNumber exp(@NonNull final MathContext mathContext) {
 		return exp(mathContext, locale);
@@ -948,7 +948,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the natural logarithm (base \(e\)) of this number using the specified {@link MathContext}.
+	 * Computes the natural logarithm (base (e)) of this number using the specified {@link MathContext}.
 	 *
 	 * <p>This method delegates to {@link #ln(MathContext, Locale)} using the current locale.</p>
 	 *
@@ -2833,7 +2833,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the beta function \( B(x, y) \) for this value and the given \( y \), using the specified
+	 * Computes the beta function ( B(x, y) ) for this value and the given ( y ), using the specified
 	 * {@link MathContext} and {@link Locale}.
 	 * <p>
 	 * The beta function is defined as:
@@ -2880,7 +2880,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	}
 
 	/**
-	 * Computes the gamma function (Gamma\(x\)) for this value, using the specified {@link MathContext} and
+	 * Computes the gamma function (Gamma(x)) for this value, using the specified {@link MathContext} and
 	 * {@link Locale}.
 	 * <p>
 	 * The gamma function generalizes the factorial function for real and complex numbers.
