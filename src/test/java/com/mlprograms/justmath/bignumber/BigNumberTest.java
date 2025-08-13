@@ -127,6 +127,20 @@ public class BigNumberTest {
 			assertEquals(inputExpectedResult, result.toString());
 		}
 
+		@ParameterizedTest
+		@CsvSource({
+			"0,1",
+			"1,2.7182818285",
+			"-1,0.3678794412",
+			"2,7.3890560989",
+			"0.5,1.6487212707"
+		})
+		void exp(String inputX, String expectedResult) {
+			BigNumber x = new BigNumber(inputX, Locale.US);
+			BigNumber result = x.exp().roundAfterDecimals(10);
+			assertEquals(expectedResult, result.toString());
+		}
+
 	}
 
 	@Nested
