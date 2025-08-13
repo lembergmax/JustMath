@@ -674,7 +674,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 	 *
 	 * @return a new {@code BigNumber} representing \(e^{this}\)
 	 */
-	// TODO: test
 	public BigNumber exp() {
 		return exp(mathContext);
 	}
