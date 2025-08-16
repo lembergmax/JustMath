@@ -2601,16 +2601,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Rounds this {@code BigNumber} to the precision specified by the given {@link MathContext}.
-     *
-     * @param mathContext the context specifying precision and rounding mode
-     * @return a new {@code BigNumber} rounded according to the given {@link MathContext}
-     */
-    public BigNumber round(@NonNull final MathContext mathContext) {
-        return round(this, mathContext);
-    }
-
-    /**
      * Rounds the value after the decimal point to the specified precision.
      *
      * @param precision the number of decimal places to round to
@@ -2636,6 +2626,16 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         }
 
         return new BigNumber(value.setScale(precisionAfterDecimal, mathContext.getRoundingMode()).toPlainString()).trim();
+    }
+
+    /**
+     * Rounds this {@code BigNumber} to the precision specified by the given {@link MathContext}.
+     *
+     * @param mathContext the context specifying precision and rounding mode
+     * @return a new {@code BigNumber} rounded according to the given {@link MathContext}
+     */
+    public BigNumber round(@NonNull final MathContext mathContext) {
+        return round(this, mathContext);
     }
 
     /**
