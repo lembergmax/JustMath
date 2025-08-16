@@ -242,6 +242,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber(@NonNull final BigNumber bigNumber, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         MathUtils.checkMathContext(mathContext);
+
         this.locale = targetLocale;
         this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
         this.valueAfterDecimal = bigNumber.valueAfterDecimal;
@@ -258,6 +259,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber(@NonNull final BigNumber other) {
         MathUtils.checkMathContext(other.mathContext);
+
         this.locale = other.locale;
         this.valueBeforeDecimal = other.valueBeforeDecimal;
         this.valueAfterDecimal = other.valueAfterDecimal;
@@ -277,9 +279,11 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param mathContext        the math context to use for precision and rounding
      * @param trigonometricMode  the trigonometric mode to use
      */
+    // TODO: remove this builder thing
     @Builder
     public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimal, @NonNull final String valueAfterDecimal, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         MathUtils.checkMathContext(mathContext);
+
         this.locale = locale;
         this.valueBeforeDecimal = valueBeforeDecimal;
         this.valueAfterDecimal = valueAfterDecimal;
@@ -2435,14 +2439,62 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
     /**
      * Returns a new {@code BigNumber} whose value is the smallest integer greater than or equal to this number.
-     * This operation adds one to the integer part and sets the value before the decimal point to zero,
-     * then updates the internal state to reflect the new value.
+     * For positive numbers with a fractional part, this means rounding up to the next integer.
+     * For negative numbers or whole numbers, the result is the same as truncating towards zero or leaving unchanged.
+     * <p>
+     * Examples:
+     * <ul>
+     *     <li>3.2 → 4</li>
+     *     <li>-2.7 → -2</li>
+     *     <li>5.0 → 5</li>
+     * </ul>
      *
-     * @return this {@code BigNumber} rounded up to the next integer
+     * @return a new {@code BigNumber} rounded up to the next integer
      */
     public BigNumber ceil() {
-        valueBeforeDecimal = add(BigNumbers.ONE).getValueBeforeDecimal();
+        // Already an integer → return directly
+        if (this.valueAfterDecimal.equals("0")) {
+            return new BigNumber(this.toString());
+        }
+
+        // Positive → add 1 to integer part
+        if (!this.isNegative()) {
+            return new BigNumber(this.truncate().add(BigNumbers.ONE).toString());
+        }
+
+        // Negative → ceil is just truncation towards zero
+        return new BigNumber(this.truncate().toString());
+    }
+
+    /**
+     * Returns a new {@code BigNumber} whose value is truncated toward zero.
+     * Truncation removes the fractional part of the number without rounding.
+     * For positive numbers this behaves like {@link #floor()}, for negative numbers
+     * it behaves like {@link #ceil()}.
+     * <p>
+     * Examples:
+     * <pre>
+     *   3.7   → 3
+     *  -3.7   → -3
+     *   5.0   → 5
+     *   0.99  → 0
+     * </pre>
+     *
+     * @return this {@code BigNumber} truncated toward zero
+     */
+    public BigNumber truncate() {
+        // If the number has no decimal part, nothing to do
+        if ("0".equals(valueAfterDecimal) || valueAfterDecimal.isEmpty()) {
+            return this;
+        }
+
+        // Simply drop the fractional part
         valueAfterDecimal = "0";
+
+        if (isNegative() && valueBeforeDecimal.equals("0")) {
+            return BigNumbers.ZERO;
+        }
+
         return this;
     }
 
@@ -2459,7 +2511,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * Returns a new BigNumber with grouping separators applied to the integer part,
      * according to the current locale's grouping separator.
      * <br><br>
-     * If you want to set format the number in a specific locale, use {@link #formatToLocale(Locale)} first and then this
+     * If you want to format the number in a specific locale, use {@link #formatToLocale(Locale)} first and then this
      * method.
      *
      * @return a BigNumber with grouped valueBeforeDecimal
@@ -2468,7 +2520,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         char groupingSeparator = symbols.getGroupingSeparator();
 
-        return BigNumber.builder().locale(locale).valueBeforeDecimal(bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator).toString()).valueAfterDecimal(valueAfterDecimal).isNegative(isNegative).build();
+        String groupedBeforeDecimal = bigNumberParser
+                .getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator)
+                .toString();
+
+        BigNumber copy = new BigNumber(this);
+        copy.valueBeforeDecimal = groupedBeforeDecimal;
+        return copy;
     }
 
     /**
@@ -2809,7 +2867,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return true if there are decimals, false otherwise
      */
     public boolean hasDecimals() {
-        return !valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty();
+        BigNumber temp = clone().trim();
+        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimal().isEmpty();
     }
 
     /**
