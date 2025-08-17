@@ -35,6 +35,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
@@ -47,244 +48,214 @@ import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalR
  */
 public class InverseTrigonometricMath {
 
-	/**
-	 * Computes the arcsine (inverse sine) of a given BigNumber.
-	 * <p>
-	 * The arcsine is defined as the angle θ such that:
-	 * <pre>
-	 *   sin(θ) = x, where θ ∈ [-π/2, π/2]
-	 * </pre>
-	 * and x ∈ [-1, 1]. This implementation uses the identity:
-	 * <pre>
-	 *   arcsin(x) = arctan( x / sqrt(1 - x²) )
-	 * </pre>
-	 * which provides improved numerical stability and precision over direct series expansion.
-	 *
-	 * <p>
-	 * If the trigonometric mode is DEG (degrees), the result is converted accordingly.
-	 *
-	 * @param argument
-	 * 	the input value x for which to compute arcsine; must be in [-1, 1]
-	 * @param mathContext
-	 * 	the context to control precision and rounding
-	 * @param trigonometricMode
-	 * 	the output mode: RAD or DEG
-	 * @param locale
-	 * 	the locale used for formatting output
-	 *
-	 * @return the arcsine of x as a BigNumber
-	 *
-	 * @throws ArithmeticException
-	 * 	if argument is outside \[-1, 1\]
-	 */
-	public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Computes the arcsine (inverse sine) of a given BigNumber.
+     * <p>
+     * The arcsine is defined as the angle θ such that:
+     * <pre>
+     *   sin(θ) = x, where θ ∈ [-π/2, π/2]
+     * </pre>
+     * and x ∈ [-1, 1]. This implementation uses the identity:
+     * <pre>
+     *   arcsin(x) = arctan( x / sqrt(1 - x²) )
+     * </pre>
+     * which provides improved numerical stability and precision over direct series expansion.
+     *
+     * <p>
+     * If the trigonometric mode is DEG (degrees), the result is converted accordingly.
+     *
+     * @param argument          the input value x for which to compute arcsine; must be in [-1, 1]
+     * @param mathContext       the context to control precision and rounding
+     * @param trigonometricMode the output mode: RAD or DEG
+     * @param locale            the locale used for formatting output
+     * @return the arcsine of x as a BigNumber
+     * @throws ArithmeticException if argument is outside \[-1, 1\]
+     */
+    public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-		}
+        BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
+        if (trigonometricMode == TrigonometricMode.DEG) {
+            result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+        }
 
-		return new BigNumber(result.toPlainString(), locale, mathContext).roundAfterDecimals(mathContext).trim();
-	}
+        return new BigNumber(result.toPlainString(), locale, mathContext).roundAfterDecimals(mathContext).trim();
+    }
 
-	/**
-	 * Calculates the arccosine (inverse cosine) of the given argument.
-	 * <p>
-	 * Mathematically, acos(x) returns the angle θ such that cos(θ) = x, where θ ∈ [0, π].
-	 * The function is defined for input values x ∈ [-1, 1].
-	 * <p>
-	 * Formula:
-	 * <pre>
-	 * acos(x) = θ, where cos(θ) = x
-	 * </pre>
-	 * <p>
-	 * If {@code trigonometricMode} is DEG, the result is converted from radians to degrees.
-	 *
-	 * @param argument
-	 * 	the input value x for which to compute arccosine
-	 * @param mathContext
-	 * 	the precision and rounding context
-	 * @param trigonometricMode
-	 * 	indicates whether the result is returned in radians or degrees
-	 * @param locale
-	 * 	locale used for formatting the output
-	 *
-	 * @return a {@link BigNumber} representing the arccosine of the argument
-	 *
-	 * @throws ArithmeticException
-	 * 	if argument is outside [-1, 1]
-	 */
-	public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Calculates the arccosine (inverse cosine) of the given argument.
+     * <p>
+     * Mathematically, acos(x) returns the angle θ such that cos(θ) = x, where θ ∈ [0, π].
+     * The function is defined for input values x ∈ [-1, 1].
+     * <p>
+     * Formula:
+     * <pre>
+     * acos(x) = θ, where cos(θ) = x
+     * </pre>
+     * <p>
+     * If {@code trigonometricMode} is DEG, the result is converted from radians to degrees.
+     *
+     * @param argument          the input value x for which to compute arccosine
+     * @param mathContext       the precision and rounding context
+     * @param trigonometricMode indicates whether the result is returned in radians or degrees
+     * @param locale            locale used for formatting the output
+     * @return a {@link BigNumber} representing the arccosine of the argument
+     * @throws ArithmeticException if argument is outside [-1, 1]
+     */
+    public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			result = bigDecimalRadiansToDegrees(result, mathContext, locale);
-		}
+        BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
+        if (trigonometricMode == TrigonometricMode.DEG) {
+            result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+        }
 
-		return new BigNumber(result.toPlainString(), locale, mathContext).trim();
-	}
+        return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+    }
 
-	/**
-	 * Computes the arc tangent (inverse tangent) of the given {@code argument}, returning the angle whose tangent is
-	 * {@code argument}.
-	 * The result can be returned either in radians or degrees, depending on the specified {@link TrigonometricMode}.
-	 *
-	 * <p>
-	 * Mathematically, this method evaluates:
-	 * <ul>
-	 *   <li>{@code atan(x)} for |x| ≤ 1 using the Taylor (Maclaurin) series:
-	 *     <pre>{@code
-	 *     atan(x) = sum_{k=0}^∞ [ (-1)^k * x^(2k + 1) / (2k + 1) ]
-	 *     }</pre>
-	 *     This series converges for all real x with |x| ≤ 1 and is centered at 0. It provides a numerically stable and accurate
-	 *     way to approximate arctangent for small values of {@code x}.
-	 *   </li>
-	 *   <li>{@code atan(x)} for |x| > 1 using the identity:
-	 *     <pre>{@code
-	 *     atan(x) = sign(x) * π/2 - atan(1 / x)
-	 *     }</pre>
-	 *     This identity ensures fast convergence by transforming the input into the domain |x| ≤ 1, where the Taylor series is applied.
-	 *     The subtraction compensates for the shift due to transformation, and sign(x) determines the correct quadrant.
-	 *   </li>
-	 * </ul>
-	 *
-	 * <p>
-	 * If {@code trigonometricMode == TrigonometricMode.DEG}, the result in radians is converted to degrees using:
-	 * <pre>{@code
-	 * degrees = radians * (180 / π)
-	 * }</pre>
-	 *
-	 * <p>
-	 * Internally, the result is computed by symbolically evaluating a summation expression via {@link CalculatorEngine}.
-	 * The number of summation terms is chosen based on {@link MathContext#getPrecision()}, with an upper limit to ensure performance.
-	 *
-	 * @param argument
-	 * 	the input value for which the arctangent is to be computed (may be negative or greater than 1)
-	 * @param mathContext
-	 * 	the precision and rounding mode used for all intermediate and final calculations
-	 * @param trigonometricMode
-	 * 	whether the result should be returned in radians or degrees
-	 * @param locale
-	 * 	the locale to be used when formatting the final {@code BigNumber} result (e.g. decimal separator)
-	 *
-	 * @return the arctangent of {@code argument}, expressed in the selected trigonometric mode and with the specified precision
-	 *
-	 * @see <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Infinite_series">Wikipedia: Inverse
-	 * 	trigonometric functions – Infinite series</a>
-	 * @see BigNumber
-	 * @see CalculatorEngine
-	 * @see TrigonometricMode
-	 */
-	public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Computes the arc tangent (inverse tangent) of the given {@code argument}, returning the angle whose tangent is
+     * {@code argument}.
+     * The result can be returned either in radians or degrees, depending on the specified {@link TrigonometricMode}.
+     *
+     * <p>
+     * Mathematically, this method evaluates:
+     * <ul>
+     *   <li>{@code atan(x)} for |x| ≤ 1 using the Taylor (Maclaurin) series:
+     *     <pre>{@code
+     *     atan(x) = sum_{k=0}^∞ [ (-1)^k * x^(2k + 1) / (2k + 1) ]
+     *     }</pre>
+     *     This series converges for all real x with |x| ≤ 1 and is centered at 0. It provides a numerically stable and accurate
+     *     way to approximate arctangent for small values of {@code x}.
+     *   </li>
+     *   <li>{@code atan(x)} for |x| > 1 using the identity:
+     *     <pre>{@code
+     *     atan(x) = sign(x) * π/2 - atan(1 / x)
+     *     }</pre>
+     *     This identity ensures fast convergence by transforming the input into the domain |x| ≤ 1, where the Taylor series is applied.
+     *     The subtraction compensates for the shift due to transformation, and sign(x) determines the correct quadrant.
+     *   </li>
+     * </ul>
+     *
+     * <p>
+     * If {@code trigonometricMode == TrigonometricMode.DEG}, the result in radians is converted to degrees using:
+     * <pre>{@code
+     * degrees = radians * (180 / π)
+     * }</pre>
+     *
+     * <p>
+     * Internally, the result is computed by symbolically evaluating a summation expression via {@link CalculatorEngine}.
+     * The number of summation terms is chosen based on {@link MathContext#getPrecision()}, with an upper limit to ensure performance.
+     *
+     * @param argument          the input value for which the arctangent is to be computed (may be negative or greater than 1)
+     * @param mathContext       the precision and rounding mode used for all intermediate and final calculations
+     * @param trigonometricMode whether the result should be returned in radians or degrees
+     * @param locale            the locale to be used when formatting the final {@code BigNumber} result (e.g. decimal separator)
+     * @return the arctangent of {@code argument}, expressed in the selected trigonometric mode and with the specified precision
+     * @see <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Infinite_series">Wikipedia: Inverse
+     * trigonometric functions – Infinite series</a>
+     * @see BigNumber
+     * @see CalculatorEngine
+     * @see TrigonometricMode
+     */
+    public static BigNumber atan(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		BigNumber result;
+        BigNumber result;
 
-		if (argument.isLessThanOrEqualTo(BigNumbers.ONE)) {
-			result = computeAtanSeries(argument, mathContext);
-		} else {
-			BigNumber oneOverX = BigNumbers.ONE.divide(argument, mathContext);
-			BigNumber atanReciprocal = computeAtanSeries(oneOverX, mathContext);
-			BigNumber piOver2 = BigNumbers.pi(mathContext).divide(BigNumbers.TWO, mathContext);
+        if (argument.isLessThanOrEqualTo(BigNumbers.ONE)) {
+            result = computeAtanSeries(argument, mathContext);
+        } else {
+            BigNumber oneOverX = BigNumbers.ONE.divide(argument, mathContext);
+            BigNumber atanReciprocal = computeAtanSeries(oneOverX, mathContext);
+            BigNumber piOver2 = BigNumbers.pi(mathContext).divide(BigNumbers.TWO, mathContext);
 
-			result = argument.isPositive()
-				         ? piOver2.subtract(atanReciprocal)
-				         : piOver2.negate().subtract(atanReciprocal);
-		}
+            result = argument.isPositive()
+                    ? piOver2.subtract(atanReciprocal)
+                    : piOver2.negate().subtract(atanReciprocal);
+        }
 
-		if (trigonometricMode == TrigonometricMode.DEG) {
-			BigDecimal degrees = bigDecimalRadiansToDegrees(result.toBigDecimal(), mathContext, locale);
-			result = new BigNumber(degrees.toPlainString(), locale, mathContext);
-		}
+        if (trigonometricMode == TrigonometricMode.DEG) {
+            BigDecimal degrees = bigDecimalRadiansToDegrees(result.toBigDecimal(), mathContext, locale);
+            result = new BigNumber(degrees.toPlainString(), locale, mathContext);
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Computes the arctangent of the given argument using the Taylor (Maclaurin) series expansion.
-	 * <p>
-	 * The series used is:
-	 * <pre>
-	 *   atan(x) = sum_{k=0}^∞ [ (-1)^k * x^(2k + 1) / (2k + 1) ]
-	 * </pre>
-	 * This method sums terms until the absolute value of the current term is less than a small epsilon,
-	 * determined by the desired precision, or until a maximum of 10,000 terms is reached to prevent infinite loops.
-	 *
-	 * @param argument
-	 * 	the input value for which to compute arctangent (|x| ≤ 1 recommended for best convergence)
-	 * @param mathContext
-	 * 	the precision and rounding context for calculations
-	 *
-	 * @return the arctangent of the argument as a BigNumber, with the specified precision and locale
-	 */
-	private static BigNumber computeAtanSeries(@NonNull final BigNumber argument, @NonNull final MathContext mathContext) {
-		final BigDecimal xBD = argument.toBigDecimal();
-		final int scale = mathContext.getPrecision() + 5;
-		final BigDecimal epsilon = BigDecimal.ONE.movePointLeft(scale);
+    /**
+     * Computes the arctangent of the given argument using the Taylor (Maclaurin) series expansion.
+     * <p>
+     * The series used is:
+     * <pre>
+     *   atan(x) = sum_{k=0}^∞ [ (-1)^k * x^(2k + 1) / (2k + 1) ]
+     * </pre>
+     * This method sums terms until the absolute value of the current term is less than a small epsilon,
+     * determined by the desired precision, or until a maximum of 10,000 terms is reached to prevent infinite loops.
+     *
+     * @param argument    the input value for which to compute arctangent (|x| ≤ 1 recommended for best convergence)
+     * @param mathContext the precision and rounding context for calculations
+     * @return the arctangent of the argument as a BigNumber, with the specified precision and locale
+     */
+    private static BigNumber computeAtanSeries(@NonNull final BigNumber argument, @NonNull final MathContext mathContext) {
+        final BigDecimal xBD = argument.toBigDecimal();
+        final int scale = mathContext.getPrecision() + 5;
+        final BigDecimal epsilon = BigDecimal.ONE.movePointLeft(scale);
 
-		BigDecimal term = xBD;
-		BigDecimal sum = term;
-		int k = 1;
+        BigDecimal term = xBD;
+        BigDecimal sum = term;
+        int k = 1;
 
-		while (term.abs().compareTo(epsilon) > 0 && k < 10000) {
-			BigDecimal numerator = xBD.pow(2 * k + 1, mathContext).negate();
-			BigDecimal denominator = BigDecimal.valueOf(2L * k + 1L);
+        while (term.abs().compareTo(epsilon) > 0 && k < 10000) {
+            BigDecimal numerator = xBD.pow(2 * k + 1, mathContext).negate();
+            BigDecimal denominator = BigDecimal.valueOf(2L * k + 1L);
 
-			if (k % 2 == 0) {
-				numerator = numerator.negate();
-			}
+            if (k % 2 == 0) {
+                numerator = numerator.negate();
+            }
 
-			term = numerator.divide(denominator, mathContext);
-			sum = sum.add(term, mathContext);
-			k++;
-		}
-		return new BigNumber(sum.toPlainString(), argument.getLocale(), mathContext);
-	}
+            term = numerator.divide(denominator, mathContext);
+            sum = sum.add(term, mathContext);
+            k++;
+        }
+        return new BigNumber(sum.toPlainString(), argument.getLocale(), mathContext);
+    }
 
-	/**
-	 * Calculates the arccotangent (inverse cotangent) of the given argument.
-	 * <p>
-	 * Mathematically, {@code acot(x)} returns the angle θ such that {@code cot(θ) = x}.
-	 * Since {@code cot(θ) = 1 / tan(θ)}, the function is computed using:
-	 * <pre>
-	 * acot(x) = atan(1 / x), for x ≠ 0
-	 * </pre>
-	 *
-	 * <p>
-	 * The function is defined for all real values of {@code x} except 0.
-	 * For positive arguments, the result is in (0, π/2),
-	 * and for negative arguments, the result is in (−π/2, 0).
-	 * The result is returned in radians or degrees, depending on the specified {@link TrigonometricMode}.
-	 *
-	 * <p><strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero due to division by zero.
-	 *
-	 * @param argument
-	 * 	the input value {@code x} for which to compute the inverse cotangent; must not be zero
-	 * @param mathContext
-	 * 	the precision and rounding context to be used during the computation
-	 * @param trigonometricMode
-	 * 	determines whether the result is returned in radians or degrees
-	 * @param locale
-	 * 	the locale used to format the resulting {@link BigNumber}
-	 *
-	 * @return a {@link BigNumber} representing the inverse cotangent of the argument
-	 *
-	 * @throws ArithmeticException
-	 * 	if the argument is zero (undefined operation)
-	 * @see #atan(BigNumber, MathContext, TrigonometricMode, Locale)
-	 */
-	public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Calculates the arccotangent (inverse cotangent) of the given argument.
+     * <p>
+     * Mathematically, {@code acot(x)} returns the angle θ such that {@code cot(θ) = x}.
+     * Since {@code cot(θ) = 1 / tan(θ)}, the function is computed using:
+     * <pre>
+     * acot(x) = atan(1 / x), for x ≠ 0
+     * </pre>
+     *
+     * <p>
+     * The function is defined for all real values of {@code x} except 0.
+     * For positive arguments, the result is in (0, π/2),
+     * and for negative arguments, the result is in (−π/2, 0).
+     * The result is returned in radians or degrees, depending on the specified {@link TrigonometricMode}.
+     *
+     * <p><strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero due to division by zero.
+     *
+     * @param argument          the input value {@code x} for which to compute the inverse cotangent; must not be zero
+     * @param mathContext       the precision and rounding context to be used during the computation
+     * @param trigonometricMode determines whether the result is returned in radians or degrees
+     * @param locale            the locale used to format the resulting {@link BigNumber}
+     * @return a {@link BigNumber} representing the inverse cotangent of the argument
+     * @throws ArithmeticException if the argument is zero (undefined operation)
+     * @see #atan(BigNumber, MathContext, TrigonometricMode, Locale)
+     */
+    public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		if (argument.isEqualTo(BigNumbers.ZERO)) {
-			throw new ArithmeticException("acot(x) is undefined for x = 0");
-		}
+        if (argument.isEqualTo(BigNumbers.ZERO)) {
+            throw new ArithmeticException("acot(x) is undefined for x = 0");
+        }
 
-		// Compute acot(x) = atan(1 / x)
-		final BigNumber reciprocal = BigNumbers.ONE.divide(argument, mathContext);
-		return atan(reciprocal, mathContext, trigonometricMode, locale);
-	}
+        // Compute acot(x) = atan(1 / x)
+        final BigNumber reciprocal = BigNumbers.ONE.divide(argument, mathContext);
+        return atan(reciprocal, mathContext, trigonometricMode, locale);
+    }
 
 }
