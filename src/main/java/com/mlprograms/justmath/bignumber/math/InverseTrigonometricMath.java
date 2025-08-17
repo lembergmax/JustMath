@@ -246,6 +246,7 @@ public class InverseTrigonometricMath {
      * @throws ArithmeticException if the argument is zero (undefined operation)
      * @see #atan(BigNumber, MathContext, TrigonometricMode, Locale)
      */
+    // TODO: wrong results
     public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
