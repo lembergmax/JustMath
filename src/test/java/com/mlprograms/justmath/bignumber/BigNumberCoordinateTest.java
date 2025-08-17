@@ -32,7 +32,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BigNumberCoordinateTest {
 
@@ -174,6 +175,119 @@ public class BigNumberCoordinateTest {
 		assertEquals("x=1000; y=2000", coordinate.toString(Locale.GERMANY, false));
 		assertEquals(CoordinateType.CARTESIAN, coordinate.getType());
 		assertEquals(Locale.GERMANY, coordinate.getLocale());
+	}
+
+	@Test
+	void defaultConstructor_originCartesian() {
+		BigNumberCoordinate c = new BigNumberCoordinate();
+		assertEquals(CoordinateType.CARTESIAN, c.getType());
+		assertEquals("0", c.getX().toString());
+		assertEquals("0", c.getY().toString());
+		assertEquals("x=0; y=0", c.toString());
+	}
+
+	@Test
+	void singleArgConstructor_setsBothAxesSameValue() {
+		BigNumber xy = new BigNumber("12.3400", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(xy);
+		// Ensure both components are set to the same value (untrimmed until formatting/trim is called)
+		assertEquals("12.3400", c.getX().toString(Locale.US));
+		assertEquals("12.3400", c.getY().toString(Locale.US));
+		assertEquals(CoordinateType.CARTESIAN, c.getType());
+	}
+
+	@Test
+	void twoArgConstructor_defaultTypeCartesian() {
+		BigNumber x = new BigNumber("-5.000", Locale.US);
+		BigNumber y = new BigNumber("10.2500", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y);
+		assertEquals(CoordinateType.CARTESIAN, c.getType());
+		assertEquals("-5.000", c.getX().toString(Locale.US));
+		assertEquals("10.2500", c.getY().toString(Locale.US));
+	}
+
+	@Test
+	void constructorWithTypeAndLocale_formatsUsingProvidedLocale() {
+		BigNumber x = new BigNumber("1234.56", Locale.US);
+		BigNumber y = new BigNumber("7890.12", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.GERMANY);
+
+		// Default toString() uses the coordinate's internal locale (taken from x inside the coordinate)
+		assertEquals("x=1234,56; y=7890,12", c.toString());
+		// With grouping enabled (using object's locale)
+		assertEquals("x=1.234,56; y=7.890,12", c.toString(true));
+		// Explicit locale overrides object's locale
+		assertEquals("x=1,234.56; y=7,890.12", c.toString(Locale.US));
+	}
+
+	@Test
+	void trim_mutatesComponents_andReturnsSameInstance() {
+		BigNumber x = new BigNumber("0000123.45000", Locale.US);
+		BigNumber y = new BigNumber("-000000.12000", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.US);
+
+		BigNumberCoordinate returned = c.trim();
+		assertSame(c, returned, "trim() should return the same instance");
+		assertEquals("123.45", c.getX().toString());
+		assertEquals("-0.12", c.getY().toString());
+		assertEquals("x=123.45; y=-0.12", c.toString());
+	}
+
+	@Test
+	void toString_shouldTrimComponentsAsSideEffect() {
+		BigNumber x = new BigNumber("1000.23000", Locale.US);
+		BigNumber y = new BigNumber("2000.00000", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.US);
+
+		// Calling toString() should trim internal BigNumbers
+		assertEquals("x=1000.23; y=2000", c.toString());
+		assertEquals("1000.23", c.getX().toString());
+		assertEquals("2000", c.getY().toString());
+	}
+
+	@Test
+	void toStringVariants_USLocale() {
+		BigNumber x = new BigNumber("1234567.8900", Locale.US);
+		BigNumber y = new BigNumber("-9876543.2100", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.US);
+
+		assertEquals("x=1234567.89; y=-9876543.21", c.toString());
+		assertEquals("x=1,234,567.89; y=-9,876,543.21", c.toString(true));
+		assertEquals("x=1,234,567.89; y=-9,876,543.21", c.toString(Locale.US));
+		assertEquals("x=1,234,567.89; y=-9,876,543.21", c.toStringWithGrouping());
+	}
+
+	@Test
+	void toStringVariants_GermanLocale() {
+		BigNumber x = new BigNumber("1234567.8900", Locale.US);
+		BigNumber y = new BigNumber("-9876543.2100", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.GERMANY);
+
+		// No grouping by default, but decimal comma
+		assertEquals("x=1234567,89; y=-9876543,21", c.toString());
+		// Grouping with dots and comma as decimal
+		assertEquals("x=1.234.567,89; y=-9.876.543,21", c.toString(true));
+		// Explicit locale with grouping
+		assertEquals("x=1.234.567,89; y=-9.876.543,21", c.toString(Locale.GERMANY));
+	}
+
+	@Test
+	void polarCoordinate_usesPolarSymbols() {
+		BigNumber r = new BigNumber("2", Locale.US);
+		BigNumber theta = new BigNumber("3.14159", Locale.US);
+		BigNumberCoordinate c = new BigNumberCoordinate(r, theta, CoordinateType.POLAR, Locale.US);
+
+		assertEquals("r=2; θ=3.14159", c.toString());
+		assertEquals("r=2; θ=3,14159", c.toString(Locale.GERMANY));
+	}
+
+	@Test
+	void constructors_nullArguments_throwNullPointer() {
+		assertThrows(NullPointerException.class, () -> new BigNumberCoordinate((BigNumber) null));
+		BigNumber one = new BigNumber("1", Locale.US);
+		assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(null, one, CoordinateType.CARTESIAN, Locale.US));
+		assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(one, null, CoordinateType.CARTESIAN, Locale.US));
+		assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(one, one, CoordinateType.CARTESIAN, null));
 	}
 
 }
