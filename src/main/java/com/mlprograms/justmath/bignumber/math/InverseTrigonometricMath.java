@@ -31,6 +31,8 @@ import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -222,31 +224,61 @@ public class InverseTrigonometricMath {
     }
 
     /**
-     * Calculates the arccotangent (inverse cotangent) of the given argument.
+     * Computes the inverse cotangent (arccotangent, <i>acot</i>) of a given {@link BigNumber} argument with
+     * arbitrary precision, according to the specified {@link MathContext}, {@link TrigonometricMode},
+     * and {@link Locale}.
      * <p>
-     * Mathematically, {@code acot(x)} returns the angle θ such that {@code cot(θ) = x}.
-     * Since {@code cot(θ) = 1 / tan(θ)}, the function is computed using:
+     * The acot function is mathematically defined as:
      * <pre>
-     * acot(x) = atan(1 / x), for x ≠ 0
+     *     acot(x) = arccot(x) = atan(1 / x),    for x ≠ 0
      * </pre>
-     *
+     * where {@code atan} denotes the inverse tangent function.
      * <p>
-     * The function is defined for all real values of {@code x} except 0.
-     * For positive arguments, the result is in (0, π/2),
-     * and for negative arguments, the result is in (−π/2, 0).
-     * The result is returned in radians or degrees, depending on the specified {@link TrigonometricMode}.
+     * The principal branch of the inverse cotangent is chosen, with values constrained to:
+     * <ul>
+     *     <li><b>Radians:</b> (0, π)</li>
+     *     <li><b>Degrees:</b> (0°, 180°)</li>
+     * </ul>
+     * This corresponds to the standard mathematical convention for the real-valued inverse cotangent.
      *
-     * <p><strong>Domain restriction:</strong> x ≠ 0. The function is undefined for zero due to division by zero.
+     * <h3>Domain</h3>
+     * <ul>
+     *     <li>All real numbers except {@code 0}, since {@code acot(0)} is undefined.</li>
+     * </ul>
      *
-     * @param argument          the input value {@code x} for which to compute the inverse cotangent; must not be zero
-     * @param mathContext       the precision and rounding context to be used during the computation
-     * @param trigonometricMode determines whether the result is returned in radians or degrees
-     * @param locale            the locale used to format the resulting {@link BigNumber}
-     * @return a {@link BigNumber} representing the inverse cotangent of the argument
-     * @throws ArithmeticException if the argument is zero (undefined operation)
-     * @see #atan(BigNumber, MathContext, TrigonometricMode, Locale)
+     * <h3>Range</h3>
+     * <ul>
+     *     <li>In <b>radian mode</b>: values lie strictly between {@code 0} and {@code π}.</li>
+     *     <li>In <b>degree mode</b>: values lie strictly between {@code 0°} and {@code 180°}.</li>
+     * </ul>
+     *
+     * <h3>Special Cases</h3>
+     * <ul>
+     *     <li>{@code acot(0)} → throws {@link ArithmeticException}, since division by zero occurs.</li>
+     *     <li>{@code acot(+∞)} → approaches {@code 0}.</li>
+     *     <li>{@code acot(-∞)} → approaches {@code π} (or {@code 180°} in degree mode).</li>
+     * </ul>
+     *
+     * <h3>Implementation Notes</h3>
+     * <ol>
+     *     <li>The input {@code argument} is first converted to an {@link Apfloat} with the given precision.</li>
+     *     <li>The reciprocal {@code 1 / x} is computed using {@link ApfloatMath#inverseRoot} with exponent {@code 1}.</li>
+     *     <li>The inverse tangent {@code atan(1 / x)} is then computed via {@link ApfloatMath#atan}.</li>
+     *     <li>If {@link TrigonometricMode#DEG} is specified, the result is converted from radians to degrees using:
+     *         <pre>acot_deg(x) = acot_rad(x) × (180 / π)</pre></li>
+     *     <li>The result is wrapped in a {@link BigNumber}, respecting the provided {@link Locale},
+     *         and finally rounded according to the given {@link MathContext}.</li>
+     * </ol>
+     *
+     * @param argument          the input value {@code x}, must not be {@code null}
+     * @param mathContext       the {@link MathContext} specifying precision and rounding, must not be {@code null}
+     * @param trigonometricMode the {@link TrigonometricMode} to determine whether the result is expressed
+     *                          in radians or degrees, must not be {@code null}
+     * @param locale            the {@link Locale} used for number formatting and parsing, must not be {@code null}
+     * @return the inverse cotangent of the given {@code argument}, expressed as a {@link BigNumber}
+     * in the specified trigonometric mode and locale
+     * @throws ArithmeticException if {@code argument} is equal to zero, since {@code acot(0)} is undefined
      */
-    // TODO: wrong results
     public static BigNumber acot(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
@@ -254,9 +286,18 @@ public class InverseTrigonometricMath {
             throw new ArithmeticException("acot(x) is undefined for x = 0");
         }
 
-        // Compute acot(x) = atan(1 / x)
-        final BigNumber reciprocal = BigNumbers.ONE.divide(argument, mathContext);
-        return atan(reciprocal, mathContext, trigonometricMode, locale);
+        Apfloat apfloatArgument = new Apfloat(argument.toBigDecimal(), mathContext.getPrecision());
+        Apfloat reciprocal = ApfloatMath.inverseRoot(apfloatArgument, 1); // = 1/x
+
+        Apfloat acotValue = ApfloatMath.atan(reciprocal);
+
+        if (trigonometricMode == TrigonometricMode.DEG) {
+            Apfloat pi = ApfloatMath.pi(mathContext.getPrecision());
+            acotValue = acotValue.multiply(new Apfloat(BigNumbers.ONE_HUNDRED_EIGHTY.toBigDecimal(), mathContext.getPrecision()))
+                    .divide(pi);
+        }
+
+        return new BigNumber(acotValue.toString(true), locale).round(mathContext);
     }
 
 }
