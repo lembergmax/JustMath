@@ -939,10 +939,6 @@ public class BigNumberTest {
     @Nested
     public class SpecialFunctionMath {
 
-        private final MathContext mc = MathContext.DECIMAL128;
-        private final TrigonometricMode mode = TrigonometricMode.RAD;
-        private final Locale locale = Locale.US;
-
         @ParameterizedTest
         @CsvSource({
                 "1, 1",
@@ -954,8 +950,8 @@ public class BigNumberTest {
                 "1.5, 0.886227"
         })
         void testGamma(String input, String expected) {
-            BigNumber x = new BigNumber(input, locale, mc, mode);
-            BigNumber result = x.gamma(mc);
+            BigNumber x = new BigNumber(input, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber result = x.gamma(MathContext.DECIMAL128);
             assertEquals(expected, result.roundAfterDecimals(6).toString());
         }
 
@@ -967,9 +963,9 @@ public class BigNumberTest {
                 "5, 2, 0.033333"
         })
         void testBeta(String xVal, String yVal, String expected) {
-            BigNumber x = new BigNumber(xVal, locale, mc, mode);
-            BigNumber y = new BigNumber(yVal, locale, mc, mode);
-            BigNumber result = x.beta(y, mc);
+            BigNumber x = new BigNumber(xVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber y = new BigNumber(yVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber result = x.beta(y, MathContext.DECIMAL128);
             assertEquals(expected, result.roundAfterDecimals(6).toString());
         }
 
@@ -979,11 +975,11 @@ public class BigNumberTest {
                 "0.5, 1.5, 1.570796",
         })
         void testBetaSymmetry(String a, String b, String expected) {
-            BigNumber x = new BigNumber(a, locale, mc, mode);
-            BigNumber y = new BigNumber(b, locale, mc, mode);
+            BigNumber x = new BigNumber(a, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber y = new BigNumber(b, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
 
-            String betaXY = x.beta(y, mc).roundAfterDecimals(6).toString();
-            String betaYX = y.beta(x, mc).roundAfterDecimals(6).toString();
+            String betaXY = x.beta(y, MathContext.DECIMAL128).roundAfterDecimals(6).toString();
+            String betaYX = y.beta(x, MathContext.DECIMAL128).roundAfterDecimals(6).toString();
 
             assertEquals(expected, betaXY);
             assertEquals(expected, betaYX);
@@ -991,10 +987,10 @@ public class BigNumberTest {
 
         @Test
         void testGammaUndefined() {
-            BigNumber zero = new BigNumber("0", locale, mc, mode);
-            BigNumber minusOne = new BigNumber("-1", locale, mc, mode);
-            assertThrows(ArithmeticException.class, () -> zero.gamma(mc));
-            assertThrows(ArithmeticException.class, () -> minusOne.gamma(mc));
+            BigNumber zero = new BigNumber("0", Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber minusOne = new BigNumber("-1", Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            assertThrows(ArithmeticException.class, () -> zero.gamma(MathContext.DECIMAL128));
+            assertThrows(ArithmeticException.class, () -> minusOne.gamma(MathContext.DECIMAL128));
         }
 
         @ParameterizedTest
