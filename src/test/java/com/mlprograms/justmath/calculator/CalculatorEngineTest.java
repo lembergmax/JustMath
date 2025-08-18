@@ -24,8 +24,40 @@
 
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.Evaluator;
+import com.mlprograms.justmath.calculator.internal.Parser;
+import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class CalculatorEngineTest {
 
-	// TODO
+    private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "|-5|+3;8",
+            "",
+            "",
+            "",
+            ""
+    }, delimiter = ';')
+    void evaluationResultTest(String calculationString, String expectedResult) {
+        BigNumber result = calculatorEngine.evaluate(calculationString);
+        assertEquals(expectedResult, result.toString());
+    }
+
+    @Test
+    void justATest() {
+        System.out.println(new Tokenizer().tokenize("|-5|+3"));
+        System.out.println(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3")));
+        System.out.println(new Evaluator().evaluate(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3"))));
+    }
+
+    // TODO: variables test
 
 }
