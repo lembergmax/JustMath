@@ -126,15 +126,6 @@ public class ExpressionElements {
 	public static final String FUNC_ABS = "abs";
 	public static final String SURRFUNC_ABS_S = "|"; // that is special :0
 
-	/*
-	  Static initializer block for registering all supported {@link ExpressionElement}s.
-	  <p>
-	  This block creates a list of all available expression elements, such as operators,
-	  functions, parentheses, and separators, and registers each one in the {@link #registry}
-	  for later lookup by symbol.
-	  <p>
-	  The registration order determines operator precedence and function availability.
-	 */
 	static {
 		List<ExpressionElement> expressionElementList = List.of(
 			new ZeroArgumentConstant(PI, BigNumbers::pi),
