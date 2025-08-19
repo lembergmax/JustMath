@@ -36,7 +36,12 @@ public class CalculatorEngineTest {
     private final CalculatorEngine calculatorEngine = new CalculatorEngine();
 
     @ParameterizedTest
-    @CsvSource(value = {"|-5|+3;8", "3;3"}, delimiter = ';')
+    @CsvSource(value = {
+            "|-5|+3;8",
+            "0;0",
+            "0;0",
+            "0;0"
+    }, delimiter = ';')
     void evaluationResultTest(String calculationString, String expectedResult) {
         BigNumber result = calculatorEngine.evaluate(calculationString);
         assertEquals(expectedResult, result.toString());
@@ -44,6 +49,7 @@ public class CalculatorEngineTest {
 
     @Test
     void justATest() {
+        // TODO
         System.out.println(new Tokenizer().tokenize("|-5|+3"));
         System.out.println(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3")));
         System.out.println(new Evaluator().evaluate(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3"))));
