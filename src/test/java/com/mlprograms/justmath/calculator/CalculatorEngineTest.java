@@ -25,7 +25,6 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -47,16 +46,6 @@ public class CalculatorEngineTest {
         assertEquals(expectedResult, result.toString());
     }
 
-    @Test
-    void justATest() {
-        // TODO
-        System.out.println(new Tokenizer().tokenize("|-5|+3"));
-        System.out.println(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3")));
-        System.out.println(new Evaluator().evaluate(new Parser().toPostfix(new Tokenizer().tokenize("|-5|+3"))));
-        System.out.println(new Evaluator().evaluate(new Parser().toPostfix(new Tokenizer().tokenize("2*-3"))));
-        System.out.println(new Evaluator().evaluate(new Parser().toPostfix(new Tokenizer().tokenize("-3*-2"))));
-    }
-
-    // TODO: variables test
+    // TODO: variables tests
 
 }
