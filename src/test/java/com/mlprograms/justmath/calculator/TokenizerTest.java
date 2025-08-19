@@ -25,7 +25,6 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.calculator.internal.token.Token;
-import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

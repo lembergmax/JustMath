@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal;
+package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
@@ -39,7 +39,7 @@ import java.util.List;
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-public class Parser {
+class Parser {
 
 	/**
 	 * Checks if the given expression element is a right-associative operator.
