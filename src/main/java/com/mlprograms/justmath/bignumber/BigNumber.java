@@ -2940,7 +2940,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      *
      * @return string representation in the object's locale
      */
-    public String toStringWithGrouping() {
+    public String toPrettyString() {
         return formatToString(locale, true);
     }
 
