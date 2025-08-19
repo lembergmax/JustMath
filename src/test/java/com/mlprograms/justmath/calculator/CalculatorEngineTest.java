@@ -37,7 +37,7 @@ public class CalculatorEngineTest {
     @ParameterizedTest
     @CsvSource(value = {
             "|-5|+3;8",
-            "0;0",
+            "|-5|3;15",
             "0;0",
             "0;0"
     }, delimiter = ';')
