@@ -25,13 +25,9 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.Evaluator;
-import com.mlprograms.justmath.calculator.internal.Parser;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
-import com.mlprograms.justmath.calculator.internal.token.Tokenizer;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -183,18 +179,100 @@ public class CalculatorEngine {
         return evaluator.evaluate(postfix).trim();
     }
 
+    /**
+     * Replaces all occurrences of absolute value signs in a mathematical expression
+     * with explicit function-style absolute value notation.
+     * <p>
+     * In many mathematical notations, absolute values are written using vertical bars, e.g. {@code |x+3|}.
+     * Internally, however, this implementation represents absolute value as a function call
+     * (e.g. {@code abs(x+3)}). This method ensures that each absolute value sign is consistently
+     * converted to its functional form.
+     * </p>
+     *
+     * <p>
+     * The replacement follows this rule:
+     * <ul>
+     *   <li>The first occurrence of the absolute sign ({@link ExpressionElements#SURRFUNC_ABS_S})
+     *       is replaced with {@code abs(} (opening the absolute value function).</li>
+     *   <li>The second occurrence is replaced with a closing parenthesis {@code )}.</li>
+     *   <li>The third again with {@code abs(}, the fourth with {@code )}, and so forth.</li>
+     * </ul>
+     * As a result, an even number of absolute signs is required to form valid pairs.
+     * </p>
+     *
+     * <p>
+     * For example:
+     * <ul>
+     *   <li>Input: {@code |x+2|} → Output: {@code abs(x+2)}</li>
+     *   <li>Input: {@code |x-1| + |y|} → Output: {@code abs(x-1) + abs(y)}</li>
+     * </ul>
+     * </p>
+     *
+     * @param expression the mathematical expression containing absolute value signs
+     * @return the expression with all absolute signs replaced by {@code abs(...)} notation
+     * @throws IllegalArgumentException if the expression contains an odd number of
+     *                                  absolute value signs, since this would result in unbalanced expressions
+     *                                  (e.g., {@code |x+3}).
+     */
     private String replaceAbsSigns(String expression) {
         String absValueSign = ExpressionElements.SURRFUNC_ABS_S;
 
-        int absI = 0;
-        for (int i = expression.length() - 1; i > 0; i--) {
-            if (expression.charAt(i) == absValueSign.charAt(absI)) {
-                // TODO: checke ob das element an i das selbe wie absI (also das dem letzten zeichen aus abs gleicht)
-                //  wenn ja, dann ist absI -1 und es wird wieder geschaut, bis absI am ende auf 0 ist
-            }
+        int occurrences = countOccurrences(expression, absValueSign);
+        if (occurrences % 2 != 0) {
+            throw new IllegalArgumentException("The expression must contain an even number (>1) of abs sign functions");
         }
 
-        return expression; // TODO
+        StringBuilder result = new StringBuilder();
+        int index = 0;
+        int foundCount = 0;
+
+        while (index < expression.length()) {
+            int next = expression.indexOf(absValueSign, index);
+            if (next == -1) {
+                result.append(expression.substring(index));
+                break;
+            }
+
+            result.append(expression, index, next);
+
+            if (foundCount % 2 == 0) {
+                result.append(ExpressionElements.FUNC_ABS + ExpressionElements.PAR_LEFT);
+            } else {
+                result.append(")");
+            }
+
+            foundCount++;
+            index = next + absValueSign.length();
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Counts the number of occurrences of a given substring within a text.
+     * <p>
+     * This method performs a non-overlapping search for the {@code search} string
+     * within the {@code text}, moving forward after each found occurrence.
+     * </p>
+     *
+     * @param text   the input string to be scanned
+     * @param search the substring to search for
+     * @return the number of non-overlapping occurrences of {@code search} within {@code text};
+     * returns {@code -1} if either {@code text} or {@code search} is empty
+     */
+    private int countOccurrences(@NonNull final String text, @NonNull final String search) {
+        if (text.isEmpty() || search.isEmpty()) {
+            return -1;
+        }
+
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(search, index)) != -1) {
+            count++;
+            index += search.length();
+        }
+
+        return count;
     }
 
     /**
