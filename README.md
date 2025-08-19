@@ -79,9 +79,8 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 JustMath allows you to **define and substitute variables** directly in expressions.  
 Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
 
-- Variables can be reused across nested evaluations thanks to a **thread-local context**.
+- Variables can be reused across nested evaluations.
 - An **exception** is thrown if an undefined variable is encountered.
-- Absolute value notation (`|x|`) is also supported and automatically rewritten as `abs(x)`.
 
 ### ✅ Example: Using Variables
 
