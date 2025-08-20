@@ -49,7 +49,7 @@ public class CalculatorEngineTest {
     @ParameterizedTest
     @CsvSource(value = {
             // --- Custom ---
-            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+GCD(54;24)+LCM(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
+            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
             "3!+3#9",
             // --- Grundoperationen kombiniert ---
             "2+3*4#14",
@@ -92,10 +92,10 @@ public class CalculatorEngineTest {
             "sqrt(abs(-16))#4",
             "abs(sqrt(49)-10)#3",
             "sqrt(abs(-3*3*3*3))#9",
-            // --- GCD/LCM kombiniert ---
-            "GCD(54;24)+LCM(6;8)#30",
-            "LCM(3;5)-GCD(21;14)#13",
-            "LCM(12;18)/GCD(12;18)#6",
+            // --- gcd/lcm kombiniert ---
+            "gcd(54;24)+lcm(6;8)#30",
+            "lcm(3;5)-gcd(21;14)#13",
+            "lcm(12;18)/gcd(12;18)#6",
             // --- Konstanten kombiniert ---
             "pi*2#6.283185307179586",
             "e^1#2.718281828459045",
@@ -106,8 +106,8 @@ public class CalculatorEngineTest {
             "sin(cos(tan(pi/4)))#0.6663667453928805",
             "ln(sqrt((e^3)*(e^2)))#2.5",
             // --- Kombination mehrerer Kategorien ---
-            "sum(1;3;k^2)+prod(1;3;k!)+GCD(24;54)#39",
-            "LCM(4;6)+abs(-10)+sqrt(49)#31",
+            "sum(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#39",
+            "lcm(4;6)+abs(-10)+sqrt(49)#31",
             "cos(pi/2)^2+sin(pi/2)^2#1",
             "(sin(pi/2)+cos(0))*log2(8)#6",
             // --- Hardcore Ausdruck ---
