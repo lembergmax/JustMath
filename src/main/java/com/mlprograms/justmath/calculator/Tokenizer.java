@@ -231,8 +231,8 @@ class Tokenizer {
     /**
      * Determines whether implicit multiplication should be inserted between two tokens.
      * <p>
-     * Returns true if the combination of `current` and `next` tokens represents a context
-     * where multiplication is implied, such as:
+     * Returns true if the combination of {@code current} and {@code next} tokens
+     * represents a context where multiplication is implied, such as:
      * <ul>
      *   <li>Number followed by left parenthesis or function</li>
      *   <li>Right parenthesis followed by number, function, or left parenthesis</li>
@@ -244,19 +244,51 @@ class Tokenizer {
      * @param next    the next token in the sequence
      * @return true if implicit multiplication is needed, false otherwise
      */
-    private boolean needsMultiplication(Token current, Token next) {
-        return
-                (current.getType() == Token.Type.NUMBER
-                        && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION))
-                        || (current.getType() == Token.Type.RIGHT_PAREN
-                        && (next.getType() == Token.Type.NUMBER || next.getType() == Token.Type.FUNCTION || next.getType() == Token.Type.LEFT_PAREN))
-                        || ((current.getType() == Token.Type.NUMBER || isZeroArgConstant(current)) && isZeroArgConstant(next))
-                        || (isZeroArgConstant(current) && next.getType() == Token.Type.NUMBER)
-                        || (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.FUNCTION)
-                        || (current.getType() == Token.Type.VARIABLE && next.getType() == Token.Type.VARIABLE)
-                        || (current.getType() == Token.Type.VARIABLE && next.getType() == Token.Type.CONSTANT)
-                        || (current.getType() == Token.Type.CONSTANT && next.getType() == Token.Type.VARIABLE)
-                ;
+    private boolean needsMultiplication(final Token current, final Token next) {
+        return isNumberFollowedByParenOrFunction(current, next)
+                || isRightParenFollowedByValid(current, next)
+                || isNumberOrConstantFollowedByZeroArgFunction(current, next)
+                || isZeroArgFunctionFollowedByNumberOrVariable(current, next)
+                || isConstantFollowedByFunction(current, next)
+                || isVariableFollowedByVariableOrConstant(current, next)
+                || isConstantFollowedByVariable(current, next);
+    }
+
+    private boolean isNumberFollowedByParenOrFunction(final Token current, final Token next) {
+        return current.getType() == Token.Type.NUMBER
+                && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION);
+    }
+
+    private boolean isRightParenFollowedByValid(final Token current, final Token next) {
+        return current.getType() == Token.Type.RIGHT_PAREN
+                && (next.getType() == Token.Type.NUMBER
+                || next.getType() == Token.Type.FUNCTION
+                || next.getType() == Token.Type.LEFT_PAREN);
+    }
+
+    private boolean isNumberOrConstantFollowedByZeroArgFunction(final Token current, final Token next) {
+        return (current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
+                && isZeroArgConstant(next);
+    }
+
+    private boolean isZeroArgFunctionFollowedByNumberOrVariable(final Token current, final Token next) {
+        return isZeroArgConstant(current)
+                && next.getType() == Token.Type.NUMBER;
+    }
+
+    private boolean isConstantFollowedByFunction(final Token current, final Token next) {
+        return current.getType() == Token.Type.CONSTANT
+                && next.getType() == Token.Type.FUNCTION;
+    }
+
+    private boolean isVariableFollowedByVariableOrConstant(final Token current, final Token next) {
+        return current.getType() == Token.Type.VARIABLE
+                && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
+    }
+
+    private boolean isConstantFollowedByVariable(final Token current, final Token next) {
+        return current.getType() == Token.Type.CONSTANT
+                && next.getType() == Token.Type.VARIABLE;
     }
 
     /**
