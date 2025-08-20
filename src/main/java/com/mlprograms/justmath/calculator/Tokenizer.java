@@ -27,10 +27,7 @@ package com.mlprograms.justmath.calculator;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.expression.elements.Parenthesis;
-import com.mlprograms.justmath.calculator.internal.expression.elements.Separator;
-import com.mlprograms.justmath.calculator.internal.expression.elements.ThreeArgumentFunction;
-import com.mlprograms.justmath.calculator.internal.expression.elements.ZeroArgumentConstant;
+import com.mlprograms.justmath.calculator.internal.expression.elements.*;
 import com.mlprograms.justmath.calculator.internal.token.Token;
 
 import java.math.MathContext;
@@ -349,7 +346,7 @@ class Tokenizer {
         }
 
         // Look at last produced token for context
-        Token previous = tokens.getLast();
+        Token previous = tokens.getLast(); // safe for any List implementation
         Token.Type prevType = previous.getType();
 
         // If previous is a number, right paren, constant or variable => + / - is BINARY operator
@@ -365,10 +362,17 @@ class Tokenizer {
             return c == '-';
         }
 
-        // If previous is an operator, function, separator, etc. -> + / - is a sign of number (e.g. 2*-3 or sin(-2))
-        // Treat FUNCTION as allowing unary sign only if function was not yet followed by '('? But handling functions always push a FUNCTION then LEFT_PAREN,
-        // so here FUNCTION followed by number is rare. We'll treat OPERATOR, FUNCTION, SEMICOLON as allowing unary sign.
-        return prevType == Token.Type.OPERATOR || prevType == Token.Type.FUNCTION || prevType == Token.Type.SEMICOLON;
+        // If previous is an operator, we must treat postfix-unary operators (like '!') specially:
+        if (prevType == Token.Type.OPERATOR) {
+            // If the previous operator is a postfix-unary operator (e.g. '!'), then + / - is NOT a unary sign.
+            // Otherwise (previous is a binary operator like '*' or a prefix operator), + / - is a unary sign.
+            return ExpressionElements.findBySymbol(previous.getValue())
+                    .map(element -> !(element instanceof PostfixUnaryOperator))
+                    .orElse(true);
+        }
+
+        // If previous is FUNCTION or SEMICOLON -> + / - is a sign of number (e.g. 2*-3 or func(-2))
+        return prevType == Token.Type.FUNCTION || prevType == Token.Type.SEMICOLON;
     }
 
     /**
