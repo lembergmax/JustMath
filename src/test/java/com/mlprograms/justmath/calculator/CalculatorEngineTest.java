@@ -46,8 +46,6 @@ public class CalculatorEngineTest {
         assertEquals(expectedResult, actualResult.toString());
     }
 
-    // TODO: n!+m gibt fehler
-
     @ParameterizedTest
     @CsvSource(value = {
             // --- Custom ---
