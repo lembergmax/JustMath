@@ -25,9 +25,13 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,20 +41,11 @@ public class CalculatorEngineTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "|-5|+3;8",
-            "|-5|3;15",
-            "0;0"
-    }, delimiter = ';')
-    void evaluationResultTest(String calculationString, String expectedResult) {
-        BigNumber actualResult = calculatorEngine.evaluate(calculationString);
-        assertEquals(expectedResult, actualResult.toString());
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
             // --- Custom ---
             "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
             "3!+3#9",
+            "|-5|+3;8",
+            "|-5|3;15",
             // --- Grundoperationen kombiniert ---
             "2+3*4#14",
             "(2+3)*4#20",
@@ -118,6 +113,28 @@ public class CalculatorEngineTest {
         assertEquals(expectedResult, actualResult.toString());
     }
 
-    // TODO: variables tests
+    @ParameterizedTest
+    @CsvSource(value = {
+            "x+2#7",
+            "y*3#15",
+            "z^2#49",
+            "a+b#9",
+            "a^a#256",
+            "sum(1;3;k)+x#12",
+            "prod(1;3;k)+y#21",
+            "abs(-x)+sqrt(z)#12"
+    }, delimiter = '#')
+    void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
+        Map<String, BigNumber> variables =
+                Map.of("x", new BigNumber("5"),
+                        "y", new BigNumber("5"),
+                        "z", new BigNumber("7"),
+                        "a", new BigNumber("4"),
+                        "b", new BigNumber("5")
+                );
+
+        BigNumber actualResult = calculatorEngine.evaluate(calculationString, variables);
+        assertEquals(expectedResult, actualResult.toString());
+    }
 
 }
