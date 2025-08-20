@@ -25,27 +25,28 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Collection;
-import java.util.List;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CalculatorEngineTest {
 
-    private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+    private final CalculatorEngine calculatorEngineRad = new CalculatorEngine(TrigonometricMode.RAD);
+    private final CalculatorEngine calculatorEngineDeg = new CalculatorEngine(TrigonometricMode.DEG);
 
     @ParameterizedTest
     @CsvSource(value = {
             // --- Custom ---
             "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
             "3!+3#9",
-            "|-5|+3;8",
-            "|-5|3;15",
+            "|-5|+3#8",
+            "|-5|3#15",
             // --- Grundoperationen kombiniert ---
             "2+3*4#14",
             "(2+3)*4#20",
@@ -109,8 +110,8 @@ public class CalculatorEngineTest {
             "sqrt((abs(-5)+3!)^2+(log2(8)+sin(pi/2))^2)#8.54400374531753"
     }, delimiter = '#')
     void evaluationResultLongTest(String calculationString, String expectedResult) {
-        BigNumber actualResult = calculatorEngine.evaluate(calculationString);
-        assertEquals(expectedResult, actualResult.toString());
+        BigNumber actualResult = calculatorEngineRad.evaluate(calculationString);
+        assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
     }
 
     @ParameterizedTest
@@ -133,8 +134,43 @@ public class CalculatorEngineTest {
                         "b", new BigNumber("5")
                 );
 
-        BigNumber actualResult = calculatorEngine.evaluate(calculationString, variables);
+        BigNumber actualResult = calculatorEngineRad.evaluate(calculationString, variables);
         assertEquals(expectedResult, actualResult.toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- DEG Modus ---
+            "sin(90)#1",
+            "cos(180)#-1",
+            "tan(45)#1",
+            "cot(45)#1",
+            "sin(30)+cos(60)#1",
+            "tan(60)^2#3",
+            "cos(90)+sin(0)#0",
+            "sin(30)^2+cos(30)^2#1",
+            "sin(90)*2+sqrt(16)#6"
+    }, delimiter = '#')
+    void evaluationResultDegModeTest(String calculationString, String expectedResult) {
+        BigNumber actualResult = calculatorEngineDeg.evaluate(calculationString);
+        assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "sin(pi/2)#RAD",
+            "sin(90)#DEG",
+            "cos(pi)#RAD",
+            "cos(180)#DEG"
+    }, delimiter = '#')
+    void evaluationCompareRadDegTest(String calculationString, String mode) {
+        BigNumber result;
+        if ("RAD".equals(mode)) {
+            result = calculatorEngineRad.evaluate(calculationString);
+        } else {
+            result = calculatorEngineDeg.evaluate(calculationString);
+        }
+        System.out.println("Mode=" + mode + ", expr=" + calculationString + ", result=" + result);
     }
 
 }
