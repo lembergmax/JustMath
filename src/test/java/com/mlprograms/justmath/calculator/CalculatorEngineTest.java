@@ -104,9 +104,9 @@ public class CalculatorEngineTest {
             "cos(pi)+sin(pi)#0",
             "tan(pi)+e-e#0",
             // --- Tiefe Verschachtelung ---
-            "sqrt( (3+5*2)^(2) - (4^2) )#12",
-            "sin( cos( tan( pi/4 ) ) )#0.6663667453928805",
-            "ln( sqrt( (e^3) * (e^2) ) )#2.5",
+            "sqrt((3+5*2)^(2)-(4^2))#12",
+            "sin(cos(tan(pi/4)))#0.6663667453928805",
+            "ln(sqrt((e^3)*(e^2)))#2.5",
             // --- Kombination mehrerer Kategorien ---
             "sum(1;3;k^2)+prod(1;3;k!)+GCD(24;54)#39",
             "LCM(4;6)+abs(-10)+sqrt(49)#31",
