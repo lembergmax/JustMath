@@ -28,6 +28,4 @@ jobs:
 
       # 4️⃣ Build & Deploy
       - name: Build and Deploy
-        run: mvn -B clean deploy \
-              -Dgpg.passphrase="${{ secrets.OSSRH_PASSWORD }}" \
-              -DskipTests
+        run: mvn clean deploy -B -U
