@@ -67,16 +67,16 @@ public class CalculatorEngineTest {
             "(sin(pi/2)+cos(pi))^2#0",
             // --- Verschachtelte Trigonometrie ---
             "sin(cos(0))#0.8414709848",
-            "cos(sin(1))#0.5403023058",
-            "tan(sin(pi/4))#0.7675435022",
+            "cos(sin(1))#0.6663667454",
+            "tan(sin(pi/4))#0.854510432",
             // --- Logarithmen kombiniert ---
             "log2(8)+log10(100)#5",
             "ln(e^2)+sqrt(16)#6",
-            "log10(100*sqrt(25))#3.6989700043",
+            "log10(100*sqrt(25))#2.6989700043",
             "log2(2^10)#10",
             // --- Summation / Produkt + Operatoren ---
             "sum(1;3;k)+prod(1;3;k)#12",
-            "sum(1;4;k^2)-prod(1;3;k)#6",
+            "sum(1;4;k^2)-prod(1;3;k)#24",
             "prod(1;4;k)+sum(1;4;k)#34",
             "sum(1;5;2*k)#30",
             // --- Fakultät + Modulo + Potenzen ---
@@ -90,24 +90,24 @@ public class CalculatorEngineTest {
             "sqrt(abs(-3*3*3*3))#9",
             // --- gcd/lcm kombiniert ---
             "gcd(54;24)+lcm(6;8)#30",
-            "lcm(3;5)-gcd(21;14)#13",
+            "lcm(3;5)-gcd(21;14)#8",
             "lcm(12;18)/gcd(12;18)#6",
             // --- Konstanten kombiniert ---
             "pi*2#6.2831853072",
             "e^1#2.7182818285",
-            "cos(pi)+sin(pi)#0",
+            "cos(pi)+sin(pi)#-1",
             "tan(pi)+e-e#0",
             // --- Tiefe Verschachtelung ---
-            "sqrt((3+5*2)^(2)-(4^2))#12",
-            "sin(cos(tan(pi/4)))#0.6663667453928805",
+            "sqrt((3+5*2)^(2)-(4^2))#12.3693168769",
+            "sin(cos(tan(pi/4)))#0.5143952585",
             "ln(sqrt((e^3)*(e^2)))#2.5",
             // --- Kombination mehrerer Kategorien ---
-            "sum(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#39",
-            "lcm(4;6)+abs(-10)+sqrt(49)#31",
+            "sum(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#32",
+            "lcm(4;6)+abs(-10)+sqrt(49)#29",
             "cos(pi/2)^2+sin(pi/2)^2#1",
             "(sin(pi/2)+cos(0))*log2(8)#6",
             // --- Hardcore Ausdruck ---
-            "sqrt((abs(-5)+3!)^2+(log2(8)+sin(pi/2))^2)#8.54400374531753"
+            "sqrt((abs(-5)+3!)^2+(log2(8)+sin(pi/2))^2)#11.7046999107"
     }, delimiter = '#')
     void evaluationResultLongTest(String calculationString, String expectedResult) {
         BigNumber actualResult = calculatorEngineRad.evaluate(calculationString);
@@ -121,9 +121,9 @@ public class CalculatorEngineTest {
             "z^2#49",
             "a+b#9",
             "a^a#256",
-            "sum(1;3;k)+x#12",
-            "prod(1;3;k)+y#21",
-            "abs(-x)+sqrt(z)#12"
+            "sum(1;3;k)+x#11",
+            "prod(1;3;k)+y#11",
+            "abs(-x)+sqrt(z)#7.645751311"
     }, delimiter = '#')
     void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
         Map<String, BigNumber> variables =
@@ -135,7 +135,7 @@ public class CalculatorEngineTest {
                 );
 
         BigNumber actualResult = calculatorEngineRad.evaluate(calculationString, variables);
-        assertEquals(expectedResult, actualResult.toString());
+        assertEquals(expectedResult, actualResult.roundAfterDecimals(9).toString());
     }
 
     @ParameterizedTest
