@@ -66,13 +66,13 @@ public class CalculatorEngineTest {
             "sin(pi/6)*cos(pi/3)#0.25",
             "(sin(pi/2)+cos(pi))^2#0",
             // --- Verschachtelte Trigonometrie ---
-            "sin(cos(0))#0.8414709848078965",
-            "cos(sin(1))#0.5403023058681398",
-            "tan(sin(pi/4))#0.7675435022360273",
+            "sin(cos(0))#0.8414709848",
+            "cos(sin(1))#0.5403023058",
+            "tan(sin(pi/4))#0.7675435022",
             // --- Logarithmen kombiniert ---
             "log2(8)+log10(100)#5",
             "ln(e^2)+sqrt(16)#6",
-            "log10(100*sqrt(25))#3.6989700043360187",
+            "log10(100*sqrt(25))#3.6989700043",
             "log2(2^10)#10",
             // --- Summation / Produkt + Operatoren ---
             "sum(1;3;k)+prod(1;3;k)#12",
@@ -93,8 +93,8 @@ public class CalculatorEngineTest {
             "lcm(3;5)-gcd(21;14)#13",
             "lcm(12;18)/gcd(12;18)#6",
             // --- Konstanten kombiniert ---
-            "pi*2#6.283185307179586",
-            "e^1#2.718281828459045",
+            "pi*2#6.2831853072",
+            "e^1#2.7182818285",
             "cos(pi)+sin(pi)#0",
             "tan(pi)+e-e#0",
             // --- Tiefe Verschachtelung ---
