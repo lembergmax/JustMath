@@ -74,6 +74,31 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 |                                  | `B(x, y)`, `beta(x, y)`  | Beta                               |
 |                                  | `\|x\|`, `abs(x)`        | Absolute value                     |
 
+## 🔤 Variables
+
+JustMath allows you to **define and substitute variables** directly in expressions.  
+Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
+
+- Variables can be reused across nested evaluations.
+- An **exception** is thrown if an undefined variable is encountered.
+
+### ✅ Example: Using Variables
+
+```java
+CalculatorEngine calculator = new CalculatorEngine();
+
+// Define variables
+Map<String, BigNumber> variables = new HashMap<>();
+variables.put("a", new BigNumber("5"));
+variables.put("b", new BigNumber("3"));
+
+// Evaluate expression with variables
+BigNumber result = calculator.evaluate("2*a + b^2", variables);
+
+System.out.println(result);
+// 19
+```
+
 ## 📚 Static Utility Methods
 
 JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
