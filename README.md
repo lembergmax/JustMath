@@ -202,16 +202,22 @@ System.out.println(result);
 // 61
 ```
 
-## ⚙️ Maven (Coming soon)
+## ⚙️ Maven (Coming Soon)
 
-```xml
+Cannot wait? Just download the latest jar:
 
-<dependency>
-    <groupId>io.github.lembergmax</groupId>
-    <artifactId>justmath</artifactId>
-    <version>...</version>
-</dependency>
-```
+<table style="width:100%">
+  <tr>
+    <th>Version</th>
+    <th>Download</th>
+    <th>Release Type</th>
+  </tr>
+  <tr>
+    <td>v1.0.0</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">📥 JustMath v1.0.0</a></td>
+    <td>Stable</td>
+  </tr>
+</table>
 
 ## 📜 License
 
