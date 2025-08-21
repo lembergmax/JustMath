@@ -123,7 +123,7 @@ public class CalculatorEngineTest {
             "a^a#256",
             "sum(1;3;k)+x#11",
             "prod(1;3;k)+y#11",
-            "abs(-x)+sqrt(z)#7.645751311" // TODO
+            "abs(x)+sqrt(z)#7.645751311"
     }, delimiter = '#')
     void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
         Map<String, BigNumber> variables =
