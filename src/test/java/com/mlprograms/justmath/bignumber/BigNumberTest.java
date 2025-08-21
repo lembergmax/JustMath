@@ -1066,13 +1066,13 @@ public class BigNumberTest {
         @Test
         void formatToLocaleTest() {
             BigNumber number = new BigNumber("1234.56", Locale.US);
-            assertEquals("1234,56", number.formatToLocale(Locale.GERMANY).toString(Locale.GERMANY));
+            assertEquals("1.234,56", number.toPrettyString(Locale.GERMANY));
         }
 
         @Test
         void formatWithGroupingSeparatorsTest() {
             BigNumber number = new BigNumber("1234567.89", Locale.US);
-            assertEquals("1,234,567.89", number.formatWithGroupingSeparators().toString());
+            assertEquals("1,234,567.89", number.toPrettyString());
         }
 
         @Test
@@ -1234,14 +1234,14 @@ public class BigNumberTest {
         void toStringVariantsTest() {
             BigNumber number = new BigNumber("1234.56", Locale.US);
             assertEquals("1234.56", number.toString());
-            assertEquals("1,234.56", number.toString(Locale.US, true));
-            assertEquals("1234,56", number.toString(Locale.GERMANY));
+            assertEquals("1,234.56", number.toPrettyString(Locale.US));
+            assertEquals("1.234,56", number.toPrettyString(Locale.GERMANY));
         }
 
         @Test
         void toStringWithGroupingTest() {
             BigNumber number = new BigNumber("1234.56", Locale.US);
-            assertEquals("1,234.56", number.toStringWithGrouping());
+            assertEquals("1,234.56", number.toPrettyString());
         }
 
         @Test

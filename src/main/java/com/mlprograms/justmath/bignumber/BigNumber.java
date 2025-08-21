@@ -2499,58 +2499,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Parses this BigNumber into a new targetLocale and mutates the current object.
-     *
-     * @param targetLocale the new targetLocale to apply
-     */
-    public BigNumber formatToLocale(@NonNull final Locale targetLocale) {
-        return bigNumberParser.format(this, targetLocale);
-    }
-
-    /**
-     * Returns a new BigNumber with grouping separators applied to the integer part,
-     * according to the current locale's grouping separator.
-     * <br><br>
-     * If you want to format the number in a specific locale, use {@link #formatToLocale(Locale)} first and then this
-     * method.
-     *
-     * @return a BigNumber with grouped valueBeforeDecimal
-     */
-    public BigNumber formatWithGroupingSeparators() {
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        char groupingSeparator = symbols.getGroupingSeparator();
-
-        String groupedBeforeDecimal = bigNumberParser
-                .getGroupedBeforeDecimal(valueBeforeDecimal, groupingSeparator)
-                .toString();
-
-        BigNumber copy = new BigNumber(this);
-        copy.valueBeforeDecimal = groupedBeforeDecimal;
-        return copy;
-    }
-
-    /**
-     * Converts this BigNumber to a BigDecimal using normalized US-format string.
-     * <p>
-     * Always uses '.' as decimal separator and removes grouping separators.
-     *
-     * @return a BigDecimal representation of this BigNumber
-     */
-    public BigDecimal toBigDecimal() {
-        StringBuilder sb = new StringBuilder();
-        if (isNegative) {
-            sb.append('-');
-        }
-
-        sb.append(valueBeforeDecimal);
-
-        if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
-            sb.append('.').append(valueAfterDecimal);
-        }
-        return new BigDecimal(sb.toString(), mathContext);
-    }
-
-    /**
      * Converts this BigNumber from radians to degrees.
      *
      * @return a new BigNumber representing the value in degrees
@@ -2891,9 +2839,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Returns a string representation of this {@code BigNumber} using the current locale.
+     * Returns the plain string representation of this object.
+     * <p>
+     * The output depends on the internal formatting rules defined by
+     * {@link #formatToString(Locale, boolean)}. No digit grouping is applied.
      *
-     * @return the string representation of this number
+     * @return a plain string representation of this object
      */
     @Override
     public String toString() {
@@ -2901,46 +2852,25 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Returns the string representation of this number in the specified locale,
-     * using the locale's decimal and grouping separators.
+     * Returns a human-readable string representation of this object with digit grouping enabled.
+     * <p>
+     * The locale used for formatting is the default {@code locale} of this instance.
      *
-     * @param locale the locale to use for formatting
-     * @return string representation with grouping
+     * @return a pretty-printed string representation of this object using its default locale
      */
-    public String toString(@NonNull final Locale locale) {
-        return formatToString(locale, false);
+    public String toPrettyString() {
+        return formatToString(locale, true);
     }
 
     /**
-     * Returns the string representation of this number in the specified locale,
-     * optionally using grouping separators.
+     * Returns a human-readable string representation of this object with digit grouping enabled.
+     * <p>
+     * The specified {@link Locale} is used for number formatting, overriding the instance’s default.
      *
-     * @param locale      the locale to use for formatting
-     * @param useGrouping whether grouping separators should be used
-     * @return string representation in the given locale
+     * @param locale the locale to apply for number formatting
+     * @return a pretty-printed string representation of this object using the given locale
      */
-    public String toString(@NonNull final Locale locale, final boolean useGrouping) {
-        return formatToString(locale, useGrouping);
-    }
-
-    /**
-     * Returns the string representation of this number using the current locale,
-     * optionally using grouping separators.
-     *
-     * @param useGrouping whether grouping separators should be used
-     * @return string representation in the current locale
-     */
-    public String toString(final boolean useGrouping) {
-        return formatToString(locale, useGrouping);
-    }
-
-    /**
-     * Returns the string representation of this number using its locale,
-     * optionally with grouping separators.
-     *
-     * @return string representation in the object's locale
-     */
-    public String toStringWithGrouping() {
+    public String toPrettyString(@NonNull final Locale locale) {
         return formatToString(locale, true);
     }
 
@@ -2971,6 +2901,27 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         return isNegative ? "-" + localized : localized;
     }
 
+
+    /**
+     * Converts this BigNumber to a BigDecimal using normalized US-format string.
+     * <p>
+     * Always uses '.' as decimal separator and removes grouping separators.
+     *
+     * @return a BigDecimal representation of this BigNumber
+     */
+    public BigDecimal toBigDecimal() {
+        StringBuilder sb = new StringBuilder();
+        if (isNegative) {
+            sb.append('-');
+        }
+
+        sb.append(valueBeforeDecimal);
+
+        if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
+            sb.append('.').append(valueAfterDecimal);
+        }
+        return new BigDecimal(sb.toString(), mathContext);
+    }
 
     /**
      * Compares this {@code BigNumber} with the specified {@code BigNumber} for order.
