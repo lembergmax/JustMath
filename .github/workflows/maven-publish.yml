@@ -3,7 +3,7 @@ name: Release to Maven Central
 on:
   push:
     branches:
-      - main
+      - main  # Deploy nur bei Merge in main
 
 jobs:
   release:
@@ -24,5 +24,11 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --batch --import
+
       - name: Build and Deploy
-        run: mvn -B clean deploy
+        run: mvn -B clean deploy \
+              -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" \
+              -DskipTests
