@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal;
+package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -46,7 +47,7 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
  */
 @NoArgsConstructor
 @AllArgsConstructor
-public class Evaluator {
+class Evaluator {
 
 
 	/**
