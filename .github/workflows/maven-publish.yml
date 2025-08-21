@@ -3,16 +3,18 @@ name: Release to Maven Central
 on:
   push:
     branches:
-      - main
+      - main  # Deployment nur bei Merge in main
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout Source
       - name: Checkout source
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup JDK + OSSRH + GPG
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -24,5 +26,6 @@ jobs:
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
 
+      # 4️⃣ Build & Deploy
       - name: Build and Deploy
         run: mvn clean deploy -B -U
