@@ -14,8 +14,8 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup JDK + OSSRH + GPG
-      - name: Set up JDK
+      # 2️⃣ Setup JDK
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -23,16 +23,15 @@ jobs:
           server-id: ossrh
           server-username: ${{ secrets.OSSRH_USERNAME }}
           server-password: ${{ secrets.OSSRH_PASSWORD }}
-          gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
-          gpg-passphrase: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
 
-      # 3️⃣ Import GPG key in Runner
+      # 3️⃣ Import GPG key
       - name: Import GPG key
         run: |
           echo "${{ secrets.OSSRH_GPG_SECRET_KEY }}" | base64 --decode | gpg --batch --import
           gpg --list-secret-keys
 
-      # 4️⃣ Build & Deploy
+      # 4️⃣ Build and deploy to Maven Central
       - name: Build and Deploy
         run: mvn clean deploy -B -U \
-              -Dgpg.passphrase="${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}"
+              -Dgpg.passphrase="${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" \
+              -DskipTests=false
