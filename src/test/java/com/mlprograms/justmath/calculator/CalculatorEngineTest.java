@@ -123,7 +123,7 @@ public class CalculatorEngineTest {
             "a^a#256",
             "sum(1;3;k)+x#11",
             "prod(1;3;k)+y#11",
-            "abs(-x)+sqrt(z)#7.645751311"
+            "abs(-x)+sqrt(z)#7.645751311" // TODO
     }, delimiter = '#')
     void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
         Map<String, BigNumber> variables =
@@ -154,23 +154,6 @@ public class CalculatorEngineTest {
     void evaluationResultDegModeTest(String calculationString, String expectedResult) {
         BigNumber actualResult = calculatorEngineDeg.evaluate(calculationString);
         assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
-            "sin(pi/2)#RAD",
-            "sin(90)#DEG",
-            "cos(pi)#RAD",
-            "cos(180)#DEG"
-    }, delimiter = '#')
-    void evaluationCompareRadDegTest(String calculationString, String mode) {
-        BigNumber result;
-        if ("RAD".equals(mode)) {
-            result = calculatorEngineRad.evaluate(calculationString);
-        } else {
-            result = calculatorEngineDeg.evaluate(calculationString);
-        }
-        System.out.println("Mode=" + mode + ", expr=" + calculationString + ", result=" + result);
     }
 
 }
