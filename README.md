@@ -213,6 +213,11 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
+    <td>v1.0.1</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.0.1.jar">📥 JustMath v1.0.1</a></td>
+    <td>Stable</td>
+  </tr>
+  <tr>
     <td>v1.0.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">📥 JustMath v1.0.0</a></td>
     <td>Stable</td>
