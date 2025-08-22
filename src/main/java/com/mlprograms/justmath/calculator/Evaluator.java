@@ -26,7 +26,6 @@ package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.bignumber.internal.BigNumberWrapper;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
@@ -111,8 +110,6 @@ class Evaluator {
 
 		if (result instanceof BigNumber bigNumber) {
 			finalResult = bigNumber;
-		} else if (result instanceof BigNumberCoordinate coordinate) {
-			finalResult = new BigNumberWrapper(coordinate.toString());
 		} else {
 			throw new IllegalStateException("Unsupported result type: " + result);
 		}
