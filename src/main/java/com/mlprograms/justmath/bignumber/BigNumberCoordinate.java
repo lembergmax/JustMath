@@ -247,18 +247,18 @@ public class BigNumberCoordinate extends BigNumber {
      *     <li>{@code CARTESIAN}: {@code "x=<value>; y=<value>"}</li>
      *     <li>{@code POLAR}: {@code "r=<value>; θ=<value>"}</li>
      * </ul>
-     * The {@code useGrouping} flag determines whether digit grouping is applied when formatting
+     * The {@code prettyString} flag determines whether digit grouping is applied when formatting
      * the coordinate values.
      *
-     * @param locale      the locale used for number formatting
-     * @param useGrouping {@code true} to enable digit grouping, {@code false} for plain output
+     * @param locale       the locale used for number formatting
+     * @param prettyString {@code true} to enable digit grouping, {@code false} for plain output
      * @return the formatted coordinate string
      */
-    private String toString(@NonNull final Locale locale, boolean useGrouping) {
+    private String toString(@NonNull final Locale locale, boolean prettyString) {
         String xCoordinate;
         String yCoordinate;
 
-        if (useGrouping) {
+        if (prettyString) {
             xCoordinate = x.toPrettyString(locale);
             yCoordinate = y.toPrettyString(locale);
         } else {
@@ -269,7 +269,6 @@ public class BigNumberCoordinate extends BigNumber {
         return switch (type) {
             case CARTESIAN -> "x=" + xCoordinate + "; y=" + yCoordinate;
             case POLAR -> "r=" + xCoordinate + "; θ=" + yCoordinate;
-            default -> xCoordinate + "; " + yCoordinate; // not needed yet
         };
     }
 
