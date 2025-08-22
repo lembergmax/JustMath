@@ -2664,8 +2664,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
-        valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
         valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
+        valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
         return this;
     }
 
@@ -2888,6 +2888,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     private String formatToString(@NonNull final Locale locale, final boolean useGrouping) {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
+        trim();
 
         String newValueAfterDecimal = valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0") ? "" : valueAfterDecimal;
 
