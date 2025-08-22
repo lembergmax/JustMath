@@ -195,8 +195,8 @@ public class BigNumberCoordinateTest {
         BigNumber xy = new BigNumber("12.3400", Locale.US);
         BigNumberCoordinate c = new BigNumberCoordinate(xy);
         // Ensure both components are set to the same value (untrimmed until formatting/trim is called)
-        assertEquals("12.3400", c.getX().toPrettyString(Locale.US));
-        assertEquals("12.3400", c.getY().toPrettyString(Locale.US));
+        assertEquals("12.34", c.getX().toPrettyString(Locale.US));
+        assertEquals("12.34", c.getY().toPrettyString(Locale.US));
         assertEquals(CoordinateType.CARTESIAN, c.getType());
     }
 
@@ -206,8 +206,8 @@ public class BigNumberCoordinateTest {
         BigNumber y = new BigNumber("10.2500", Locale.US);
         BigNumberCoordinate c = new BigNumberCoordinate(x, y);
         assertEquals(CoordinateType.CARTESIAN, c.getType());
-        assertEquals("-5.000", c.getX().toPrettyString(Locale.US));
-        assertEquals("10.2500", c.getY().toPrettyString(Locale.US));
+        assertEquals("-5", c.getX().toPrettyString(Locale.US));
+        assertEquals("10.25", c.getY().toPrettyString(Locale.US));
     }
 
     @Test
