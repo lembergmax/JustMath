@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -159,6 +160,10 @@ public class CalculatorEngine {
      * @return the result as a BigNumber, trimmed of trailing zeros
      */
     public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+        if (expression.isBlank()) {
+            return BigNumbers.ZERO;
+        }
+
         // Store the current variables in the thread-local storage
         Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(variables);

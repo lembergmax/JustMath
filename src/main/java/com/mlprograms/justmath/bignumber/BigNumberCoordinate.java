@@ -60,7 +60,7 @@ import java.util.Locale;
  * </p>
  */
 @Getter
-public class BigNumberCoordinate {
+public class BigNumberCoordinate extends BigNumber {
 
     @NonNull
     private final CoordinateType type;
@@ -144,6 +144,7 @@ public class BigNumberCoordinate {
      * @param locale the locale to use for number formatting
      */
     public BigNumberCoordinate(BigNumber x, BigNumber y, CoordinateType type, Locale locale) {
+        super(new BigNumber(x, locale));
         this.type = type;
         this.locale = locale;
         this.x = new BigNumber(x, locale);
@@ -256,12 +257,13 @@ public class BigNumberCoordinate {
     private String toString(@NonNull final Locale locale, boolean useGrouping) {
         String xCoordinate;
         String yCoordinate;
+
         if (useGrouping) {
-            xCoordinate = x.trim().toPrettyString(locale);
-            yCoordinate = y.trim().toPrettyString(locale);
+            xCoordinate = x.toPrettyString(locale);
+            yCoordinate = y.toPrettyString(locale);
         } else {
-            xCoordinate = x.trim().toString();
-            yCoordinate = y.trim().toString();
+            xCoordinate = x.toString();
+            yCoordinate = y.toString();
         }
 
         return switch (type) {
