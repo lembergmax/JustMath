@@ -256,12 +256,13 @@ public class BigNumberCoordinate {
     private String toString(@NonNull final Locale locale, boolean useGrouping) {
         String xCoordinate;
         String yCoordinate;
+
         if (useGrouping) {
-            xCoordinate = x.trim().toPrettyString(locale);
-            yCoordinate = y.trim().toPrettyString(locale);
+            xCoordinate = x.toPrettyString(locale);
+            yCoordinate = y.toPrettyString(locale);
         } else {
-            xCoordinate = x.trim().toString();
-            yCoordinate = y.trim().toString();
+            xCoordinate = x.toString();
+            yCoordinate = y.toString();
         }
 
         return switch (type) {
