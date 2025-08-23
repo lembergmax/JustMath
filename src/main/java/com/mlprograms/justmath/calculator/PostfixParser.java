@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -39,7 +40,7 @@ import java.util.List;
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-class Parser {
+class PostfixParser {
 
     /**
      * Checks if the given expression element is a right-associative operator.
@@ -100,7 +101,7 @@ class Parser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new IllegalArgumentException("Mismatched parentheses");
+                        throw new SyntaxErrorException("Mismatched parentheses");
                     }
                     operatorStack.pop(); // Remove '('
 
@@ -114,7 +115,7 @@ class Parser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new IllegalArgumentException("Misplaced semicolon or mismatched parentheses");
+                        throw new SyntaxErrorException("Misplaced semicolon or mismatched parentheses");
                     }
                 }
             }
@@ -123,7 +124,7 @@ class Parser {
         while (!operatorStack.isEmpty()) {
             Token top = operatorStack.pop();
             if (top.getType() == Token.Type.LEFT_PAREN || top.getType() == Token.Type.RIGHT_PAREN) {
-                throw new IllegalArgumentException("Mismatched parentheses");
+                throw new SyntaxErrorException("Mismatched parentheses");
             }
             output.add(top);
         }
@@ -161,7 +162,7 @@ class Parser {
      */
     private int getPrecedence(Token token) {
         return token.asArithmeticOperator()
-                .map(Parser::getOperatorPrecedence)
+                .map(PostfixParser::getOperatorPrecedence)
                 .orElse(0);
     }
 
@@ -173,7 +174,7 @@ class Parser {
      */
     private boolean isRightAssociative(Token token) {
         return token.asArithmeticOperator()
-                .map(Parser::isRightAssociativeOperator)
+                .map(PostfixParser::isRightAssociativeOperator)
                 .orElse(false);
     }
 
