@@ -31,6 +31,95 @@ The `BigNumber` class supports a wide range of mathematical operations:
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
 
+
+
+
+
+Alles klar 👍
+Ich baue dir den Abschnitt **`BigNumberMatrix`** direkt in deine bestehende `README.md` ein.
+Deine Struktur ist aktuell so:
+
+* Intro
+* ⚡ BigNumber – Arbitrary Precision
+* 🧮 CalculatorEngine – Expression Evaluation
+
+Dazwischen kommt jetzt unser neuer **🧩 BigNumberMatrix – High-Precision Matrices** Abschnitt.
+
+Hier die fertige Fassung deiner `README.md` mit Matrix-Teil integriert:
+
+---
+
+````markdown
+# JustMath
+
+A high-precision mathematics library built in Java.  
+It provides arbitrary-precision numbers, matrix operations, and an expression evaluator.
+
+---
+
+## ⚡ BigNumber – Arbitrary Precision
+
+The `BigNumber` class wraps `BigDecimal` to provide **arbitrary precision arithmetic**.  
+It supports locale-aware parsing, mathematical constants, and advanced functions.
+
+### Example
+
+```java
+BigNumber a = new BigNumber("3.141592653589793", Locale.US);
+BigNumber b = new BigNumber("2.718281828459045", Locale.US);
+
+BigNumber result = a.add(b);
+System.out.println(result); 
+// 5.859874482048838
+````
+
+## 🧩 BigNumberMatrix – High-Precision Matrices
+
+The `BigNumberMatrix` class extends the power of `BigNumber` into **linear algebra**.
+It supports creation from **dimensions, strings, or nested lists** and provides a wide range of matrix operations with arbitrary precision.
+
+### ✅ Supported Matrix Operations
+
+| Category             | Methods                                                                 |
+| -------------------- | ----------------------------------------------------------------------- |
+| **Basic Arithmetic** | `add`, `subtract`, `multiply`, `divide` (element-wise)                  |
+| **Matrix Algebra**   | `multiply` (matrix product), `power`, `inverse`, `determinant`, `trace` |
+| **Transformations**  | `transpose`, `scalarMultiply`, `negate`                                 |
+| **Properties**       | `isSquare`, `isSymmetric`, `isZeroMatrix`, `isIdentityMatrix`           |
+| **Aggregates**       | `sumElements`, `max`, `flatten`                                         |
+| **Utilities**        | `equalsMatrix`, `clone`, `forEachElement`, `forEachIndex`               |
+
+All operations are **locale-aware** and preserve the formatting/parsing rules of `BigNumber`.
+
+### 🧮 Example: Creating and Using Matrices
+
+```java
+// Create a 2x2 matrix from a string
+BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
+
+// Compute the determinant
+BigNumber det = a.determinant();
+System.out.println(det);
+// -2
+
+// Compute the inverse
+BigNumberMatrix inv = a.inverse();
+System.out.println(inv.toPlainDataString());
+// [[-2.0, 1.0], [1.5, -0.5]]
+
+// Multiply matrices
+BigNumberMatrix b = new BigNumberMatrix("5,6;7,8", Locale.US);
+BigNumberMatrix c = a.multiply(b);
+System.out.println(c.toPlainDataString());
+// [[19, 22], [43, 50]]
+
+// Check identity matrix
+BigNumberMatrix i = new BigNumberMatrix("1,0;0,1", Locale.US);
+System.out.println(i.isIdentityMatrix());
+// true
+```
+
+
 ## 🔧 CalculatorEngine – Evaluate Math Strings
 
 The built-in **CalculatorEngine** directly evaluates mathematical strings and supports all operators and functions listed in the following table:
