@@ -33,7 +33,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CalculatorEngineTest {
 
@@ -154,6 +154,71 @@ public class CalculatorEngineTest {
     void evaluationResultDegModeTest(String calculationString, String expectedResult) {
         BigNumber actualResult = calculatorEngineDeg.evaluate(calculationString);
         assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "10^20#100000000000000000000",
+            "1/3#0.3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333",
+            "2/3#0.6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667",
+            "1/7#0.1428571428571428571428571428571428571428571428571428571428571428571428571428571428571428571428571429",
+            "1/9#0.1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+    }, delimiter = '#')
+    void evaluateToStringTest(String expression, String expectedResult) {
+        String actualResult = calculatorEngineRad.evaluateToString(expression);
+        assertEquals(expectedResult, actualResult);
+
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "(2+4",
+            "|2",
+            "5/0",
+            "log(-10)",
+            "sqrt(-4)",
+            "unknownFunc(5)",
+            "5++2",
+            "sum(5;2;3)",
+            "gcd(5)",
+    })
+    void evaluateToStringExceptionTest(String expression) {
+        String actualResult = calculatorEngineRad.evaluateToString(expression);
+        assertFalse(actualResult.toLowerCase().contains("exception"));
+
+        actualResult = calculatorEngineRad.evaluateToPrettyString(expression);
+        assertFalse(actualResult.toLowerCase().contains("exception"));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "10^6#1,000,000",
+            "10^9#1,000,000,000",
+            "10^12#1,000,000,000,000",
+            "1/3#0.3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333",
+            "2/3#0.6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667",
+            "22/7#3.142857142857142857142857142857142857142857142857142857142857142857142857142857142857142857142857143",
+            "sqrt(1000000)#1,000",
+            "sqrt(2)#1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641573",
+            "2^10#1,024",
+            "5^8#390,625",
+            "sum(1;100;k)#5,050",
+            "prod(1;5;k)#120",
+            "10!#3,628,800",
+            "15!#1,307,674,368,000",
+            "x*1000#5,000",
+            "y^3#125",
+            "a+b#9"
+    }, delimiter = '#')
+    void evaluateToPrettyStringTest(String expression, String expectedResult) {
+        Map<String, BigNumber> variables =
+                Map.of("x", new BigNumber("5"),
+                        "y", new BigNumber("5"),
+                        "a", new BigNumber("4"),
+                        "b", new BigNumber("5"));
+
+        String actualResult = calculatorEngineRad.evaluateToPrettyString(expression, variables);
+        assertEquals(expectedResult, actualResult);
     }
 
 }
