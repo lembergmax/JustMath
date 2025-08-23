@@ -31,48 +31,6 @@ The `BigNumber` class supports a wide range of mathematical operations:
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
 
-
-
-
-
-Alles klar 👍
-Ich baue dir den Abschnitt **`BigNumberMatrix`** direkt in deine bestehende `README.md` ein.
-Deine Struktur ist aktuell so:
-
-* Intro
-* ⚡ BigNumber – Arbitrary Precision
-* 🧮 CalculatorEngine – Expression Evaluation
-
-Dazwischen kommt jetzt unser neuer **🧩 BigNumberMatrix – High-Precision Matrices** Abschnitt.
-
-Hier die fertige Fassung deiner `README.md` mit Matrix-Teil integriert:
-
----
-
-````markdown
-# JustMath
-
-A high-precision mathematics library built in Java.  
-It provides arbitrary-precision numbers, matrix operations, and an expression evaluator.
-
----
-
-## ⚡ BigNumber – Arbitrary Precision
-
-The `BigNumber` class wraps `BigDecimal` to provide **arbitrary precision arithmetic**.  
-It supports locale-aware parsing, mathematical constants, and advanced functions.
-
-### Example
-
-```java
-BigNumber a = new BigNumber("3.141592653589793", Locale.US);
-BigNumber b = new BigNumber("2.718281828459045", Locale.US);
-
-BigNumber result = a.add(b);
-System.out.println(result); 
-// 5.859874482048838
-````
-
 ## 🧩 BigNumberMatrix – High-Precision Matrices
 
 The `BigNumberMatrix` class extends the power of `BigNumber` into **linear algebra**.
