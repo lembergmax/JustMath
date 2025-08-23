@@ -27,6 +27,8 @@ package com.mlprograms.justmath.calculator;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.exceptions.ProcessingErrorException;
+import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -88,16 +90,16 @@ class Evaluator {
                 case STRING -> stack.push(token.getValue());
                 case OPERATOR, FUNCTION, CONSTANT -> {
                     ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
-                            .orElseThrow(() -> new IllegalArgumentException("Unknown operator or function: " + token.getValue()));
+                            .orElseThrow(() -> new SyntaxErrorException("Unknown operator or function: " + token.getValue()));
 
                     expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
                 }
-                default -> throw new IllegalArgumentException("Unexpected token: " + token);
+                default -> throw new ProcessingErrorException("Unexpected token: " + token);
             }
         }
 
         if (stack.size() != 1) {
-            throw new IllegalStateException("Invalid expression: expected a single result, but found " + stack.size());
+            throw new ProcessingErrorException("Invalid expression: expected a single result, but found " + stack.size());
         }
 
         Object result = stack.pop();
@@ -106,7 +108,7 @@ class Evaluator {
         if (result instanceof BigNumber bigNumber) {
             finalResult = bigNumber;
         } else {
-            throw new IllegalStateException("Unsupported result type: " + result);
+            throw new ProcessingErrorException("Unsupported result type: " + result);
         }
 
         return finalResult;

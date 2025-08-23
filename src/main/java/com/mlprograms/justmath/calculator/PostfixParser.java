@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
@@ -100,7 +101,7 @@ class PostfixParser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new IllegalArgumentException("Mismatched parentheses");
+                        throw new SyntaxErrorException("Mismatched parentheses");
                     }
                     operatorStack.pop(); // Remove '('
 
@@ -114,7 +115,7 @@ class PostfixParser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new IllegalArgumentException("Misplaced semicolon or mismatched parentheses");
+                        throw new SyntaxErrorException("Misplaced semicolon or mismatched parentheses");
                     }
                 }
             }
@@ -123,7 +124,7 @@ class PostfixParser {
         while (!operatorStack.isEmpty()) {
             Token top = operatorStack.pop();
             if (top.getType() == Token.Type.LEFT_PAREN || top.getType() == Token.Type.RIGHT_PAREN) {
-                throw new IllegalArgumentException("Mismatched parentheses");
+                throw new SyntaxErrorException("Mismatched parentheses");
             }
             output.add(top);
         }

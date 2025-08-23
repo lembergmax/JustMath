@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.expression.elements.*;
@@ -153,7 +154,7 @@ class Tokenizer {
                 Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
                 if (matchedFunction.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid function at position " + index);
+                    throw new SyntaxErrorException("Invalid function at position " + index);
                 }
 
                 ExpressionElement expressionElement = matchedFunction.get();
@@ -162,14 +163,14 @@ class Tokenizer {
                 int functionStart = index + symbol.length();
                 int closingParenthesis = findClosingParenthesis(expression, functionStart);
                 if (closingParenthesis < 0) {
-                    throw new IllegalArgumentException("Unmatched '(' in function: " + symbol);
+                    throw new SyntaxErrorException("Unmatched '(' in function: " + symbol);
                 }
 
                 String inside = expression.substring(functionStart + 1, closingParenthesis);
 
                 String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
                 if (parts.length != 3) {
-                    throw new IllegalArgumentException("Function '" + symbol + "' must have three arguments");
+                    throw new SyntaxErrorException("Function '" + symbol + "' must have three arguments");
                 }
 
                 tokens.add(new Token(Token.Type.NUMBER, parts[0]));
@@ -183,7 +184,7 @@ class Tokenizer {
                 if (lengthOfMatch > 0) {
                     index += lengthOfMatch;
                 } else {
-                    throw new IllegalArgumentException("Invalid character at position " + index + ": " + c);
+                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + c);
                 }
             }
         }
@@ -640,7 +641,7 @@ class Tokenizer {
                                     || previous.getType() == Token.Type.RIGHT_PAREN
                                     || previous.getType() == Token.Type.VARIABLE
                                     || previous.getType() == Token.Type.CONSTANT)) {
-                        throw new IllegalArgumentException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
+                        throw new SyntaxErrorException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
                     }
 
                     tokens.add(new Token(Token.Type.OPERATOR, ExpressionElements.OP_FACTORIAL));
