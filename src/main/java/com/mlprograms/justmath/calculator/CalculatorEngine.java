@@ -56,7 +56,6 @@ public class CalculatorEngine {
      * This allows nested evaluations to access variables from the outer context.
      */
     private static final ThreadLocal<Map<String, BigNumber>> currentVariables = ThreadLocal.withInitial(HashMap::new);
-
     /**
      * Tokenizer instance used to convert input expressions into tokens.
      */
@@ -70,6 +69,9 @@ public class CalculatorEngine {
      */
     private final PostfixParser postfixParser;
 
+    /**
+     * Constructs a CalculatorEngine with default division precision and default trigonometric mode (DEG).
+     */
     public CalculatorEngine() {
         this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
     }
