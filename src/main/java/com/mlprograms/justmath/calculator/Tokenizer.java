@@ -169,7 +169,7 @@ class Tokenizer {
 
                 String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
                 if (parts.length != 3) {
-                    throw new IllegalArgumentException("Three-argument function '" + symbol + "' must have three arguments");
+                    throw new IllegalArgumentException("Function '" + symbol + "' must have three arguments");
                 }
 
                 tokens.add(new Token(Token.Type.NUMBER, parts[0]));
