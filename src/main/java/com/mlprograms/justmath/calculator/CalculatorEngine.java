@@ -189,29 +189,52 @@ public class CalculatorEngine {
     }
 
     /**
-     * Evaluates a mathematical expression and returns only the error message as a string if an exception occurs.
-     * If the evaluation is successful, returns the result as a string.
+     * Evaluates a mathematical expression and returns the result as a string.
      *
-     * @param expression input string expression (e.g. "3.5 + sqrt(2)")
-     * @return the result as a string, or the exception message if an error occurs
+     * @param expression the mathematical expression to evaluate
+     * @return the result as a string or an error message if an exception occurs
      */
     public String evaluateToString(@NonNull String expression) {
         return evaluateToString(expression, Map.of());
     }
 
     /**
-     * Evaluates a mathematical expression with optional variable substitution and returns only the error message as a string if an exception occurs.
-     * If the evaluation is successful, returns the result as a string.
+     * Evaluates a mathematical expression with variables and returns the result as a string.
      *
-     * @param expression the input string expression to evaluate
-     * @param variables  a map of variable names with their BigNumber values
-     * @return the result as a string, or the exception message if an error occurs
+     * @param expression the mathematical expression to evaluate
+     * @param variables  a map of variable names and their BigNumber values
+     * @return the result as a string or an error message if an exception occurs
      */
     public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
-        // TODO: test
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * Evaluates a mathematical expression and returns the result as a formatted string.
+     *
+     * @param expression the mathematical expression to evaluate
+     * @return the formatted result as a string or an error message if an exception occurs
+     */
+    public String evaluateToPrettyString(@NonNull String expression) {
+        return evaluateToPrettyString(expression, Map.of());
+    }
+
+    /**
+     * Evaluates a mathematical expression with variables and returns the result as a formatted string.
+     *
+     * @param expression the mathematical expression to evaluate
+     * @param variables  a map of variable names and their BigNumber values
+     * @return the formatted result as a string or an error message if an exception occurs
+     */
+    public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+        try {
+            BigNumber result = evaluate(expression, variables);
+            return result.toPrettyString();
         } catch (Exception e) {
             return e.getMessage();
         }
