@@ -373,6 +373,32 @@ class BigNumberMatrixTest {
     }
 
     @Test
+    void tst() {
+        // Create a 2x2 matrix from a string
+        BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
+
+        // Compute the determinant
+        BigNumber det = a.determinant();
+        System.out.println(det);
+        // -2
+
+        // Compute the inverse
+        BigNumberMatrix inv = a.inverse();
+        System.out.println(inv.toPlainDataString());
+        // [[-2.0, 1.0], [1.5, -0.5]]
+
+        // Multiply matrices
+        BigNumberMatrix b = new BigNumberMatrix("5,6;7,8", Locale.US);
+        BigNumberMatrix c = a.multiply(b);
+        System.out.println(c.toPlainDataString());
+        // [[19, 22], [43, 50]]
+
+        // Check identity matrix
+        BigNumberMatrix i = new BigNumberMatrix("1,0;0,1", Locale.US);
+        System.out.println(i.isIdentityMatrix());
+    }
+
+    @Test
     void testEqualsMatrix() {
         BigNumberMatrix m1 = new BigNumberMatrix("1,2;3,4", locale);
         BigNumberMatrix m2 = new BigNumberMatrix("1,2;3,4", locale);
