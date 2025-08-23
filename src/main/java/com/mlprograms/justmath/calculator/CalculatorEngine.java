@@ -37,6 +37,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceAbsSigns;
@@ -210,7 +211,7 @@ public class CalculatorEngine {
             BigNumber result = evaluate(expression, variables);
             return result.toString();
         } catch (Exception e) {
-            return e.getMessage();
+            return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
         }
     }
 
@@ -236,7 +237,7 @@ public class CalculatorEngine {
             BigNumber result = evaluate(expression, variables);
             return result.toPrettyString();
         } catch (Exception e) {
-            return e.getMessage();
+            return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
         }
     }
 
