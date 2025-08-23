@@ -188,4 +188,33 @@ public class CalculatorEngine {
         return evaluator.evaluate(postfix).trim();
     }
 
+    /**
+     * Evaluates a mathematical expression and returns only the error message as a string if an exception occurs.
+     * If the evaluation is successful, returns the result as a string.
+     *
+     * @param expression input string expression (e.g. "3.5 + sqrt(2)")
+     * @return the result as a string, or the exception message if an error occurs
+     */
+    public String evaluateToString(@NonNull String expression) {
+        return evaluateToString(expression, Map.of());
+    }
+
+    /**
+     * Evaluates a mathematical expression with optional variable substitution and returns only the error message as a string if an exception occurs.
+     * If the evaluation is successful, returns the result as a string.
+     *
+     * @param expression the input string expression to evaluate
+     * @param variables  a map of variable names with their BigNumber values
+     * @return the result as a string, or the exception message if an error occurs
+     */
+    public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+        // TODO: test
+        try {
+            BigNumber result = evaluate(expression, variables);
+            return result.toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
 }
