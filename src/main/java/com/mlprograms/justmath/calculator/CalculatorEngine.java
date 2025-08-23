@@ -66,7 +66,7 @@ public class CalculatorEngine {
     /**
      * Parser instance used to convert infix token lists to postfix notation.
      */
-    private final Parser parser;
+    private final PostfixParser postfixParser;
 
     public CalculatorEngine() {
         this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
@@ -119,7 +119,7 @@ public class CalculatorEngine {
     public CalculatorEngine(@NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
         this.tokenizer = new Tokenizer();
         this.evaluator = new Evaluator(mathContext, trigonometricMode);
-        this.parser = new Parser();
+        this.postfixParser = new PostfixParser();
     }
 
     /**
@@ -178,7 +178,7 @@ public class CalculatorEngine {
         replaceVariables(tokens, combinedVariables);
 
         // Parse to postfix notation using shunting yard algorithm
-        List<Token> postfix = parser.toPostfix(tokens);
+        List<Token> postfix = postfixParser.toPostfix(tokens);
 
         // Evaluate the postfix expression to a BigDecimal result
         return evaluator.evaluate(postfix).trim();

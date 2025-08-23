@@ -39,7 +39,7 @@ import java.util.List;
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-class Parser {
+class PostfixParser {
 
     /**
      * Checks if the given expression element is a right-associative operator.
@@ -161,7 +161,7 @@ class Parser {
      */
     private int getPrecedence(Token token) {
         return token.asArithmeticOperator()
-                .map(Parser::getOperatorPrecedence)
+                .map(PostfixParser::getOperatorPrecedence)
                 .orElse(0);
     }
 
@@ -173,7 +173,7 @@ class Parser {
      */
     private boolean isRightAssociative(Token token) {
         return token.asArithmeticOperator()
-                .map(Parser::isRightAssociativeOperator)
+                .map(PostfixParser::isRightAssociativeOperator)
                 .orElse(false);
     }
 
