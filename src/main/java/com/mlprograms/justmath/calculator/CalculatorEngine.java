@@ -224,7 +224,7 @@ public class CalculatorEngine {
 
         int occurrences = countOccurrences(expression, absValueSign);
         if (occurrences % 2 != 0) {
-            throw new IllegalArgumentException("The expression must contain an even number (>1) of abs sign functions");
+            throw new IllegalArgumentException("Expression must contain an even number (greater than 1) of abs sign functions ('|')");
         }
 
         StringBuilder result = new StringBuilder();
