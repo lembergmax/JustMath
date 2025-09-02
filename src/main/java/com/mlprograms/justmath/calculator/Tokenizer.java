@@ -127,20 +127,20 @@ class Tokenizer {
         int index = 0;
 
         while (index < expression.length()) {
-            char c = expression.charAt(index);
+            char charracter = expression.charAt(index);
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
-            } else if (isLeftParenthesis(c)) {
-                tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(c)));
+            } else if (isLeftParenthesis(charracter)) {
+                tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(charracter)));
                 index++;
-            } else if (isRightParenthesis(c)) {
-                tokens.add(new Token(Token.Type.RIGHT_PAREN, String.valueOf(c)));
+            } else if (isRightParenthesis(charracter)) {
+                tokens.add(new Token(Token.Type.RIGHT_PAREN, String.valueOf(charracter)));
                 index++;
-            } else if (isSeparator(c)) {
-                tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(c)));
+            } else if (isSeparator(charracter)) {
+                tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(charracter)));
                 index++;
-            } else if (isAbsoluteValueSign(c)) {
+            } else if (isAbsoluteValueSign(charracter)) {
                 if (nextAbsoluteIsOpen) {
                     tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_ABS));
                     tokens.add(new Token(Token.Type.LEFT_PAREN, ExpressionElements.PAR_LEFT));
@@ -184,7 +184,7 @@ class Tokenizer {
                 if (lengthOfMatch > 0) {
                     index += lengthOfMatch;
                 } else {
-                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + c);
+                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + charracter);
                 }
             }
         }
