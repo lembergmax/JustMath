@@ -127,20 +127,20 @@ class Tokenizer {
         int index = 0;
 
         while (index < expression.length()) {
-            char charracter = expression.charAt(index);
+            char character = expression.charAt(index);
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
-            } else if (isLeftParenthesis(charracter)) {
-                tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(charracter)));
+            } else if (isLeftParenthesis(character)) {
+                tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(character)));
                 index++;
-            } else if (isRightParenthesis(charracter)) {
-                tokens.add(new Token(Token.Type.RIGHT_PAREN, String.valueOf(charracter)));
+            } else if (isRightParenthesis(character)) {
+                tokens.add(new Token(Token.Type.RIGHT_PAREN, String.valueOf(character)));
                 index++;
-            } else if (isSeparator(charracter)) {
-                tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(charracter)));
+            } else if (isSeparator(character)) {
+                tokens.add(new Token(Token.Type.SEMICOLON, String.valueOf(character)));
                 index++;
-            } else if (isAbsoluteValueSign(charracter)) {
+            } else if (isAbsoluteValueSign(character)) {
                 if (nextAbsoluteIsOpen) {
                     tokens.add(new Token(Token.Type.FUNCTION, ExpressionElements.FUNC_ABS));
                     tokens.add(new Token(Token.Type.LEFT_PAREN, ExpressionElements.PAR_LEFT));
@@ -184,7 +184,7 @@ class Tokenizer {
                 if (lengthOfMatch > 0) {
                     index += lengthOfMatch;
                 } else {
-                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + charracter);
+                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + character);
                 }
             }
         }
