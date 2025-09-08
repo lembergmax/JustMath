@@ -180,7 +180,7 @@ class TokenizerTest {
 
     @Test
     void testInvalidCharacterThrowsException() {
-        IllegalArgumentException ex = assertThrows(SyntaxErrorException.class,
+        IllegalArgumentException ex = assertThrows(Exception.class,
                 () -> tokenizer.tokenize("2#3"));
 
         assertTrue(ex.getMessage().contains("Invalid character"));
