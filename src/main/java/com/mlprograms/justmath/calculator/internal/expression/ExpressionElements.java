@@ -109,7 +109,7 @@ public class ExpressionElements {
     public static final String FUNC_LCM = "LCM";
     public static final String FUNC_GCD = "GCD";
     //
-    public final static String FUNC_REC = "Rec";
+    public static final String FUNC_REC = "Rec";
     public static final String FUNC_POL = "Pol";
     //
     public static final String FUNC_RANDINT = "RandInt";
