@@ -102,13 +102,14 @@ public class ExpressionElements {
     public static final String FUNC_LOGBASE = "logbase";
     //
     public static final String FUNC_ATAN_2 = "atan2";
+    public static final String FUNC_ATAN_2_S = "tan2⁻¹";
     public static final String FUNC_PERM = "perm";
     public static final String FUNC_COMB = "comb";
     //
     public static final String FUNC_LCM = "LCM";
     public static final String FUNC_GCD = "GCD";
     //
-    public static final String FUNC_REC = "Rec";
+    public final static String FUNC_REC = "Rec";
     public static final String FUNC_POL = "Pol";
     //
     public static final String FUNC_RANDINT = "RandInt";
@@ -185,6 +186,7 @@ public class ExpressionElements {
                 new TwoArgumentFunction(FUNC_LOGBASE, 6, BigNumber::logBase),
                 //
                 new TwoArgumentFunction(FUNC_ATAN_2, 6, BigNumber::atan2),
+                new TwoArgumentFunction(FUNC_ATAN_2_S, 6, BigNumber::atan2),
                 new TwoArgumentFunction(FUNC_PERM, 6, BigNumber::permutation),
                 new TwoArgumentFunction(FUNC_COMB, 6, BigNumber::combination),
                 //
