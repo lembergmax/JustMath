@@ -260,6 +260,11 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
  <tr>
+    <td>v1.2.0</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.0.jar">JustMath v1.2.0</a></td>
+    <td>Stable</td>
+  </tr>
+ <tr>
     <td>v1.1.5</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.5.jar">JustMath v1.1.5</a></td>
     <td>Stable</td>
