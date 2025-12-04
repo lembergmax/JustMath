@@ -37,4 +37,8 @@ build/
 ### Mac OS ###
 .DS_Store
 /.idea/copyright/*
+/.idea/copilot.data.migration.agent.xml
+/.idea/copilot.data.migration.edit.xml
+/.idea/artifacts/justmath_latest_jar.xml
+/.idea/artifacts/justmath_jar.xml
 /.idea/

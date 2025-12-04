@@ -46,6 +46,7 @@ public class ExpressionElements {
     public static final Map<String, ExpressionElement> registry = new HashMap<>();
 
     public static final String PI = "pi";
+    public static final String PI_S = "π";
     public static final String EULERS_NUMBER = "e";
     //
     public static final String SEP_SEMICOLON = ";";
@@ -55,7 +56,9 @@ public class ExpressionElements {
     public static final String OP_PLUS = "+";
     public static final String OP_MINUS = "-";
     public static final String OP_MULTIPLY = "*";
+    public static final String OP_MULTIPLY_S = "×";
     public static final String OP_DIVIDE = "/";
+    public static final String OP_DIVIDE_S = "÷";
     public static final String OP_MODULO = "%";
     public static final String OP_POWER = "^";
     public static final String OP_PERMUTATION = "nPr";
@@ -109,7 +112,7 @@ public class ExpressionElements {
     public static final String FUNC_LCM = "LCM";
     public static final String FUNC_GCD = "GCD";
     //
-    public final static String FUNC_REC = "Rec";
+    public static final String FUNC_REC = "Rec";
     public static final String FUNC_POL = "Pol";
     //
     public static final String FUNC_RANDINT = "RandInt";
@@ -130,6 +133,7 @@ public class ExpressionElements {
     static {
         List<ExpressionElement> expressionElementList = List.of(
                 new ZeroArgumentConstant(PI, BigNumbers::pi),
+                new ZeroArgumentConstant(PI_S, BigNumbers::pi),
                 new ZeroArgumentConstant(EULERS_NUMBER, BigNumbers::e),
                 //
                 new Parenthesis(Parenthesis.Type.LEFT),
@@ -139,7 +143,9 @@ public class ExpressionElements {
                 new SimpleBinaryOperator(OP_PLUS, 2, BigNumber::add),
                 new SimpleBinaryOperator(OP_MINUS, 2, BigNumber::subtract),
                 new SimpleBinaryOperator(OP_MULTIPLY, 3, BigNumber::multiply),
+                new SimpleBinaryOperator(OP_MULTIPLY_S, 3, BigNumber::multiply),
                 new BinaryOperator(OP_DIVIDE, 3, BigNumber::divide),
+                new BinaryOperator(OP_DIVIDE_S, 3, BigNumber::divide),
                 new SimpleBinaryOperator(OP_MODULO, 3, BigNumber::modulo),
                 new BinaryOperator(OP_POWER, 4, BigNumber::power),
                 new BinaryOperator(OP_PERMUTATION, 6, BigNumber::permutation),
