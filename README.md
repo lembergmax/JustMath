@@ -289,11 +289,6 @@ Cannot wait? Just download the latest jar:
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.4.jar">JustMath v1.1.4</a></td>
     <td>Release</td>
   </tr>
- <tr>
-    <td>v1.0.4</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.4.jar">JustMath v1.0.4</a></td>
-    <td>Release</td>
-  </tr>
   <tr>
     <td>v1.0.3</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.3.jar">JustMath v1.0.3</a></td>
