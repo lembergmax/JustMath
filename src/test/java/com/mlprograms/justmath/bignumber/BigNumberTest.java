@@ -26,6 +26,7 @@ package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -899,7 +900,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_linearFunction() {
             BigNumber start = new BigNumber("1");
             BigNumber end = new BigNumber("3");
-            Map<String, BigNumber> vars = Map.of("a", new BigNumber("2"));
+            Map<String, String> vars = Map.of("a", new BigNumber("2").toString());
             BigNumber result = start.summation(end, "a*k", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("12", result.toString());
         }
@@ -908,7 +909,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_polynomial() {
             BigNumber start = new BigNumber("0");
             BigNumber end = new BigNumber("2");
-            Map<String, BigNumber> vars = Map.of("b", new BigNumber("1.5"), "c", new BigNumber("0.5"));
+            Map<String, String> vars = Map.of("b", new BigNumber("1.5").toString(), "c", new BigNumber("0.5").toString());
             BigNumber result = start.summation(end, "b*k^2 + c", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("9", result.toString());
         }

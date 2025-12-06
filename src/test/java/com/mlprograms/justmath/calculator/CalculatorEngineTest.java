@@ -26,6 +26,7 @@ package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -126,12 +127,12 @@ public class CalculatorEngineTest {
             "abs(x)+sqrt(z)#7.645751311"
     }, delimiter = '#')
     void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
-        Map<String, BigNumber> variables =
-                Map.of("x", new BigNumber("5"),
-                        "y", new BigNumber("5"),
-                        "z", new BigNumber("7"),
-                        "a", new BigNumber("4"),
-                        "b", new BigNumber("5")
+        Map<String, String> variables =
+                Map.of("x", new BigNumber("5").toString(),
+                        "y", new BigNumber("5").toString(),
+                        "z", new BigNumber("7").toString(),
+                        "a", new BigNumber("4").toString(),
+                        "b", new BigNumber("5").toString()
                 );
 
         BigNumber actualResult = calculatorEngineRad.evaluate(calculationString, variables);
@@ -211,11 +212,11 @@ public class CalculatorEngineTest {
             "a+b#9"
     }, delimiter = '#')
     void evaluateToPrettyStringTest(String expression, String expectedResult) {
-        Map<String, BigNumber> variables =
-                Map.of("x", new BigNumber("5"),
-                        "y", new BigNumber("5"),
-                        "a", new BigNumber("4"),
-                        "b", new BigNumber("5"));
+        Map<String, String> variables =
+                Map.of("x", new BigNumber("5").toString(),
+                        "y", new BigNumber("5").toString(),
+                        "a", new BigNumber("4").toString(),
+                        "b", new BigNumber("5").toString());
 
         String actualResult = calculatorEngineRad.evaluateToPrettyString(expression, variables);
         assertEquals(expectedResult, actualResult);

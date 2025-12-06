@@ -1916,7 +1916,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return summation(this, kCalculation, externalVariables);
     }
 
@@ -1941,7 +1941,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, externalVariables);
     }
 
@@ -1968,7 +1968,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
     }
 
@@ -1997,7 +1997,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2028,7 +2028,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2053,7 +2053,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, externalVariables);
     }
 
@@ -2080,7 +2080,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
     }
 
@@ -2109,7 +2109,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2140,7 +2140,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         return SeriesMath.product(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
