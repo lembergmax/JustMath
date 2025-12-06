@@ -326,19 +326,19 @@ public class SeriesMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!kCalculation.contains("k")) {
-            throw new IllegalArgumentException("kCalculation must contain the variable 'k'");
+            throw new IllegalArgumentException("Expression must include the variable 'k' (for example: \"2*k + 1\").");
         }
 
         if (kStart.isGreaterThan(kEnd)) {
-            throw new IllegalArgumentException("kEnd must be greater than or equal to kStart");
+            throw new IllegalArgumentException("End value must be greater than or equal to the start value.");
         }
 
         if (!kStart.isInteger() || !kEnd.isInteger()) {
-            throw new IllegalArgumentException("kStart and kEnd must be an integer");
+            throw new IllegalArgumentException("Start and end values must be integers.");
         }
 
         if (externalVariables.containsKey("k")) {
-            throw new IllegalArgumentException("Variables cannot contain the variable 'k'");
+            throw new IllegalArgumentException("External variables must not use the reserved name 'k'.");
         }
     }
 
