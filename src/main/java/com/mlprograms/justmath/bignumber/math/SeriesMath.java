@@ -326,7 +326,7 @@ public class SeriesMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!kCalculation.contains("k")) {
-            throw new IllegalArgumentException("Expression must include the variable 'k' (for example: \"2*k + 1\").");
+            throw new IllegalArgumentException("Expression must include the variable 'k'.");
         }
 
         if (kStart.isGreaterThan(kEnd)) {
