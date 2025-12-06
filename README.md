@@ -136,14 +136,14 @@ CalculatorEngine calculator = new CalculatorEngine();
 
 // Define variables
 Map<String, BigNumber> variables = new HashMap<>();
-variables.put("a", new BigNumber("5"));
-variables.put("b", new BigNumber("3"));
+variables.put("a", "5+3");
+variables.put("b", "3");
 
 // Evaluate expression with variables
 BigNumber result = calculator.evaluate("2*a + b^2", variables);
 
 System.out.println(result);
-// 19
+// 25
 ```
 
 ## 📚 Static Utility Methods
@@ -260,49 +260,54 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
+    <td>v1.2.2</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.jar">JustMath v1.2.2</a></td>
+    <td>Release</td>
+  </tr>
+  <tr>
     <td>v1.2.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.1.jar">JustMath v1.2.1</a></td>
-    <td>Pre</td>
+    <td>Preview</td>
   </tr>
  <tr>
     <td>v1.2.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.0.jar">JustMath v1.2.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.5</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.5.jar">JustMath v1.1.5</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.4</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.4.jar">JustMath v1.1.4</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.0.4</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.4.jar">JustMath v1.0.4</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.3</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.3.jar">JustMath v1.0.3</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.2</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.2.jar">JustMath v1.0.2</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.1.jar">JustMath v1.0.1</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">JustMath v1.0.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
 </table>
 
