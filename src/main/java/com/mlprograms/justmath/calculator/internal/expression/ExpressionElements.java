@@ -71,32 +71,32 @@ public class ExpressionElements {
     public static final String FUNC_CBRT_S = "³√";
     public static final String FUNC_ROOTN = "rootn";
     //
-    public static final String FUNC_COT = "cot";
-    public static final String FUNC_TAN = "tan";
-    public static final String FUNC_COS = "cos";
     public static final String FUNC_SIN = "sin";
-    //
     public static final String FUNC_SINH = "sinh";
-    public static final String FUNC_COSH = "cosh";
-    public static final String FUNC_TANH = "tanh";
-    public static final String FUNC_COTH = "coth";
-    //
     public static final String FUNC_ASIN = "asin";
-    public static final String FUNC_ACOS = "acos";
-    public static final String FUNC_ATAN = "atan";
-    public static final String FUNC_ACOT = "acot";
     public static final String FUNC_SIN_S = "sin⁻¹";
-    public static final String FUNC_COS_S = "cos⁻¹";
-    public static final String FUNC_TAN_S = "tan⁻¹";
-    public static final String FUNC_COT_S = "cot⁻¹";
-    //
     public static final String FUNC_ASINH = "asinh";
-    public static final String FUNC_ACOSH = "acosh";
-    public static final String FUNC_ATANH = "atanh";
-    public static final String FUNC_ACOTH = "acoth";
     public static final String FUNC_ASINH_S = "sinh⁻¹";
+    //
+    public static final String FUNC_COS = "cos";
+    public static final String FUNC_COSH = "cosh";
+    public static final String FUNC_ACOS = "acos";
+    public static final String FUNC_COS_S = "cos⁻¹";
+    public static final String FUNC_ACOSH = "acosh";
     public static final String FUNC_ACOS_S = "cosh⁻¹";
+    //
+    public static final String FUNC_TAN = "tan";
+    public static final String FUNC_TANH = "tanh";
+    public static final String FUNC_ATAN = "atan";
+    public static final String FUNC_TAN_S = "tan⁻¹";
+    public static final String FUNC_ATANH = "atanh";
     public static final String FUNC_ATANH_S = "tanh⁻¹";
+    //
+    public static final String FUNC_COT = "cot";
+    public static final String FUNC_COTH = "coth";
+    public static final String FUNC_ACOT = "acot";
+    public static final String FUNC_COT_S = "cot⁻¹";
+    public static final String FUNC_ACOTH = "acoth";
     public static final String FUNC_ACOTH_S = "coth⁻¹";
     //
     public static final String FUNC_LOG_2 = "log2";
