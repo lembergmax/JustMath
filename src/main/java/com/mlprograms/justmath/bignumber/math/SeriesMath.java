@@ -29,6 +29,7 @@ import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 
 import lombok.NonNull;
 
@@ -122,7 +123,7 @@ public class SeriesMath {
         while (kStartClone.isLessThanOrEqualTo(kEnd)) {
             Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
             combinedVariables.putAll(externalVariables);
-            combinedVariables.put("k", kStartClone.toString());
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, kStartClone.toString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.add(currentCalculation);
@@ -300,7 +301,7 @@ public class SeriesMath {
         while (kStartClone.isLessThanOrEqualTo(kEnd)) {
             Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
             combinedVariables.putAll(externalVariables);
-            combinedVariables.put("k", kStartClone.toString());
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, kStartClone.toString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.multiply(currentCalculation);
@@ -325,8 +326,8 @@ public class SeriesMath {
     private static void checkParams(BigNumber kStart, BigNumber kEnd, String kCalculation, MathContext mathContext, Map<String, String> externalVariables) {
         MathUtils.checkMathContext(mathContext);
 
-        if (!kCalculation.contains("k")) {
-            throw new IllegalArgumentException("Expression must include the variable 'k'.");
+        if (!kCalculation.contains(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
+            throw new IllegalArgumentException("Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
 
         if (kStart.isGreaterThan(kEnd)) {
@@ -337,8 +338,8 @@ public class SeriesMath {
             throw new IllegalArgumentException("Start and end values must be integers.");
         }
 
-        if (externalVariables.containsKey("k")) {
-            throw new IllegalArgumentException("External variables must not use the reserved name 'k'.");
+        if (externalVariables.containsKey(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
+            throw new IllegalArgumentException("External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
     }
 

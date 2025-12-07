@@ -129,6 +129,8 @@ public class ExpressionElements {
     //
     public static final String FUNC_ABS = "abs";
     public static final String SURRFUNC_ABS_S = "|"; // that is special :0
+    //
+    public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
         List<ExpressionElement> expressionElementList = List.of(
