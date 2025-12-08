@@ -225,8 +225,8 @@ public class ExpressionElements {
                 new OneArgumentZeroParamFunction(FUNC_ABS, 6, BigNumber::abs),
                 new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs),
                 //
-                new UnlimitedArgumentFunctionOperation(FUNC_AVG, 6, BigNumber::average),
-                new UnlimitedArgumentFunctionOperation(FUNC_AVG_S, 6, BigNumber::average)
+                new UnlimitedArgumentFunction(FUNC_AVG, 6, BigNumber::average),
+                new UnlimitedArgumentFunction(FUNC_AVG_S, 6, BigNumber::average)
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
