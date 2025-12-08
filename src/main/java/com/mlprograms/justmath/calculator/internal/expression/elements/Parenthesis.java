@@ -34,7 +34,7 @@ public class Parenthesis extends ExpressionElement {
 	private final Type type;
 
 	public Parenthesis(Parenthesis.Type type) {
-		super(type == Type.LEFT ? ExpressionElements.PAR_LEFT : ExpressionElements.PAR_RIGHT, false, 0, 0);
+		super(type == Type.LEFT ? ExpressionElements.PAR_LEFT : ExpressionElements.PAR_RIGHT, false, 0);
 		this.type = type;
 	}
 

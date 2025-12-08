@@ -28,8 +28,8 @@ import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 
 public class Operator extends ExpressionElement {
 
-	public Operator(String symbol, int precedence, int numberOfOperands) {
-		super(symbol, false, precedence, numberOfOperands);
+	public Operator(String symbol, int precedence) {
+		super(symbol, false, precedence);
 	}
 
 }

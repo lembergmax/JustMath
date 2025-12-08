@@ -39,7 +39,7 @@ public class TwoArgumentFunction extends Function {
 	private final TwoArgumentFunctionOperation operation;
 
 	public TwoArgumentFunction(String symbol, int precedence, TwoArgumentFunctionOperation operation) {
-		super(symbol, precedence, 2);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 

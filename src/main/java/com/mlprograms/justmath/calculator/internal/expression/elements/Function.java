@@ -28,8 +28,8 @@ import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 
 public class Function extends ExpressionElement {
 
-	public Function(String symbol, int precedence, int numberOfOperands) {
-		super(symbol, true, precedence, numberOfOperands);
+	public Function(String symbol, int precedence) {
+		super(symbol, true, precedence);
 	}
 
 }

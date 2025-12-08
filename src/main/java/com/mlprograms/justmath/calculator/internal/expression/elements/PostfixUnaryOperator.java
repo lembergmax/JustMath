@@ -39,7 +39,7 @@ public class PostfixUnaryOperator extends Operator {
 	private final OneArgumentFunctionOperation operation;
 
 	public PostfixUnaryOperator(String symbol, int precedence, OneArgumentFunctionOperation operation) {
-		super(symbol, precedence, 1);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 
