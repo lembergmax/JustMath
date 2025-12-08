@@ -44,7 +44,7 @@ public class CalculatorEngineTest {
     @ParameterizedTest
     @CsvSource(value = {
             // --- Custom ---
-            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
+            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+summ(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
             "3!+3#9",
             "|-5|+3#8",
             "|-5|3#15",
@@ -75,11 +75,11 @@ public class CalculatorEngineTest {
             "ln(e^2)+sqrt(16)#6",
             "log10(100*sqrt(25))#2.6989700043",
             "log2(2^10)#10",
-            // --- Summation / Produkt + Operatoren ---
-            "sum(1;3;k)+prod(1;3;k)#12",
-            "sum(1;4;k^2)-prod(1;3;k)#24",
-            "prod(1;4;k)+sum(1;4;k)#34",
-            "sum(1;5;2*k)#30",
+            // --- summmation / Produkt + Operatoren ---
+            "summ(1;3;k)+prod(1;3;k)#12",
+            "summ(1;4;k^2)-prod(1;3;k)#24",
+            "prod(1;4;k)+summ(1;4;k)#34",
+            "summ(1;5;2*k)#30",
             // --- Fakultät + Modulo + Potenzen ---
             "5!%7#1",
             "10%3+3!#7",
@@ -103,7 +103,7 @@ public class CalculatorEngineTest {
             "sin(cos(tan(pi/4)))#0.5143952585",
             "ln(sqrt((e^3)*(e^2)))#2.5",
             // --- Kombination mehrerer Kategorien ---
-            "sum(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#32",
+            "summ(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#32",
             "lcm(4;6)+abs(-10)+sqrt(49)#29",
             "cos(pi/2)^2+sin(pi/2)^2#1",
             "(sin(pi/2)+cos(0))*log2(8)#6",
@@ -122,7 +122,7 @@ public class CalculatorEngineTest {
             "z^2#49",
             "a+b#9",
             "a^a#256",
-            "sum(1;3;k)+x#11",
+            "summ(1;3;k)+x#11",
             "prod(1;3;k)+y#11",
             "abs(x)+sqrt(z)#7.645751311"
     }, delimiter = '#')
@@ -180,7 +180,7 @@ public class CalculatorEngineTest {
             "sqrt(-4)",
             "unknownFunc(5)",
             "5++2",
-            "sum(5;2;3)",
+            "summ(5;2;3)",
             "gcd(5)",
     })
     void evaluateToStringExceptionTest(String expression) {
@@ -203,8 +203,8 @@ public class CalculatorEngineTest {
             "sqrt(2)#1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641573",
             "2^10#1,024",
             "5^8#390,625",
-            "sum(1;100;k)#5,050",
-            "1+3*sum(1;100;k)#15,151",
+            "summ(1;100;k)#5,050",
+            "1+3*summ(1;100;k)#15,151",
             "prod(1;5;k)#120",
             "3*1+prod(1;5;k)#123",
             "10!#3,628,800",
