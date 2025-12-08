@@ -25,10 +25,12 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
+
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,6 +40,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -2424,6 +2427,99 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber gamma(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return SpecialFunctionMath.gamma(this, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the instance's
+     * default {@link MathContext} and {@link Locale}.
+     *
+     * <p>The method delegates to {@link #average(List, MathContext, Locale)} with the instance defaults.
+     * The input list must be non\-null (annotated with {@code @NonNull}).</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to average; must not be {@code null}
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the instance's
+     * default {@link MathContext} and the supplied {@link Locale}.
+     *
+     * <p>This is a convenience overload that allows specifying locale-specific behaviour for any internal
+     * formatting or parsing while keeping precision/rounding from the instance.</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the specified
+     * {@link MathContext} and the instance's current {@link Locale}.
+     *
+     * <p>This overload allows callers to control precision and rounding behavior while using the default locale.</p>
+     *
+     * @param numbers     the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the provided
+     * {@link MathContext} and {@link Locale}.
+     *
+     * <p>The computation is delegated to {@link StatisticsMath#average(List, MathContext, Locale)} which performs
+     * the actual aggregation and averaging logic. The returned value represents the average with the requested
+     * precision and locale-specific formatting rules applied where relevant.</p>
+     *
+     * @param numbers     the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode
+     * @param locale      the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        return StatisticsMath.average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the sum of the supplied list of {@code BigNumber} values using the instance's default {@link Locale}.
+     *
+     * <p>This is a convenience overload that delegates to {@link #sum(List, Locale)} using the instance locale.
+     * The input list must be non\-null (annotated with {@code @NonNull}).</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to sum; must not be {@code null}
+     * @return a new {@code BigNumber} representing the sum of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber sum(@NonNull final List<BigNumber> numbers) {
+        return sum(numbers, locale);
+    }
+
+    /**
+     * Computes the sum of the supplied list of {@code BigNumber} values using the specified {@link Locale}.
+     *
+     * <p>The computation is delegated to {@link StatisticsMath#sum(List, Locale)} which performs the actual accumulation.
+     * Locale is provided for any locale-sensitive formatting or parsing that may occur inside the implementation.</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to sum; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the sum of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber sum(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return StatisticsMath.sum(numbers, locale);
     }
 
     /**
