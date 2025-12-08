@@ -133,7 +133,7 @@ public class ExpressionElements {
     //
     public static final String FUNC_AVG = "avg";
     public static final String FUNC_AVG_S = "average";
-     //
+    //
     public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
