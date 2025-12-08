@@ -24,17 +24,13 @@
 
 package com.mlprograms.justmath.calculator.internal.expression.elements;
 
-import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
 
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class UnlimitedArgumentFunction extends Function {
 
@@ -47,34 +43,29 @@ public class UnlimitedArgumentFunction extends Function {
 
     @Override
     public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-        if (stack.isEmpty()) {
-            throw new IllegalArgumentException("Function \"" + getSymbol() + "\" requires at least one argument.");
+        if (stack == null || stack.isEmpty()) {
+            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one argument");
         }
 
-        List<BigNumber> args = new ArrayList<>();
+        List<BigNumber> arguments = new ArrayList<>();
         while (!stack.isEmpty()) {
-            Object object = stack.peek();
+            Object value = stack.pop();
 
-            if (object instanceof Separator) {
-                stack.pop();
-                continue;
-            }
-
-            if (!(object instanceof BigNumber)) {
+            if (!(value instanceof BigNumber bigNumber)) {
+                stack.push(value);
                 break;
             }
 
-            args.add(ensureBigNumber(stack.pop()));
+            arguments.add(bigNumber);
         }
 
-        if (args.isEmpty()) {
-            throw new IllegalArgumentException("Function \"" + getSymbol() + "\" requires at least one argument.");
+        if (arguments.isEmpty()) {
+            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one numeric argument");
         }
 
-        BigNumber first = args.getFirst();
-        List<BigNumber> others = args.subList(1, args.size());
-        BigNumber result = operation.apply(first, others, mathContext, locale);
-        stack.push(result);
+        BigNumber first = arguments.getFirst();
+        List<BigNumber> rest = arguments.size() > 1 ? arguments.subList(1, arguments.size()) : List.of();
+        stack.push(operation.apply(first, rest, mathContext, locale));
     }
 
 }
