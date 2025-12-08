@@ -39,7 +39,7 @@ public class OneArgumentTrigonometricFunction extends Function {
 	private final OneArgumentTrigonometricFunctionOperation operation;
 
 	public OneArgumentTrigonometricFunction(String symbol, int precedence, OneArgumentTrigonometricFunctionOperation operation) {
-		super(symbol, precedence, 1);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 

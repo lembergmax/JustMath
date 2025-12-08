@@ -39,7 +39,7 @@ public class CoordinateFunction extends Function {
 	private final CoordinateFunctionOperation operation;
 
 	public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
-		super(symbol, precedence, 2);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 

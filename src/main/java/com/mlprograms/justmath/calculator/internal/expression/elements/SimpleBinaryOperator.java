@@ -40,7 +40,7 @@ public class SimpleBinaryOperator extends ExpressionElement {
 	private final SimpleBinaryOperatorOperation operation;
 
 	public SimpleBinaryOperator(String symbol, int precedence, SimpleBinaryOperatorOperation operation) {
-		super(symbol, false, precedence, 0);
+		super(symbol, false, precedence);
 		this.operation = operation;
 	}
 
