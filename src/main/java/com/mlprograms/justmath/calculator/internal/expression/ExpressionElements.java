@@ -27,6 +27,7 @@ package com.mlprograms.justmath.calculator.internal.expression;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.expression.elements.*;
+import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +118,7 @@ public class ExpressionElements {
     //
     public static final String FUNC_RANDINT = "RandInt";
     //
-    public static final String FUNC_SUMM = "sum";
+    public static final String FUNC_SUMM = "summ";
     public static final String FUNC_SUMM_S = "∑";
     public static final String FUNC_PROD = "prod";
     public static final String FUNC_PROD_S = "∏";
@@ -130,6 +131,9 @@ public class ExpressionElements {
     public static final String FUNC_ABS = "abs";
     public static final String SURRFUNC_ABS_S = "|"; // that is special :0
     //
+    public static final String FUNC_AVG = "avg";
+    public static final String FUNC_AVG_S = "average";
+     //
     public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
@@ -219,7 +223,10 @@ public class ExpressionElements {
                 new TwoArgumentFunction(FUNC_BETA_S, 6, BigNumber::beta),
                 //
                 new OneArgumentZeroParamFunction(FUNC_ABS, 6, BigNumber::abs),
-                new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs)
+                new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs),
+                //
+                new UnlimitedArgumentFunctionOperation(FUNC_AVG, 6, BigNumber::average),
+                new UnlimitedArgumentFunctionOperation(FUNC_AVG_S, 6, BigNumber::average)
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
