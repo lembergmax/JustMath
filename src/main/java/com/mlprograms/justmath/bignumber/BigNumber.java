@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2490,7 +2491,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
      */
     public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-        return StatisticsMath.average(numbers, mathContext, locale);
+        return StatisticsMath.average(addThisTobigNumberList(numbers), mathContext, locale);
     }
 
     /**
@@ -2519,7 +2520,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
      */
     public BigNumber sum(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
-        return StatisticsMath.sum(numbers, locale);
+        return StatisticsMath.sum(addThisTobigNumberList(numbers), locale);
+    }
+
+    /**
+     * Returns a new list with this {@code BigNumber} prepended to the provided list.
+     *
+     * <p>The returned list is a newly created {@code ArrayList} and does not modify the original
+     * {@code numbers} argument. This is useful for delegating calculations that expect the receiver
+     * to be included as the first element followed by additional operands.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to append after {@code this}; must not be {@code null}
+     * @return a new {@code List<BigNumber>} containing {@code this} followed by all elements of {@code numbers}
+     */
+    private List<BigNumber> addThisTobigNumberList(@NonNull final List<BigNumber> numbers) {
+        List<BigNumber> bigNumbers = new ArrayList<>();
+        bigNumbers.add(this);
+        bigNumbers.addAll(numbers);
+        return bigNumbers;
     }
 
     /**
