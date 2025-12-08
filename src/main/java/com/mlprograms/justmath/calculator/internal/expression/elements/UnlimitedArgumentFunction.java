@@ -55,13 +55,11 @@ public class UnlimitedArgumentFunction extends Function {
         while (!stack.isEmpty()) {
             Object object = stack.peek();
 
-            // ';' überspringen
             if (object instanceof Separator) {
                 stack.pop();
                 continue;
             }
 
-            // alles andere als BigNumber beendet die Argumentliste
             if (!(object instanceof BigNumber)) {
                 break;
             }
