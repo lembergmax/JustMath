@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.mlprograms.justmath.calculator.internal.expression.elements;
+
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
+
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
+
+import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Locale;
+
+public class UnlimitedArgumentFunction extends Function {
+
+    private final UnlimitedArgumentFunctionOperation operation;
+
+    public UnlimitedArgumentFunction(String symbol, int precedence, UnlimitedArgumentFunctionOperation operation) {
+        super(symbol, precedence);
+        this.operation = operation;
+    }
+
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        if (stack.isEmpty()) {
+            throw new IllegalArgumentException("Function \"" + getSymbol() + "\" requires at least one argument.");
+        }
+
+        List<BigNumber> args = new ArrayList<>();
+        while (!stack.isEmpty()) {
+            Object object = stack.peek();
+
+            // ';' überspringen
+            if (object instanceof Separator) {
+                stack.pop();
+                continue;
+            }
+
+            // alles andere als BigNumber beendet die Argumentliste
+            if (!(object instanceof BigNumber)) {
+                break;
+            }
+
+            args.add(ensureBigNumber(stack.pop()));
+        }
+
+        if (args.isEmpty()) {
+            throw new IllegalArgumentException("Function \"" + getSymbol() + "\" requires at least one argument.");
+        }
+
+        BigNumber first = args.getFirst();
+        List<BigNumber> others = args.subList(1, args.size());
+        BigNumber result = operation.apply(first, others, mathContext, locale);
+        stack.push(result);
+    }
+
+}
