@@ -33,7 +33,7 @@ public class ProcessingErrorException extends CustomErrorException {
     }
 
     public ProcessingErrorException(@NonNull final String detailedMessage) {
-        super(CustomExceptionMessages.SYNTAX_ERROR, detailedMessage);
+        super(CustomExceptionMessages.PROCESSING_ERROR, detailedMessage);
     }
 
 }
