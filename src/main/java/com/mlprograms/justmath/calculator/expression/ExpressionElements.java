@@ -143,6 +143,8 @@ public class ExpressionElements {
     //
     public static final String FUNC_SUM = "sum";
     //
+    public static final String FUNC_MEDIAN = "median";
+    //
     public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
@@ -237,7 +239,9 @@ public class ExpressionElements {
                 new UnlimitedArgumentFunction(FUNC_AVG, 6, BigNumber::average),
                 new UnlimitedArgumentFunction(FUNC_AVG_S, 6, BigNumber::average),
                 //
-                new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum)
+                new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum),
+                //
+                new UnlimitedArgumentFunction(FUNC_MEDIAN, 6, BigNumber::median)
 
         );
 

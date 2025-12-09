@@ -31,6 +31,8 @@ import java.math.MathContext;
 import java.util.List;
 import java.util.Locale;
 
+import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
+import com.mlprograms.justmath.bignumber.math.exceptions.InsufficientElementsException;
 import lombok.NonNull;
 
 public class StatisticsMath {
@@ -78,6 +80,49 @@ public class StatisticsMath {
         }
 
         return sum;
+    }
+
+    /**
+     * Calculates the median of the provided list of {@link BigNumber} values.
+     *
+     * <p>Behavior:
+     * <ul>
+     *   <li>If {@code numbers} is empty, an {@link InsufficientElementsException} is thrown.</li>
+     *   <li>The input list is sorted using {@link QuickSort#sort(List)} to determine the middle element(s).</li>
+     *   <li>If the number of elements is odd, the exact middle element is returned.</li>
+     *   <li>If the number of elements is even, the median is defined as the arithmetic mean of the two
+     *       middle elements. That mean is computed by adding the two middle {@link BigNumber} values and
+     *       dividing the sum by {@link BigNumbers#TWO} using the provided {@link MathContext} and
+     *       {@link Locale} to control precision, rounding and any locale-sensitive behavior.</li>
+     * </ul>
+     *
+     * <p>Note: The time complexity is dominated by the sorting step. The method delegates locale-aware
+     * operations to {@link BigNumber} methods and forwards the supplied {@code locale} to those calls.
+     *
+     * @param numbers     the list of values to compute the median for; must not be {@code null}
+     * @param mathContext controls precision and rounding when averaging two middle elements; must not be {@code null}
+     * @param locale      locale passed to {@link BigNumber} operations; must not be {@code null}
+     * @return the median as a {@link BigNumber}
+     * @throws InsufficientElementsException if {@code numbers} is empty
+     */
+    public static BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        if (numbers.isEmpty()) {
+            throw new InsufficientElementsException();
+        }
+
+        final List<BigNumber> sortedNumbers = QuickSort.sort(numbers);
+        final int size = sortedNumbers.size();
+        final int middleIndex = size / 2;
+
+        if ((size & 1) == 1) {
+            return sortedNumbers.get(middleIndex);
+        }
+
+        final BigNumber lowerMiddle = sortedNumbers.get(middleIndex - 1);
+        final BigNumber upperMiddle = sortedNumbers.get(middleIndex);
+        final BigNumber sumOfMiddles = lowerMiddle.add(upperMiddle, locale);
+
+        return sumOfMiddles.divide(BigNumbers.TWO, mathContext, locale);
     }
 
 }

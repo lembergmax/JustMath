@@ -24,6 +24,8 @@
 
 package com.mlprograms.justmath.calculator.exceptions;
 
+import com.mlprograms.justmath.exceptions.CustomErrorException;
+import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
 import lombok.NonNull;
 
 public class ProcessingErrorException extends CustomErrorException {
@@ -33,7 +35,7 @@ public class ProcessingErrorException extends CustomErrorException {
     }
 
     public ProcessingErrorException(@NonNull final String detailedMessage) {
-        super(CustomExceptionMessages.SYNTAX_ERROR, detailedMessage);
+        super(CustomExceptionMessages.PROCESSING_ERROR, detailedMessage);
     }
 
 }
