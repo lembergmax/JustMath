@@ -26,6 +26,7 @@ package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -43,7 +44,7 @@ public class CalculatorEngineTest {
     @ParameterizedTest
     @CsvSource(value = {
             // --- Custom ---
-            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+sum(1;5;k^2)+prod(1;4;k)+rootn(32;5)#162",
+            "abs(-5)+sqrt(16)+cbrt(27)+log2(8)+ln(e)+sin(pi/2)^2+cos(0)+tan(pi/4)+3!+5^2+10%3+gcd(54;24)+lcm(6;8)+summation(1;5;k^2)+product(1;4;k)+rootn(32;5)#162",
             "3!+3#9",
             "|-5|+3#8",
             "|-5|3#15",
@@ -74,11 +75,11 @@ public class CalculatorEngineTest {
             "ln(e^2)+sqrt(16)#6",
             "log10(100*sqrt(25))#2.6989700043",
             "log2(2^10)#10",
-            // --- Summation / Produkt + Operatoren ---
-            "sum(1;3;k)+prod(1;3;k)#12",
-            "sum(1;4;k^2)-prod(1;3;k)#24",
-            "prod(1;4;k)+sum(1;4;k)#34",
-            "sum(1;5;2*k)#30",
+            // --- summationmation / productukt + Operatoren ---
+            "summation(1;3;k)+product(1;3;k)#12",
+            "summation(1;4;k^2)-product(1;3;k)#24",
+            "product(1;4;k)+summation(1;4;k)#34",
+            "summation(1;5;2*k)#30",
             // --- Fakultät + Modulo + Potenzen ---
             "5!%7#1",
             "10%3+3!#7",
@@ -102,7 +103,7 @@ public class CalculatorEngineTest {
             "sin(cos(tan(pi/4)))#0.5143952585",
             "ln(sqrt((e^3)*(e^2)))#2.5",
             // --- Kombination mehrerer Kategorien ---
-            "sum(1;3;k^2)+prod(1;3;k!)+gcd(24;54)#32",
+            "summation(1;3;k^2)+product(1;3;k!)+gcd(24;54)#32",
             "lcm(4;6)+abs(-10)+sqrt(49)#29",
             "cos(pi/2)^2+sin(pi/2)^2#1",
             "(sin(pi/2)+cos(0))*log2(8)#6",
@@ -121,17 +122,17 @@ public class CalculatorEngineTest {
             "z^2#49",
             "a+b#9",
             "a^a#256",
-            "sum(1;3;k)+x#11",
-            "prod(1;3;k)+y#11",
+            "summation(1;3;k)+x#11",
+            "product(1;3;k)+y#11",
             "abs(x)+sqrt(z)#7.645751311"
     }, delimiter = '#')
     void evaluationResultWithVariablesTest(String calculationString, String expectedResult) {
-        Map<String, BigNumber> variables =
-                Map.of("x", new BigNumber("5"),
-                        "y", new BigNumber("5"),
-                        "z", new BigNumber("7"),
-                        "a", new BigNumber("4"),
-                        "b", new BigNumber("5")
+        Map<String, String> variables =
+                Map.of("x", new BigNumber("5").toString(),
+                        "y", new BigNumber("5").toString(),
+                        "z", new BigNumber("7").toString(),
+                        "a", new BigNumber("4").toString(),
+                        "b", new BigNumber("5").toString()
                 );
 
         BigNumber actualResult = calculatorEngineRad.evaluate(calculationString, variables);
@@ -179,7 +180,7 @@ public class CalculatorEngineTest {
             "sqrt(-4)",
             "unknownFunc(5)",
             "5++2",
-            "sum(5;2;3)",
+            "summation(5;2;3)",
             "gcd(5)",
     })
     void evaluateToStringExceptionTest(String expression) {
@@ -202,8 +203,10 @@ public class CalculatorEngineTest {
             "sqrt(2)#1.414213562373095048801688724209698078569671875376948073176679737990732478462107038850387534327641573",
             "2^10#1,024",
             "5^8#390,625",
-            "sum(1;100;k)#5,050",
-            "prod(1;5;k)#120",
+            "summation(1;100;k)#5,050",
+            "1+3*summation(1;100;k)#15,151",
+            "product(1;5;k)#120",
+            "3*1+product(1;5;k)#123",
             "10!#3,628,800",
             "15!#1,307,674,368,000",
             "x*1000#5,000",
@@ -211,14 +214,162 @@ public class CalculatorEngineTest {
             "a+b#9"
     }, delimiter = '#')
     void evaluateToPrettyStringTest(String expression, String expectedResult) {
-        Map<String, BigNumber> variables =
-                Map.of("x", new BigNumber("5"),
-                        "y", new BigNumber("5"),
-                        "a", new BigNumber("4"),
-                        "b", new BigNumber("5"));
+        Map<String, String> variables =
+                Map.of("x", new BigNumber("5").toString(),
+                        "y", new BigNumber("5").toString(),
+                        "a", new BigNumber("4").toString(),
+                        "b", new BigNumber("5").toString());
 
         String actualResult = calculatorEngineRad.evaluateToPrettyString(expression, variables);
         assertEquals(expectedResult, actualResult);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Einfache Durchschnittsberechnungen ---
+            "average(5)#5",
+            "average(0;10)#5",
+            "average(25;50;75)#50",
+            "average(1;2;3;4;5)#3",
+            "average(-5;5)#0",
+            "average(-1;-2;-3;-4)#-2.5",
+            "average(1.5;2.5;3.5)#2.5",
+            // Große Werte (BigNumber-Fähigkeit)
+            "average(100000000000000000000;200000000000000000000)#150000000000000000000"
+    }, delimiter = '#')
+    void averageBasicEvaluationTest(String expression, String expectedResult) {
+        BigNumber actualResult = calculatorEngineRad.evaluate(expression);
+        assertEquals(
+                expectedResult,
+                actualResult.roundAfterDecimals(new MathContext(20, RoundingMode.HALF_UP)).toString()
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- average kombiniert mit Operatoren ---
+            "3*average(25;50;75)#150",
+            "average(10;20)+5#20",
+            "2^average(2;4)#8",
+            "average(2;4)*average(3;9)#18",
+            // Verschachtelte Ausdrücke als Argumente
+            "average(1+1;2+2;3+3)#4",
+            "average(summation(1;3;k);product(1;3;k))#6",
+            "average(gcd(54;24);lcm(6;8))#15"
+    }, delimiter = '#')
+    void averageCombinedWithOperatorsTest(String expression, String expectedResult) {
+        BigNumber actualResult = calculatorEngineRad.evaluate(expression);
+        assertEquals(
+                expectedResult,
+                actualResult.roundAfterDecimals(new MathContext(20, RoundingMode.HALF_UP)).toString()
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- average mit Variablen ---
+            "average(x;y;z)#4",
+            "average(a;b)#4.5",
+            "3*average(x;y;z)#12",
+            "average(x^2;y^2;z^2)#18.66666666666666666667",
+            "average(x;average(y;z))#3.5"
+    }, delimiter = '#')
+    void averageWithVariablesTest(String expression, String expectedResult) {
+        Map<String, String> variables =
+                Map.of("x", new BigNumber("2").toString(),
+                        "y", new BigNumber("4").toString(),
+                        "z", new BigNumber("6").toString(),
+                        "a", new BigNumber("4").toString(),
+                        "b", new BigNumber("5").toString());
+
+        BigNumber actualResult = calculatorEngineRad.evaluate(expression, variables);
+        assertEquals(
+                expectedResult,
+                actualResult.roundAfterDecimals(new MathContext(20, RoundingMode.HALF_UP)).toString()
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Pretty-String-Ausgabe für average ---
+            "average(25;50;75)#50",
+            "3*average(25;50;75)#150",
+            "average(1000;2000;3000)#2,000",
+            "average(1000000;2000000)#1,500,000"
+    }, delimiter = '#')
+    void averagePrettyStringTest(String expression, String expectedResult) {
+        String actualResult = calculatorEngineRad.evaluateToPrettyString(expression);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Grundfunktionalität ---
+            "sum(5)#5",
+            "sum(5;10)#15",
+            "sum(1;2;3;4;5)#15",
+            "sum(-5;5)#0",
+            "sum(-1;-2;-3)#-6",
+            "sum(1.5;2.5;3.5)#7.5",
+
+            // Große Zahlen
+            "sum(100000000000000000000;200000000000000000000)#300000000000000000000"
+    }, delimiter = '#')
+    void sumBasicTest(String expression, String expectedResult) {
+        BigNumber actual = calculatorEngineRad.evaluate(expression);
+        assertEquals(expectedResult,
+                actual.roundAfterDecimals(new MathContext(30, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Kombination mit Operatoren ---
+            "3*sum(1;2;3)#18",
+            "sum(10;20)+5#35",
+            "2^sum(1;1)#4",
+            "sum(2;4)*sum(3;9)#72",
+
+            // Verschachtelte Argumente
+            "sum(1+1;2+2;3+3)#12",
+            "sum(summation(1;3;k);product(1;3;k))#12",
+            "sum(gcd(54;24);lcm(6;8))#30"
+    }, delimiter = '#')
+    void sumCombinedTest(String expression, String expectedResult) {
+        BigNumber actual = calculatorEngineRad.evaluate(expression);
+        assertEquals(expectedResult,
+                actual.roundAfterDecimals(new MathContext(30, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Sum mit Variablen ---
+            "sum(x;y;z)#12",
+            "sum(a;b)#9",
+            "3*sum(x;y;z)#36",
+            "sum(x^2;y^2;z^2)#56",
+            "sum(x;sum(y;z))#12"
+    }, delimiter = '#')
+    void sumVariablesTest(String expression, String expectedResult) {
+        Map<String, String> variables =
+                Map.of("x", "2", "y", "4", "z", "6",
+                        "a", "4", "b", "5");
+
+        BigNumber actual = calculatorEngineRad.evaluate(expression, variables);
+        assertEquals(expectedResult,
+                actual.roundAfterDecimals(new MathContext(30, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            // --- Pretty String Ausgabe ---
+            "sum(25;50;75)#150",
+            "3*sum(25;50;75)#450",
+            "sum(1000;2000;3000)#6,000",
+            "sum(1000000;2000000)#3,000,000"
+    }, delimiter = '#')
+    void sumPrettyStringTest(String expression, String expected) {
+        String actual = calculatorEngineRad.evaluateToPrettyString(expression);
+        assertEquals(expected, actual);
     }
 
 }

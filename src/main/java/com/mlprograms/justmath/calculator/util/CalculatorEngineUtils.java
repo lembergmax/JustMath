@@ -25,8 +25,11 @@
 package com.mlprograms.justmath.calculator.util;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.token.Token;
+
 import lombok.NonNull;
 
 import java.util.List;
@@ -138,15 +141,17 @@ public class CalculatorEngineUtils {
      * @param variables a map of variable names with their BigNumber values
      * @throws IllegalArgumentException if a variable token does not have a corresponding value in the map
      */
-    public static void replaceVariables(List<Token> tokens, Map<String, BigNumber> variables) {
+    public static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
         for (int i = 0; i < tokens.size(); i++) {
-            Token token = tokens.get(i);
+            final Token token = tokens.get(i);
             if (token.getType() == Token.Type.VARIABLE) {
-                BigNumber value = variables.get(token.getValue());
-                if (value == null) {
+                final String value = variables.get(token.getValue());
+
+                if (value == null || value.isBlank()) {
                     throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
                 }
-                tokens.set(i, new Token(Token.Type.NUMBER, value.toString()));
+
+                tokens.set(i, new Token(Token.Type.NUMBER, calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()));
             }
         }
     }

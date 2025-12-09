@@ -27,6 +27,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
 | **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
+| **Statistics**                   | `sum`, `average`                                                       |
 
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
@@ -84,42 +85,44 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 
 ### ✅ Supported Operators & Functions
 
-| Category                         | Operator / Function      | Description                        |
-|----------------------------------|--------------------------|------------------------------------|
-| **Arithmetic**                   | `+`, `-`, `*`, `/`       | Basic operations                   |
-|                                  | `%`, `^`, `!`            | Modulo, exponentiation, factorial  |
-| **Roots**                        | `√(x)`, `sqrt(x)`        | Square root                        |
-|                                  | `³√(x)`, `cbrt(x)`       | Cube root                          |
-|                                  | `rootn(a, n)`            | n-th root                          |
-| **Logarithms**                   | `log2(x)`                | Base-2 logarithm                   |
-|                                  | `log(x)`                 | Base-10 logarithm                  |
-|                                  | `ln(x)`                  | Natural logarithm                  |
-|                                  | `logbase(x, b)`          | Logarithm with arbitrary base      |
-| **Trigonometry**                 | `sin(x)`, `cos(x)`       | Sine, cosine                       |
-|                                  | `tan(x)`, `cot(x)`       | Tangent, cotangent                 |
-|                                  | `atan(x)`, `tan⁻¹(x)`    | Arctangent                         |
-|                                  | `acot(x)`, `cot⁻¹(x)`    | Arccotangent                       |
-|                                  | `atan2(y, x)`            | Two-argument arctangent            |
-| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`     | Hyperbolic sine, cosine            |
-|                                  | `tanh(x)`, `coth(x)`     | Hyperbolic tangent, cotangent      |
-| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`  | Inverse hyperbolic sine            |
-|                                  | `acosh(x)`, `cosh⁻¹(x)`  | Inverse hyperbolic cosine          |
-|                                  | `atanh(x)`, `tanh⁻¹(x)`  | Inverse hyperbolic tangent         |
-|                                  | `acoth(x)`, `coth⁻¹(x)`  | Inverse hyperbolic cotangent       |
-| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`| Combinations                       |
-|                                  | `nPr(n, r)`, `perm(n, r)`| Permutations                       |
-| **Series**                       | `∑(start; end; expr)`    | Sigma notation (e.g., ∑(0;10;2^k)) |
-|                                  | `sum(start; end; expr)`  | Named summation function           |
-|                                  | `∏(start; end; expr)`    | Product notation (e.g., ∏(1;4;k))  |
-|                                  | `prod(start; end; expr)` | Named product function             |
-| **Number Theory**                | `GCD(a, b)`              | Greatest common divisor            |
-|                                  | `LCM(a, b)`              | Least common multiple              |
-| **Random Generator**             | `RandInt(min, max)`      | Random integer in a given range    |
-| **Coordinates**                  | `Pol(x, y)`              | Cartesian → Polar                  |
-|                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
-| **Special Functions**            | `Γ(x, y)`, `gamma(x)`    | Gamma                              |
-|                                  | `B(x, y)`, `beta(x, y)`  | Beta                               |
-|                                  | `\|x\|`, `abs(x)`        | Absolute value                     |
+| Category                         | Operator / Function                              | Description                        |
+|----------------------------------|--------------------------------------------------|------------------------------------|
+| **Arithmetic**                   | `+`, `-`, `*`, `/`                               | Basic operations                   |
+|                                  | `%`, `^`, `!`                                    | Modulo, exponentiation, factorial  |
+| **Roots**                        | `√(x)`, `sqrt(x)`                                | Square root                        |
+|                                  | `³√(x)`, `cbrt(x)`                               | Cube root                          |
+|                                  | `rootn(a, n)`                                    | n-th root                          |
+| **Logarithms**                   | `log2(x)`                                        | Base-2 logarithm                   |
+|                                  | `log(x)`                                         | Base-10 logarithm                  |
+|                                  | `ln(x)`                                          | Natural logarithm                  |
+|                                  | `logbase(x, b)`                                  | Logarithm with arbitrary base      |
+| **Trigonometry**                 | `sin(x)`, `cos(x)`                               | Sine, cosine                       |
+|                                  | `tan(x)`, `cot(x)`                               | Tangent, cotangent                 |
+|                                  | `atan(x)`, `tan⁻¹(x)`                            | Arctangent                         |
+|                                  | `acot(x)`, `cot⁻¹(x)`                            | Arccotangent                       |
+|                                  | `atan2(y, x)`                                    | Two-argument arctangent            |
+| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`                             | Hyperbolic sine, cosine            |
+|                                  | `tanh(x)`, `coth(x)`                             | Hyperbolic tangent, cotangent      |
+| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`                          | Inverse hyperbolic sine            |
+|                                  | `acosh(x)`, `cosh⁻¹(x)`                          | Inverse hyperbolic cosine          |
+|                                  | `atanh(x)`, `tanh⁻¹(x)`                          | Inverse hyperbolic tangent         |
+|                                  | `acoth(x)`, `coth⁻¹(x)`                          | Inverse hyperbolic cotangent       |
+| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`                        | Combinations                       |
+|                                  | `nPr(n, r)`, `perm(n, r)`                        | Permutations                       |
+| **Series**                       | `∑(start; end; expr)`                            | Sigma notation (e.g., ∑(0;10;2^k)) |
+|                                  | `sum(start; end; expr)`                          | Named summation function           |
+|                                  | `∏(start; end; expr)`                            | Product notation (e.g., ∏(1;4;k))  |
+|                                  | `prod(start; end; expr)`                         | Named product function             |
+| **Number Theory**                | `GCD(a, b)`                                      | Greatest common divisor            |
+|                                  | `LCM(a, b)`                                      | Least common multiple              |
+| **Random Generator**             | `RandInt(min, max)`                              | Random integer in a given range    |
+| **Coordinates**                  | `Pol(x, y)`                                      | Cartesian → Polar                  |
+|                                  | `Rec(r, θ)`                                      | Polar → Cartesian                  |
+| **Special Functions**            | `Γ(x, y)`, `gamma(x)`                            | Gamma                              |
+|                                  | `B(x, y)`, `beta(x, y)`                          | Beta                               |
+|                                  | `\|x\|`, `abs(x)`                                | Absolute value                     |
+| **Statistics**                   | `avg(n1, n2, n3, ...)`, `average(n1, n2, n3...)` | Average of n elements              |
+|                                  | `sum(n1, n2, n3, ...)`                           | Sum of n elements                  |
 
 ## 🔤 Variables
 
@@ -136,14 +139,14 @@ CalculatorEngine calculator = new CalculatorEngine();
 
 // Define variables
 Map<String, BigNumber> variables = new HashMap<>();
-variables.put("a", new BigNumber("5"));
-variables.put("b", new BigNumber("3"));
+variables.put("a", "5+3");
+variables.put("b", "3");
 
 // Evaluate expression with variables
 BigNumber result = calculator.evaluate("2*a + b^2", variables);
 
 System.out.println(result);
-// 19
+// 25
 ```
 
 ## 📚 Static Utility Methods
@@ -151,28 +154,30 @@ System.out.println(result);
 JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
 `BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
 
-| Class                                | Method(s)                                                                 | Description                                              |
-|--------------------------------------|---------------------------------------------------------------------------|----------------------------------------------------------|
-| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                | Basic arithmetic operations                              |
-|                                      | `factorial`, `exp`                                                        | Factorial and exponential function                       |
-| `CombinatoricsMath`                  | `combination`, `permutation`                                              | Calculate combinations (nCr) and permutations (nPr)      |
-| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`              | Convert between polar and cartesian coordinates          |
-| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                            | Hyperbolic sine, cosine, tangent, and cotangent          |
-| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                        | Inverse hyperbolic functions                             |
-| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                            | Inverse trigonometric functions                          |
-| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                          | Binary, decimal, natural, and arbitrary base logarithms  |
-| `NumberTheoryMath`                   | `gcd`, `lcm`                                                              | Greatest common divisor and least common multiple        |
-| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                         | Percent calculations                                     |
-| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                      | Compute square, cube, and n-th roots                     |
-| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                               | Trigonometric functions (coth also here for convenience) |
-| `TwoDimensionalMath`                 | `atan2`                                                                   | Two-argument arctangent                                  |
-| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians` | Angle conversions                                        |
-|                                      | `randomIntegerBigNumberInRange`                                           | Random integer generation using `BigNumber`              |
-|                                      | `e`, `pi`                                                                 | Mathematical constants as `BigNumber`                    |
-| `SeriesMath`                         | `summation`                                                               | Summation logic                                          |
-|                                      | `product`                                                                 | Product logic                                            |
-|                                      | `product`                                                                 | Product logic                                            |
-| `SpecialFunctionMath`                | `gamma`, `beta`                                                           | Gamma and Beta special functions                         | 
+| Class                                | Method(s)                                                                                                                                  | Description                                              |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                                                                                 | Basic arithmetic operations                              |
+|                                      | `factorial`, `exp`                                                                                                                         | Factorial and exponential function                       |
+| `CombinatoricsMath`                  | `combination`, `permutation`                                                                                                               | Calculate combinations (nCr) and permutations (nPr)      |
+| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`                                                                               | Convert between polar and cartesian coordinates          |
+| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                                                                                             | Hyperbolic sine, cosine, tangent, and cotangent          |
+| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                                                                                         | Inverse hyperbolic functions                             |
+| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                                                                                             | Inverse trigonometric functions                          |
+| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                                                                                           | Binary, decimal, natural, and arbitrary base logarithms  |
+| `MatrixMath`                         | `add`, `subtract`, `multiply`, `divide`, `scalarMultiply`, `transpose`, `determinant`, `inverse`, `power`, `minor`, `identity`, `adjugate` | Matrix operations                                        |
+| `NumberTheoryMath`                   | `gcd`, `lcm`                                                                                                                               | Greatest common divisor and least common multiple        |
+| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                                                                                          | Percent calculations                                     |
+| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                                                                                       | Compute square, cube, and n-th roots                     |
+| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                                                                                                | Trigonometric functions (coth also here for convenience) |
+| `TwoDimensionalMath`                 | `atan2`                                                                                                                                    | Two-argument arctangent                                  |
+| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians`                                                                  | Angle conversions                                        |
+|                                      | `randomIntegerBigNumberInRange`                                                                                                            | Random integer generation using `BigNumber`              |
+|                                      | `e`, `pi`                                                                                                                                  | Mathematical constants as `BigNumber`                    |
+| `SeriesMath`                         | `summation`                                                                                                                                | Summation logic                                          |
+|                                      | `product`                                                                                                                                  | Product logic                                            |
+|                                      | `product`                                                                                                                                  | Product logic                                            |
+| `SpecialFunctionMath`                | `gamma`, `beta`                                                                                                                            | Gamma and Beta special functions                         | 
+| `StatisticsMath`                     | `sum`, `average`                                                                                                                           | Sum and average of provided elements                     | 
  
 ## 📐 Constants
 
@@ -260,49 +265,69 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
+    <td>v1.2.2.4</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.4.jar">JustMath v1.2.2.4</a></td>
+    <td>Preview</td>
+  </tr>
+  <tr>
+    <td>v1.2.2.3</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.3.jar">JustMath v1.2.2.3</a></td>
+    <td>Preview</td>
+  </tr>
+  <tr>
+    <td>v1.2.2.2</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.2.jar">JustMath v1.2.2.2</a></td>
+    <td>Preview</td>
+  </tr>
+  <tr>
+    <td>v1.2.2.1</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.1.jar">JustMath v1.2.2.1</a></td>
+    <td>Preview</td>
+  </tr>
+  <tr>
+    <td>v1.2.2.</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.jar">JustMath v1.2.2</a></td>
+    <td>Release</td>
+  </tr>
+  <tr>
     <td>v1.2.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.1.jar">JustMath v1.2.1</a></td>
-    <td>Pre</td>
+    <td>Preview</td>
   </tr>
  <tr>
     <td>v1.2.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.0.jar">JustMath v1.2.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.5</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.5.jar">JustMath v1.1.5</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.4</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.4.jar">JustMath v1.1.4</a></td>
-    <td>Stable</td>
-  </tr>
- <tr>
-    <td>v1.0.4</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.4.jar">JustMath v1.0.4</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.3</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.3.jar">JustMath v1.0.3</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.2</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.2.jar">JustMath v1.0.2</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.1.jar">JustMath v1.0.1</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">JustMath v1.0.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
 </table>
 

@@ -39,7 +39,7 @@ public class BinaryOperator extends Operator {
 	private final BinaryOperatorOperation operation;
 
 	public BinaryOperator(String symbol, int precedence, BinaryOperatorOperation operation) {
-		super(symbol, precedence, 0);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 

@@ -37,13 +37,11 @@ public abstract class ExpressionElement {
 	private final String symbol;
 	private final boolean isFunction;
 	private final int precedence;
-	private final int numberOfOperands;
 
-	public ExpressionElement(String symbol, boolean isFunction, int precedence, int numberOfOperands) {
+	public ExpressionElement(String symbol, boolean isFunction, int precedence) {
 		this.symbol = symbol;
 		this.isFunction = isFunction;
 		this.precedence = precedence;
-		this.numberOfOperands = numberOfOperands;
 	}
 
 	/**

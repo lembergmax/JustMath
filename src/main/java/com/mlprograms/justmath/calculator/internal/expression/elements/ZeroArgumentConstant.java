@@ -36,7 +36,7 @@ public class ZeroArgumentConstant extends Function {
 	private final ZeroArgumentConstantOperation operation;
 
 	public ZeroArgumentConstant(String symbol, ZeroArgumentConstantOperation operation) {
-		super(symbol, 1, 0);
+		super(symbol, 1);
 		this.operation = operation;
 	}
 

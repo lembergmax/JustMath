@@ -27,6 +27,7 @@ package com.mlprograms.justmath.calculator.internal.expression;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.expression.elements.*;
+import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,32 +72,32 @@ public class ExpressionElements {
     public static final String FUNC_CBRT_S = "³√";
     public static final String FUNC_ROOTN = "rootn";
     //
-    public static final String FUNC_COT = "cot";
-    public static final String FUNC_TAN = "tan";
-    public static final String FUNC_COS = "cos";
     public static final String FUNC_SIN = "sin";
-    //
     public static final String FUNC_SINH = "sinh";
-    public static final String FUNC_COSH = "cosh";
-    public static final String FUNC_TANH = "tanh";
-    public static final String FUNC_COTH = "coth";
-    //
     public static final String FUNC_ASIN = "asin";
-    public static final String FUNC_ACOS = "acos";
-    public static final String FUNC_ATAN = "atan";
-    public static final String FUNC_ACOT = "acot";
     public static final String FUNC_SIN_S = "sin⁻¹";
-    public static final String FUNC_COS_S = "cos⁻¹";
-    public static final String FUNC_TAN_S = "tan⁻¹";
-    public static final String FUNC_COT_S = "cot⁻¹";
-    //
     public static final String FUNC_ASINH = "asinh";
-    public static final String FUNC_ACOSH = "acosh";
-    public static final String FUNC_ATANH = "atanh";
-    public static final String FUNC_ACOTH = "acoth";
     public static final String FUNC_ASINH_S = "sinh⁻¹";
+    //
+    public static final String FUNC_COS = "cos";
+    public static final String FUNC_COSH = "cosh";
+    public static final String FUNC_ACOS = "acos";
+    public static final String FUNC_COS_S = "cos⁻¹";
+    public static final String FUNC_ACOSH = "acosh";
     public static final String FUNC_ACOS_S = "cosh⁻¹";
+    //
+    public static final String FUNC_TAN = "tan";
+    public static final String FUNC_TANH = "tanh";
+    public static final String FUNC_ATAN = "atan";
+    public static final String FUNC_TAN_S = "tan⁻¹";
+    public static final String FUNC_ATANH = "atanh";
     public static final String FUNC_ATANH_S = "tanh⁻¹";
+    //
+    public static final String FUNC_COT = "cot";
+    public static final String FUNC_COTH = "coth";
+    public static final String FUNC_ACOT = "acot";
+    public static final String FUNC_COT_S = "cot⁻¹";
+    public static final String FUNC_ACOTH = "acoth";
     public static final String FUNC_ACOTH_S = "coth⁻¹";
     //
     public static final String FUNC_LOG_2 = "log2";
@@ -117,9 +118,9 @@ public class ExpressionElements {
     //
     public static final String FUNC_RANDINT = "RandInt";
     //
-    public static final String FUNC_SUMM = "sum";
+    public static final String FUNC_SUMM = "summation";
     public static final String FUNC_SUMM_S = "∑";
-    public static final String FUNC_PROD = "prod";
+    public static final String FUNC_PROD = "product";
     public static final String FUNC_PROD_S = "∏";
     //
     public static final String FUNC_GAMMA = "Γ";
@@ -129,6 +130,13 @@ public class ExpressionElements {
     //
     public static final String FUNC_ABS = "abs";
     public static final String SURRFUNC_ABS_S = "|"; // that is special :0
+    //
+    public static final String FUNC_AVG = "avg";
+    public static final String FUNC_AVG_S = "average";
+    //
+    public static final String FUNC_SUM = "sum";
+    //
+    public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
         List<ExpressionElement> expressionElementList = List.of(
@@ -217,7 +225,13 @@ public class ExpressionElements {
                 new TwoArgumentFunction(FUNC_BETA_S, 6, BigNumber::beta),
                 //
                 new OneArgumentZeroParamFunction(FUNC_ABS, 6, BigNumber::abs),
-                new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs)
+                new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs),
+                //
+                new UnlimitedArgumentFunction(FUNC_AVG, 6, BigNumber::average),
+                new UnlimitedArgumentFunction(FUNC_AVG_S, 6, BigNumber::average),
+                //
+                new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum)
+
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
