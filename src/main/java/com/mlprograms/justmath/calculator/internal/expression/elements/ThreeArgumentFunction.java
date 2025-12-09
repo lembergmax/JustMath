@@ -39,7 +39,7 @@ public class ThreeArgumentFunction extends Function {
 	private final ThreeArgumentFunctionOperation operation;
 
 	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
-		super(symbol, precedence, 3);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 

@@ -29,7 +29,7 @@ import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 public class Separator extends ExpressionElement {
 
 	public Separator(String separator) {
-		super(separator, false, 0, 0);
+		super(separator, false, 0);
 	}
 
 }

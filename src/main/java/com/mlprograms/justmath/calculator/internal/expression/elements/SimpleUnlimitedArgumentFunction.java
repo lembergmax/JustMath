@@ -24,30 +24,26 @@
 
 package com.mlprograms.justmath.calculator.internal.expression.elements;
 
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import lombok.Getter;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.operations.SimpleUnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
 
-@Getter
-public class Parenthesis extends ExpressionElement {
+import java.math.MathContext;
+import java.util.*;
 
-	private final Type type;
+public class SimpleUnlimitedArgumentFunction extends UnlimitedArgumentFunction {
 
-	public Parenthesis(Parenthesis.Type type) {
-		super(type == Type.LEFT ? ExpressionElements.PAR_LEFT : ExpressionElements.PAR_RIGHT, false, 0);
-		this.type = type;
-	}
+    public SimpleUnlimitedArgumentFunction(String symbol, int precedence, SimpleUnlimitedArgumentFunctionOperation operation) {
+        super(symbol, precedence, wrap(operation));
+    }
 
-	public boolean isLeft() {
-		return this.type == Type.LEFT;
-	}
+    private static UnlimitedArgumentFunctionOperation wrap(SimpleUnlimitedArgumentFunctionOperation operation) {
+        return ((bigNumber, bigNumbers, mathContext, locale) -> operation.apply(bigNumber, bigNumbers, locale));
+    }
 
-	public boolean isRight() {
-		return this.type == Type.RIGHT;
-	}
-
-	public enum Type {
-		LEFT, RIGHT
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        super.apply(stack, mathContext, trigonometricMode, locale);
+    }
 
 }

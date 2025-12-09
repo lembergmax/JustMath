@@ -26,6 +26,7 @@ package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +35,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -899,7 +902,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_linearFunction() {
             BigNumber start = new BigNumber("1");
             BigNumber end = new BigNumber("3");
-            Map<String, BigNumber> vars = Map.of("a", new BigNumber("2"));
+            Map<String, String> vars = Map.of("a", new BigNumber("2").toString());
             BigNumber result = start.summation(end, "a*k", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("12", result.toString());
         }
@@ -908,7 +911,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_polynomial() {
             BigNumber start = new BigNumber("0");
             BigNumber end = new BigNumber("2");
-            Map<String, BigNumber> vars = Map.of("b", new BigNumber("1.5"), "c", new BigNumber("0.5"));
+            Map<String, String> vars = Map.of("b", new BigNumber("1.5").toString(), "c", new BigNumber("0.5").toString());
             BigNumber result = start.summation(end, "b*k^2 + c", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("9", result.toString());
         }
@@ -1013,6 +1016,51 @@ public class BigNumberTest {
         void absoluteValue(String expr, String expected) {
             BigNumber result = new CalculatorEngine().evaluate(expr);
             assertEquals(expected, result.toString());
+        }
+
+    }
+
+    @Nested
+    public class StatisticMath {
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3,4,5',3",
+                "'1,2',1.5",
+                "'1.5,2.5,3.5',2.5",
+                "'-1,-2,-3',-2",
+                "'1,-1,2,-2',0",
+                "'42',42",
+                "'0,0,0',0",
+                "'5,5,5,5',5",
+                "'2,3,4',3"
+        })
+        void testAverage(String numbersCsv, String result) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber average = bigNumbers.getFirst().average(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(result, average.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3,4,5',15",
+                "'1,2',3",
+                "'1.5,2.5,3.5',7.5",
+                "'-1,-2,-3',-6",
+                "'1,-1,2,-2',0",
+                "'42',42",
+                "'0,0,0',0",
+                "'5,5,5,5',20",
+                "'2,3,4',9"
+        })
+        void testSum(String numbersCsv, String result) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber sum = bigNumbers.getFirst().sum(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(result, sum.toString());
+        }
+
+        private List<BigNumber> stringListToBigNumberList(List<String> numbers) {
+            return numbers.stream().map(BigNumber::new).toList();
         }
 
     }

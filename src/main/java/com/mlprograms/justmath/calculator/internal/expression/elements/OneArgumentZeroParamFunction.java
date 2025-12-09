@@ -40,7 +40,7 @@ public class OneArgumentZeroParamFunction extends Function {
 	private final OneArgumentZeroParamFunctionOperation operation;
 
 	public OneArgumentZeroParamFunction(String symbol, int precedence, OneArgumentZeroParamFunctionOperation operation) {
-		super(symbol, precedence, 1);
+		super(symbol, precedence);
 		this.operation = operation;
 	}
 
