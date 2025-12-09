@@ -22,20 +22,30 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.exceptions;
+package com.mlprograms.justmath.exceptions;
 
-import com.mlprograms.justmath.exceptions.CustomErrorException;
-import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
+import lombok.Getter;
 import lombok.NonNull;
 
-public class SyntaxErrorException extends CustomErrorException {
+@Getter
+public class CustomErrorException extends RuntimeException {
 
-    public SyntaxErrorException() {
-        super(CustomExceptionMessages.SYNTAX_ERROR);
+    @NonNull
+    private final CustomExceptionMessages customExceptionMessages;
+
+    @NonNull
+    private final String detailedMessage;
+
+    public CustomErrorException(final CustomExceptionMessages customExceptionMessages) {
+        super(customExceptionMessages.getMessage());
+        this.customExceptionMessages = customExceptionMessages;
+        this.detailedMessage = "Detailed Message was not specified.";
     }
 
-    public SyntaxErrorException(@NonNull final String detailedMessage) {
-        super(CustomExceptionMessages.SYNTAX_ERROR, detailedMessage);
+    public CustomErrorException(final CustomExceptionMessages customExceptionMessages, @NonNull final String detailedMessage) {
+        super(customExceptionMessages.getMessage());
+        this.customExceptionMessages = customExceptionMessages;
+        this.detailedMessage = detailedMessage;
     }
 
 }

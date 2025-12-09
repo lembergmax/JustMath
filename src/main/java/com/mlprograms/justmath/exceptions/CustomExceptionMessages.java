@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.exceptions;
+package com.mlprograms.justmath.exceptions;
 
 import lombok.Getter;
 
@@ -37,4 +37,5 @@ public enum CustomExceptionMessages {
     CustomExceptionMessages(String message) {
         this.message = message;
     }
+
 }
