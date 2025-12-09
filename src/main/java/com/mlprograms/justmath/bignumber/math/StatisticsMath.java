@@ -31,6 +31,8 @@ import java.math.MathContext;
 import java.util.List;
 import java.util.Locale;
 
+import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
+import com.mlprograms.justmath.bignumber.math.exceptions.InsufficientElementsException;
 import lombok.NonNull;
 
 public class StatisticsMath {
@@ -78,6 +80,26 @@ public class StatisticsMath {
         }
 
         return sum;
+    }
+
+    public static BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        if (numbers.isEmpty()) {
+            throw new InsufficientElementsException();
+        }
+
+        final List<BigNumber> sortedNumbers = QuickSort.sort(numbers);
+        final int size = sortedNumbers.size();
+        final int middleIndex = size / 2;
+
+        if ((size & 1) == 1) {
+            return sortedNumbers.get(middleIndex);
+        }
+
+        final BigNumber lowerMiddle = sortedNumbers.get(middleIndex - 1);
+        final BigNumber upperMiddle = sortedNumbers.get(middleIndex);
+        final BigNumber sumOfMiddles = lowerMiddle.add(upperMiddle, locale);
+
+        return sumOfMiddles.divide(BigNumbers.TWO, mathContext, locale);
     }
 
 }
