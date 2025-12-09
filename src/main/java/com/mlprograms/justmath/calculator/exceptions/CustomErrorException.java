@@ -22,18 +22,30 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.exceptions;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import lombok.Getter;
+import lombok.NonNull;
 
-public class Main {
+@Getter
+public class CustomErrorException extends RuntimeException {
 
-    public static void main(String[] args) {
+    @NonNull
+    private final CustomExceptionMessages customExceptionMessages;
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+    @NonNull
+    private final String detailedMessage;
 
+    public CustomErrorException(final CustomExceptionMessages customExceptionMessages) {
+        super(customExceptionMessages.getMessage());
+        this.customExceptionMessages = customExceptionMessages;
+        this.detailedMessage = "Detailed Message was not specified.";
+    }
+
+    public CustomErrorException(final CustomExceptionMessages customExceptionMessages, @NonNull final String detailedMessage) {
+        super(customExceptionMessages.getMessage());
+        this.customExceptionMessages = customExceptionMessages;
+        this.detailedMessage = detailedMessage;
     }
 
 }

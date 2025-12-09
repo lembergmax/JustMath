@@ -22,18 +22,19 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.exceptions;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import lombok.Getter;
 
-public class Main {
+public enum CustomExceptionMessages {
 
-    public static void main(String[] args) {
+    SYNTAX_ERROR("Syntax Error"),
+    PROCESSING_ERROR("Processing Error");
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+    @Getter
+    private final String message;
 
+    CustomExceptionMessages(String message) {
+        this.message = message;
     }
-
 }

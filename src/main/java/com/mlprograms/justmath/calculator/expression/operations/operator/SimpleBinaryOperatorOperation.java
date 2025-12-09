@@ -22,18 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.operations.operator;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-public class Main {
+import java.util.Locale;
 
-    public static void main(String[] args) {
+@FunctionalInterface
+public interface SimpleBinaryOperatorOperation {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
-
-    }
+	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
 
 }

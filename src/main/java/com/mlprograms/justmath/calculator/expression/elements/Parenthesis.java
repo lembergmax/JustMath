@@ -22,18 +22,32 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import lombok.Getter;
 
-public class Main {
+@Getter
+public class Parenthesis extends ExpressionElement {
 
-    public static void main(String[] args) {
+	private final Type type;
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+	public Parenthesis(Parenthesis.Type type) {
+		super(type == Type.LEFT ? ExpressionElements.PAR_LEFT : ExpressionElements.PAR_RIGHT, false, 0);
+		this.type = type;
+	}
 
-    }
+	public boolean isLeft() {
+		return this.type == Type.LEFT;
+	}
+
+	public boolean isRight() {
+		return this.type == Type.RIGHT;
+	}
+
+	public enum Type {
+		LEFT, RIGHT
+	}
 
 }

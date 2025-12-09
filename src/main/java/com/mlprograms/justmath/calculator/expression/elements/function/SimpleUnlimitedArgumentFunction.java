@@ -22,18 +22,28 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements.function;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.expression.operations.function.SimpleUnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.expression.operations.function.UnlimitedArgumentFunctionOperation;
 
-public class Main {
+import java.math.MathContext;
+import java.util.*;
 
-    public static void main(String[] args) {
+public class SimpleUnlimitedArgumentFunction extends UnlimitedArgumentFunction {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+    public SimpleUnlimitedArgumentFunction(String symbol, int precedence, SimpleUnlimitedArgumentFunctionOperation operation) {
+        super(symbol, precedence, wrap(operation));
+    }
 
+    private static UnlimitedArgumentFunctionOperation wrap(SimpleUnlimitedArgumentFunctionOperation operation) {
+        return ((bigNumber, bigNumbers, mathContext, locale) -> operation.apply(bigNumber, bigNumbers, locale));
+    }
+
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        super.apply(stack, mathContext, trigonometricMode, locale);
     }
 
 }

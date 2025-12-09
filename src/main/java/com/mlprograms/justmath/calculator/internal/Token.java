@@ -22,18 +22,51 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.internal;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-public class Main {
+import java.util.Optional;
 
-    public static void main(String[] args) {
+/**
+ * Represents a lexical token extracted from a mathematical expression.
+ * Tokens can be numbers, operators, functions, parentheses, or special symbols.
+ */
+@Getter
+@EqualsAndHashCode
+@ToString
+@AllArgsConstructor
+public class Token {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+	private Type type;
+	private String value;
 
-    }
+	/**
+	 * Returns the matching ArithmeticOperator if available.
+	 *
+	 * @return Optional of ArithmeticOperator
+	 */
+	public Optional<ExpressionElement> asArithmeticOperator() {
+		return ExpressionElements.findBySymbol(value);
+	}
 
+	/**
+	 * Enumeration of token types.
+	 */
+	public enum Type {
+		NUMBER,
+		OPERATOR,
+		FUNCTION,
+		LEFT_PAREN,
+		RIGHT_PAREN,
+		SEMICOLON,
+		STRING,
+		CONSTANT,
+		VARIABLE
+	}
 }

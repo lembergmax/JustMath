@@ -22,18 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements.operator;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 
-public class Main {
+public class Operator extends ExpressionElement {
 
-    public static void main(String[] args) {
-
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
-
-    }
+	public Operator(String symbol, int precedence) {
+		super(symbol, false, precedence);
+	}
 
 }

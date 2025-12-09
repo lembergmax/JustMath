@@ -22,18 +22,13 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.operations.function;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-public class Main {
+@FunctionalInterface
+public interface OneArgumentZeroParamFunctionOperation {
 
-    public static void main(String[] args) {
-
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
-
-    }
+	BigNumber apply(BigNumber a);
 
 }
