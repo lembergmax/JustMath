@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.TwoArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.SimpleTwoArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.TwoArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -34,20 +35,32 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class TwoArgumentFunction extends Function {
+public class SimpleTwoArgumentFunction extends TwoArgumentFunction {
 
-	private final TwoArgumentFunctionOperation operation;
+	private final SimpleTwoArgumentFunctionOperation operation;
 
-	public TwoArgumentFunction(String symbol, int precedence, TwoArgumentFunctionOperation operation) {
-		super(symbol, precedence);
+	public SimpleTwoArgumentFunction(String symbol, int precedence, SimpleTwoArgumentFunctionOperation operation) {
+		super(symbol, precedence, wrap(operation));
 		this.operation = operation;
+	}
+
+	/**
+	 * Wraps a {@link SimpleTwoArgumentFunctionOperation} into a {@link TwoArgumentFunctionOperation}.
+	 * The resulting operation ignores the context parameter and delegates to the simple operation.
+	 *
+	 * @param operation
+	 * 	the simple two-argument function operation to wrap
+	 *
+	 * @return a {@link TwoArgumentFunctionOperation} that calls the given simple operation
+	 */
+	private static TwoArgumentFunctionOperation wrap(SimpleTwoArgumentFunctionOperation operation) {
+		return (a, b, context, locale) -> operation.apply(a, b, locale);
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
 		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, locale));
+		stack.push(operation.apply(a, b, locale));
 	}
-
 }

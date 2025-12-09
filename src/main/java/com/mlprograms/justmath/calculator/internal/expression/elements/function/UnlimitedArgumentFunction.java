@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.exceptions.ProcessingErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.UnlimitedArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.*;

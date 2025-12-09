@@ -24,28 +24,15 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberMatrix;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-
-import java.util.Locale;
 
 public class Main {
 
     public static void main(String[] args) {
 
         final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("asin(0.25)"));
-
-
-        BigNumber bigNumber = new BigNumber("3242341242345", Locale.GERMAN);
-        System.out.println(bigNumber.toPrettyString());
-
-        BigNumberMatrix matrix1 = new BigNumberMatrix("1,2,3;4,5,6;7,8,9", Locale.GERMAN);
-        BigNumberMatrix matrix2 = new BigNumberMatrix("9,8,7;6,5,4;3,2,1", Locale.GERMAN);
-
-        System.out.println(matrix1.add(matrix2).toPlainDataString());
-
+        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
+        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
 
     }
 

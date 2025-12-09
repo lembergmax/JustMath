@@ -22,17 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.operations.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
-import java.util.List;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface UnlimitedArgumentFunctionOperation {
+public interface CoordinateFunctionOperation {
 
-	BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, MathContext mathContext, Locale locale);
+	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }

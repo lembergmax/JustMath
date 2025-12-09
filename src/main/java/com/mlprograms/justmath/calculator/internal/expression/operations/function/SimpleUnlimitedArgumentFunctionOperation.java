@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.operations.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 
-import java.math.MathContext;
+import java.util.List;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface OneArgumentFunctionOperation {
+public interface SimpleUnlimitedArgumentFunctionOperation {
 
-	BigNumber apply(BigNumber a, MathContext mathContext, Locale locale);
+	BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, Locale locale);
 
 }

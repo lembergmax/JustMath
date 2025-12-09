@@ -22,28 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.operations.operator;
 
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.SimpleUnlimitedArgumentFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-import java.math.MathContext;
-import java.util.*;
+import java.util.Locale;
 
-public class SimpleUnlimitedArgumentFunction extends UnlimitedArgumentFunction {
+@FunctionalInterface
+public interface SimpleBinaryOperatorOperation {
 
-    public SimpleUnlimitedArgumentFunction(String symbol, int precedence, SimpleUnlimitedArgumentFunctionOperation operation) {
-        super(symbol, precedence, wrap(operation));
-    }
-
-    private static UnlimitedArgumentFunctionOperation wrap(SimpleUnlimitedArgumentFunctionOperation operation) {
-        return ((bigNumber, bigNumbers, mathContext, locale) -> operation.apply(bigNumber, bigNumbers, locale));
-    }
-
-    @Override
-    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-        super.apply(stack, mathContext, trigonometricMode, locale);
-    }
+	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
 
 }

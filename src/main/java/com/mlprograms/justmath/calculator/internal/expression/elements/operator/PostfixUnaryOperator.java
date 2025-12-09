@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.operator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.OneArgumentTrigonometricFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.OneArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -34,19 +34,18 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class OneArgumentTrigonometricFunction extends Function {
+public class PostfixUnaryOperator extends Operator {
 
-	private final OneArgumentTrigonometricFunctionOperation operation;
+	private final OneArgumentFunctionOperation operation;
 
-	public OneArgumentTrigonometricFunction(String symbol, int precedence, OneArgumentTrigonometricFunctionOperation operation) {
+	public PostfixUnaryOperator(String symbol, int precedence, OneArgumentFunctionOperation operation) {
 		super(symbol, precedence);
 		this.operation = operation;
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, mathContext, trigonometricMode, locale));
+		BigNumber value = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(value, mathContext, locale));
 	}
-
 }

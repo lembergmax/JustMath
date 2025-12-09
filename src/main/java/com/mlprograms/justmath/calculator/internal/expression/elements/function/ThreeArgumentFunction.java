@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.CoordinateFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.expression.operations.SimpleCoordinateFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.ThreeArgumentFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -35,33 +34,21 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class SimpleCoordinateFunction extends CoordinateFunction {
+public class ThreeArgumentFunction extends Function {
 
-	private final SimpleCoordinateFunctionOperation operation;
+	private final ThreeArgumentFunctionOperation operation;
 
-	public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
-		super(symbol, precedence, wrap(operation));
+	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
+		super(symbol, precedence);
 		this.operation = operation;
-	}
-
-	/**
-	 * Wraps a SimpleCoordinateFunctionOperation into a CoordinateFunctionOperation.
-	 * Ignores the trigonometricMode parameter, delegating to the underlying operation.
-	 *
-	 * @param operation
-	 * 	the SimpleCoordinateFunctionOperation to wrap
-	 *
-	 * @return a CoordinateFunctionOperation that delegates to the given operation
-	 */
-	private static CoordinateFunctionOperation wrap(SimpleCoordinateFunctionOperation operation) {
-		return (a, b, mathContext, trigonometricMode, locale) -> operation.apply(a, b, mathContext, locale);
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		String c = String.valueOf(stack.pop());
 		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, locale));
+		stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
 	}
 
 }

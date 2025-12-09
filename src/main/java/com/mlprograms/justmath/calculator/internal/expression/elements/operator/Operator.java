@@ -22,17 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements.operator;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 
-import java.math.MathContext;
-import java.util.List;
-import java.util.Locale;
+public class Operator extends ExpressionElement {
 
-@FunctionalInterface
-public interface SimpleUnlimitedArgumentFunctionOperation {
-
-	BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, Locale locale);
+	public Operator(String symbol, int precedence) {
+		super(symbol, false, precedence);
+	}
 
 }

@@ -22,15 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.operations.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 
+import java.math.MathContext;
 import java.util.Locale;
 
 @FunctionalInterface
-public interface SimpleTwoArgumentFunctionOperation {
+public interface SimpleCoordinateFunctionOperation {
 
-	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
+	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
 
 }

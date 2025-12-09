@@ -22,16 +22,32 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.CoordinateFunctionOperation;
 
 import java.math.MathContext;
+import java.util.Deque;
 import java.util.Locale;
 
-@FunctionalInterface
-public interface OneArgumentZeroParamFunctionOperation {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-	BigNumber apply(BigNumber a);
+public class CoordinateFunction extends Function {
+
+	private final CoordinateFunctionOperation operation;
+
+	public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
+		super(symbol, precedence);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		BigNumber b = ensureBigNumber(stack.pop());
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, b, mathContext, trigonometricMode, locale));
+	}
 
 }
