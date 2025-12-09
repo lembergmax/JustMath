@@ -134,6 +134,8 @@ public class ExpressionElements {
     public static final String FUNC_AVG = "avg";
     public static final String FUNC_AVG_S = "average";
     //
+    public static final String FUNC_SUM = "sum";
+    //
     public static final String K_SERIES_MATH_VARIABLE = "k";
 
     static {
@@ -226,7 +228,10 @@ public class ExpressionElements {
                 new OneArgumentZeroParamFunction(SURRFUNC_ABS_S, 6, BigNumber::abs),
                 //
                 new UnlimitedArgumentFunction(FUNC_AVG, 6, BigNumber::average),
-                new UnlimitedArgumentFunction(FUNC_AVG_S, 6, BigNumber::average)
+                new UnlimitedArgumentFunction(FUNC_AVG_S, 6, BigNumber::average),
+                //
+                new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum)
+
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
