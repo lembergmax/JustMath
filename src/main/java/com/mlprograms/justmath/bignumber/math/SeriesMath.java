@@ -29,7 +29,7 @@ import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 
 import lombok.NonNull;
 

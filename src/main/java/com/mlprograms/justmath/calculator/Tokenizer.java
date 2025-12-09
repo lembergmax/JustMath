@@ -25,13 +25,15 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.expression.elements.*;
-import com.mlprograms.justmath.calculator.internal.expression.elements.function.ThreeArgumentFunction;
-import com.mlprograms.justmath.calculator.internal.expression.elements.operator.PostfixUnaryOperator;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.Constant;
+import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
+import com.mlprograms.justmath.calculator.expression.elements.Separator;
+import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.internal.Token;
 
 import java.math.MathContext;
 import java.util.*;
