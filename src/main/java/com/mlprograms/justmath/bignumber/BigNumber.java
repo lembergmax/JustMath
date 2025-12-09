@@ -2524,6 +2524,75 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset.
+     *
+     * <p>This convenience overload uses the instance's default {@link MathContext} and {@link Locale}. The supplied
+     * {@code numbers} list is combined with this {@code BigNumber} via {@code addThisTobigNumberList(numbers)} before
+     * delegating to the canonical implementation.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the provided {@link Locale}.
+     *
+     * <p>This overload keeps the instance's default {@link MathContext} but allows callers to specify a {@code locale}
+     * that may affect locale-sensitive formatting or parsing performed by the underlying implementation.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the provided {@link MathContext}.
+     *
+     * <p>This overload lets callers control precision and rounding by supplying a {@code mathContext} while using the
+     * instance's default {@link Locale}.</p>
+     *
+     * @param numbers     the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode for the computation
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the specified {@link MathContext} and {@link Locale}.
+     *
+     * <p>This is the canonical implementation: the supplied {@code numbers} list is combined with this instance and
+     * the actual median calculation is delegated to {@link StatisticsMath#median(List, MathContext, Locale)}.</p>
+     *
+     * @param numbers     the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode for the computation
+     * @param locale      the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to {@link StatisticsMath#median})
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        final List<BigNumber> allNumbers = addThisTobigNumberList(numbers);
+        return StatisticsMath.median(allNumbers, mathContext, locale);
+    }
+
+    /**
      * Returns a new list with this {@code BigNumber} prepended to the provided list.
      *
      * <p>The returned list is a newly created {@code ArrayList} and does not modify the original
@@ -2534,7 +2603,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return a new {@code List<BigNumber>} containing {@code this} followed by all elements of {@code numbers}
      */
     private List<BigNumber> addThisTobigNumberList(@NonNull final List<BigNumber> numbers) {
-        List<BigNumber> bigNumbers = new ArrayList<>();
+        List<BigNumber> bigNumbers = new ArrayList<>(numbers.size() + 1);
         bigNumbers.add(this);
         bigNumbers.addAll(numbers);
         return bigNumbers;

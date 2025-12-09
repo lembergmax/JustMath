@@ -24,9 +24,11 @@
 
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1057,6 +1059,27 @@ public class BigNumberTest {
             List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
             BigNumber sum = bigNumbers.getFirst().sum(bigNumbers.subList(1, bigNumbers.size()));
             assertEquals(result, sum.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3', 2",
+                "'3,1,2', 2",
+                "'10,2,8,4,6', 6",
+                "'-5,-1,-3', -3",
+                "'1,2,3,4', 2.5",
+                "'4,1,3,2', 2.5",
+                "'10,20,30,40', 25",
+                "'-2,-4,-6,-8', -5",
+                "'1.5, 3.5, 2.5', 2.5",
+                "'2.2, 1.1, 4.4, 3.3', 2.75",
+                "'2, 2, 2', 2",
+                "'1, 1, 2, 2', 1.5"
+        })
+        void testMedian(String numbersCsv, String expectedValue) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber median = bigNumbers.getFirst().median(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(expectedValue, median.toString());
         }
 
         private List<BigNumber> stringListToBigNumberList(List<String> numbers) {
