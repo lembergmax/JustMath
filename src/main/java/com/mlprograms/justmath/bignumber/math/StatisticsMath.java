@@ -82,6 +82,29 @@ public class StatisticsMath {
         return sum;
     }
 
+    /**
+     * Calculates the median of the provided list of {@link BigNumber} values.
+     *
+     * <p>Behavior:
+     * <ul>
+     *   <li>If {@code numbers} is empty, an {@link InsufficientElementsException} is thrown.</li>
+     *   <li>The input list is sorted using {@link QuickSort#sort(List)} to determine the middle element(s).</li>
+     *   <li>If the number of elements is odd, the exact middle element is returned.</li>
+     *   <li>If the number of elements is even, the median is defined as the arithmetic mean of the two
+     *       middle elements. That mean is computed by adding the two middle {@link BigNumber} values and
+     *       dividing the sum by {@link BigNumbers#TWO} using the provided {@link MathContext} and
+     *       {@link Locale} to control precision, rounding and any locale-sensitive behavior.</li>
+     * </ul>
+     *
+     * <p>Note: The time complexity is dominated by the sorting step. The method delegates locale-aware
+     * operations to {@link BigNumber} methods and forwards the supplied {@code locale} to those calls.
+     *
+     * @param numbers     the list of values to compute the median for; must not be {@code null}
+     * @param mathContext controls precision and rounding when averaging two middle elements; must not be {@code null}
+     * @param locale      locale passed to {@link BigNumber} operations; must not be {@code null}
+     * @return the median as a {@link BigNumber}
+     * @throws InsufficientElementsException if {@code numbers} is empty
+     */
     public static BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         if (numbers.isEmpty()) {
             throw new InsufficientElementsException();
