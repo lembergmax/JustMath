@@ -22,30 +22,20 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.exceptions;
+package com.mlprograms.justmath.bignumber.math.exceptions;
 
-import lombok.Getter;
+import com.mlprograms.justmath.exceptions.CustomErrorException;
+import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
 import lombok.NonNull;
 
-@Getter
-public class CustomErrorException extends RuntimeException {
+public class InsufficientElementsException extends CustomErrorException {
 
-    @NonNull
-    private final CustomExceptionMessages customExceptionMessages;
-
-    @NonNull
-    private final String detailedMessage;
-
-    public CustomErrorException(final CustomExceptionMessages customExceptionMessages) {
-        super(customExceptionMessages.getMessage());
-        this.customExceptionMessages = customExceptionMessages;
-        this.detailedMessage = "Detailed Message was not specified.";
+    public InsufficientElementsException() {
+        super(CustomExceptionMessages.PROCESSING_ERROR, "Detailed Message was not specified.");
     }
 
-    public CustomErrorException(final CustomExceptionMessages customExceptionMessages, @NonNull final String detailedMessage) {
-        super(customExceptionMessages.getMessage());
-        this.customExceptionMessages = customExceptionMessages;
-        this.detailedMessage = detailedMessage;
+    public InsufficientElementsException(@NonNull final String detailedMessage) {
+        super(CustomExceptionMessages.PROCESSING_ERROR, detailedMessage);
     }
 
 }

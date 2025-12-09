@@ -27,7 +27,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
 | **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
-| **Statistics**                   | `sum`, `average`                                                       |
+| **Statistics**                   | `sum`, `average`, `median`                                             |
 
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
@@ -123,6 +123,7 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 |                                  | `\|x\|`, `abs(x)`                                | Absolute value                     |
 | **Statistics**                   | `avg(n1, n2, n3, ...)`, `average(n1, n2, n3...)` | Average of n elements              |
 |                                  | `sum(n1, n2, n3, ...)`                           | Sum of n elements                  |
+|                                  | `median(n1, n2, n3, ...)`                        | Median of n elements               |
 
 ## 🔤 Variables
 
@@ -177,7 +178,7 @@ JustMath provides a suite of **static utility methods** grouped in dedicated cla
 |                                      | `product`                                                                                                                                  | Product logic                                            |
 |                                      | `product`                                                                                                                                  | Product logic                                            |
 | `SpecialFunctionMath`                | `gamma`, `beta`                                                                                                                            | Gamma and Beta special functions                         | 
-| `StatisticsMath`                     | `sum`, `average`                                                                                                                           | Sum and average of provided elements                     | 
+| `StatisticsMath`                     | `sum`, `average`, `median`                                                                                                                 | Sum and average of provided elements                     | 
  
 ## 📐 Constants
 
@@ -196,6 +197,27 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 | `THREE`                      | BigNumber value of 3                            |
 | `ONE_HUNDRED`                | BigNumber value of 100                          |
 | `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
+
+## 🧭 Algorithms
+
+You can also sort a `List<BigNumber>` using any of the following algorithms.
+
+| Algorithm                         |
+|-----------------------------------|
+| `QuickSort`                       |
+
+### ✅ Example: Using Algorithms
+
+```java
+List<BigNumber> numbers = Arrays.asList(
+        new BigNumber("3.14"),
+        new BigNumber("2.71"),
+        new BigNumber("1.41"),
+        new BigNumber("1.73")
+);
+
+numbers = QuickSort.sort(numbers);
+```
 
 ## 🧑‍💻 Practical Examples
 
@@ -265,28 +287,8 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.2.5</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.5.jar">JustMath v1.2.2.5</a></td>
-    <td>Preview</td>
-  </tr>
-  <tr>
-    <td>v1.2.2.4</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.4.jar">JustMath v1.2.2.4</a></td>
-    <td>Preview</td>
-  </tr>
-  <tr>
-    <td>v1.2.2.3</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.3.jar">JustMath v1.2.2.3</a></td>
-    <td>Preview</td>
-  </tr>
-  <tr>
-    <td>v1.2.2.2</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.2.jar">JustMath v1.2.2.2</a></td>
-    <td>Preview</td>
-  </tr>
-  <tr>
-    <td>v1.2.2.1</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.1.jar">JustMath v1.2.2.1</a></td>
+    <td>v1.2.2.6</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.6.jar">JustMath v1.2.2.6</a></td>
     <td>Preview</td>
   </tr>
   <tr>
