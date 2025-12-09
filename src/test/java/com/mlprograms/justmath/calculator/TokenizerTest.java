@@ -24,8 +24,8 @@
 
 package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.internal.Token;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
