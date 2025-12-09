@@ -30,7 +30,7 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Algorithm {
+class Algorithm {
 
     /**
      * Create a shallow copy of the given list of BigNumber instances.
