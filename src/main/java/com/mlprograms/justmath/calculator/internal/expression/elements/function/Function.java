@@ -22,17 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
 
-import java.math.MathContext;
-import java.util.Locale;
+public class Function extends ExpressionElement {
 
-@FunctionalInterface
-public interface OneArgumentTrigonometricFunctionOperation {
-
-	BigNumber apply(BigNumber a, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
+	public Function(String symbol, int precedence) {
+		super(symbol, true, precedence);
+	}
 
 }

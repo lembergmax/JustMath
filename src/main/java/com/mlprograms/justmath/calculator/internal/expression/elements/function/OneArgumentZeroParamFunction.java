@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.ThreeArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.OneArgumentZeroParamFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -34,21 +34,19 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class ThreeArgumentFunction extends Function {
+public class OneArgumentZeroParamFunction extends Function {
 
-	private final ThreeArgumentFunctionOperation operation;
+	private final OneArgumentZeroParamFunctionOperation operation;
 
-	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
+	public OneArgumentZeroParamFunction(String symbol, int precedence, OneArgumentZeroParamFunctionOperation operation) {
 		super(symbol, precedence);
 		this.operation = operation;
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		String c = String.valueOf(stack.pop());
-		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
+		stack.push(operation.apply(a));
 	}
 
 }

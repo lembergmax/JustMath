@@ -22,16 +22,28 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.operations;
+package com.mlprograms.justmath.calculator.internal.expression.elements;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.expression.elements.function.Function;
+import com.mlprograms.justmath.calculator.internal.expression.operations.ConstantOperation;
 
 import java.math.MathContext;
+import java.util.Deque;
 import java.util.Locale;
 
-@FunctionalInterface
-public interface TwoArgumentFunctionOperation {
+public class Constant extends Function {
 
-	BigNumber apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
+	private final ConstantOperation operation;
+
+	public Constant(String symbol, ConstantOperation operation) {
+		super(symbol, 1);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		stack.push(operation.apply(mathContext, locale));
+	}
 
 }

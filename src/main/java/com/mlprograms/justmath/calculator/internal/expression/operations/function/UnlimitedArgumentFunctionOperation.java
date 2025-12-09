@@ -22,27 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.operations.function;
 
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.ZeroArgumentConstantOperation;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
 import java.math.MathContext;
-import java.util.Deque;
+import java.util.List;
 import java.util.Locale;
 
-public class ZeroArgumentConstant extends Function {
+@FunctionalInterface
+public interface UnlimitedArgumentFunctionOperation {
 
-	private final ZeroArgumentConstantOperation operation;
-
-	public ZeroArgumentConstant(String symbol, ZeroArgumentConstantOperation operation) {
-		super(symbol, 1);
-		this.operation = operation;
-	}
-
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		stack.push(operation.apply(mathContext, locale));
-	}
+	BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, MathContext mathContext, Locale locale);
 
 }

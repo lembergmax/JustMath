@@ -22,14 +22,33 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.operator;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.internal.expression.operations.operator.SimpleBinaryOperatorOperation;
 
-public class Operator extends ExpressionElement {
+import java.math.MathContext;
+import java.util.Deque;
+import java.util.Locale;
 
-	public Operator(String symbol, int precedence) {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
+
+public class SimpleBinaryOperator extends ExpressionElement {
+
+	private final SimpleBinaryOperatorOperation operation;
+
+	public SimpleBinaryOperator(String symbol, int precedence, SimpleBinaryOperatorOperation operation) {
 		super(symbol, false, precedence);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		BigNumber b = ensureBigNumber(stack.pop());
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, b, locale));
 	}
 
 }

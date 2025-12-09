@@ -27,7 +27,10 @@ package com.mlprograms.justmath.calculator.internal.expression;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.expression.elements.*;
-import com.mlprograms.justmath.calculator.internal.expression.operations.UnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.elements.function.*;
+import com.mlprograms.justmath.calculator.internal.expression.elements.operator.BinaryOperator;
+import com.mlprograms.justmath.calculator.internal.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.internal.expression.elements.operator.SimpleBinaryOperator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -140,9 +143,9 @@ public class ExpressionElements {
 
     static {
         List<ExpressionElement> expressionElementList = List.of(
-                new ZeroArgumentConstant(PI, BigNumbers::pi),
-                new ZeroArgumentConstant(PI_S, BigNumbers::pi),
-                new ZeroArgumentConstant(EULERS_NUMBER, BigNumbers::e),
+                new Constant(PI, BigNumbers::pi),
+                new Constant(PI_S, BigNumbers::pi),
+                new Constant(EULERS_NUMBER, BigNumbers::e),
                 //
                 new Parenthesis(Parenthesis.Type.LEFT),
                 new Parenthesis(Parenthesis.Type.RIGHT),

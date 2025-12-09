@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.internal.expression.elements;
+package com.mlprograms.justmath.calculator.internal.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.operations.SimpleTwoArgumentFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.expression.operations.TwoArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.expression.operations.function.OneArgumentTrigonometricFunctionOperation;
 
 import java.math.MathContext;
 import java.util.Deque;
@@ -35,32 +34,19 @@ import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-public class SimpleTwoArgumentFunction extends TwoArgumentFunction {
+public class OneArgumentTrigonometricFunction extends Function {
 
-	private final SimpleTwoArgumentFunctionOperation operation;
+	private final OneArgumentTrigonometricFunctionOperation operation;
 
-	public SimpleTwoArgumentFunction(String symbol, int precedence, SimpleTwoArgumentFunctionOperation operation) {
-		super(symbol, precedence, wrap(operation));
+	public OneArgumentTrigonometricFunction(String symbol, int precedence, OneArgumentTrigonometricFunctionOperation operation) {
+		super(symbol, precedence);
 		this.operation = operation;
-	}
-
-	/**
-	 * Wraps a {@link SimpleTwoArgumentFunctionOperation} into a {@link TwoArgumentFunctionOperation}.
-	 * The resulting operation ignores the context parameter and delegates to the simple operation.
-	 *
-	 * @param operation
-	 * 	the simple two-argument function operation to wrap
-	 *
-	 * @return a {@link TwoArgumentFunctionOperation} that calls the given simple operation
-	 */
-	private static TwoArgumentFunctionOperation wrap(SimpleTwoArgumentFunctionOperation operation) {
-		return (a, b, context, locale) -> operation.apply(a, b, locale);
 	}
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureBigNumber(stack.pop());
 		BigNumber a = ensureBigNumber(stack.pop());
-		stack.push(operation.apply(a, b, locale));
+		stack.push(operation.apply(a, mathContext, trigonometricMode, locale));
 	}
+
 }
