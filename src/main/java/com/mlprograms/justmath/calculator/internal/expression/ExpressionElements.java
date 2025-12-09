@@ -118,9 +118,9 @@ public class ExpressionElements {
     //
     public static final String FUNC_RANDINT = "RandInt";
     //
-    public static final String FUNC_SUMM = "summ";
+    public static final String FUNC_SUMM = "summation";
     public static final String FUNC_SUMM_S = "∑";
-    public static final String FUNC_PROD = "prod";
+    public static final String FUNC_PROD = "product";
     public static final String FUNC_PROD_S = "∏";
     //
     public static final String FUNC_GAMMA = "Γ";
