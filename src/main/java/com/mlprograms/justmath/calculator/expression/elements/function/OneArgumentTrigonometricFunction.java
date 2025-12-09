@@ -22,18 +22,31 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements.function;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.expression.operations.function.OneArgumentTrigonometricFunctionOperation;
 
-public class Main {
+import java.math.MathContext;
+import java.util.Deque;
+import java.util.Locale;
 
-    public static void main(String[] args) {
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+public class OneArgumentTrigonometricFunction extends Function {
 
-    }
+	private final OneArgumentTrigonometricFunctionOperation operation;
+
+	public OneArgumentTrigonometricFunction(String symbol, int precedence, OneArgumentTrigonometricFunctionOperation operation) {
+		super(symbol, precedence);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		BigNumber a = ensureBigNumber(stack.pop());
+		stack.push(operation.apply(a, mathContext, trigonometricMode, locale));
+	}
 
 }

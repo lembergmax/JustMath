@@ -22,18 +22,28 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.expression.elements.function.Function;
+import com.mlprograms.justmath.calculator.expression.operations.ConstantOperation;
 
-public class Main {
+import java.math.MathContext;
+import java.util.Deque;
+import java.util.Locale;
 
-    public static void main(String[] args) {
+public class Constant extends Function {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+	private final ConstantOperation operation;
 
-    }
+	public Constant(String symbol, ConstantOperation operation) {
+		super(symbol, 1);
+		this.operation = operation;
+	}
+
+	@Override
+	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+		stack.push(operation.apply(mathContext, locale));
+	}
 
 }

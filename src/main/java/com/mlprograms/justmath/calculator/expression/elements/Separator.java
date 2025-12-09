@@ -22,18 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.elements;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 
-public class Main {
+public class Separator extends ExpressionElement {
 
-    public static void main(String[] args) {
-
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
-
-    }
+	public Separator(String separator) {
+		super(separator, false, 0);
+	}
 
 }

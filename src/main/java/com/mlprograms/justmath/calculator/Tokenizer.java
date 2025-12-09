@@ -25,11 +25,15 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.expression.elements.*;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.Constant;
+import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
+import com.mlprograms.justmath.calculator.expression.elements.Separator;
+import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.internal.Token;
 
 import java.math.MathContext;
 import java.util.*;
@@ -296,14 +300,14 @@ class Tokenizer {
      * Checks if the given token represents a zero-argument constant.
      * <p>
      * This method looks up the token's symbol in the {@link ExpressionElements} registry
-     * and verifies if the associated {@link ExpressionElement} is an instance of {@link ZeroArgumentConstant}.
+     * and verifies if the associated {@link ExpressionElement} is an instance of {@link Constant}.
      *
      * @param token the token to check
      * @return true if the token is a zero-argument constant, false otherwise
      */
     private boolean isZeroArgConstant(Token token) {
         Optional<ExpressionElement> expressionElementOptional = ExpressionElements.findBySymbol(token.getValue());
-        return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == ZeroArgumentConstant.class;
+        return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == Constant.class;
     }
 
     /**
@@ -626,7 +630,7 @@ class Tokenizer {
 
             String candidate = expression.substring(startIndex, endIndex);
 
-            Optional<ExpressionElement> zeroArg = ExpressionElements.findBySymbol(candidate).filter(element -> element instanceof ZeroArgumentConstant);
+            Optional<ExpressionElement> zeroArg = ExpressionElements.findBySymbol(candidate).filter(element -> element instanceof Constant);
             if (zeroArg.isPresent()) {
                 tokens.add(new Token(Token.Type.CONSTANT, zeroArg.get().getSymbol()));
                 return length;

@@ -24,11 +24,10 @@
 
 package com.mlprograms.justmath.calculator.util;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.Token;
 
 import lombok.NonNull;
 

@@ -22,18 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.calculator.expression.operations.function;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-public class Main {
+import java.math.MathContext;
+import java.util.Locale;
 
-    public static void main(String[] args) {
+@FunctionalInterface
+public interface ThreeArgumentFunctionOperation {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
-
-    }
+	BigNumber apply(BigNumber a, BigNumber b, String c, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }
