@@ -43,29 +43,41 @@ public class UnlimitedArgumentFunction extends Function {
 
     @Override
     public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-        if (stack == null || stack.isEmpty()) {
-            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one argument");
+        if (stack.isEmpty()) {
+            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires an argument count on the stack");
         }
 
-        List<BigNumber> arguments = new ArrayList<>();
-        while (!stack.isEmpty()) {
-            Object value = stack.pop();
+        Object countObject = stack.pop();
+        if (!(countObject instanceof BigNumber countNumber)) {
+            throw new ProcessingErrorException("Invalid argument count for function '" + getSymbol() + "': " + countObject);
+        }
 
+        int argumentCount = countNumber.intValue();
+        if (argumentCount <= 0) {
+            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one argument, but got " + argumentCount);
+        }
+
+        if (stack.size() < argumentCount) {
+            throw new ProcessingErrorException("Function '" + getSymbol() + "' expected " + argumentCount + " arguments but stack contains only " + stack.size());
+        }
+
+        List<BigNumber> arguments = new ArrayList<>(argumentCount);
+        for (int i = 0; i < argumentCount; i++) {
+            Object value = stack.pop();
             if (!(value instanceof BigNumber bigNumber)) {
-                stack.push(value);
-                break;
+                throw new ProcessingErrorException("Invalid argument type for function '" + getSymbol() + "': " + value);
             }
 
             arguments.add(bigNumber);
         }
 
-        if (arguments.isEmpty()) {
-            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one numeric argument");
-        }
+        Collections.reverse(arguments);
 
         BigNumber first = arguments.getFirst();
-        List<BigNumber> rest = arguments.size() > 1 ? arguments.subList(1, arguments.size()) : List.of();
-        stack.push(operation.apply(first, rest, mathContext, locale));
+        List<BigNumber> rest = arguments.subList(1, arguments.size());
+
+        BigNumber result = operation.apply(first, rest, mathContext, locale);
+        stack.push(result);
     }
 
 }
