@@ -216,7 +216,7 @@ List<BigNumber> numbers = Arrays.asList(
         new BigNumber("1.73")
 );
 
-numbers = QuickSort.sort(numbers);
+numbers = QuickSort.sort(numbers); // [1.41, 1.73, 2.71, 3.14]
 ```
 
 ## 🧑‍💻 Practical Examples
