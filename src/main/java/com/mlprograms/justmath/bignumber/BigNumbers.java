@@ -75,6 +75,11 @@ public class BigNumbers {
 	 */
 	public static final BigNumber THREE = new BigNumber("3", DEFAULT_MATH_CONTEXT);
 
+    /**
+     * Constant representing the value 10 as a {@link BigNumber}.
+     */
+	public static final BigNumber TEN = new BigNumber("10", DEFAULT_MATH_CONTEXT);
+
 	/**
 	 * Constant representing the value 100 as a {@link BigNumber}.
 	 */
