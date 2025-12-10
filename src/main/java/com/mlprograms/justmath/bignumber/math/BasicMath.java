@@ -332,16 +332,16 @@ public class BasicMath {
         BigNumber result = BigNumbers.ONE;
         BigNumber term = BigNumbers.ONE;
 
-        long n = 1;
-        BigDecimal epsilonBD = BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision());
+        BigNumber epsilon = BigNumbers.TEN.power(new BigNumber(-mathContext.getPrecision()), mathContext, locale);
 
-        final long MAX_ITER = 10000;
+        long n = 1L;
+        final long MAX_ITER = 10_000L;
         while (true) {
             term = term.multiply(argument).divide(new BigNumber(n), mathContext);
             result = result.add(term);
 
-            BigDecimal termBD = term.toBigDecimal();
-            if (termBD.abs().compareTo(epsilonBD) < 0) {
+            BigNumber absTerm = term.isLessThan(BigNumbers.ZERO) ? term.negate() : term;
+            if (absTerm.compareTo(epsilon) < 0) {
                 break;
             }
 
