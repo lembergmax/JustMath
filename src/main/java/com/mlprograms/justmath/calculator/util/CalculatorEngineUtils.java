@@ -31,6 +31,7 @@ import com.mlprograms.justmath.calculator.internal.Token;
 
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -153,6 +154,17 @@ public class CalculatorEngineUtils {
                 tokens.set(i, new Token(Token.Type.NUMBER, calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()));
             }
         }
+    }
+
+    public static void checkVariablesForRecursion(@NonNull final Map<String, String> variables) {
+        // TODO
+        // String-Liste: "visitedVariables"
+        // for "variable" in "variables":
+        // - - merke dir "variable" in
+        // - - tokenisiere den Text der den "variable".getValue() hat
+        // - - extrahiere alle Variablen-Tokens aus dem Token-Array
+        // - - wenn "variable" in "visitedVariables" vorkommt dann schmeiße fehler
+        // - -
     }
 
 }
