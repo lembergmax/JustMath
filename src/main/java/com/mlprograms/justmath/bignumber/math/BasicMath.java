@@ -256,7 +256,7 @@ public class BasicMath {
 		// General case: a^b = exp(b * ln|a|)
 		BigDecimal lnAbsBase = BigDecimalMath.log(bigDecimalBase.abs(), mathContext);
 		BigDecimal exponentTimesLn = bigDecimalValue.multiply(lnAbsBase, mathContext);
-		BigDecimal absResult = BigDecimalMath.exp(exponentTimesLn, mathContext);
+		BigDecimal absResult = exp(new BigNumber(exponentTimesLn.toPlainString()), mathContext, locale).toBigDecimal();
 
 		// Re-apply sign if the base was negative and the exponent is an integer
 		BigDecimal signedResult = bigDecimalBase.signum() < 0 ? absResult.negate() : absResult;
@@ -374,22 +374,27 @@ public class BasicMath {
 	public static BigNumber exp(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		BigDecimal result = BigDecimal.ONE;
-		BigDecimal term = BigDecimal.ONE;
+        BigNumber result = BigNumbers.ONE;
+		BigNumber term = BigNumbers.ONE;
 
-		int n = 1;
-		while (term.compareTo(BigDecimal.ZERO) != 0) {
-			term = term.multiply(argument.toBigDecimal(), mathContext).divide(BigDecimal.valueOf(n), mathContext);
-			result = result.add(term, mathContext);
+		long n = 1;
+		while (term.compareTo(BigNumbers.ZERO) != 0) {
+			term = term.multiply(argument).divide(new BigNumber(n), mathContext);
+			result = result.add(term);
 
-			if (term.abs().compareTo(BigDecimal.ONE.scaleByPowerOfTen(-mathContext.getPrecision())) < 0) {
-				break;
-			}
+            BigNumber epsilon = BigNumbers.TEN.power(
+                    new BigNumber(-mathContext.getPrecision()),
+                    mathContext
+            );
 
-			n++;
+            if (term.abs().compareTo(epsilon) < 0) {
+                break;
+            }
+
+            n++;
 		}
 
-		return new BigNumber(result.toPlainString(), locale, mathContext);
+		return new BigNumber(result, locale, mathContext);
 	}
 
 }
