@@ -40,8 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceAbsSigns;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceVariables;
+import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.*;
 
 /**
  * ExactCalculatorEngine.java
@@ -173,6 +172,8 @@ public class CalculatorEngine {
         Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(variables);
         currentVariables.set(combinedVariables);
+
+        checkVariablesForRecursion(combinedVariables);
 
         // Replace the |n| in the expression to look like abs(n)
         String expressionWithoutAbsValueSign = replaceAbsSigns(expression);
