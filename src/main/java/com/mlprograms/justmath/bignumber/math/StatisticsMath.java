@@ -110,7 +110,7 @@ public class StatisticsMath {
             throw new InsufficientElementsException();
         }
 
-        final List<BigNumber> sortedNumbers = QuickSort.sort(numbers);
+        final List<BigNumber> sortedNumbers = new QuickSort().sort(numbers);
         final int size = sortedNumbers.size();
         final int middleIndex = size / 2;
 

@@ -65,21 +65,21 @@ public class QuickSortTest {
         @Test
         void sortUnsortedListAscending() {
             List<BigNumber> input = createBigNumberList("5", "1", "4", "2", "3");
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
             assertSortedValues(sorted, "1", "2", "3", "4", "5");
         }
 
         @Test
         void sortListWithNegativeAndDecimalValues() {
             List<BigNumber> input = createBigNumberList("3.5", "-2", "0", "10", "-2.5");
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
             assertSortedValues(sorted, "-2.5", "-2", "0", "3.5", "10");
         }
 
         @Test
         void sortListWithDuplicateValues() {
             List<BigNumber> input = createBigNumberList("2", "3", "2", "1", "3");
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
             assertSortedValues(sorted, "1", "2", "2", "3", "3");
         }
 
@@ -87,14 +87,14 @@ public class QuickSortTest {
         @CsvSource({"5, 1, 3, 1, 3, 5", "10, -1, 0, -1, 0, 10", "2, 2, 1, 1, 2, 2"})
         void sortThreeElementLists(String first, String second, String third, String expectedFirst, String expectedSecond, String expectedThird) {
             List<BigNumber> input = createBigNumberList(first, second, third);
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
             assertSortedValues(sorted, expectedFirst, expectedSecond, expectedThird);
         }
 
         @Test
         void originalListIsNotModifiedForNonTrivialInput() {
             List<BigNumber> input = createBigNumberList("5", "1", "4", "2", "3");
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
 
             assertEquals(Arrays.asList("5", "1", "4", "2", "3"), toStringList(input));
             assertSortedValues(sorted, "1", "2", "3", "4", "5");
@@ -108,14 +108,14 @@ public class QuickSortTest {
         @Test
         void sortSingleElementListReturnsEquivalentList() {
             List<BigNumber> input = createBigNumberList("42");
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
             assertEquals(toStringList(input), toStringList(sorted));
         }
 
         @Test
         void sortEmptyListReturnsEmptyList() {
             List<BigNumber> input = new ArrayList<>();
-            List<BigNumber> sorted = QuickSort.sort(input);
+            List<BigNumber> sorted = new QuickSort().sort(input);
 
             assertTrue(sorted.isEmpty());
             assertTrue(input.isEmpty());
@@ -123,7 +123,7 @@ public class QuickSortTest {
 
         @Test
         void sortNullListThrowsNullPointerException() {
-            assertThrows(NullPointerException.class, () -> QuickSort.sort(null));
+            assertThrows(NullPointerException.class, () -> new QuickSort().sort(null));
         }
     }
 

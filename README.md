@@ -32,6 +32,54 @@ The `BigNumber` class supports a wide range of mathematical operations:
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
 
+## 📃 BigNumberList – High-Precision Collections
+
+BigNumberList is a domain-specific, list-like container for BigNumber instances.
+It implements java.util.List<BigNumber> and adds high-level statistical, transformation, and sorting utilities on top.
+
+### ✅ Core Capabilities
+| Category                 | Methods                                                                                                         | Description                                              |
+|--------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`             | Create lists from existing values or string representations |
+| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                      | Convert to arrays, immutable views, or string/double lists |
+| **Sorting**              | `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                   | Sort using custom algorithms or natural order            |
+| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean` | High-precision statistical operations                    |
+| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map` | In-place or copy-based transformations on all elements   |
+| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                             | Remove duplicates, concatenate lists, copy subranges     |
+| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way        |
+
+All higher-level operations are implemented in terms of BigNumber’s arbitrary precision arithmetic and comparison,
+avoiding issues with primitive types.
+
+### 🧮 Example: Working with BigNumberList
+```java
+// Create a high-precision list
+BigNumberList numbers = BigNumberList.of(
+new BigNumber("3"),
+new BigNumber("1"),
+new BigNumber("2"),
+new BigNumber("2")
+);
+
+// Sort ascending using the built-in natural order
+numbers.sortAscending();
+System.out.println(numbers);
+// [1, 2, 2, 3]
+
+// Compute statistics
+BigNumber sum     = numbers.sum();       // 8
+BigNumber avg     = numbers.average();   // 2
+BigNumber median  = numbers.median();    // 2
+Set<BigNumber> modes = numbers.modes();  // {2}
+
+// Transform values in-place
+numbers.negateAll();                     // [-1, -2, -2, -3]
+numbers.absAll();                        // [1, 2, 2, 3]
+
+// Use a custom sorting algorithm
+numbers.sort(QuickSort.class);           // Uses your SortingAlgorithm implementation
+```
+
 ## 🧩 BigNumberMatrix – High-Precision Matrices
 
 The `BigNumberMatrix` class extends the power of `BigNumber` into **linear algebra**.
