@@ -39,11 +39,9 @@ import java.util.stream.Stream;
  * BigNumberList
  *
  * <p>
- * A mutable, list-like container for {@link BigNumber} instances that implements
- * both {@link java.lang.Comparable} (comparing lists as a whole) and {@link java.util.List}.
+ * A mutable, list-like container for {@link BigNumber} instances that implements {@link java.util.List}.
  * This class acts as a lightweight, domain-specific wrapper around a {@link List} of
- * {@link BigNumber} objects and exposes list behaviour while adding domain operations
- * such as {@link #sort(Class)} and {@link #reverse()}.
+ * {@link BigNumber} objects and exposes list behaviour while adding domain.
  * </p>
  * <p><b>Usage notes</b></p>
  * <ul>
@@ -56,7 +54,7 @@ import java.util.stream.Stream;
  * </ul>
  */
 @Getter
-public class BigNumberList implements Comparable<BigNumberList>, List<BigNumber> {
+public class BigNumberList implements List<BigNumber> {
 
     /**
      * Internal storage for the elements of this BigNumberList.
@@ -663,13 +661,6 @@ public class BigNumberList implements Comparable<BigNumberList>, List<BigNumber>
     @Override
     public String toString() {
         return values.toString();
-    }
-
-    @Override
-    public int compareTo(@NonNull final BigNumberList other) {
-        // TODO
-        // return toBigDecimal().compareTo(other.toBigDecimal());
-        return 0;
     }
 
     /**
