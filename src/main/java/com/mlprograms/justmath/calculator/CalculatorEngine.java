@@ -173,8 +173,6 @@ public class CalculatorEngine {
         combinedVariables.putAll(variables);
         currentVariables.set(combinedVariables);
 
-        checkVariablesForRecursion(combinedVariables);
-
         // Replace the |n| in the expression to look like abs(n)
         String expressionWithoutAbsValueSign = replaceAbsSigns(expression);
 
