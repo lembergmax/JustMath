@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.algorithms.SortingAlgorithm;
 import lombok.Getter;
 import lombok.NonNull;
