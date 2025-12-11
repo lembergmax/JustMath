@@ -227,7 +227,10 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber sum() {
-        assertNotEmpty("sum");
+        if (isEmpty()) {
+            throw new IllegalStateException("sum requires at least one element, but the list is empty.");
+        }
+
         if (values.size() == 1) {
             return values.getFirst();
         }
@@ -248,10 +251,14 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber average() {
-        assertNotEmpty("average");
+        if (isEmpty()) {
+            throw new IllegalStateException("average requires at least one element, but the list is empty.");
+        }
+
         if (values.size() == 1) {
             return values.getFirst();
         }
+
         return values.getFirst().average(values.subList(1, values.size()));
     }
 
@@ -272,7 +279,9 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber median() {
-        assertNotEmpty("median");
+        if (isEmpty()) {
+            throw new IllegalStateException("median requires at least one element, but the list is empty.");
+        }
 
         final List<BigNumber> sorted = new ArrayList<>(values);
         sorted.sort(Comparator.naturalOrder());
@@ -281,11 +290,9 @@ public class BigNumberList implements List<BigNumber> {
         final int middleIndex = size / 2;
 
         if (size % 2 == 1) {
-            // Odd number of elements → direct middle element
             return sorted.get(middleIndex);
         }
 
-        // Even number of elements → average of two central values
         final BigNumber lower = sorted.get(middleIndex - 1);
         final BigNumber upper = sorted.get(middleIndex);
 
@@ -324,6 +331,7 @@ public class BigNumberList implements List<BigNumber> {
                 modes.add(entry.getKey());
             }
         }
+
         return modes;
     }
 
@@ -334,7 +342,10 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber min() {
-        assertNotEmpty("min");
+        if (isEmpty()) {
+            throw new IllegalStateException("min requires at least one element, but the list is empty.");
+        }
+
         BigNumber currentMin = values.getFirst();
         for (int i = 1; i < values.size(); i++) {
             final BigNumber candidate = values.get(i);
@@ -352,7 +363,10 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber max() {
-        assertNotEmpty("max");
+        if (isEmpty()) {
+            throw new IllegalStateException("max requires at least one element, but the list is empty.");
+        }
+
         BigNumber currentMax = values.getFirst();
         for (int i = 1; i < values.size(); i++) {
             final BigNumber candidate = values.get(i);
@@ -360,6 +374,7 @@ public class BigNumberList implements List<BigNumber> {
                 currentMax = candidate;
             }
         }
+
         return currentMax;
     }
 
@@ -440,7 +455,9 @@ public class BigNumberList implements List<BigNumber> {
      * @throws IllegalStateException if this list is empty or contains a negative value
      */
     public BigNumber geometricMean() {
-        assertNotEmpty("geometricMean");
+        if (isEmpty()) {
+            throw new IllegalStateException("geometricMean requires at least one element, but the list is empty.");
+        }
 
         BigNumber product = values.getFirst();
         if (product.isLessThan(ZERO)) {
@@ -480,24 +497,24 @@ public class BigNumberList implements List<BigNumber> {
      * @throws ArithmeticException   if any value in the list is zero
      */
     public BigNumber harmonicMean() {
-        assertNotEmpty("harmonicMean");
+        if (isEmpty()) {
+            throw new IllegalStateException("harmonicMean requires at least one element, but the list is empty.");
+        }
 
         BigNumber sumOfReciprocals = null;
         for (BigNumber value : values) {
             if (value.compareTo(ZERO) == 0) {
                 throw new ArithmeticException("Harmonic mean is undefined for value 0.");
             }
+
             final BigNumber reciprocal = ONE.divide(value);
             sumOfReciprocals = (sumOfReciprocals == null) ? reciprocal : sumOfReciprocals.add(reciprocal);
         }
 
+        // TODO: sumOfReciprocals is maybe null: check it
         final BigNumber count = new BigNumber(String.valueOf(values.size()));
         return count.divide(sumOfReciprocals);
     }
-
-    // -------------------------------------------------------------------------
-    // Domain-specific: transformations (in-place, fluent)
-    // -------------------------------------------------------------------------
 
     /**
      * Applies {@link BigNumber#abs()} to every element in this list.
@@ -601,9 +618,11 @@ public class BigNumberList implements List<BigNumber> {
             if (value.isLessThan(min)) {
                 return min;
             }
+
             if (value.isGreaterThan(max)) {
                 return max;
             }
+
             return value;
         }, "clampAll");
     }
@@ -654,6 +673,7 @@ public class BigNumberList implements List<BigNumber> {
             if (transformed == null) {
                 throw new IllegalStateException("map operator must not produce null elements");
             }
+
             result.add(transformed);
         }
 
@@ -677,10 +697,6 @@ public class BigNumberList implements List<BigNumber> {
         values = reversedBigNumberList.getValues();
         return this;
     }
-
-    // -------------------------------------------------------------------------
-    // Domain-specific: structural operations & queries
-    // -------------------------------------------------------------------------
 
     /**
      * Returns a new {@code BigNumberList} that is a deep structural copy of this list.
@@ -780,9 +796,11 @@ public class BigNumberList implements List<BigNumber> {
      */
     public BigNumberList append(@NonNull final BigNumberList other) {
         Objects.requireNonNull(other, "other must not be null");
+
         final List<BigNumber> combined = new ArrayList<>(this.values.size() + other.values.size());
         combined.addAll(this.values);
         combined.addAll(other.values);
+
         return new BigNumberList(combined);
     }
 
@@ -813,11 +831,13 @@ public class BigNumberList implements List<BigNumber> {
      */
     public boolean anyMatch(@NonNull final Predicate<BigNumber> predicate) {
         Objects.requireNonNull(predicate, "predicate must not be null");
+
         for (BigNumber value : values) {
             if (predicate.test(value)) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -833,11 +853,13 @@ public class BigNumberList implements List<BigNumber> {
      */
     public boolean allMatch(@NonNull final Predicate<BigNumber> predicate) {
         Objects.requireNonNull(predicate, "predicate must not be null");
+
         for (BigNumber value : values) {
             if (!predicate.test(value)) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -850,11 +872,13 @@ public class BigNumberList implements List<BigNumber> {
      */
     public Optional<BigNumber> findFirst(@NonNull final Predicate<BigNumber> predicate) {
         Objects.requireNonNull(predicate, "predicate must not be null");
+
         for (BigNumber value : values) {
             if (predicate.test(value)) {
                 return Optional.of(value);
             }
         }
+
         return Optional.empty();
     }
 
@@ -869,12 +893,14 @@ public class BigNumberList implements List<BigNumber> {
      */
     public BigNumberList filter(@NonNull final Predicate<BigNumber> predicate) {
         Objects.requireNonNull(predicate, "predicate must not be null");
+
         final List<BigNumber> filtered = new ArrayList<>();
         for (BigNumber value : values) {
             if (predicate.test(value)) {
                 filtered.add(value);
             }
         }
+
         return new BigNumberList(filtered);
     }
 
@@ -890,6 +916,7 @@ public class BigNumberList implements List<BigNumber> {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -905,6 +932,7 @@ public class BigNumberList implements List<BigNumber> {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -920,6 +948,7 @@ public class BigNumberList implements List<BigNumber> {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -937,10 +966,6 @@ public class BigNumberList implements List<BigNumber> {
         }
         return true;
     }
-
-    // -------------------------------------------------------------------------
-    // Domain-specific: conversion utilities
-    // -------------------------------------------------------------------------
 
     /**
      * Returns an unmodifiable list view containing the same elements as this {@code BigNumberList}.
@@ -992,6 +1017,7 @@ public class BigNumberList implements List<BigNumber> {
         for (BigNumber value : values) {
             result.add(value.toString());
         }
+
         return result;
     }
 
@@ -1011,6 +1037,7 @@ public class BigNumberList implements List<BigNumber> {
         for (int i = 0; i < values.size(); i++) {
             result[i] = values.get(i).doubleValue();
         }
+
         return result;
     }
 
@@ -1025,10 +1052,6 @@ public class BigNumberList implements List<BigNumber> {
     public BigNumberList clone() {
         return new BigNumberList(this);
     }
-
-    // -------------------------------------------------------------------------
-    // List interface implementation (delegation)
-    // -------------------------------------------------------------------------
 
     @Override
     public int size() {
@@ -1220,21 +1243,6 @@ public class BigNumberList implements List<BigNumber> {
         return values.toString();
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers (DRY)
-    // -------------------------------------------------------------------------
-
-    /**
-     * Ensures that this list is not empty, throwing an {@link IllegalStateException} otherwise.
-     *
-     * @param operationName the name of the operation requiring a non-empty list
-     */
-    private void assertNotEmpty(@NonNull final String operationName) {
-        if (isEmpty()) {
-            throw new IllegalStateException(operationName + " requires at least one element, but the list is empty.");
-        }
-    }
-
     /**
      * Applies the given transformation operator to each element in this list in-place.
      *
@@ -1253,11 +1261,14 @@ public class BigNumberList implements List<BigNumber> {
         for (int i = 0; i < values.size(); i++) {
             final BigNumber original = values.get(i);
             final BigNumber transformed = operator.apply(original);
+
             if (transformed == null) {
                 throw new IllegalStateException(operationName + " must not produce null elements");
             }
+
             values.set(i, transformed);
         }
+
         return this;
     }
 
