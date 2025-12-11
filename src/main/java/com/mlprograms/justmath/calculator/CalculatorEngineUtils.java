@@ -22,19 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.util;
+package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.Token;
 
 import lombok.NonNull;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class CalculatorEngineUtils {
+class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
@@ -141,6 +140,8 @@ public class CalculatorEngineUtils {
      * @throws IllegalArgumentException if a variable token does not have a corresponding value in the map
      */
     public static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
+        checkVariablesForRecursion(calculatorEngine, variables);
+
         for (int i = 0; i < tokens.size(); i++) {
             final Token token = tokens.get(i);
             if (token.getType() == Token.Type.VARIABLE) {
@@ -153,6 +154,44 @@ public class CalculatorEngineUtils {
                 tokens.set(i, new Token(Token.Type.NUMBER, calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()));
             }
         }
+    }
+
+    public static void checkVariablesForRecursion(@NonNull final CalculatorEngine calculatorEngine, @NonNull final Map<String, String> variables) {
+        Set<String> visitedVariables = new HashSet<>();
+        Set<String> currentPath = new HashSet<>();
+
+        for (final String variableName : variables.keySet()) {
+            checkVariable(calculatorEngine, variableName, variables, visitedVariables, currentPath);
+        }
+    }
+
+    private static void checkVariable(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String variableName, @NonNull final Map<String, String> variables, @NonNull final Set<String> visitedVariables, @NonNull final Set<String> currentPath) {
+        if (currentPath.contains(variableName)) {
+            throw new CyclicVariableReferenceException("Cyclic variable reference detected in: " + variableName);
+        }
+
+        if (visitedVariables.contains(variableName)) {
+            return;
+        }
+
+        currentPath.add(variableName);
+
+        final String expression = variables.get(variableName);
+        if (expression != null && !expression.isEmpty()) {
+            final List<Token> tokens = calculatorEngine.getTokenizer().tokenize(expression);
+
+            for (final Token token : tokens) {
+                if (token.getType() != Token.Type.VARIABLE) {
+                    continue;
+                }
+
+                final String referencedVar = token.getValue();
+                checkVariable(calculatorEngine, referencedVar, variables, visitedVariables, currentPath);
+            }
+        }
+
+        currentPath.remove(variableName);
+        visitedVariables.add(variableName);
     }
 
 }
