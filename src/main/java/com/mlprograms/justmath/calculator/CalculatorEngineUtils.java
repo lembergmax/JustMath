@@ -167,7 +167,7 @@ public class CalculatorEngineUtils {
 
     private static void checkVariable(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String variableName, @NonNull final Map<String, String> variables, @NonNull final Set<String> visitedVariables, @NonNull final Set<String> currentPath) {
         if (currentPath.contains(variableName)) {
-            throw new CyclicVariableReferenceException(variableName);
+            throw new CyclicVariableReferenceException("Cyclic variable reference detected in: " + variableName);
         }
 
         if (visitedVariables.contains(variableName)) {
