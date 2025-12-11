@@ -325,7 +325,7 @@ public class BigNumberList implements List<BigNumber> {
                     break;
                 }
             }
-            
+
             if (index == -1) {
                 unique.add(value);
                 counts.add(1);
@@ -369,6 +369,7 @@ public class BigNumberList implements List<BigNumber> {
                 currentMin = candidate;
             }
         }
+
         return currentMin;
     }
 
