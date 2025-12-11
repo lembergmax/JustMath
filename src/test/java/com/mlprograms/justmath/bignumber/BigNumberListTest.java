@@ -243,8 +243,15 @@ class BigNumberListTest {
             Set<BigNumber> modes = list.modes();
 
             assertEquals(2, modes.size());
-            assertTrue(modes.contains(getNewBigNumber("2")));
-            assertTrue(modes.contains(getNewBigNumber("3")));
+
+            BigNumber two = getNewBigNumber("2");
+            BigNumber three = getNewBigNumber("3");
+
+            boolean hasTwo = modes.stream().anyMatch(bn -> bn.compareTo(two) == 0);
+            boolean hasThree = modes.stream().anyMatch(bn -> bn.compareTo(three) == 0);
+
+            assertTrue(hasTwo);
+            assertTrue(hasThree);
         }
 
         @Test
