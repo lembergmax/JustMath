@@ -259,11 +259,28 @@ class Tokenizer {
                 || isConstantFollowedByVariable(current, next);
     }
 
+    /**
+     * Checks whether a numeric token is immediately followed by either a left parenthesis
+     * or a function token. Used to detect contexts where implicit multiplication should
+     * be inserted (e.g. "2(" or "2sin").
+     *
+     * @param current the current token (expected to be a number)
+     * @param next    the next token in sequence
+     * @return true if current is NUMBER and next is LEFT_PAREN or FUNCTION; false otherwise
+     */
     private boolean isNumberFollowedByParenOrFunction(final Token current, final Token next) {
         return current.getType() == Token.Type.NUMBER
                 && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION);
     }
 
+    /**
+     * Determines whether a closing parenthesis is followed by a token that can form
+     * an implicit multiplication with it. Typical cases are ")2", ")sin", or ")(".
+     *
+     * @param current the current token (expected to be a right parenthesis)
+     * @param next    the following token to inspect
+     * @return true if current is RIGHT_PAREN and next is NUMBER, FUNCTION, or LEFT_PAREN
+     */
     private boolean isRightParenFollowedByValid(final Token current, final Token next) {
         return current.getType() == Token.Type.RIGHT_PAREN
                 && (next.getType() == Token.Type.NUMBER
@@ -271,26 +288,67 @@ class Tokenizer {
                 || next.getType() == Token.Type.LEFT_PAREN);
     }
 
+    /**
+     * Checks whether a NUMBER or a zero-argument constant is followed by another
+     * zero-argument constant. This indicates a juxtaposition like "2pi" or "pi e"
+     * which may require implicit multiplication.
+     *
+     * @param current the current token (NUMBER or potential zero-arg constant)
+     * @param next    the next token to check for being a zero-argument constant
+     * @return true if (current is NUMBER or zero-arg constant) and next is a zero-arg constant
+     */
     private boolean isNumberOrConstantFollowedByZeroArgFunction(final Token current, final Token next) {
         return (current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
                 && isZeroArgConstant(next);
     }
 
+    /**
+     * Determines if a zero-argument constant (e.g. "pi") is followed by a NUMBER or VARIABLE,
+     * which often implies multiplication (e.g. "pi2" or "pi x").
+     *
+     * @param current the current token to test (expected zero-arg constant)
+     * @param next    the token following current
+     * @return true if current is a zero-arg constant and next is a NUMBER
+     */
     private boolean isZeroArgFunctionFollowedByNumberOrVariable(final Token current, final Token next) {
         return isZeroArgConstant(current)
                 && next.getType() == Token.Type.NUMBER;
     }
 
+    /**
+     * Checks whether a constant token is immediately followed by a function token.
+     * Example: "pi sin" could be treated as implicit multiplication "pi * sin".
+     *
+     * @param current the current token (expected to be CONSTANT)
+     * @param next    the token that follows
+     * @return true if current is CONSTANT and next is FUNCTION
+     */
     private boolean isConstantFollowedByFunction(final Token current, final Token next) {
         return current.getType() == Token.Type.CONSTANT
                 && next.getType() == Token.Type.FUNCTION;
     }
 
+    /**
+     * Determines whether a variable token is followed by another variable or a constant.
+     * Useful for detecting implicit multiplication in sequences like "xy" or "xpi".
+     *
+     * @param current the current token (VARIABLE)
+     * @param next    the following token
+     * @return true if current is VARIABLE and next is VARIABLE or CONSTANT
+     */
     private boolean isVariableFollowedByVariableOrConstant(final Token current, final Token next) {
         return current.getType() == Token.Type.VARIABLE
                 && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
     }
 
+    /**
+     * Checks whether a constant is followed by a variable (e.g. "pi x"),
+     * which commonly indicates implicit multiplication.
+     *
+     * @param current the current token (CONSTANT)
+     * @param next    the following token (VARIABLE)
+     * @return true if current is CONSTANT and next is VARIABLE
+     */
     private boolean isConstantFollowedByVariable(final Token current, final Token next) {
         return current.getType() == Token.Type.CONSTANT
                 && next.getType() == Token.Type.VARIABLE;
