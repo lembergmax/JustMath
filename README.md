@@ -287,8 +287,8 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.2.9</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.9.jar">JustMath v1.2.2.9</a></td>
+    <td>v1.2.2.10</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.10.jar">JustMath v1.2.2.10</a></td>
     <td>Preview</td>
   </tr>
   <tr>
