@@ -31,19 +31,13 @@ import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
@@ -63,6 +57,7 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
  * such as financial systems, scientific calculations, or custom calculators.</p>
  */
 @Getter
+@EqualsAndHashCode(callSuper = false, of = {"valueBeforeDecimal", "valueAfterDecimal", "isNegative"})
 public class BigNumber extends Number implements Comparable<BigNumber> {
 
     /**
@@ -283,8 +278,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param mathContext        the math context to use for precision and rounding
      * @param trigonometricMode  the trigonometric mode to use
      */
-    // TODO: remove this builder thing
-    @Builder
     public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimal, @NonNull final String valueAfterDecimal, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         MathUtils.checkMathContext(mathContext);
 
