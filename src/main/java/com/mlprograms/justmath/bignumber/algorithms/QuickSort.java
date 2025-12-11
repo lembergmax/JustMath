@@ -29,7 +29,7 @@ import lombok.NonNull;
 
 import java.util.List;
 
-public class QuickSort extends Algorithm {
+public class QuickSort extends SortingAlgorithm {
 
     /**
      * Returns a new {@link List} of {@link BigNumber} instances sorted in ascending order.
@@ -40,7 +40,8 @@ public class QuickSort extends Algorithm {
      * @param bigNumbers the list of {@link BigNumber} values to sort
      * @return a new sorted list of {@link BigNumber} values in ascending order
      */
-    public static List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
+    @Override
+    public List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
         if (!isListValid(bigNumbers)) {
             return bigNumbers;
         }
