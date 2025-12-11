@@ -25,11 +25,13 @@
 package com.mlprograms.justmath.bignumber.algorithms;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
 
-public class QuickSort extends Algorithm {
+@NoArgsConstructor
+public class QuickSort extends SortingAlgorithm {
 
     /**
      * Returns a new {@link List} of {@link BigNumber} instances sorted in ascending order.
@@ -40,7 +42,8 @@ public class QuickSort extends Algorithm {
      * @param bigNumbers the list of {@link BigNumber} values to sort
      * @return a new sorted list of {@link BigNumber} values in ascending order
      */
-    public static List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
+    @Override
+    public List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
         if (!isListValid(bigNumbers)) {
             return bigNumbers;
         }
@@ -70,7 +73,7 @@ public class QuickSort extends Algorithm {
      * @param leftIndex  inclusive left bound of the sublist to sort
      * @param rightIndex inclusive right bound of the sublist to sort
      */
-    private static void quickSort(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
+    private void quickSort(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
         if (leftIndex >= rightIndex) {
             return;
         }
@@ -98,7 +101,7 @@ public class QuickSort extends Algorithm {
      * @param rightIndex inclusive right bound of the sublist to partition (pivot index)
      * @return the final index of the pivot after partitioning
      */
-    private static int partition(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
+    private int partition(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
         final BigNumber pivot = numbers.get(rightIndex);
         int partitionIndex = leftIndex - 1;
 

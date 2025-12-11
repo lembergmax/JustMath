@@ -30,7 +30,9 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-class Algorithm {
+public abstract class SortingAlgorithm {
+
+    public abstract List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers);
 
     /**
      * Create a shallow copy of the given list of BigNumber instances.
