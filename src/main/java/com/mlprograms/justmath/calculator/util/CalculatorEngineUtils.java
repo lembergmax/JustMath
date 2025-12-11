@@ -142,6 +142,8 @@ public class CalculatorEngineUtils {
      * @throws IllegalArgumentException if a variable token does not have a corresponding value in the map
      */
     public static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
+        checkVariablesForRecursion(variables);
+
         for (int i = 0; i < tokens.size(); i++) {
             final Token token = tokens.get(i);
             if (token.getType() == Token.Type.VARIABLE) {
@@ -158,13 +160,30 @@ public class CalculatorEngineUtils {
 
     public static void checkVariablesForRecursion(@NonNull final Map<String, String> variables) {
         // TODO
-        // String-Liste: "visitedVariables"
-        // for "variable" in "variables":
-        // - - merke dir "variable" in
-        // - - tokenisiere den Text der den "variable".getValue() hat
-        // - - extrahiere alle Variablen-Tokens aus dem Token-Array
-        // - - wenn "variable" in "visitedVariables" vorkommt dann schmeiße fehler
-        // - -
+        // Erstelle zwei Listen/Mengen:
+        // - "besuchteVariablen"  (alle Variablen, die vollständig geprüft wurden)
+        // - "aktuellerPfad"      (alle Variablen, die gerade im Rekursionspfad liegen)
+        //
+        // Für jede "variable" in "variables":
+        // - - rufe prüfe(variable) auf
+        //
+        // Funktion prüfe(variable):
+        // - - wenn "variable" in "aktuellerPfad" vorkommt:
+        // - - - - schmeiße CyclicVariableReferenceException   // rekursive Selbstbeziehung erkannt
+        //
+        // - - wenn "variable" in "besuchteVariablen" vorkommt:
+        // - - - - return (diese Variable wurde bereits geprüft)
+        //
+        // - - füge "variable" zu "aktuellerPfad" hinzu
+        //
+        // - - tokenisiere den Text von variable.getValue()
+        // - - extrahiere alle Variablen-Tokens → "gefundeneVariablen"
+        //
+        // - - für jede "ref" in "gefundeneVariablen":
+        // - - - - rufe prüfe(ref) auf
+        //
+        // - - entferne "variable" aus "aktuellerPfad"
+        // - - füge "variable" zu "besuchteVariablen" hinzu
     }
 
 }
