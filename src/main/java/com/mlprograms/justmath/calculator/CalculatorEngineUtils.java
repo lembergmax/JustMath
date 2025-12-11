@@ -33,7 +33,7 @@ import lombok.NonNull;
 
 import java.util.*;
 
-public class CalculatorEngineUtils {
+class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
