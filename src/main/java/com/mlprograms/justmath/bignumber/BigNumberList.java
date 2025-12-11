@@ -35,23 +35,89 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * BigNumberList
+ *
+ * <p>
+ * A mutable, list-like container for {@link BigNumber} instances that implements
+ * both {@link java.lang.Comparable} (comparing lists as a whole) and {@link java.util.List}.
+ * This class acts as a lightweight, domain-specific wrapper around a {@link List} of
+ * {@link BigNumber} objects and exposes list behaviour while adding domain operations
+ * such as {@link #sort(Class)} and {@link #reverse()}.
+ * </p>
+ * <p><b>Usage notes</b></p>
+ * <ul>
+ *   <li>Most {@link java.util.List} methods are delegated to the internal {@code values} list
+ *       or forwarded to {@code List.super} where the default interface behaviour is
+ *       appropriate.</li>
+ *   <li>Because several {@code List} default methods are referenced (via {@code List.super}),
+ *       the concrete runtime type of {@code values} determines actual behaviour for some
+ *       operations (for example immutability or supported optional operations).</li>
+ * </ul>
+ */
 @Getter
 public class BigNumberList implements Comparable<BigNumberList>, List<BigNumber> {
 
+    /**
+     * Internal storage for the elements of this BigNumberList.
+     * This list holds the sequence of {@link BigNumber} instances managed by this class.
+     * It is never intended to be null; constructors initialize it to a concrete list.
+     * Note: the list reference may be replaced by operations such as {@link #sort(Class)} or {@link #reverse()}.
+     */
     private List<BigNumber> values;
 
+    /**
+     * Create an empty BigNumberList.
+     * <p>
+     * The created instance uses an empty list as its internal storage. The list returned by
+     * {@link List#of()} is immutable; some mutating operations on this instance will replace
+     * the internal reference with a mutable list when necessary.
+     */
     public BigNumberList() {
         values = List.of();
     }
 
+    /**
+     * Create a BigNumberList backed by the provided list reference.
+     * <p>
+     * The provided list becomes the internal storage for this instance. No defensive copy
+     * is made, so callers should not mutate the list externally if independent ownership is required.
+     *
+     * @param values the list to use as internal storage, must not be null
+     */
     public BigNumberList(@NonNull final List<BigNumber> values) {
         this.values = values;
     }
 
+    /**
+     * Create a new BigNumberList that shares the internal storage of the provided instance.
+     * <p>
+     * This constructor performs a shallow copy of the reference to the internal list: both
+     * instances will refer to the same list object. Use {@link #clone()} to obtain a semantic copy
+     * if independent lists are required.
+     *
+     * @param bigNumberList the instance whose internal storage will be referenced, must not be null
+     */
     public BigNumberList(@NonNull final BigNumberList bigNumberList) {
         this.values = bigNumberList.values;
     }
 
+    /**
+     * Sort the elements of this list using the given sorting algorithm implementation.
+     * <p>
+     * The method instantiates the provided {@code algorithmClass} using its no-argument constructor,
+     * delegates the sorting to the algorithm's {@code sort(List<BigNumber>)} method and replaces the
+     * internal storage with the returned list. The method mutates this instance and returns {@code this}
+     * to allow fluent calls.
+     * <p>
+     * The sorting algorithm is free to return a new list or mutate and return the same list. If the
+     * algorithm returns {@code null}, an {@link IllegalStateException} is thrown.
+     *
+     * @param algorithmClass implementation of {@link SortingAlgorithm} to use for sorting, must not be null
+     * @return this instance after sorting
+     * @throws IllegalArgumentException if the algorithm class cannot be instantiated
+     * @throws IllegalStateException    if the algorithm returns {@code null}
+     */
     public BigNumberList sort(@NonNull final Class<? extends SortingAlgorithm> algorithmClass) {
         try {
             final SortingAlgorithm algorithm = algorithmClass.getDeclaredConstructor().newInstance();
@@ -61,20 +127,31 @@ public class BigNumberList implements Comparable<BigNumberList>, List<BigNumber>
                 throw new IllegalStateException("Sorting algorithm returned null");
             }
 
-            return new BigNumberList(sorted);
+            values = sorted;
+            return this;
         } catch (ReflectiveOperationException illegalArgumentException) {
             throw new IllegalArgumentException("Unable to instantiate sorting algorithm: " + algorithmClass.getName(), illegalArgumentException);
         }
     }
 
-    // TODO: reverse()
-    public void reverse() {
+    /**
+     * Reverse the order of elements in this BigNumberList.
+     * <p>
+     * The method constructs a new temporary BigNumberList and inserts each value from the current
+     * internal list at the front of the temporary list using {@link #addFirst(BigNumber)}. After
+     * iteration, the internal storage is replaced with the reversed list's storage. The operation
+     * mutates this instance and returns {@code this} to allow fluent usage.
+     *
+     * @return this instance with elements in reversed order
+     */
+    public BigNumberList reverse() {
         BigNumberList reversedBigNumberList = new BigNumberList();
         for (BigNumber value : values) {
             reversedBigNumberList.addFirst(value);
         }
 
         values = reversedBigNumberList.getValues();
+        return this;
     }
 
     @Override
