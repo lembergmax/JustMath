@@ -799,20 +799,7 @@ public class BigNumberList implements List<BigNumber> {
      * @return a new {@code BigNumberList} containing distinct elements
      */
     public BigNumberList distinct() {
-        List<BigNumber> unique = new ArrayList<>();
-
-        outer:
-        for (BigNumber candidate : values) {
-            for (BigNumber existing : unique) {
-                if (candidate.compareTo(existing) == 0) {
-                    continue outer;
-                }
-            }
-
-            unique.add(candidate);
-        }
-
-        return new BigNumberList(unique);
+        return new BigNumberList(new ArrayList<>(new LinkedHashSet<>(values)));
     }
 
     /**
