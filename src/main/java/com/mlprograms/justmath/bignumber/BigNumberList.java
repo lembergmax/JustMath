@@ -35,110 +35,636 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE;
+import static com.mlprograms.justmath.bignumber.BigNumbers.TWO;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
+
 /**
- * BigNumberList
+ * A mutable, list-like container for {@link BigNumber} instances implementing the full {@link List} interface.
  *
  * <p>
- * A mutable, list-like container for {@link BigNumber} instances that implements {@link java.util.List}.
- * This class acts as a lightweight, domain-specific wrapper around a {@link List} of
- * {@link BigNumber} objects and exposes list behaviour while adding domain.
+ * This class acts as a domain-specific wrapper around a {@link List} of {@link BigNumber} objects.
+ * It delegates core list operations to an internal list and adds convenience methods for
+ * numerical and statistical operations that are natural for lists of numbers.
  * </p>
- * <p><b>Usage notes</b></p>
+ *
+ * <p><b>Design notes</b></p>
  * <ul>
- *   <li>Most {@link java.util.List} methods are delegated to the internal {@code values} list
- *       or forwarded to {@code List.super} where the default interface behaviour is
- *       appropriate.</li>
- *   <li>Because several {@code List} default methods are referenced (via {@code List.super}),
- *       the concrete runtime type of {@code values} determines actual behaviour for some
- *       operations (for example immutability or supported optional operations).</li>
+ *   <li>The internal storage is held in the {@link #values} field and is never {@code null}.</li>
+ *   <li>Most {@link List} methods are simple delegations to {@code values} or use
+ *       {@code List.super} to leverage default implementations.</li>
+ *   <li>Several domain-specific methods (e.g. {@link #sum()}, {@link #average()}, {@link #median()},
+ *       {@link #variance()}, {@link #standardDeviation()}) are provided for typical numeric use cases.</li>
+ *   <li>Many methods mutate this instance and return {@code this} for fluent usage; methods that
+ *       create independent lists explicitly document that behaviour.</li>
  * </ul>
  */
 @Getter
 public class BigNumberList implements List<BigNumber> {
 
     /**
-     * Internal storage for the elements of this BigNumberList.
-     * This list holds the sequence of {@link BigNumber} instances managed by this class.
-     * It is never intended to be null; constructors initialize it to a concrete list.
-     * Note: the list reference may be replaced by operations such as {@link #sort(Class)} or {@link #reverse()}.
+     * Internal storage for the elements of this {@code BigNumberList}.
+     *
+     * <p>This list holds the sequence of {@link BigNumber} instances managed by this class.
+     * It is initialized by the constructors and must never be {@code null}. Some operations
+     * may replace this reference entirely (for example {@link #sort(Class)} or {@link #reverse()}).</p>
      */
     private List<BigNumber> values;
 
     /**
-     * Create an empty BigNumberList.
-     * <p>
-     * The created instance uses an empty list as its internal storage. The list returned by
-     * {@link List#of()} is immutable; some mutating operations on this instance will replace
-     * the internal reference with a mutable list when necessary.
+     * Creates an empty {@code BigNumberList}.
+     *
+     * <p>The created instance starts with an empty internal list. Mutating operations that
+     * rely on a modifiable backing list assume that the internal storage will eventually be
+     * replaced with a mutable implementation (e.g. via {@link #add(BigNumber)} or factory methods).</p>
      */
     public BigNumberList() {
         values = List.of();
     }
 
     /**
-     * Create a BigNumberList backed by the provided list reference.
-     * <p>
-     * The provided list becomes the internal storage for this instance. No defensive copy
-     * is made, so callers should not mutate the list externally if independent ownership is required.
+     * Creates a {@code BigNumberList} backed by the provided list reference.
      *
-     * @param values the list to use as internal storage, must not be null
+     * <p>
+     * The given list becomes the internal storage for this instance. No defensive copy is made, so
+     * external modifications to the provided list will be reflected in this {@code BigNumberList}
+     * and vice versa. If independent ownership is required, use {@link #copy()} instead.
+     * </p>
+     *
+     * @param values the list to use as internal storage; must not be {@code null}
      */
     public BigNumberList(@NonNull final List<BigNumber> values) {
         this.values = values;
     }
 
     /**
-     * Create a new BigNumberList that shares the internal storage of the provided instance.
-     * <p>
-     * This constructor performs a shallow copy of the reference to the internal list: both
-     * instances will refer to the same list object. Use {@link #clone()} to obtain a semantic copy
-     * if independent lists are required.
+     * Creates a new {@code BigNumberList} that shares the internal storage of the provided instance.
      *
-     * @param bigNumberList the instance whose internal storage will be referenced, must not be null
+     * <p>This constructor performs a shallow copy of the internal list reference. Both the
+     * original and the new {@code BigNumberList} instances will point to the same underlying list.
+     * If you need an independent copy of the list contents, use {@link #copy()}.</p>
+     *
+     * @param bigNumberList the list whose internal storage should be shared; must not be {@code null}
      */
     public BigNumberList(@NonNull final BigNumberList bigNumberList) {
         this.values = bigNumberList.values;
     }
 
     /**
-     * Sort the elements of this list using the given sorting algorithm implementation.
+     * Creates a new {@code BigNumberList} from the provided {@link BigNumber} vararg array.
+     *
+     * <p>A new mutable {@link ArrayList} is created and populated with the given values.</p>
+     *
+     * @param numbers the numbers to include in the list; must not be {@code null} and must not contain {@code null} elements
+     * @return a new {@code BigNumberList} containing all provided numbers
+     * @throws NullPointerException if {@code numbers} or any of its elements is {@code null}
+     */
+    public static BigNumberList of(@NonNull final BigNumber... numbers) {
+        Objects.requireNonNull(numbers, "numbers must not be null");
+
+        final List<BigNumber> list = new ArrayList<>(numbers.length);
+        for (BigNumber number : numbers) {
+            Objects.requireNonNull(number, "numbers must not contain null elements");
+            list.add(number);
+        }
+
+        return new BigNumberList(list);
+    }
+
+    /**
+     * Creates a new {@code BigNumberList} from a list of string representations.
+     *
+     * <p>Each string is passed to the {@link BigNumber#BigNumber(String)} constructor. This is a
+     * simple convenience factory for test data, parsing scenarios, or manual list construction.</p>
+     *
+     * @param stringValues a list of string representations of numbers; must not be {@code null} and must not contain {@code null} elements
+     * @return a new {@code BigNumberList} containing the parsed {@link BigNumber} values
+     * @throws NullPointerException     if {@code stringValues} or any element is {@code null}
+     * @throws IllegalArgumentException if any string cannot be parsed by {@link BigNumber#BigNumber(String)}
+     */
+    public static BigNumberList fromStrings(@NonNull final List<String> stringValues) {
+        Objects.requireNonNull(stringValues, "stringValues must not be null");
+
+        final List<BigNumber> numbers = new ArrayList<>(stringValues.size());
+        for (String value : stringValues) {
+            Objects.requireNonNull(value, "stringValues must not contain null elements");
+            numbers.add(new BigNumber(value));
+        }
+
+        return new BigNumberList(numbers);
+    }
+
+    /**
+     * Sorts the elements of this list using the specified {@link SortingAlgorithm} implementation.
+     *
      * <p>
      * The method instantiates the provided {@code algorithmClass} using its no-argument constructor,
-     * delegates the sorting to the algorithm's {@code sort(List<BigNumber>)} method and replaces the
-     * internal storage with the returned list. The method mutates this instance and returns {@code this}
-     * to allow fluent calls.
-     * <p>
-     * The sorting algorithm is free to return a new list or mutate and return the same list. If the
-     * algorithm returns {@code null}, an {@link IllegalStateException} is thrown.
+     * delegates the sorting to, and replaces the internal storage
+     * with the returned list. The operation mutates this instance and returns {@code this} for
+     * fluent usage.
+     * </p>
      *
-     * @param algorithmClass implementation of {@link SortingAlgorithm} to use for sorting, must not be null
-     * @return this instance after sorting
+     * <p>If the algorithm returns {@code null}, an {@link IllegalStateException} is thrown.</p>
+     *
+     * @param algorithmClass implementation of {@link SortingAlgorithm} to use for sorting; must not be {@code null}
+     * @return this {@code BigNumberList} instance after sorting
      * @throws IllegalArgumentException if the algorithm class cannot be instantiated
      * @throws IllegalStateException    if the algorithm returns {@code null}
      */
     public BigNumberList sort(@NonNull final Class<? extends SortingAlgorithm> algorithmClass) {
         try {
             final SortingAlgorithm algorithm = algorithmClass.getDeclaredConstructor().newInstance();
-
             final List<BigNumber> sorted = algorithm.sort(values);
+
             if (sorted == null) {
                 throw new IllegalStateException("Sorting algorithm returned null");
             }
 
             values = sorted;
             return this;
-        } catch (ReflectiveOperationException illegalArgumentException) {
-            throw new IllegalArgumentException("Unable to instantiate sorting algorithm: " + algorithmClass.getName(), illegalArgumentException);
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalArgumentException("Unable to instantiate sorting algorithm: " + algorithmClass.getName(), exception);
         }
     }
 
     /**
-     * Reverse the order of elements in this BigNumberList.
+     * Sorts this list in ascending order using the natural ordering of {@link BigNumber}.
+     *
+     * <p>This is a convenience wrapper around {@link #sort(Comparator)} with
+     * {@link Comparator#naturalOrder()}.</p>
+     *
+     * @return this {@code BigNumberList} instance after sorting
+     */
+    public BigNumberList sortAscending() {
+        sort(Comparator.naturalOrder());
+        return this;
+    }
+
+    /**
+     * Sorts this list in descending order using the natural ordering of {@link BigNumber}.
+     *
+     * <p>This is a convenience wrapper around {@link #sort(Comparator)} with
+     * {@link Comparator#reverseOrder()}.</p>
+     *
+     * @return this {@code BigNumberList} instance after sorting
+     */
+    public BigNumberList sortDescending() {
+        sort(Comparator.reverseOrder());
+        return this;
+    }
+
+    /**
+     * Computes the sum of all {@link BigNumber} values contained in this list.
+     *
      * <p>
-     * The method constructs a new temporary BigNumberList and inserts each value from the current
-     * internal list at the front of the temporary list using {@link #addFirst(BigNumber)}. After
-     * iteration, the internal storage is replaced with the reversed list's storage. The operation
-     * mutates this instance and returns {@code this} to allow fluent usage.
+     * The behaviour and numeric characteristics (precision, rounding, locale) are delegated to the
+     * {@link BigNumber#sum(List)} implementation of the first element, following the pattern
+     * used in the {@code BigNumber} API itself. The first element is treated as the "receiver"
+     * and the remaining elements are passed as arguments.
+     * </p>
+     *
+     * @return a new {@link BigNumber} representing the sum of all elements
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber sum() {
+        assertNotEmpty("sum");
+        if (values.size() == 1) {
+            return values.getFirst();
+        }
+
+        return values.getFirst().sum(values.subList(1, values.size()));
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the values in this list.
+     *
+     * <p>
+     * The computation is delegated to {@link BigNumber#average(List)} on the first element.
+     * This ensures consistent usage of the default {@link java.math.MathContext} and
+     * {@link java.util.Locale} configuration defined by the underlying {@code BigNumber}.
+     * </p>
+     *
+     * @return a new {@link BigNumber} representing the arithmetic mean of all elements
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber average() {
+        assertNotEmpty("average");
+        if (values.size() == 1) {
+            return values.getFirst();
+        }
+        return values.getFirst().average(values.subList(1, values.size()));
+    }
+
+    /**
+     * Computes the median of the values in this list.
+     *
+     * <p>
+     * The median is defined as:
+     * </p>
+     * <ul>
+     *   <li>For an odd number of elements: the middle element of the sorted list.</li>
+     *   <li>For an even number of elements: the arithmetic mean of the two middle elements.</li>
+     * </ul>
+     *
+     * <p>The original list is not modified; a defensive copy is sorted internally.</p>
+     *
+     * @return a new {@link BigNumber} representing the median
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber median() {
+        assertNotEmpty("median");
+
+        final List<BigNumber> sorted = new ArrayList<>(values);
+        sorted.sort(Comparator.naturalOrder());
+
+        final int size = sorted.size();
+        final int middleIndex = size / 2;
+
+        if (size % 2 == 1) {
+            // Odd number of elements → direct middle element
+            return sorted.get(middleIndex);
+        }
+
+        // Even number of elements → average of two central values
+        final BigNumber lower = sorted.get(middleIndex - 1);
+        final BigNumber upper = sorted.get(middleIndex);
+
+        return lower.add(upper).divide(TWO);
+    }
+
+    /**
+     * Computes all mode values (the most frequently occurring values) of this list.
+     *
+     * <p>
+     * If multiple distinct values share the same highest frequency, all of them are returned.
+     * If the list is empty, an empty {@link Set} is returned.
+     * </p>
+     *
+     * @return a {@link Set} of {@link BigNumber} values that occur most frequently
+     */
+    public Set<BigNumber> modes() {
+        if (isEmpty()) {
+            return Set.of();
+        }
+
+        final Map<BigNumber, Integer> counts = new HashMap<>();
+        int maxCount = 0;
+
+        for (BigNumber value : values) {
+            final int newCount = counts.getOrDefault(value, 0) + 1;
+            counts.put(value, newCount);
+            if (newCount > maxCount) {
+                maxCount = newCount;
+            }
+        }
+
+        final Set<BigNumber> modes = new LinkedHashSet<>();
+        for (Map.Entry<BigNumber, Integer> entry : counts.entrySet()) {
+            if (entry.getValue() == maxCount) {
+                modes.add(entry.getKey());
+            }
+        }
+        return modes;
+    }
+
+    /**
+     * Returns the smallest {@link BigNumber} in this list according to the natural ordering.
+     *
+     * @return the minimum value in this list
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber min() {
+        assertNotEmpty("min");
+        BigNumber currentMin = values.getFirst();
+        for (int i = 1; i < values.size(); i++) {
+            final BigNumber candidate = values.get(i);
+            if (candidate.isLessThan(currentMin)) {
+                currentMin = candidate;
+            }
+        }
+        return currentMin;
+    }
+
+    /**
+     * Returns the largest {@link BigNumber} in this list according to the natural ordering.
+     *
+     * @return the maximum value in this list
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber max() {
+        assertNotEmpty("max");
+        BigNumber currentMax = values.getFirst();
+        for (int i = 1; i < values.size(); i++) {
+            final BigNumber candidate = values.get(i);
+            if (candidate.isGreaterThan(currentMax)) {
+                currentMax = candidate;
+            }
+        }
+        return currentMax;
+    }
+
+    /**
+     * Computes the numeric range of this list, defined as {@code max() - min()}.
+     *
+     * @return a new {@link BigNumber} representing {@code max() - min()}
+     * @throws IllegalStateException if this list is empty
+     */
+    public BigNumber range() {
+        return max().subtract(min());
+    }
+
+    /**
+     * Computes the population variance of the values in this list.
+     *
+     * <p>
+     * The population variance is defined as the arithmetic mean of squared deviations
+     * from the mean:
+     * </p>
+     *
+     * <pre>
+     * variance = Σ (xᵢ - μ)² / N
+     * </pre>
+     *
+     * <p>where {@code μ} is the arithmetic mean and {@code N} the number of elements.</p>
+     *
+     * @return a new {@link BigNumber} representing the population variance
+     * @throws IllegalStateException if this list contains fewer than two elements
+     */
+    public BigNumber variance() {
+        int minSize = 2;
+        if (size() < minSize) {
+            throw new IllegalStateException("variance requires at least " + minSize + " elements, but the list contains " + size() + ".");
+        }
+
+        final BigNumber mean = average();
+        final List<BigNumber> squaredDeviations = new ArrayList<>(values.size());
+
+        for (BigNumber value : values) {
+            final BigNumber deviation = value.subtract(mean);
+            squaredDeviations.add(deviation.multiply(deviation));
+        }
+
+        return new BigNumberList(squaredDeviations).average();
+    }
+
+    /**
+     * Computes the population standard deviation of the values in this list.
+     *
+     * <p>The standard deviation is the square root of the population variance:
+     * {@code sqrt(variance())}.</p>
+     *
+     * @return a new {@link BigNumber} representing the population standard deviation
+     * @throws IllegalStateException if this list contains fewer than two elements
+     */
+    public BigNumber standardDeviation() {
+        return variance().squareRoot();
+    }
+
+    /**
+     * Computes the geometric mean of the values in this list.
+     *
+     * <p>
+     * The geometric mean is defined as:
+     * </p>
+     * <pre>
+     * geometricMean = (Π xᵢ)^(1/N)
+     * </pre>
+     *
+     * <p>
+     * This method requires that all values are greater than or equal to zero. If any value is
+     * strictly negative, an {@link IllegalStateException} is thrown. Zero values are permitted
+     * and will yield a geometric mean of zero if the product becomes zero.
+     * </p>
+     *
+     * @return a new {@link BigNumber} representing the geometric mean
+     * @throws IllegalStateException if this list is empty or contains a negative value
+     */
+    public BigNumber geometricMean() {
+        assertNotEmpty("geometricMean");
+
+        BigNumber product = values.getFirst();
+        if (product.isLessThan(ZERO)) {
+            throw new IllegalStateException("Geometric mean is undefined for negative values.");
+        }
+
+        for (int i = 1; i < values.size(); i++) {
+            final BigNumber value = values.get(i);
+            if (value.isLessThan(ZERO)) {
+                throw new IllegalStateException("Geometric mean is undefined for negative values.");
+            }
+            product = product.multiply(value);
+        }
+
+        final BigNumber count = new BigNumber(String.valueOf(values.size()));
+        return product.nthRoot(count);
+    }
+
+    /**
+     * Computes the harmonic mean of the values in this list.
+     *
+     * <p>
+     * The harmonic mean is defined as:
+     * </p>
+     *
+     * <pre>
+     * harmonicMean = N / Σ (1 / xᵢ)
+     * </pre>
+     *
+     * <p>
+     * This method requires that no element is equal to zero, as division by zero would occur.
+     * If a zero value is encountered, an {@link ArithmeticException} is thrown.
+     * </p>
+     *
+     * @return a new {@link BigNumber} representing the harmonic mean
+     * @throws IllegalStateException if this list is empty
+     * @throws ArithmeticException   if any value in the list is zero
+     */
+    public BigNumber harmonicMean() {
+        assertNotEmpty("harmonicMean");
+
+        BigNumber sumOfReciprocals = null;
+        for (BigNumber value : values) {
+            if (value.compareTo(ZERO) == 0) {
+                throw new ArithmeticException("Harmonic mean is undefined for value 0.");
+            }
+            final BigNumber reciprocal = ONE.divide(value);
+            sumOfReciprocals = (sumOfReciprocals == null) ? reciprocal : sumOfReciprocals.add(reciprocal);
+        }
+
+        final BigNumber count = new BigNumber(String.valueOf(values.size()));
+        return count.divide(sumOfReciprocals);
+    }
+
+    // -------------------------------------------------------------------------
+    // Domain-specific: transformations (in-place, fluent)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Applies {@link BigNumber#abs()} to every element in this list.
+     *
+     * <p>The transformation is performed in-place and this instance is returned
+     * to support fluent usage.</p>
+     *
+     * @return this {@code BigNumberList} after applying the absolute value to all elements
+     */
+    public BigNumberList absAll() {
+        return transformInPlace(BigNumber::abs, "absAll");
+    }
+
+    /**
+     * Applies {@link BigNumber#negate()} to every element in this list.
+     *
+     * <p>The transformation is performed in-place and this instance is returned
+     * to support fluent usage.</p>
+     *
+     * @return this {@code BigNumberList} after negating all elements
+     */
+    public BigNumberList negateAll() {
+        return transformInPlace(BigNumber::negate, "negateAll");
+    }
+
+    /**
+     * Scales every element in this list by the provided factor.
+     *
+     * <p>
+     * Each value {@code x} is replaced with {@code x * factor}. The transformation is performed
+     * in-place and this instance is returned for fluent usage.
+     * </p>
+     *
+     * @param factor the factor by which to multiply each element; must not be {@code null}
+     * @return this {@code BigNumberList} after scaling all elements
+     * @throws NullPointerException if {@code factor} is {@code null}
+     */
+    public BigNumberList scale(@NonNull final BigNumber factor) {
+        Objects.requireNonNull(factor, "factor must not be null");
+        return transformInPlace(value -> value.multiply(factor), "scale");
+    }
+
+    /**
+     * Translates every element in this list by the provided offset.
+     *
+     * <p>
+     * Each value {@code x} is replaced with {@code x + offset}. The transformation is performed
+     * in-place and this instance is returned for fluent usage.
+     * </p>
+     *
+     * @param offset the value to add to each element; must not be {@code null}
+     * @return this {@code BigNumberList} after translating all elements
+     * @throws NullPointerException if {@code offset} is {@code null}
+     */
+    public BigNumberList translate(@NonNull final BigNumber offset) {
+        Objects.requireNonNull(offset, "offset must not be null");
+        return transformInPlace(value -> value.add(offset), "translate");
+    }
+
+    /**
+     * Raises every element in this list to the given exponent.
+     *
+     * <p>
+     * Each value {@code x} is replaced with {@code x.power(exponent)}. The transformation is
+     * performed in-place and this instance is returned for fluent usage.
+     * </p>
+     *
+     * @param exponent the exponent to use for each element; must not be {@code null}
+     * @return this {@code BigNumberList} after exponentiation
+     * @throws NullPointerException if {@code exponent} is {@code null}
+     */
+    public BigNumberList powEach(@NonNull final BigNumber exponent) {
+        Objects.requireNonNull(exponent, "exponent must not be null");
+        return transformInPlace(value -> value.power(exponent), "powEach");
+    }
+
+    /**
+     * Clamps every element in this list to the given inclusive range {@code [min, max]}.
+     *
+     * <p>
+     * Values smaller than {@code min} are replaced with {@code min}. Values larger than
+     * {@code max} are replaced with {@code max}. Values already within the range are
+     * left unchanged.
+     * </p>
+     *
+     * @param min the lower bound (inclusive); must not be {@code null}
+     * @param max the upper bound (inclusive); must not be {@code null} and must not be less than {@code min}
+     * @return this {@code BigNumberList} after clamping all elements
+     * @throws NullPointerException     if {@code min} or {@code max} is {@code null}
+     * @throws IllegalArgumentException if {@code max} is less than {@code min}
+     */
+    public BigNumberList clampAll(@NonNull final BigNumber min, @NonNull final BigNumber max) {
+        Objects.requireNonNull(min, "min must not be null");
+        Objects.requireNonNull(max, "max must not be null");
+
+        if (max.isLessThan(min)) {
+            throw new IllegalArgumentException("max must be greater than or equal to min");
+        }
+
+        return transformInPlace(value -> {
+            if (value.isLessThan(min)) {
+                return min;
+            }
+            if (value.isGreaterThan(max)) {
+                return max;
+            }
+            return value;
+        }, "clampAll");
+    }
+
+    /**
+     * Normalizes all elements in this list so that their sum becomes equal to the given target sum.
+     *
+     * <p>
+     * Let {@code currentSum = sum()}. Each element {@code x} is replaced with
+     * {@code x * (targetSum / currentSum)}. If the current sum is zero, the operation is undefined
+     * and an {@link IllegalStateException} is thrown.
+     * </p>
+     *
+     * @param targetSum the desired sum after normalization; must not be {@code null}
+     * @return this {@code BigNumberList} after normalization
+     * @throws NullPointerException  if {@code targetSum} is {@code null}
+     * @throws IllegalStateException if the current sum is zero
+     */
+    public BigNumberList normalizeToSum(@NonNull final BigNumber targetSum) {
+        Objects.requireNonNull(targetSum, "targetSum must not be null");
+
+        final BigNumber currentSum = sum();
+        if (currentSum.compareTo(ZERO) == 0) {
+            throw new IllegalStateException("Cannot normalize list with sum 0.");
+        }
+
+        final BigNumber scaleFactor = targetSum.divide(currentSum);
+        return transformInPlace(value -> value.multiply(scaleFactor), "normalizeToSum");
+    }
+
+    /**
+     * Produces a new {@code BigNumberList} where each element is the result of applying
+     * the provided operator to the corresponding element of this list.
+     *
+     * <p>The original list is left unchanged.</p>
+     *
+     * @param operator the transformation to apply to each element; must not be {@code null}
+     * @return a new {@code BigNumberList} containing the transformed elements
+     * @throws NullPointerException  if {@code operator} is {@code null}
+     * @throws IllegalStateException if the operator returns {@code null} for any element
+     */
+    public BigNumberList map(@NonNull final UnaryOperator<BigNumber> operator) {
+        Objects.requireNonNull(operator, "operator must not be null");
+        final List<BigNumber> result = new ArrayList<>(values.size());
+
+        for (BigNumber value : values) {
+            final BigNumber transformed = operator.apply(value);
+            if (transformed == null) {
+                throw new IllegalStateException("map operator must not produce null elements");
+            }
+            result.add(transformed);
+        }
+
+        return new BigNumberList(result);
+    }
+
+    /**
+     * Reverses the order of elements in this {@code BigNumberList}.
+     *
+     * <p>The operation is performed by constructing an intermediate {@code BigNumberList},
+     * inserting elements at the front, and then replacing the internal storage reference.</p>
      *
      * @return this instance with elements in reversed order
      */
@@ -152,524 +678,587 @@ public class BigNumberList implements List<BigNumber> {
         return this;
     }
 
+    // -------------------------------------------------------------------------
+    // Domain-specific: structural operations & queries
+    // -------------------------------------------------------------------------
+
     /**
-     * Return the number of elements contained in this BigNumberList.
+     * Returns a new {@code BigNumberList} that is a deep structural copy of this list.
      *
-     * <p>This delegates directly to the internal {@code values} list and therefore
-     * reflects the current storage implementation and its size. This method runs in
-     * constant time for typical {@link java.util.List} implementations that
-     * maintain a size field (for example {@link java.util.ArrayList}).</p>
+     * <p>
+     * The internal {@link List} storage is copied into a new {@link ArrayList}. The individual
+     * {@link BigNumber} instances are not cloned; references are reused. If element-level
+     * independence is required, callers must clone individual {@code BigNumber} objects themselves.
+     * </p>
      *
-     * @return the number of elements in this list
+     * @return a new {@code BigNumberList} with its own internal list
      */
-    @Override
-    public int size() {
-        return values.size();
+    public BigNumberList copy() {
+        return new BigNumberList(new ArrayList<>(values));
     }
 
     /**
-     * Determine whether this BigNumberList contains no elements.
+     * Returns an immutable {@link List} containing the same {@link BigNumber} elements as this list.
      *
-     * <p>Delegates to the backing {@code values} list. If the internal list is
-     * replaced by another implementation, the result will reflect that
-     * implementation's emptiness semantics.</p>
+     * <p>
+     * The returned list is backed by a new {@link ArrayList} and wrapped with
+     * {@link Collections#unmodifiableList(List)}. Modifications to the returned list are not allowed
+     * and will result in {@link UnsupportedOperationException}.
+     * </p>
      *
-     * @return {@code true} if this list contains no elements, {@code false} otherwise
+     * @return an unmodifiable list containing the same elements as this {@code BigNumberList}
      */
-    @Override
-    public boolean isEmpty() {
-        return values.isEmpty();
+    public List<BigNumber> immutableCopy() {
+        return Collections.unmodifiableList(new ArrayList<>(values));
     }
 
     /**
-     * Test whether the specified object is present in this list.
+     * Randomly shuffles the elements of this list using a new {@link Random} instance.
      *
-     * <p>This method forwards to {@link java.util.List#contains(Object)} on the
-     * backing list. The equality test used depends on the {@code equals} method of
-     * the stored {@link BigNumber} instances or the provided object.</p>
-     *
-     * @param object object whose presence in this list is to be tested, must not be {@code null}
-     * @return {@code true} if this list contains the specified element
+     * @return this {@code BigNumberList} after shuffling
      */
-    @Override
-    public boolean contains(@NonNull final Object object) {
-        return values.contains(object);
+    public BigNumberList shuffle() {
+        Collections.shuffle(values);
+        return this;
     }
 
     /**
-     * Return an iterator over the elements in this list in proper sequence.
+     * Randomly shuffles the elements of this list using the provided {@link Random} source.
      *
-     * <p>The returned iterator is the iterator of the internal backing list and
-     * will reflect modifications made to that list. Behaviour (concurrent
-     * modification, supported removal) depends on the backing list's iterator.</p>
-     *
-     * @return an {@link Iterator} over the elements in this list
+     * @param random the random source to use; must not be {@code null}
+     * @return this {@code BigNumberList} after shuffling
+     * @throws NullPointerException if {@code random} is {@code null}
      */
-    @Override
-    public Iterator<BigNumber> iterator() {
-        return values.iterator();
+    public BigNumberList shuffle(@NonNull final Random random) {
+        Objects.requireNonNull(random, "random must not be null");
+        Collections.shuffle(values, random);
+        return this;
     }
 
     /**
-     * Perform the given action for each element of the {@code BigNumberList} until
-     * all elements have been processed or the action throws an exception.
+     * Rotates the elements in this list by the specified distance.
      *
-     * <p>This implementation defers to the default {@link List#forEach} behaviour,
-     * which will use the list's iterator to traverse elements.</p>
+     * <p>
+     * The semantics are identical to {@link Collections#rotate(List, int)}:
+     * </p>
+     * <ul>
+     *   <li>A positive distance moves elements from the end to the front.</li>
+     *   <li>A negative distance moves elements from the front to the end.</li>
+     * </ul>
      *
-     * @param action The action to be performed for each element, must not be {@code null}
+     * @param distance the distance to rotate the list
+     * @return this {@code BigNumberList} after rotation
      */
-    @Override
-    public void forEach(@NonNull final Consumer<? super BigNumber> action) {
-        List.super.forEach(action);
+    public BigNumberList rotate(final int distance) {
+        Collections.rotate(values, distance);
+        return this;
     }
 
     /**
-     * Return an array containing all of the elements in this list in proper
-     * sequence (from first to last).
+     * Returns a new {@code BigNumberList} containing only distinct elements from this list,
+     * preserving their first encountered order.
      *
-     * <p>Note: this implementation currently returns an empty array and should be
-     * replaced with a proper delegation if array conversion is required. For now
-     * it satisfies the method presence but does not provide the expected semantics.</p>
+     * <p>
+     * Internally, a {@link LinkedHashSet} is used to track seen elements while preserving
+     * insertion order.
+     * </p>
+     *
+     * @return a new {@code BigNumberList} containing distinct elements
+     */
+    public BigNumberList distinct() {
+        final LinkedHashSet<BigNumber> set = new LinkedHashSet<>(values);
+        return new BigNumberList(new ArrayList<>(set));
+    }
+
+    /**
+     * Returns a new {@code BigNumberList} representing the concatenation of this list
+     * and the provided {@code other} list.
+     *
+     * @param other the list to append; must not be {@code null}
+     * @return a new {@code BigNumberList} containing all elements of this list followed by all elements of {@code other}
+     * @throws NullPointerException if {@code other} is {@code null}
+     */
+    public BigNumberList append(@NonNull final BigNumberList other) {
+        Objects.requireNonNull(other, "other must not be null");
+        final List<BigNumber> combined = new ArrayList<>(this.values.size() + other.values.size());
+        combined.addAll(this.values);
+        combined.addAll(other.values);
+        return new BigNumberList(combined);
+    }
+
+    /**
+     * Returns a new {@code BigNumberList} that is a copy of the specified range of this list.
+     *
+     * <p>
+     * This method creates a new {@link ArrayList} backed by a copy of the sublist
+     * {@code values[fromIndex, toIndex)}, ensuring that subsequent structural changes do not affect
+     * the original list.
+     * </p>
+     *
+     * @param fromIndex low endpoint (inclusive) of the sublist
+     * @param toIndex   high endpoint (exclusive) of the sublist
+     * @return a new {@code BigNumberList} containing the specified range
+     * @throws IndexOutOfBoundsException if the range is invalid
+     */
+    public BigNumberList subListCopy(final int fromIndex, final int toIndex) {
+        return new BigNumberList(new ArrayList<>(values.subList(fromIndex, toIndex)));
+    }
+
+    /**
+     * Determines whether at least one element in this list matches the given predicate.
+     *
+     * @param predicate the condition to test; must not be {@code null}
+     * @return {@code true} if any element satisfies the predicate, {@code false} otherwise
+     * @throws NullPointerException if {@code predicate} is {@code null}
+     */
+    public boolean anyMatch(@NonNull final Predicate<BigNumber> predicate) {
+        Objects.requireNonNull(predicate, "predicate must not be null");
+        for (BigNumber value : values) {
+            if (predicate.test(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines whether all elements in this list match the given predicate.
+     *
+     * <p>For an empty list, this method returns {@code true}, matching the semantics of
+     * {@link java.util.stream.Stream#allMatch(Predicate)}.</p>
+     *
+     * @param predicate the condition to test; must not be {@code null}
+     * @return {@code true} if all elements satisfy the predicate, or the list is empty; {@code false} otherwise
+     * @throws NullPointerException if {@code predicate} is {@code null}
+     */
+    public boolean allMatch(@NonNull final Predicate<BigNumber> predicate) {
+        Objects.requireNonNull(predicate, "predicate must not be null");
+        for (BigNumber value : values) {
+            if (!predicate.test(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Finds the first element in this list matching the given predicate.
+     *
+     * @param predicate the condition to test; must not be {@code null}
+     * @return an {@link Optional} describing the first matching element, or empty if none match
+     * @throws NullPointerException if {@code predicate} is {@code null}
+     */
+    public Optional<BigNumber> findFirst(@NonNull final Predicate<BigNumber> predicate) {
+        Objects.requireNonNull(predicate, "predicate must not be null");
+        for (BigNumber value : values) {
+            if (predicate.test(value)) {
+                return Optional.of(value);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Creates a new {@code BigNumberList} containing only the elements that match the given predicate.
+     *
+     * <p>The original list is left unchanged.</p>
+     *
+     * @param predicate the condition to use for filtering; must not be {@code null}
+     * @return a new {@code BigNumberList} containing only elements for which {@code predicate} is {@code true}
+     * @throws NullPointerException if {@code predicate} is {@code null}
+     */
+    public BigNumberList filter(@NonNull final Predicate<BigNumber> predicate) {
+        Objects.requireNonNull(predicate, "predicate must not be null");
+        final List<BigNumber> filtered = new ArrayList<>();
+        for (BigNumber value : values) {
+            if (predicate.test(value)) {
+                filtered.add(value);
+            }
+        }
+        return new BigNumberList(filtered);
+    }
+
+    /**
+     * Checks whether this list is sorted in non-decreasing (ascending) order according to
+     * the natural ordering of {@link BigNumber}.
+     *
+     * @return {@code true} if the list is sorted ascending or contains fewer than two elements, {@code false} otherwise
+     */
+    public boolean isSortedAscending() {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).isLessThan(values.get(i - 1))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether this list is sorted in non-increasing (descending) order according to
+     * the natural ordering of {@link BigNumber}.
+     *
+     * @return {@code true} if the list is sorted descending or contains fewer than two elements, {@code false} otherwise
+     */
+    public boolean isSortedDescending() {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).isGreaterThan(values.get(i - 1))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether this list is monotonically non-decreasing (each element greater than or equal
+     * to the previous one).
+     *
+     * @return {@code true} if the sequence is monotonically non-decreasing or has fewer than two elements, {@code false} otherwise
+     */
+    public boolean isMonotonicIncreasing() {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).isLessThan(values.get(i - 1))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether this list is monotonically non-increasing (each element less than or equal
+     * to the previous one).
+     *
+     * @return {@code true} if the sequence is monotonically non-increasing or has fewer than two elements, {@code false} otherwise
+     */
+    public boolean isMonotonicDecreasing() {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).isGreaterThan(values.get(i - 1))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // -------------------------------------------------------------------------
+    // Domain-specific: conversion utilities
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns an unmodifiable list view containing the same elements as this {@code BigNumberList}.
+     *
+     * <p>
+     * The returned list is backed by a defensive copy, so changes to this {@code BigNumberList}
+     * after calling this method do not affect the returned list.
+     * </p>
+     *
+     * @return an unmodifiable list containing the current elements of this {@code BigNumberList}
+     */
+    public List<BigNumber> toUnmodifiableList() {
+        return Collections.unmodifiableList(new ArrayList<>(values));
+    }
+
+    /**
+     * Returns an array containing all of the elements in this list in proper sequence
+     * (from first to last).
+     *
+     * <p>This method delegates directly to the internal list's {@link List#toArray()} implementation.</p>
      *
      * @return an array containing all of the elements in this list
      */
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        return values.toArray();
     }
 
     /**
-     * Store the elements of this list into the provided array if it is large
-     * enough; otherwise allocate a new array of the same runtime component type.
+     * Returns a {@code BigNumber[]} array containing all the elements in this list in order.
      *
-     * <p>This method delegates to the backing {@code values} list which implements
-     * the standard {@code toArray(T[])} contract.</p>
+     * <p>This is a strongly-typed convenience method around {@link #toArray(Object[])}.</p>
      *
-     * @param array the array into which the elements of the list are to be stored, if it is big enough
-     * @param <T>   the runtime type of the array to contain the collection
-     * @return an array containing the elements of this list
+     * @return a {@code BigNumber[]} containing all elements of this list
      */
+    public BigNumber[] toBigNumberArray() {
+        return values.toArray(new BigNumber[0]);
+    }
+
+    /**
+     * Returns a list of {@link String} representations of the elements in this list.
+     *
+     * <p>Each element's {@link BigNumber#toString()} method is used for conversion.</p>
+     *
+     * @return a new list containing string representations of each element
+     */
+    public List<String> toStringList() {
+        final List<String> result = new ArrayList<>(values.size());
+        for (BigNumber value : values) {
+            result.add(value.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Returns a primitive {@code double[]} array containing all of the elements in this list,
+     * converted via {@link BigNumber#doubleValue()}.
+     *
+     * <p>
+     * This is useful for interoperability with APIs that operate on primitive doubles.
+     * Note that {@code BigNumber} values may lose precision during this conversion.
+     * </p>
+     *
+     * @return a {@code double[]} containing the double values of each element
+     */
+    public double[] toDoubleArray() {
+        final double[] result = new double[values.size()];
+        for (int i = 0; i < values.size(); i++) {
+            result[i] = values.get(i).doubleValue();
+        }
+        return result;
+    }
+
+    /**
+     * Creates and returns a copy of this {@code BigNumberList}.
+     *
+     * <p>This method shares the underlying list storage with the original instance.
+     * For an independent list copy, use {@link #copy()} instead.</p>
+     *
+     * @return a new {@code BigNumberList} instance referencing the same internal list
+     */
+    public BigNumberList clone() {
+        return new BigNumberList(this);
+    }
+
+    // -------------------------------------------------------------------------
+    // List interface implementation (delegation)
+    // -------------------------------------------------------------------------
+
+    @Override
+    public int size() {
+        return values.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return values.isEmpty();
+    }
+
+    @Override
+    public boolean contains(@NonNull final Object object) {
+        return values.contains(object);
+    }
+
+    @Override
+    public Iterator<BigNumber> iterator() {
+        return values.iterator();
+    }
+
+    @Override
+    public void forEach(@NonNull final Consumer<? super BigNumber> action) {
+        List.super.forEach(action);
+    }
+
     @Override
     public <T> T[] toArray(@NonNull final T[] array) {
         return values.toArray(array);
     }
 
-    /**
-     * Return an array containing all of the elements in this list using the
-     * provided generator function to allocate the returned array.
-     *
-     * <p>This implementation uses the default {@link List#toArray(IntFunction)}
-     * behaviour which will construct an array via the supplied generator.</p>
-     *
-     * @param generator a function which produces a new array of the desired type and the provided length
-     * @param <T>       the component type of the array to contain the collection
-     * @return an array containing all of the elements in this list
-     */
     @Override
     public <T> T[] toArray(@NonNull final IntFunction<T[]> generator) {
         return List.super.toArray(generator);
     }
 
-    /**
-     * Append the specified {@link BigNumber} to the end of this list.
-     *
-     * @param bigNumber element to be appended to this list, must not be {@code null}
-     * @return {@code true} if the list changed as a result of the call
-     */
     @Override
     public boolean add(@NonNull final BigNumber bigNumber) {
         return values.add(bigNumber);
     }
 
-    /**
-     * Remove the first occurrence of the specified element from this list, if it
-     * is present.
-     *
-     * @param object element to be removed from this list, if present, must not be {@code null}
-     * @return {@code true} if an element was removed as a result of this call
-     */
     @Override
     public boolean remove(@NonNull final Object object) {
         return values.remove(object);
     }
 
-    /**
-     * Return {@code true} if this list contains all of the elements in the given
-     * collection.
-     *
-     * <p>This implementation builds a temporary {@link HashSet} from the backing
-     * list for potentially faster containment checks when the collection being
-     * tested is large. Equality semantics are determined by the elements' equals
-     * implementations.</p>
-     *
-     * @param collection collection to be checked for containment, must not be {@code null}
-     * @return {@code true} if this list contains all elements in the specified collection
-     */
     @Override
     public boolean containsAll(@NonNull final Collection<?> collection) {
         return new HashSet<>(values).containsAll(collection);
     }
 
-    /**
-     * Append all of the elements in the specified collection to the end of this
-     * list, in the order that they are returned by the collection's iterator.
-     *
-     * @param collection collection containing elements to be added to this list, must not be {@code null}
-     * @return {@code true} if this list changed as a result of the call
-     */
     @Override
     public boolean addAll(@NonNull final Collection<? extends BigNumber> collection) {
         return values.addAll(collection);
     }
 
-    /**
-     * Insert all of the elements in the specified collection into this list at
-     * the specified position.
-     *
-     * <p>Elements are inserted in the order provided by the collection's iterator.
-     * Behaviour is delegated to the backing list.</p>
-     *
-     * @param index      index at which to insert the first element from the specified collection
-     * @param collection collection containing elements to be added, must not be {@code null}
-     * @return {@code true} if this list changed as a result of the call
-     */
     @Override
-    public boolean addAll(int index, @NonNull final Collection<? extends BigNumber> collection) {
+    public boolean addAll(final int index, @NonNull final Collection<? extends BigNumber> collection) {
         return values.addAll(index, collection);
     }
 
-    /**
-     * Remove from this list all of its elements that are contained in the
-     * specified collection.
-     *
-     * @param c collection containing elements to be removed from this list, must not be {@code null}
-     * @return {@code true} if this list changed as a result of the call
-     */
     @Override
-    public boolean removeAll(@NonNull final Collection<?> c) {
-        return values.removeAll(c);
+    public boolean removeAll(@NonNull final Collection<?> collection) {
+        return values.removeAll(collection);
     }
 
-    /**
-     * Remove all of the elements of this collection that satisfy the given
-     * predicate.
-     *
-     * <p>This method defers to the default {@link List#removeIf} implementation,
-     * which uses the list's iterator to remove matching elements.</p>
-     *
-     * @param filter a predicate which returns {@code true} for elements to be removed, must not be {@code null}
-     * @return {@code true} if any elements were removed
-     */
     @Override
     public boolean removeIf(@NonNull final Predicate<? super BigNumber> filter) {
         return List.super.removeIf(filter);
     }
 
-    /**
-     * Retain only the elements in this list that are contained in the specified
-     * collection (optional operation).
-     *
-     * @param c collection containing elements to be retained in this list
-     * @return {@code true} if this list changed as a result of the call
-     */
     @Override
-    public boolean retainAll(Collection<?> c) {
-        return values.retainAll(c);
+    public boolean retainAll(final Collection<?> collection) {
+        return values.retainAll(collection);
     }
 
-    /**
-     * Replace each element of this list with the result of applying the operator
-     * to that element.
-     *
-     * <p>This method uses the default {@link List#replaceAll} behaviour which will
-     * traverse the list and set each entry to the operator's result.</p>
-     *
-     * @param operator the operator to apply to each element, must not be {@code null}
-     */
     @Override
     public void replaceAll(@NonNull final UnaryOperator<BigNumber> operator) {
         List.super.replaceAll(operator);
     }
 
-    /**
-     * Sort this list according to the order induced by the specified comparator.
-     *
-     * <p>Delegates to the default {@link List#sort} implementation which will
-     * rearrange elements in the backing list according to the comparator provided.</p>
-     *
-     * @param comparator the comparator to determine the order of the list, must not be {@code null}
-     */
     @Override
     public void sort(@NonNull final Comparator<? super BigNumber> comparator) {
         List.super.sort(comparator);
     }
 
-    /**
-     * Remove all elements from this list. The list will be empty after this
-     * call returns.
-     *
-     * @see List#clear()
-     */
     @Override
     public void clear() {
         values.clear();
     }
 
-    /**
-     * Return the element at the specified position in this list.
-     *
-     * @param index index of the element to return
-     * @return the element at the specified position in this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     */
     @Override
     public BigNumber get(final int index) {
         return values.get(index);
     }
 
-    /**
-     * Replace the element at the specified position in this list with the
-     * specified element.
-     *
-     * @param index     index of the element to replace
-     * @param bigNumber element to be stored at the specified position, must not be {@code null}
-     * @return the element previously at the specified position
-     */
     @Override
     public BigNumber set(final int index, @NonNull final BigNumber bigNumber) {
         return values.set(index, bigNumber);
     }
 
-    /**
-     * Insert the specified element at the specified position in this list.
-     *
-     * @param index     index at which the specified element is to be inserted
-     * @param bigNumber element to be inserted, must not be {@code null}
-     */
     @Override
     public void add(final int index, @NonNull final BigNumber bigNumber) {
         values.add(index, bigNumber);
     }
 
-    /**
-     * Remove the element at the specified position in this list.
-     *
-     * @param index the index of the element to be removed
-     * @return the element that was removed from the list
-     */
     @Override
     public BigNumber remove(final int index) {
         return values.remove(index);
     }
 
-    /**
-     * Return the index of the first occurrence of the specified element in this
-     * list, or -1 if this list does not contain the element.
-     *
-     * @param o element to search for, must not be {@code null}
-     * @return the index of the first occurrence, or -1 if not found
-     */
     @Override
-    public int indexOf(@NonNull final Object o) {
-        return values.indexOf(o);
+    public int indexOf(@NonNull final Object object) {
+        return values.indexOf(object);
     }
 
-    /**
-     * Return the index of the last occurrence of the specified element in this
-     * list, or -1 if this list does not contain the element.
-     *
-     * @param o element to search for, must not be {@code null}
-     * @return the index of the last occurrence, or -1 if not found
-     */
     @Override
-    public int lastIndexOf(@NonNull final Object o) {
-        return values.lastIndexOf(o);
+    public int lastIndexOf(@NonNull final Object object) {
+        return values.lastIndexOf(object);
     }
 
-    /**
-     * Return a list iterator over the elements in this list (in proper sequence).
-     *
-     * <p>The returned iterator is the iterator of the backing list and will
-     * reflect changes to that list.</p>
-     *
-     * @return a {@link ListIterator} over the elements in this list
-     */
     @Override
     public ListIterator<BigNumber> listIterator() {
         return values.listIterator();
     }
 
-    /**
-     * Return a list iterator of the elements in this list starting at the
-     * specified position.
-     *
-     * @param index index of the first element to be returned from the list iterator
-     * @return a {@link ListIterator} over the elements in this list starting at the specified position
-     */
     @Override
     public ListIterator<BigNumber> listIterator(final int index) {
         return values.listIterator(index);
     }
 
-    /**
-     * Return a view of the portion of this list between the specified fromIndex,
-     * inclusive, and toIndex, exclusive.
-     *
-     * <p>The returned list is backed by the original list, so non-structural
-     * changes in the returned list are reflected in this list.</p>
-     *
-     * @param fromIndex low endpoint (inclusive) of the subList
-     * @param toIndex   high endpoint (exclusive) of the subList
-     * @return a view of the specified range within this list
-     */
     @Override
     public List<BigNumber> subList(final int fromIndex, final int toIndex) {
         return values.subList(fromIndex, toIndex);
     }
 
-    /**
-     * Create a {@link Spliterator} over the elements in this list.
-     *
-     * <p>This implementation uses the default {@link List#spliterator} behaviour.</p>
-     *
-     * @return a {@link Spliterator} over the elements in this list
-     */
     @Override
     public Spliterator<BigNumber> spliterator() {
         return List.super.spliterator();
     }
 
-    /**
-     * Return a sequential {@link Stream} with this collection as its source.
-     *
-     * <p>Delegates to the default list stream implementation.</p>
-     *
-     * @return a sequential {@link Stream} over the elements in this list
-     */
     @Override
     public Stream<BigNumber> stream() {
         return List.super.stream();
     }
 
-    /**
-     * Return a possibly parallel {@link Stream} with this collection as its
-     * source.
-     *
-     * <p>Delegates to the default list parallel stream implementation.</p>
-     *
-     * @return a possibly parallel {@link Stream} over the elements in this list
-     */
     @Override
     public Stream<BigNumber> parallelStream() {
         return List.super.parallelStream();
     }
 
-    /**
-     * Insert the specified element at the beginning of this list.
-     *
-     * <p>This method uses the default {@link List#addFirst} behaviour. Note that
-     * not all {@link List} implementations support adding at the first position;
-     * behaviour depends on the backing list type.</p>
-     *
-     * @param bigNumber element to add at the front, must not be {@code null}
-     */
     @Override
     public void addFirst(@NonNull final BigNumber bigNumber) {
         List.super.addFirst(bigNumber);
     }
 
-    /**
-     * Append the specified element to the end of this list (alias for {@link #add}).
-     *
-     * <p>Delegates to the default {@link List#addLast} behaviour.</p>
-     *
-     * @param bigNumber element to add at the end, must not be {@code null}
-     */
     @Override
     public void addLast(@NonNull final BigNumber bigNumber) {
         List.super.addLast(bigNumber);
     }
 
-    /**
-     * Return the first element in this list.
-     *
-     * @return the first element in this list
-     * @throws NoSuchElementException if the list is empty
-     */
     @Override
     public BigNumber getFirst() {
         return List.super.getFirst();
     }
 
-    /**
-     * Return the last element in this list.
-     *
-     * @return the last element in this list
-     * @throws NoSuchElementException if the list is empty
-     */
     @Override
     public BigNumber getLast() {
         return List.super.getLast();
     }
 
-    /**
-     * Remove and return the first element from this list.
-     *
-     * @return the removed first element
-     * @throws NoSuchElementException if the list is empty
-     */
     @Override
     public BigNumber removeFirst() {
         return List.super.removeFirst();
     }
 
-    /**
-     * Remove and return the last element from this list.
-     *
-     * @return the removed last element
-     * @throws NoSuchElementException if the list is empty
-     */
     @Override
     public BigNumber removeLast() {
         return List.super.removeLast();
     }
 
-    /**
-     * Return a reversed view or copy of this list using the default list
-     * behaviour.
-     *
-     * <p>The default {@link List#reversed} method semantics apply; consult the
-     * specific JDK version and backing list implementation for exact behaviour.</p>
-     *
-     * @return a list containing the elements of this list in reverse order
-     */
     @Override
     public List<BigNumber> reversed() {
         return List.super.reversed();
     }
 
-    /**
-     * Return a string representation of this list.
-     *
-     * <p>Delegates to the backing {@code values} list's {@code toString} method,
-     * producing a representation that lists elements in order and uses each
-     * element's {@code toString} result.</p>
-     *
-     * @return a string representation of this BigNumberList
-     */
     @Override
     public String toString() {
         return values.toString();
     }
 
+    // -------------------------------------------------------------------------
+    // Private helpers (DRY)
+    // -------------------------------------------------------------------------
+
     /**
-     * Creates and returns a copy of this BigNumberList.
+     * Ensures that this list is not empty, throwing an {@link IllegalStateException} otherwise.
      *
-     * @return a new BigNumberList instance with the same value and properties as this one
+     * @param operationName the name of the operation requiring a non-empty list
      */
-    public BigNumberList clone() {
-        return new BigNumberList(this);
+    private void assertNotEmpty(@NonNull final String operationName) {
+        if (isEmpty()) {
+            throw new IllegalStateException(operationName + " requires at least one element, but the list is empty.");
+        }
+    }
+
+    /**
+     * Applies the given transformation operator to each element in this list in-place.
+     *
+     * <p>The operator must not return {@code null} for any element.</p>
+     *
+     * @param operator      the operator used to transform each element; must not be {@code null}
+     * @param operationName a human-readable name of the operation, used for exception messages
+     * @return this {@code BigNumberList} instance after transformation
+     * @throws NullPointerException  if {@code operator} is {@code null}
+     * @throws IllegalStateException if the operator returns {@code null} for any element
+     */
+    private BigNumberList transformInPlace(@NonNull final UnaryOperator<BigNumber> operator, @NonNull final String operationName) {
+        Objects.requireNonNull(operator, "operator must not be null");
+        Objects.requireNonNull(operationName, "operationName must not be null");
+
+        for (int i = 0; i < values.size(); i++) {
+            final BigNumber original = values.get(i);
+            final BigNumber transformed = operator.apply(original);
+            if (transformed == null) {
+                throw new IllegalStateException(operationName + " must not produce null elements");
+            }
+            values.set(i, transformed);
+        }
+        return this;
     }
 
 }
