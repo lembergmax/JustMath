@@ -25,10 +25,12 @@
 package com.mlprograms.justmath.bignumber.algorithms;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
 
+@NoArgsConstructor
 public class QuickSort extends SortingAlgorithm {
 
     /**
@@ -71,7 +73,7 @@ public class QuickSort extends SortingAlgorithm {
      * @param leftIndex  inclusive left bound of the sublist to sort
      * @param rightIndex inclusive right bound of the sublist to sort
      */
-    private static void quickSort(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
+    private void quickSort(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
         if (leftIndex >= rightIndex) {
             return;
         }
@@ -99,7 +101,7 @@ public class QuickSort extends SortingAlgorithm {
      * @param rightIndex inclusive right bound of the sublist to partition (pivot index)
      * @return the final index of the pivot after partitioning
      */
-    private static int partition(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
+    private int partition(@NonNull final List<BigNumber> numbers, final int leftIndex, final int rightIndex) {
         final BigNumber pivot = numbers.get(rightIndex);
         int partitionIndex = leftIndex - 1;
 
