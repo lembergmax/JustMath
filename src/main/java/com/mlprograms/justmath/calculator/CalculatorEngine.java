@@ -40,8 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceAbsSigns;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceVariables;
+import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
 
 /**
  * ExactCalculatorEngine.java

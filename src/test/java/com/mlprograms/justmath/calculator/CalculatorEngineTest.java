@@ -25,13 +25,17 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -370,6 +374,71 @@ public class CalculatorEngineTest {
     void sumPrettyStringTest(String expression, String expected) {
         String actual = calculatorEngineRad.evaluateToPrettyString(expression);
         assertEquals(expected, actual);
+    }
+
+    @Nested
+    class CalculatorEngineUtilTest {
+
+        private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+
+        @Test
+        void checkVariablesForRecursion_noCycle_shouldPass() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "b+1");
+            variables.put("b", "c+2");
+            variables.put("c", "3");
+
+            assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+        @Test
+        void checkVariablesForRecursion_directCycle_shouldThrow() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "b+1");
+            variables.put("b", "a+2");
+
+            assertThrows(CyclicVariableReferenceException.class,
+                    () -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+        @Test
+        void checkVariablesForRecursion_indirectCycle_shouldThrow() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "b+1");
+            variables.put("b", "c+2");
+            variables.put("c", "a+3");
+
+            assertThrows(CyclicVariableReferenceException.class,
+                    () -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+        @Test
+        void checkVariablesForRecursion_sharedSubexpression_shouldPass() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "b+c");
+            variables.put("b", "d+1");
+            variables.put("c", "d+2");
+            variables.put("d", "5");
+
+            assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+        @Test
+        void checkVariablesForRecursion_emptyAndConstantVariables_shouldPass() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "");
+            variables.put("b", "5");
+
+            assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+        @Test
+        void checkVariablesForRecursion_referenceToUndefinedVariable_shouldThrowOnReplaceButNotOnCheck() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "b+1");
+            assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
     }
 
 }

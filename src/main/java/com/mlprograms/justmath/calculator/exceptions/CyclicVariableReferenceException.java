@@ -22,21 +22,21 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.exceptions;
+package com.mlprograms.justmath.calculator.exceptions;
 
-import lombok.Getter;
+import com.mlprograms.justmath.exceptions.CustomErrorException;
+import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
+import lombok.NonNull;
 
-public enum CustomExceptionMessages {
+public class CyclicVariableReferenceException extends CustomErrorException {
 
-    SYNTAX_ERROR("Syntax Error"),
-    PROCESSING_ERROR("Processing Error"),
-    CYCLIC_VARIABLE_REFERENCE("Cyclic Variable Reference");
-
-    @Getter
-    private final String message;
-
-    CustomExceptionMessages(String message) {
-        this.message = message;
+    public CyclicVariableReferenceException() {
+        super(CustomExceptionMessages.CYCLIC_VARIABLE_REFERENCE);
     }
+
+    public CyclicVariableReferenceException(@NonNull final String detailedMessage) {
+        super(CustomExceptionMessages.CYCLIC_VARIABLE_REFERENCE, detailedMessage);
+    }
+
 
 }
