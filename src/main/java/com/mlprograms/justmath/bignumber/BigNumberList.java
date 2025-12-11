@@ -79,7 +79,7 @@ public class BigNumberList implements List<BigNumber> {
      * replaced with a mutable implementation (e.g. via {@link #add(BigNumber)} or factory methods).</p>
      */
     public BigNumberList() {
-        values = List.of();
+        values = new ArrayList<>();
     }
 
     /**
@@ -314,25 +314,41 @@ public class BigNumberList implements List<BigNumber> {
             return Set.of();
         }
 
-        final Map<BigNumber, Integer> counts = new HashMap<>();
-        int maxCount = 0;
+        List<BigNumber> unique = new ArrayList<>();
+        List<Integer> counts = new ArrayList<>();
 
         for (BigNumber value : values) {
-            final int newCount = counts.getOrDefault(value, 0) + 1;
-            counts.put(value, newCount);
-            if (newCount > maxCount) {
-                maxCount = newCount;
+            int index = -1;
+            for (int i = 0; i < unique.size(); i++) {
+                if (value.compareTo(unique.get(i)) == 0) {
+                    index = i;
+                    break;
+                }
+            }
+            
+            if (index == -1) {
+                unique.add(value);
+                counts.add(1);
+            } else {
+                counts.set(index, counts.get(index) + 1);
             }
         }
 
-        final Set<BigNumber> modes = new LinkedHashSet<>();
-        for (Map.Entry<BigNumber, Integer> entry : counts.entrySet()) {
-            if (entry.getValue() == maxCount) {
-                modes.add(entry.getKey());
+        int maxCount = 0;
+        for (int count : counts) {
+            if (count > maxCount) {
+                maxCount = count;
             }
         }
 
-        return modes;
+        Set<BigNumber> result = new LinkedHashSet<>();
+        for (int i = 0; i < unique.size(); i++) {
+            if (counts.get(i) == maxCount) {
+                result.add(unique.get(i));
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -782,8 +798,20 @@ public class BigNumberList implements List<BigNumber> {
      * @return a new {@code BigNumberList} containing distinct elements
      */
     public BigNumberList distinct() {
-        final LinkedHashSet<BigNumber> set = new LinkedHashSet<>(values);
-        return new BigNumberList(new ArrayList<>(set));
+        List<BigNumber> unique = new ArrayList<>();
+
+        outer:
+        for (BigNumber candidate : values) {
+            for (BigNumber existing : unique) {
+                if (candidate.compareTo(existing) == 0) {
+                    continue outer;
+                }
+            }
+
+            unique.add(candidate);
+        }
+
+        return new BigNumberList(unique);
     }
 
     /**
