@@ -44,6 +44,15 @@ public class GraphFxMainView extends BorderPane {
 
     private static final double SIDEBAR_WIDTH = 440;
 
+    private static final String HEADER_TEXT_STYLE =
+            "-fx-text-fill: #000000; -fx-font-weight: 700;";
+
+    private static final String SLIDER_LABEL_STYLE =
+            "-fx-text-fill: #111111; -fx-font-weight: 600;";
+
+    private static final String SLIDER_VALUE_STYLE =
+            "-fx-text-fill: #111111;";
+
     private final GraphFxModel model;
     private final CalculatorEngine engine;
 
@@ -79,9 +88,6 @@ public class GraphFxMainView extends BorderPane {
         rebuildSliders();
     }
 
-    /**
-     * Fixed-width sidebar (non-resizable) + graph canvas.
-     */
     private Node buildContentFixedSidebar() {
         final VBox sidebarContent = new VBox(12);
         sidebarContent.getChildren().addAll(buildFunctionsCard(), buildVariablesCard(), buildSlidersCard());
@@ -258,7 +264,6 @@ public class GraphFxMainView extends BorderPane {
 
         final Label title = new Label("Functions");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip("Functions", "Define and toggle functions.\nEach function uses its own color."));
 
         functionsTable.setItems(model.getFunctions());
         functionsTable.setEditable(true);
@@ -301,11 +306,9 @@ public class GraphFxMainView extends BorderPane {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
-        add.setTooltip(tooltip("Add function", "Create a new function.\nA unique color is assigned automatically."));
         add.setOnAction(e -> openAddFunctionDialog());
 
         final Button remove = new Button("Remove");
-        remove.setTooltip(tooltip("Remove function", "Remove the selected function."));
         remove.disableProperty().bind(functionsTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxFunction sel = functionsTable.getSelectionModel().getSelectedItem();
@@ -324,7 +327,6 @@ public class GraphFxMainView extends BorderPane {
 
         final Label title = new Label("Variables");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip("Variables", "Define variables used inside function expressions.\nEnable a slider for interactive exploration."));
 
         variablesTable.setItems(model.getVariables());
         variablesTable.setEditable(true);
@@ -385,11 +387,9 @@ public class GraphFxMainView extends BorderPane {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
-        add.setTooltip(tooltip("Add variable", "Create a new variable.\nOptionally enable a slider and configure min/max/step."));
         add.setOnAction(e -> openAddVariableDialog());
 
         final Button remove = new Button("Remove");
-        remove.setTooltip(tooltip("Remove variable", "Remove the selected variable."));
         remove.disableProperty().bind(variablesTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxVariable sel = variablesTable.getSelectionModel().getSelectedItem();
@@ -408,7 +408,6 @@ public class GraphFxMainView extends BorderPane {
 
         final Label title = new Label("Sliders");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip("Sliders", "Only variables with “Slider = true” are shown.\nUpdates are optimized for smooth dragging."));
 
         slidersBox.setPadding(new Insets(6));
 
@@ -434,7 +433,9 @@ public class GraphFxMainView extends BorderPane {
 
             final Label name = new Label(v.getName());
             name.setPrefWidth(42);
-            name.setTooltip(tooltip("Variable: " + v.getName(), "Drag the slider to change this variable.\nThe graph updates in real time."));
+            name.setMinWidth(42);
+            name.setMaxWidth(42);
+            name.setStyle(SLIDER_LABEL_STYLE); // ensures it is visible
 
             final Slider slider = new Slider(0, 1, 0);
             slider.setMaxWidth(Double.MAX_VALUE);
@@ -443,9 +444,14 @@ public class GraphFxMainView extends BorderPane {
 
             final Label value = new Label(v.getValueString());
             value.setPrefWidth(100);
+            value.setMinWidth(100);
+            value.setMaxWidth(100);
             value.setAlignment(Pos.CENTER_RIGHT);
+            value.setStyle(SLIDER_VALUE_STYLE); // ensures it is visible
 
-            final GraphFxSliderAdapter adapter = GraphFxSliderAdapter.of(v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue());
+            final GraphFxSliderAdapter adapter = GraphFxSliderAdapter.of(
+                    v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue()
+            );
 
             slider.setMin(0);
             slider.setMax(adapter.maxIndex());
@@ -454,7 +460,8 @@ public class GraphFxMainView extends BorderPane {
             slider.valueChangingProperty().addListener((obs, o, changing) -> graphView.setInteractiveMode(changing));
             slider.valueProperty().addListener((obs, o, n) -> safe(() -> {
                 final BigDecimal newVal = adapter.fromIndex(n.intValue());
-                value.setText(newVal.stripTrailingZeros().toPlainString());
+                final String text = newVal.stripTrailingZeros().toPlainString();
+                value.setText(text);
                 model.setVariableValue(v, newVal);
             }));
 
@@ -481,10 +488,7 @@ public class GraphFxMainView extends BorderPane {
         final String defaultName = "f" + (model.getFunctions().size() + 1);
 
         final TextField nameField = new TextField(defaultName);
-        nameField.setTooltip(tooltip("Name", "A short function name (e.g., f, g, h)."));
-
         final TextField exprField = new TextField("x");
-        exprField.setTooltip(tooltip("Expression", "Use x as input.\nExample: sin(x) + x^2\nVariables come from the Variables table."));
 
         grid.addRow(0, new Label("Name"), nameField);
         grid.addRow(1, new Label("Expression"), exprField);
@@ -492,7 +496,9 @@ public class GraphFxMainView extends BorderPane {
         dialog.getDialogPane().setContent(grid);
         dialog.setResultConverter(bt -> bt == add ? new FunctionDraft(nameField.getText(), exprField.getText()) : null);
 
-        dialog.showAndWait().ifPresent(draft -> safe(() -> model.addFunction(draft.name().trim(), draft.expression().trim())));
+        dialog.showAndWait().ifPresent(draft ->
+                safe(() -> model.addFunction(draft.name().trim(), draft.expression().trim()))
+        );
     }
 
     private void openAddVariableDialog() {
@@ -509,22 +515,13 @@ public class GraphFxMainView extends BorderPane {
         grid.setPadding(new Insets(14));
 
         final TextField nameField = new TextField(model.nextSuggestedVariableName());
-        nameField.setTooltip(tooltip("Name", "Variable name (letters, digits, underscore). The name 'x' is reserved."));
-
         final TextField valueField = new TextField("0");
-        valueField.setTooltip(tooltip("Value", "Initial numeric value."));
 
         final CheckBox sliderEnabled = new CheckBox("Slider");
-        sliderEnabled.setTooltip(tooltip("Slider", "Enable a slider for this variable."));
 
         final TextField minField = new TextField("-10");
-        minField.setTooltip(tooltip("Min", "Minimum slider value."));
-
         final TextField maxField = new TextField("10");
-        maxField.setTooltip(tooltip("Max", "Maximum slider value."));
-
         final TextField stepField = new TextField("0.1");
-        stepField.setTooltip(tooltip("Step", "Slider step size. Must be > 0."));
 
         minField.disableProperty().bind(sliderEnabled.selectedProperty().not());
         maxField.disableProperty().bind(sliderEnabled.selectedProperty().not());
@@ -574,6 +571,7 @@ public class GraphFxMainView extends BorderPane {
 
     private static void setHeader(final TableColumn<?, ?> col, final String text, final String tooltipText) {
         final Label lbl = new Label(text);
+        lbl.setStyle(HEADER_TEXT_STYLE);              // <-- forces black header text
         lbl.setTooltip(tooltip(text, tooltipText));
         col.setText(null);
         col.setGraphic(lbl);
@@ -592,21 +590,12 @@ public class GraphFxMainView extends BorderPane {
     private record FunctionDraft(String name, String expression) {}
     private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {}
 
-    /**
-     * ColorPicker cell without the (sometimes truncated) text label.
-     * This fixes the UI issue from your screenshot.
-     */
     private static final class ColorSwatchCell extends TableCell<GraphFxFunction, Color> {
 
         private final ColorPicker picker = new ColorPicker();
 
         private ColorSwatchCell() {
-            picker.setTooltip(tooltip("Function color", "Pick a color for this function."));
-
-            // Hide the label text completely -> no clipped hex string in narrow columns
             picker.setStyle("-fx-color-label-visible: false;");
-
-            // Make it look like a compact swatch button
             picker.setMinWidth(44);
             picker.setPrefWidth(44);
             picker.setMaxWidth(44);
