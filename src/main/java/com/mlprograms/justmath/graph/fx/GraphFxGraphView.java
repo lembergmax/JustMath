@@ -35,6 +35,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.math.BigDecimal;
@@ -61,40 +62,43 @@ public class GraphFxGraphView extends StackPane {
         void onCursorMoved(double x, double y);
     }
 
+    private static final MathContext MC = MathContext.DECIMAL128;
+
     private final GraphFxModel model;
     private final CalculatorEngine engine;
 
     private final Canvas canvas = new Canvas(900, 700);
     private final DecimalFormat labelFormat = new DecimalFormat("0.########");
 
-    private ToolMode toolMode = ToolMode.MOVE;
-    private boolean interactiveMode = false;
-
-    private WorldView view = new WorldView(-10, 10, -10, 10);
-    private final Deque<WorldView> undo = new ArrayDeque<>();
-    private final Deque<WorldView> redo = new ArrayDeque<>();
-
-    private StatusListener statusListener;
-
-    private final ExecutorService samplerExec = Executors.newSingleThreadExecutor(r -> {
+    private final PauseTransition renderDebounce = new PauseTransition(Duration.millis(45));
+    private final ScheduledExecutorService samplerExec = Executors.newSingleThreadScheduledExecutor(r -> {
         final Thread t = new Thread(r, "fx-graph-sampler");
         t.setDaemon(true);
         return t;
     });
 
     private final Map<UUID, FunctionCache> cache = new HashMap<>();
-    private final PauseTransition debounce = new PauseTransition(Duration.millis(70));
+
+    private ToolMode toolMode = ToolMode.MOVE;
+    private boolean interactiveMode = false;
+
+    private WorldView view = new WorldView(-10, 10, -10, 10);
+
+    private final Deque<WorldView> undo = new ArrayDeque<>();
+    private final Deque<WorldView> redo = new ArrayDeque<>();
+
+    private StatusListener statusListener;
 
     private double dragStartX;
     private double dragStartY;
     private boolean dragging;
+
     private double zoomBoxX;
     private double zoomBoxY;
     private double zoomBoxW;
     private double zoomBoxH;
 
     private UUID intersectionFirst;
-
     private UUID integralFunction;
     private BigDecimal integralStart;
 
@@ -108,16 +112,25 @@ public class GraphFxGraphView extends StackPane {
         canvas.widthProperty().bind(widthProperty());
         canvas.heightProperty().bind(heightProperty());
 
-        final ChangeListener<Number> resize = (obs, o, n) -> requestRender();
+        final ChangeListener<Number> resize = (obs, o, n) -> {
+            enforceAspectExpandOnly();
+            requestRender();
+        };
         canvas.widthProperty().addListener(resize);
         canvas.heightProperty().addListener(resize);
 
-        debounce.setOnFinished(e -> requestRenderNow());
+        renderDebounce.setOnFinished(e -> requestRenderNow());
+
         model.revisionProperty().addListener((obs, o, n) -> requestRender());
+
+        model.getSettings().showGridProperty().addListener((obs, o, n) -> requestRenderNow());
+        model.getSettings().showAxesProperty().addListener((obs, o, n) -> requestRenderNow());
+        model.getSettings().targetGridLinesProperty().addListener((obs, o, n) -> requestRenderNow());
 
         installMouseHandlers();
         installKeyHandlers();
 
+        enforceAspectExpandOnly();
         requestRenderNow();
     }
 
@@ -138,19 +151,20 @@ public class GraphFxGraphView extends StackPane {
     public void fitToData() {
         final BigDecimal xMin = BigDecimal.valueOf(view.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(view.xMax());
+
         double yMin = Double.POSITIVE_INFINITY;
         double yMax = Double.NEGATIVE_INFINITY;
 
         final Map<String, String> vars = model.variablesAsStringMap();
+        final int samples = Math.max(400, (int) canvas.getWidth());
+
+        final BigDecimal step = xMax.subtract(xMin, MC).divide(BigDecimal.valueOf(samples), MC);
 
         for (final GraphFxFunction f : model.getFunctions()) {
             if (!f.isVisible()) continue;
 
-            final int samples = Math.max(250, (int) canvas.getWidth());
-            final BigDecimal step = xMax.subtract(xMin).divide(BigDecimal.valueOf(samples), MathContext.DECIMAL128);
-
             for (int i = 0; i <= samples; i++) {
-                final BigDecimal x = (i == samples) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MathContext.DECIMAL128), MathContext.DECIMAL128);
+                final BigDecimal x = (i == samples) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MC), MC);
                 final Double y = GraphFxAnalysisMath.evalY(engine, f.getExpression(), vars, x);
                 if (y == null) continue;
                 yMin = Math.min(yMin, y);
@@ -164,6 +178,7 @@ public class GraphFxGraphView extends StackPane {
 
         pushUndo();
         view = new WorldView(view.xMin(), view.xMax(), yMin, yMax).pad(0.08);
+        enforceAspectExpandOnly();
         redo.clear();
         requestRenderNow();
     }
@@ -188,6 +203,7 @@ public class GraphFxGraphView extends StackPane {
 
             pushUndo();
             view = view.zoom(ax, ay, factor);
+            enforceAspectExact();
             redo.clear();
             requestRenderNow();
         });
@@ -241,6 +257,7 @@ public class GraphFxGraphView extends StackPane {
 
                 pushUndo();
                 view = view.pan(worldDx, worldDy);
+                enforceAspectExact();
                 redo.clear();
 
                 dragStartX = e.getX();
@@ -280,6 +297,10 @@ public class GraphFxGraphView extends StackPane {
                 redoView();
                 e.consume();
             }
+            if (e.getCode() == KeyCode.F) {
+                fitToData();
+                e.consume();
+            }
         });
     }
 
@@ -287,6 +308,7 @@ public class GraphFxGraphView extends StackPane {
         if (undo.isEmpty()) return;
         redo.push(view);
         view = undo.pop();
+        enforceAspectExact();
         requestRenderNow();
     }
 
@@ -294,6 +316,7 @@ public class GraphFxGraphView extends StackPane {
         if (redo.isEmpty()) return;
         undo.push(view);
         view = redo.pop();
+        enforceAspectExact();
         requestRenderNow();
     }
 
@@ -307,7 +330,7 @@ public class GraphFxGraphView extends StackPane {
     }
 
     private void requestRender() {
-        debounce.playFromStart();
+        renderDebounce.playFromStart();
     }
 
     private void requestRenderNow() {
@@ -327,7 +350,11 @@ public class GraphFxGraphView extends StackPane {
         g.setFill(Color.WHITE);
         g.fillRect(0, 0, w, h);
 
-        if (model.getSettings().isShowGrid()) drawGrid(g);
+        g.setFont(Font.font(13));
+
+        if (model.getSettings().isShowGrid()) {
+            drawGrid(g);
+        }
         if (model.getSettings().isShowAxes()) {
             drawAxes(g);
             drawTicks(g);
@@ -337,10 +364,10 @@ public class GraphFxGraphView extends StackPane {
         drawObjects(g);
 
         if (toolMode == ToolMode.ZOOM_BOX && zoomBoxW > 4 && zoomBoxH > 4) {
-            g.setFill(Color.rgb(60, 130, 255, 0.15));
+            g.setFill(Color.rgb(60, 130, 255, 0.18));
             g.fillRect(zoomBoxX, zoomBoxY, zoomBoxW, zoomBoxH);
-            g.setStroke(Color.rgb(60, 130, 255, 0.8));
-            g.setLineWidth(1.2);
+            g.setStroke(Color.rgb(60, 130, 255, 0.9));
+            g.setLineWidth(1.4);
             g.strokeRect(zoomBoxX, zoomBoxY, zoomBoxW, zoomBoxH);
         }
     }
@@ -349,21 +376,27 @@ public class GraphFxGraphView extends StackPane {
         final double w = canvas.getWidth();
         final double h = canvas.getHeight();
 
-        g.setStroke(Color.rgb(245, 245, 245));
-        g.setLineWidth(1.0);
+        final double baseStep = GraphFxNiceTicks.niceStep(view.xMin(), view.xMax(), model.getSettings().getTargetGridLines());
+        final double minorStep = baseStep / 5.0;
 
-        final double xStep = GraphFxNiceTicks.niceStep(view.xMin(), view.xMax(), model.getSettings().getTargetGridLines());
-        final double yStep = GraphFxNiceTicks.niceStep(view.yMin(), view.yMax(), model.getSettings().getTargetGridLines());
+        drawGridLines(g, w, h, minorStep, Color.rgb(235, 235, 235), 1.0);
+        drawGridLines(g, w, h, baseStep, Color.rgb(210, 210, 210), 1.0);
+    }
 
-        final double xStart = Math.floor(view.xMin() / xStep) * xStep;
-        final double yStart = Math.floor(view.yMin() / yStep) * yStep;
+    private void drawGridLines(final GraphicsContext g, final double w, final double h, final double step, final Color color, final double width) {
+        if (!(step > 0) || !Double.isFinite(step)) return;
 
-        for (double x = xStart; x <= view.xMax(); x += xStep) {
+        g.setStroke(color);
+        g.setLineWidth(width);
+
+        final double xStart = Math.floor(view.xMin() / step) * step;
+        for (double x = xStart; x <= view.xMax(); x += step) {
             final double px = worldToScreenX(x);
             g.strokeLine(px, 0, px, h);
         }
 
-        for (double y = yStart; y <= view.yMax(); y += yStep) {
+        final double yStart = Math.floor(view.yMin() / step) * step;
+        for (double y = yStart; y <= view.yMax(); y += step) {
             final double py = worldToScreenY(y);
             g.strokeLine(0, py, w, py);
         }
@@ -373,8 +406,8 @@ public class GraphFxGraphView extends StackPane {
         final double w = canvas.getWidth();
         final double h = canvas.getHeight();
 
-        g.setStroke(Color.rgb(190, 190, 190));
-        g.setLineWidth(1.4);
+        g.setStroke(Color.rgb(120, 120, 120));
+        g.setLineWidth(1.8);
 
         if (view.containsX(0)) {
             final double x0 = worldToScreenX(0);
@@ -391,29 +424,28 @@ public class GraphFxGraphView extends StackPane {
         final double w = canvas.getWidth();
         final double h = canvas.getHeight();
 
-        final double xStep = GraphFxNiceTicks.niceStep(view.xMin(), view.xMax(), model.getSettings().getTargetGridLines());
-        final double yStep = GraphFxNiceTicks.niceStep(view.yMin(), view.yMax(), model.getSettings().getTargetGridLines());
+        final double step = GraphFxNiceTicks.niceStep(view.xMin(), view.xMax(), model.getSettings().getTargetGridLines());
+        if (!(step > 0) || !Double.isFinite(step)) return;
 
-        final double xStart = Math.floor(view.xMin() / xStep) * xStep;
-        final double yStart = Math.floor(view.yMin() / yStep) * yStep;
-
-        g.setStroke(Color.rgb(120, 120, 120));
-        g.setFill(Color.rgb(120, 120, 120));
+        g.setStroke(Color.rgb(110, 110, 110));
+        g.setFill(Color.rgb(90, 90, 90));
         g.setLineWidth(1.0);
 
         final double yAxisPx = view.containsX(0) ? worldToScreenX(0) : 50;
         final double xAxisPy = view.containsY(0) ? worldToScreenY(0) : h - 35;
 
-        for (double x = xStart; x <= view.xMax(); x += xStep) {
+        final double xStart = Math.floor(view.xMin() / step) * step;
+        for (double x = xStart; x <= view.xMax(); x += step) {
             final double px = worldToScreenX(x);
-            g.strokeLine(px, xAxisPy - 3, px, xAxisPy + 3);
-            g.fillText(labelFormat.format(x), px + 4, xAxisPy + 16);
+            g.strokeLine(px, xAxisPy - 4, px, xAxisPy + 4);
+            g.fillText(labelFormat.format(x), px + 4, xAxisPy + 18);
         }
 
-        for (double y = yStart; y <= view.yMax(); y += yStep) {
+        final double yStart = Math.floor(view.yMin() / step) * step;
+        for (double y = yStart; y <= view.yMax(); y += step) {
             final double py = worldToScreenY(y);
-            g.strokeLine(yAxisPx - 3, py, yAxisPx + 3, py);
-            g.fillText(labelFormat.format(y), yAxisPx + 8, py - 3);
+            g.strokeLine(yAxisPx - 4, py, yAxisPx + 4, py);
+            g.fillText(labelFormat.format(y), yAxisPx + 8, py - 5);
         }
     }
 
@@ -443,9 +475,9 @@ public class GraphFxGraphView extends StackPane {
                 g.setFill(p.style().colorWithAlpha());
                 final double px = worldToScreenX(p.x().doubleValue());
                 final double py = worldToScreenY(p.y().doubleValue());
-                g.fillOval(px - 4, py - 4, 8, 8);
-                g.setFill(Color.rgb(70, 70, 70));
-                g.fillText(p.name(), px + 8, py - 6);
+                g.fillOval(px - 4.5, py - 4.5, 9, 9);
+                g.setFill(Color.rgb(60, 60, 60));
+                g.fillText(p.name(), px + 10, py - 8);
             }
 
             if (o instanceof GraphFxLineObject l) {
@@ -464,7 +496,9 @@ public class GraphFxGraphView extends StackPane {
             }
 
             if (o instanceof GraphFxIntegralObject it) {
-                final GraphFxFunction f = model.getFunctions().stream().filter(ff -> ff.getId().equals(it.functionId())).findFirst().orElse(null);
+                final GraphFxFunction f = model.getFunctions().stream()
+                        .filter(ff -> ff.getId().equals(it.functionId()))
+                        .findFirst().orElse(null);
                 if (f == null) continue;
 
                 final BigDecimal a = it.a();
@@ -472,8 +506,8 @@ public class GraphFxGraphView extends StackPane {
                 final BigDecimal min = a.min(b);
                 final BigDecimal max = a.max(b);
 
-                final int n = interactiveMode ? 140 : 520;
-                final BigDecimal step = max.subtract(min).divide(BigDecimal.valueOf(n), MathContext.DECIMAL128);
+                final int n = interactiveMode ? 160 : 720;
+                final BigDecimal step = max.subtract(min, MC).divide(BigDecimal.valueOf(n), MC);
                 final Map<String, String> vars = model.variablesAsStringMap();
 
                 g.setFill(it.style().colorWithAlpha());
@@ -485,7 +519,7 @@ public class GraphFxGraphView extends StackPane {
                 ys.add(worldToScreenY(0));
 
                 for (int i = 0; i <= n; i++) {
-                    final BigDecimal x = (i == n) ? max : min.add(step.multiply(BigDecimal.valueOf(i), MathContext.DECIMAL128), MathContext.DECIMAL128);
+                    final BigDecimal x = (i == n) ? max : min.add(step.multiply(BigDecimal.valueOf(i), MC), MC);
                     final Double y = GraphFxAnalysisMath.evalY(engine, f.getExpression(), vars, x);
                     if (y == null) continue;
                     xs.add(worldToScreenX(x.doubleValue()));
@@ -501,10 +535,10 @@ public class GraphFxGraphView extends StackPane {
                     g.fillPolygon(xa, ya, xa.length);
                 }
 
-                g.setFill(Color.rgb(60, 60, 60));
+                g.setFill(Color.rgb(55, 55, 55));
                 g.fillText("∫ = " + it.value().stripTrailingZeros().toPlainString(),
-                        worldToScreenX(min.doubleValue()) + 8,
-                        worldToScreenY(0) - 8);
+                        worldToScreenX(min.doubleValue()) + 10,
+                        worldToScreenY(0) - 10);
             }
         }
     }
@@ -512,7 +546,7 @@ public class GraphFxGraphView extends StackPane {
     private void drawSegment(final GraphicsContext g, final List<GraphPoint> points) {
         if (points.size() < 2) return;
 
-        final GraphPoint first = points.getFirst();
+        final GraphPoint first = points.get(0);
         g.beginPath();
         g.moveTo(worldToScreenX(first.getX()), worldToScreenY(first.getY()));
 
@@ -527,37 +561,40 @@ public class GraphFxGraphView extends StackPane {
         final long rev = model.revisionProperty().get();
         final WorldView viewSnapshot = view;
         final Map<String, String> varsSnapshot = model.variablesAsStringMap();
-        final int samples = interactiveMode ? Math.max(420, (int) canvas.getWidth()) : Math.max(900, (int) canvas.getWidth() * 2);
+        final int samples = interactiveMode ? Math.max(420, (int) canvas.getWidth()) : Math.max(1000, (int) canvas.getWidth() * 2);
 
         for (final GraphFxFunction f : model.getFunctions()) {
             if (!f.isVisible()) continue;
 
             final FunctionCache fc = cache.computeIfAbsent(f.getId(), k -> new FunctionCache());
-            if (!fc.shouldCompute(rev, viewSnapshot)) continue;
+            if (!fc.shouldSchedule(rev, viewSnapshot, interactiveMode)) continue;
+
+            fc.cancelScheduled();
 
             final long token = fc.token.incrementAndGet();
-            fc.running = true;
-            fc.lastRevision = rev;
-            fc.lastView = viewSnapshot;
+            final long delayMs = interactiveMode ? 25 : 65;
 
-            samplerExec.submit(() -> {
+            fc.scheduled = samplerExec.schedule(() -> {
                 final GraphPolyline poly = sampleFunction(f, viewSnapshot, varsSnapshot, samples);
+
                 Platform.runLater(() -> {
                     if (token != fc.token.get()) {
                         return;
                     }
                     fc.lastPolyline = poly;
-                    fc.running = false;
+                    fc.lastRevision = rev;
+                    fc.lastView = viewSnapshot;
+                    fc.lastInteractive = interactiveMode;
                     render();
                 });
-            });
+            }, delayMs, TimeUnit.MILLISECONDS);
         }
     }
 
     private GraphPolyline sampleFunction(final GraphFxFunction f, final WorldView view, final Map<String, String> vars, final int samples) {
         final BigDecimal xMin = BigDecimal.valueOf(view.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(view.xMax());
-        final BigDecimal step = xMax.subtract(xMin).divide(BigDecimal.valueOf(samples), MathContext.DECIMAL128);
+        final BigDecimal step = xMax.subtract(xMin, MC).divide(BigDecimal.valueOf(samples), MC);
 
         final List<List<GraphPoint>> segs = new ArrayList<>();
         final List<GraphPoint> current = new ArrayList<>();
@@ -565,7 +602,7 @@ public class GraphFxGraphView extends StackPane {
         Double lastY = null;
 
         for (int i = 0; i <= samples; i++) {
-            final BigDecimal x = (i == samples) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MathContext.DECIMAL128), MathContext.DECIMAL128);
+            final BigDecimal x = (i == samples) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MC), MC);
             final Double y = GraphFxAnalysisMath.evalY(engine, f.getExpression(), vars, x);
 
             if (y == null || !Double.isFinite(y) || Math.abs(y) > 1_000_000d) {
@@ -574,7 +611,7 @@ public class GraphFxGraphView extends StackPane {
                 continue;
             }
 
-            if (lastY != null && Math.abs(y - lastY) > 1_000_000d) {
+            if (lastY != null && Math.abs(y - lastY) > 150_000d) {
                 flush(segs, current);
             }
 
@@ -623,14 +660,14 @@ public class GraphFxGraphView extends StackPane {
 
         if (toolMode == ToolMode.ROOT) {
             final BigDecimal range = BigDecimal.valueOf(view.xMax() - view.xMin());
-            final BigDecimal a = x.subtract(range.multiply(new BigDecimal("0.08")), MathContext.DECIMAL128);
-            final BigDecimal b = x.add(range.multiply(new BigDecimal("0.08")), MathContext.DECIMAL128);
+            final BigDecimal a = x.subtract(range.multiply(new BigDecimal("0.08")), MC);
+            final BigDecimal b = x.add(range.multiply(new BigDecimal("0.08")), MC);
 
-            final List<BigDecimal> roots = GraphFxAnalysisMath.rootsInRange(engine, f.getExpression(), vars, a, b, 240);
+            final List<BigDecimal> roots = GraphFxAnalysisMath.rootsInRange(engine, f.getExpression(), vars, a, b, 260);
             if (roots.isEmpty()) return;
 
             final BigDecimal r = closest(roots, x);
-            model.addObject(GraphFxPointObject.of("x0", r, BigDecimal.ZERO, f.getId()));
+            model.addObject(GraphFxPointObject.of("x₀", r, BigDecimal.ZERO, f.getId()));
             return;
         }
 
@@ -639,13 +676,15 @@ public class GraphFxGraphView extends StackPane {
                 intersectionFirst = f.getId();
                 return;
             }
+
             if (!intersectionFirst.equals(f.getId())) {
                 final GraphFxFunction f1 = model.getFunctions().stream().filter(ff -> ff.getId().equals(intersectionFirst)).findFirst().orElse(null);
                 final GraphFxFunction f2 = f;
+
                 if (f1 != null) {
                     final BigDecimal xMin = BigDecimal.valueOf(view.xMin());
                     final BigDecimal xMax = BigDecimal.valueOf(view.xMax());
-                    final List<BigDecimal> xs = GraphFxAnalysisMath.intersectionsInRange(engine, f1.getExpression(), f2.getExpression(), vars, xMin, xMax, 1400);
+                    final List<BigDecimal> xs = GraphFxAnalysisMath.intersectionsInRange(engine, f1.getExpression(), f2.getExpression(), vars, xMin, xMax, 1600);
 
                     for (final BigDecimal xx : xs) {
                         final Double yy = GraphFxAnalysisMath.evalY(engine, f1.getExpression(), vars, xx);
@@ -671,7 +710,7 @@ public class GraphFxGraphView extends StackPane {
                 f.getExpression(),
                 model.variablesAsStringMap(),
                 a, b,
-                interactiveMode ? 160 : 700
+                interactiveMode ? 220 : 900
         );
         if (value == null) return;
 
@@ -713,6 +752,7 @@ public class GraphFxGraphView extends StackPane {
 
         pushUndo();
         view = new WorldView(Math.min(x1, x2), Math.max(x1, x2), Math.min(y1, y2), Math.max(y1, y2));
+        enforceAspectExpandOnly();
         redo.clear();
     }
 
@@ -736,13 +776,21 @@ public class GraphFxGraphView extends StackPane {
         return view.yMin() + t * (view.yMax() - view.yMin());
     }
 
+    private void enforceAspectExact() {
+        view = view.lockAspectExact(canvas.getWidth(), canvas.getHeight());
+    }
+
+    private void enforceAspectExpandOnly() {
+        view = view.lockAspectExpandOnly(canvas.getWidth(), canvas.getHeight());
+    }
+
     private static BigDecimal invertSlope(final BigDecimal slope) {
         if (slope.compareTo(BigDecimal.ZERO) == 0) return null;
-        return BigDecimal.ONE.divide(slope, MathContext.DECIMAL128).negate();
+        return BigDecimal.ONE.divide(slope, MC).negate();
     }
 
     private static BigDecimal closest(final List<BigDecimal> xs, final BigDecimal target) {
-        BigDecimal best = xs.getFirst();
+        BigDecimal best = xs.get(0);
         BigDecimal bestD = best.subtract(target).abs();
         for (final BigDecimal x : xs) {
             final BigDecimal d = x.subtract(target).abs();
@@ -807,26 +855,72 @@ public class GraphFxGraphView extends StackPane {
             final double h = yMax - yMin;
             return new WorldView(xMin - w * factor, xMax + w * factor, yMin - h * factor, yMax + h * factor);
         }
+
+        public WorldView lockAspectExact(final double canvasW, final double canvasH) {
+            if (!(canvasW > 0) || !(canvasH > 0)) return this;
+
+            final double xRange = xMax - xMin;
+            final double centerY = (yMin + yMax) / 2.0;
+
+            final double desiredYRange = xRange * canvasH / canvasW;
+            final double nyMin = centerY - desiredYRange / 2.0;
+            final double nyMax = centerY + desiredYRange / 2.0;
+
+            return new WorldView(xMin, xMax, nyMin, nyMax);
+        }
+
+        public WorldView lockAspectExpandOnly(final double canvasW, final double canvasH) {
+            if (!(canvasW > 0) || !(canvasH > 0)) return this;
+
+            final double xRange = xMax - xMin;
+            final double yRange = yMax - yMin;
+
+            final double desiredYRangeFromX = xRange * canvasH / canvasW;
+            final double desiredXRangeFromY = yRange * canvasW / canvasH;
+
+            final double cx = (xMin + xMax) / 2.0;
+            final double cy = (yMin + yMax) / 2.0;
+
+            if (desiredYRangeFromX >= yRange) {
+                final double nyMin = cy - desiredYRangeFromX / 2.0;
+                final double nyMax = cy + desiredYRangeFromX / 2.0;
+                return new WorldView(xMin, xMax, nyMin, nyMax);
+            }
+
+            final double nxMin = cx - desiredXRangeFromY / 2.0;
+            final double nxMax = cx + desiredXRangeFromY / 2.0;
+            return new WorldView(nxMin, nxMax, yMin, yMax);
+        }
     }
 
     private static final class FunctionCache {
         private final AtomicLong token = new AtomicLong(0);
+
         private volatile boolean dirty = true;
-        private volatile boolean running = false;
         private volatile long lastRevision = -1;
         private volatile WorldView lastView;
+        private volatile boolean lastInteractive;
+
+        private volatile ScheduledFuture<?> scheduled;
         private volatile GraphPolyline lastPolyline;
 
         void markDirty() {
             dirty = true;
         }
 
-        boolean shouldCompute(final long rev, final WorldView view) {
-            if (running) return false;
-            if (!dirty && lastRevision == rev && Objects.equals(lastView, view)) return false;
-            dirty = false;
-            return true;
+        boolean shouldSchedule(final long rev, final WorldView view, final boolean interactive) {
+            if (dirty) return true;
+            if (lastRevision != rev) return true;
+            if (!Objects.equals(lastView, view)) return true;
+            return lastInteractive != interactive;
+        }
+
+        void cancelScheduled() {
+            final ScheduledFuture<?> s = scheduled;
+            if (s != null) {
+                s.cancel(true);
+            }
         }
     }
-}
 
+}

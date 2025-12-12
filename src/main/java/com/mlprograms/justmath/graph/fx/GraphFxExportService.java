@@ -36,16 +36,21 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
 public final class GraphFxExportService {
 
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
     private GraphFxExportService() {
     }
 
-    public static void exportPng(final GraphFxGraphView view) {
-        final File file = chooseFile("Export PNG", "png");
+    public static void exportPng(final GraphFxGraphView view, final GraphFxModel model) {
+        final String base = "justmath-graph_" + TS.format(LocalDateTime.now());
+        final File file = chooseFile("Export PNG", "png", base + ".png");
         if (file == null) return;
 
         try {
@@ -60,7 +65,8 @@ public final class GraphFxExportService {
         final var poly = view.getPolylineForSelectedFunction();
         if (poly == null) return;
 
-        final File file = chooseFile("Export CSV", "csv");
+        final String base = exportBaseName(model, "points");
+        final File file = chooseFile("Export CSV", "csv", base + ".csv");
         if (file == null) return;
 
         try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
@@ -81,7 +87,8 @@ public final class GraphFxExportService {
         final var poly = view.getPolylineForSelectedFunction();
         if (poly == null) return;
 
-        final File file = chooseFile("Export JSON", "json");
+        final String base = exportBaseName(model, "points");
+        final File file = chooseFile("Export JSON", "json", base + ".json");
         if (file == null) return;
 
         try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
@@ -108,7 +115,8 @@ public final class GraphFxExportService {
         final var f = model.getSelectedFunction();
         if (poly == null || f == null) return;
 
-        final File file = chooseFile("Export SVG", "svg");
+        final String base = exportBaseName(model, "path");
+        final File file = chooseFile("Export SVG", "svg", base + ".svg");
         if (file == null) return;
 
         try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
@@ -122,7 +130,7 @@ public final class GraphFxExportService {
             for (final List<GraphPoint> seg : poly.segments()) {
                 if (seg.size() < 2) continue;
                 w.write("<path d=\"");
-                final GraphPoint first = seg.getFirst();
+                final GraphPoint first = seg.get(0);
                 w.write("M " + mapX(view, first.getX()) + " " + mapY(view, first.getY()) + " ");
                 for (int i = 1; i < seg.size(); i++) {
                     final GraphPoint p = seg.get(i);
@@ -135,6 +143,17 @@ public final class GraphFxExportService {
         } catch (Exception ex) {
             error(ex);
         }
+    }
+
+    private static String exportBaseName(final GraphFxModel model, final String kind) {
+        final GraphFxFunction f = model.getSelectedFunction();
+        final String fn = f == null ? "graph" : sanitizeFilePart(f.getName());
+        return "justmath_" + fn + "_" + kind + "_" + TS.format(LocalDateTime.now());
+    }
+
+    private static String sanitizeFilePart(final String s) {
+        final String t = (s == null || s.isBlank()) ? "f" : s.trim();
+        return t.replaceAll("[^A-Za-z0-9._-]", "_");
     }
 
     private static void writePng(final WritableImage image, final File file) throws Exception {
@@ -165,10 +184,12 @@ public final class GraphFxExportService {
         return Math.max(1, view.getHeight()) - (t * Math.max(1, view.getHeight()));
     }
 
-    private static File chooseFile(final String title, final String ext) {
+    private static File chooseFile(final String title, final String ext, final String initialFileName) {
         final FileChooser fc = new FileChooser();
         fc.setTitle(title);
+        fc.setInitialFileName(initialFileName);
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("*." + ext, "*." + ext));
+
         final File chosen = fc.showSaveDialog(null);
         if (chosen == null) return null;
 
@@ -183,4 +204,5 @@ public final class GraphFxExportService {
         a.setHeaderText("Export failed");
         a.showAndWait();
     }
+    
 }
