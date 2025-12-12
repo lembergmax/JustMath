@@ -31,19 +31,13 @@ import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
@@ -63,6 +57,7 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
  * such as financial systems, scientific calculations, or custom calculators.</p>
  */
 @Getter
+@EqualsAndHashCode(callSuper = false, of = {"valueBeforeDecimalPoint", "valueAfterDecimalPoint", "isNegative"})
 public class BigNumber extends Number implements Comparable<BigNumber> {
 
     /**
@@ -79,12 +74,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * The numeric value before the decimal separator.
      */
     @NonNull
-    private String valueBeforeDecimal;
+    private String valueBeforeDecimalPoint;
     /**
      * The numeric value after the decimal separator. Defaults to "0" if absent.
      */
     @NonNull
-    private String valueAfterDecimal;
+    private String valueAfterDecimalPoint;
     /**
      * Indicates whether the number is negative.
      */
@@ -187,8 +182,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
-        this.valueAfterDecimal = parsedAndFormatted.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = parsedAndFormatted.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = parsedAndFormatted.valueAfterDecimalPoint;
         this.isNegative = parsedAndFormatted.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -248,8 +243,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         MathUtils.checkMathContext(mathContext);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
-        this.valueAfterDecimal = bigNumber.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = bigNumber.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = bigNumber.valueAfterDecimalPoint;
         this.isNegative = bigNumber.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -265,8 +260,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         MathUtils.checkMathContext(other.mathContext);
 
         this.locale = other.locale;
-        this.valueBeforeDecimal = other.valueBeforeDecimal;
-        this.valueAfterDecimal = other.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = other.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = other.valueAfterDecimalPoint;
         this.isNegative = other.isNegative;
         this.mathContext = other.mathContext;
         this.trigonometricMode = other.trigonometricMode;
@@ -277,20 +272,19 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * Builder constructor for BigNumber.
      *
      * @param locale             the locale to use for parsing and formatting
-     * @param valueBeforeDecimal the integer part of the number
-     * @param valueAfterDecimal  the decimal part of the number
+     * @param valueBeforeDecimalPoint the integer part of the number
+     * @param valueAfterDecimalPoint  the decimal part of the number
      * @param isNegative         whether the number is negative
      * @param mathContext        the math context to use for precision and rounding
      * @param trigonometricMode  the trigonometric mode to use
      */
-    // TODO: remove this builder thing
     @Builder
-    public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimal, @NonNull final String valueAfterDecimal, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+    public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimalPoint, @NonNull final String valueAfterDecimalPoint, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         MathUtils.checkMathContext(mathContext);
 
         this.locale = locale;
-        this.valueBeforeDecimal = valueBeforeDecimal;
-        this.valueAfterDecimal = valueAfterDecimal;
+        this.valueBeforeDecimalPoint = valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = valueAfterDecimalPoint;
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -2616,7 +2610,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return this {@code BigNumber} with the fractional part removed
      */
     public BigNumber floor() {
-        valueAfterDecimal = "0";
+        valueAfterDecimalPoint = "0";
         return this;
     }
 
@@ -2636,7 +2630,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber ceil() {
         // Already an integer → return directly
-        if (this.valueAfterDecimal.equals("0")) {
+        if (this.valueAfterDecimalPoint.equals("0")) {
             return new BigNumber(this.toString());
         }
 
@@ -2667,14 +2661,14 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber truncate() {
         // If the number has no decimal part, nothing to do
-        if ("0".equals(valueAfterDecimal) || valueAfterDecimal.isEmpty()) {
+        if ("0".equals(valueAfterDecimalPoint) || valueAfterDecimalPoint.isEmpty()) {
             return this;
         }
 
         // Simply drop the fractional part
-        valueAfterDecimal = "0";
+        valueAfterDecimalPoint = "0";
 
-        if (isNegative() && valueBeforeDecimal.equals("0")) {
+        if (isNegative() && valueBeforeDecimalPoint.equals("0")) {
             return BigNumbers.ZERO;
         }
 
@@ -2847,8 +2841,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
-        valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
-        valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
+        valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
         return this;
     }
 
@@ -2906,7 +2900,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     @Override
     public int intValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
+        String valueBeforeDecimalAsString = valueBeforeDecimalPoint.length() > 10 ? valueBeforeDecimalPoint.substring(0, 10) : valueBeforeDecimalPoint;
         int result;
         try {
             result = Integer.parseInt(valueBeforeDecimalAsString);
@@ -2926,7 +2920,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     @Override
     public long longValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 19 ? valueBeforeDecimal.substring(0, 19) : valueBeforeDecimal;
+        String valueBeforeDecimalAsString = valueBeforeDecimalPoint.length() > 19 ? valueBeforeDecimalPoint.substring(0, 19) : valueBeforeDecimalPoint;
         long result;
         try {
             result = Long.parseLong(valueBeforeDecimalAsString);
@@ -2947,7 +2941,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     @Override
     public float floatValue() {
         try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimalPoint);
             return bigDecimal.floatValue();
         } catch (NumberFormatException e) {
             return isNegative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
@@ -2965,7 +2959,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     @Override
     public double doubleValue() {
         try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
+            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimalPoint);
             return bigDecimal.doubleValue();
         } catch (NumberFormatException e) {
             return isNegative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
@@ -2999,7 +2993,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public boolean hasDecimals() {
         BigNumber temp = clone().trim();
-        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimal().isEmpty();
+        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimalPoint().isEmpty();
     }
 
     /**
@@ -3073,13 +3067,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
         trim();
 
-        String newValueAfterDecimal = valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0") ? "" : valueAfterDecimal;
+        String newValueAfterDecimal = valueAfterDecimalPoint.isBlank() || valueAfterDecimalPoint.equals("0") ? "" : valueAfterDecimalPoint;
 
         if (newValueAfterDecimal.isEmpty()) {
             decimalSeparator = "";
         }
 
-        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, symbols.getGroupingSeparator()).toString() : valueBeforeDecimal;
+        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimalPoint, symbols.getGroupingSeparator()).toString() : valueBeforeDecimalPoint;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
         return isNegative ? "-" + localized : localized;
@@ -3099,10 +3093,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
             sb.append('-');
         }
 
-        sb.append(valueBeforeDecimal);
+        sb.append(valueBeforeDecimalPoint);
 
-        if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
-            sb.append('.').append(valueAfterDecimal);
+        if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
+            sb.append('.').append(valueAfterDecimalPoint);
         }
         return new BigDecimal(sb.toString(), mathContext);
     }
