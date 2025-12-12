@@ -42,6 +42,8 @@ import java.util.Locale;
 
 public class GraphFxMainView extends BorderPane {
 
+    private static final double SIDEBAR_WIDTH = 440;
+
     private final GraphFxModel model;
     private final CalculatorEngine engine;
 
@@ -58,10 +60,10 @@ public class GraphFxMainView extends BorderPane {
         this.graphView = new GraphFxGraphView(model, engine);
 
         setPadding(new Insets(10));
-        setStyle("-fx-font-size: 13.5px;"); // bigger UI font
+        setStyle("-fx-font-size: 13.5px;");
 
         setTop(buildToolbar());
-        setCenter(buildSplit());
+        setCenter(buildContentFixedSidebar());
 
         graphView.setStatusListener((x, y) -> statusLabel.setText(
                 "x=" + String.format(Locale.ROOT, "%.6f", x) + "   y=" + String.format(Locale.ROOT, "%.6f", y)
@@ -69,7 +71,7 @@ public class GraphFxMainView extends BorderPane {
 
         statusLabel.setTooltip(tooltip(
                 "Cursor coordinates",
-                "Shows the cursor position in world coordinates.\nTip: Use the mouse wheel to zoom. Drag to pan (Move tool)."
+                "Shows the cursor position in world coordinates.\nTip: Use mouse wheel to zoom. Drag to pan (Move tool)."
         ));
 
         model.getVariables().addListener((ListChangeListener<GraphFxVariable>) c -> rebuildSliders());
@@ -77,21 +79,27 @@ public class GraphFxMainView extends BorderPane {
         rebuildSliders();
     }
 
-    private SplitPane buildSplit() {
-        final SplitPane split = new SplitPane();
-        split.setDividerPositions(0.36);
+    /**
+     * Fixed-width sidebar (non-resizable) + graph canvas.
+     */
+    private Node buildContentFixedSidebar() {
+        final VBox sidebarContent = new VBox(12);
+        sidebarContent.getChildren().addAll(buildFunctionsCard(), buildVariablesCard(), buildSlidersCard());
+        sidebarContent.setFillWidth(true);
 
-        final VBox sidebar = new VBox(12);
+        final ScrollPane sidebar = new ScrollPane(sidebarContent);
+        sidebar.setFitToWidth(true);
+        sidebar.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        sidebar.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        sidebar.setPrefWidth(SIDEBAR_WIDTH);
+        sidebar.setMinWidth(SIDEBAR_WIDTH);
+        sidebar.setMaxWidth(SIDEBAR_WIDTH);
+        sidebar.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
-        final Node functionsCard = buildFunctionsCard();
-        final Node variablesCard = buildVariablesCard();
-        final Node slidersCard = buildSlidersCard();
+        final HBox content = new HBox(12, sidebar, graphView);
+        HBox.setHgrow(graphView, Priority.ALWAYS);
 
-        sidebar.getChildren().addAll(functionsCard, variablesCard, slidersCard);
-        VBox.setVgrow(functionsCard, Priority.ALWAYS);
-
-        split.getItems().addAll(sidebar, graphView);
-        return split;
+        return content;
     }
 
     private ToolBar buildToolbar() {
@@ -283,8 +291,8 @@ public class GraphFxMainView extends BorderPane {
         final TableColumn<GraphFxFunction, Color> colorCol = new TableColumn<>();
         setHeader(colorCol, "Color", "Pick a color for this function.");
         colorCol.setCellValueFactory(c -> c.getValue().colorProperty());
-        colorCol.setCellFactory(col -> new ColorPickerCell());
-        colorCol.setPrefWidth(170); // wider so the picker text fits
+        colorCol.setCellFactory(col -> new ColorSwatchCell());
+        colorCol.setPrefWidth(90);
 
         functionsTable.getColumns().setAll(visibleCol, nameCol, exprCol, colorCol);
         VBox.setVgrow(functionsTable, Priority.ALWAYS);
@@ -478,17 +486,10 @@ public class GraphFxMainView extends BorderPane {
         final TextField exprField = new TextField("x");
         exprField.setTooltip(tooltip("Expression", "Use x as input.\nExample: sin(x) + x^2\nVariables come from the Variables table."));
 
-        final Label nameLbl = new Label("Name");
-        nameLbl.setTooltip(nameField.getTooltip());
-
-        final Label exprLbl = new Label("Expression");
-        exprLbl.setTooltip(exprField.getTooltip());
-
-        grid.addRow(0, nameLbl, nameField);
-        grid.addRow(1, exprLbl, exprField);
+        grid.addRow(0, new Label("Name"), nameField);
+        grid.addRow(1, new Label("Expression"), exprField);
 
         dialog.getDialogPane().setContent(grid);
-
         dialog.setResultConverter(bt -> bt == add ? new FunctionDraft(nameField.getText(), exprField.getText()) : null);
 
         dialog.showAndWait().ifPresent(draft -> safe(() -> model.addFunction(draft.name().trim(), draft.expression().trim())));
@@ -537,7 +538,6 @@ public class GraphFxMainView extends BorderPane {
         grid.addRow(5, new Label("Step"), stepField);
 
         dialog.getDialogPane().setContent(grid);
-
         dialog.setResultConverter(bt -> bt == add
                 ? new VariableDraft(nameField.getText(), valueField.getText(), sliderEnabled.isSelected(), minField.getText(), maxField.getText(), stepField.getText())
                 : null);
@@ -592,20 +592,34 @@ public class GraphFxMainView extends BorderPane {
     private record FunctionDraft(String name, String expression) {}
     private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {}
 
-    private static final class ColorPickerCell extends TableCell<GraphFxFunction, Color> {
+    /**
+     * ColorPicker cell without the (sometimes truncated) text label.
+     * This fixes the UI issue from your screenshot.
+     */
+    private static final class ColorSwatchCell extends TableCell<GraphFxFunction, Color> {
+
         private final ColorPicker picker = new ColorPicker();
 
-        private ColorPickerCell() {
-            picker.setPrefWidth(150);
-            picker.setMinWidth(150);
+        private ColorSwatchCell() {
             picker.setTooltip(tooltip("Function color", "Pick a color for this function."));
+
+            // Hide the label text completely -> no clipped hex string in narrow columns
+            picker.setStyle("-fx-color-label-visible: false;");
+
+            // Make it look like a compact swatch button
+            picker.setMinWidth(44);
+            picker.setPrefWidth(44);
+            picker.setMaxWidth(44);
+
             picker.setOnAction(e -> {
                 final Object rowItem = getTableRow() == null ? null : getTableRow().getItem();
                 if (rowItem instanceof GraphFxFunction fn) {
                     fn.setColor(picker.getValue());
                 }
             });
+
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            setAlignment(Pos.CENTER);
         }
 
         @Override
@@ -619,5 +633,4 @@ public class GraphFxMainView extends BorderPane {
             setGraphic(picker);
         }
     }
-
 }
