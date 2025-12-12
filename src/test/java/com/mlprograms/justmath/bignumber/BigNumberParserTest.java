@@ -112,7 +112,7 @@ class BigNumberParserTest {
     @Nested
     class GroupingTests {
 
-        @ParameterizedTest(name = "integerPart=\"{0}\" -> \"{1}\"")
+        @ParameterizedTest
         @CsvSource({"0, 0", "12, 12", "123, 123", "'1234', '1,234'", "'12345', '12,345'", "'123456', '123,456'", "'1234567', '1,234,567'", "'123456789', '123,456,789'"})
         void grouping_insertsEveryThreeDigits(String integerPart, String expected) {
             String actual = parser.getGroupedBeforeDecimal(integerPart, ',').toString();
