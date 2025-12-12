@@ -25,14 +25,15 @@
 package com.mlprograms.justmath.graph.fx;
 
 import com.mlprograms.justmath.graph.GraphPoint;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -49,7 +50,7 @@ public final class GraphFxExportService {
 
         try {
             final WritableImage img = view.snapshot(new SnapshotParameters(), null);
-            ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png", file);
+            writePng(img, file);
         } catch (Exception ex) {
             error(ex);
         }
@@ -111,8 +112,8 @@ public final class GraphFxExportService {
         if (file == null) return;
 
         try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-            final double width = view.getWidth();
-            final double height = view.getHeight();
+            final double width = Math.max(1, view.getWidth());
+            final double height = Math.max(1, view.getHeight());
             final String stroke = f.colorHexProperty().get();
 
             w.write("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + width + "\" height=\"" + height + "\">");
@@ -134,6 +135,22 @@ public final class GraphFxExportService {
         } catch (Exception ex) {
             error(ex);
         }
+    }
+
+    private static void writePng(final WritableImage image, final File file) throws Exception {
+        final int w = (int) image.getWidth();
+        final int h = (int) image.getHeight();
+
+        final BufferedImage buffered = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        final PixelReader reader = image.getPixelReader();
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                buffered.setRGB(x, y, reader.getArgb(x, y));
+            }
+        }
+
+        ImageIO.write(buffered, "png", file);
     }
 
     private static double mapX(final GraphFxGraphView view, final double worldX) {
@@ -166,6 +183,4 @@ public final class GraphFxExportService {
         a.setHeaderText("Export failed");
         a.showAndWait();
     }
-
 }
-
