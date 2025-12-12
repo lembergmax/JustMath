@@ -123,7 +123,6 @@ class BigNumberParser {
 		return parse(formattedNumber.toString(), targetLocale);
 	}
 
-
 	/**
 	 * Inserts grouping separators every 3 digits from right to left for the integer part.
 	 *
