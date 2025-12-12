@@ -22,23 +22,38 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.NonNull;
+import javafx.beans.property.*;
 
-/**
- * Functional abstraction for evaluating y = f(x) with BigNumber precision.
- */
-@FunctionalInterface
-public interface GraphFunction {
+public class GraphFxSettings {
 
-    /**
-     * Evaluates the function at the given x value.
-     *
-     * @param x x value in world coordinates
-     * @return y value as BigNumber
-     */
-    BigNumber evaluate(@NonNull java.math.BigDecimal x);
+    private final BooleanProperty showGrid = new SimpleBooleanProperty(true);
+    private final BooleanProperty showAxes = new SimpleBooleanProperty(true);
+    private final IntegerProperty targetGridLines = new SimpleIntegerProperty(10);
 
+    public BooleanProperty showGridProperty() {
+        return showGrid;
+    }
+
+    public BooleanProperty showAxesProperty() {
+        return showAxes;
+    }
+
+    public IntegerProperty targetGridLinesProperty() {
+        return targetGridLines;
+    }
+
+    public boolean isShowGrid() {
+        return showGrid.get();
+    }
+
+    public boolean isShowAxes() {
+        return showAxes.get();
+    }
+
+    public int getTargetGridLines() {
+        return targetGridLines.get();
+    }
 }
+

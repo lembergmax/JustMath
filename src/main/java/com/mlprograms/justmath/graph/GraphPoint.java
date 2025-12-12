@@ -24,15 +24,69 @@
 
 package com.mlprograms.justmath.graph;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Represents a 2D point in world coordinates for graph rendering.
+ * Immutable 2D point used for graph sampling and rendering.
+ * <p>
+ * Coordinates are stored as {@code double} for fast rendering and interoperability
+ * with JavaFX/Swing drawing APIs.
  */
 @Value
 public class GraphPoint {
 
     double x;
     double y;
+
+    /**
+     * Creates a new point.
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    public GraphPoint(final double x, final double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     * Creates a new point.
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return point
+     */
+    @NonNull
+    public static GraphPoint of(final double x, final double y) {
+        return new GraphPoint(x, y);
+    }
+
+    /**
+     * @return {@code true} if both coordinates are finite (not NaN/Infinity)
+     */
+    public boolean isFinite() {
+        return Double.isFinite(x) && Double.isFinite(y);
+    }
+
+    /**
+     * Computes the euclidean distance to another point.
+     *
+     * @param other other point
+     * @return distance
+     */
+    public double distanceTo(@NonNull final GraphPoint other) {
+        final double dx = x - other.x;
+        final double dy = y - other.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * @return a JavaFX {@code Point2D} instance with the same coordinates
+     */
+    @NonNull
+    public javafx.geometry.Point2D toFxPoint() {
+        return new javafx.geometry.Point2D(x, y);
+    }
 
 }

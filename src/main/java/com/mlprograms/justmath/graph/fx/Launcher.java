@@ -22,51 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
+public class Launcher {
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.math.MathContext;
-
-/**
- * Configuration for graph sampling and discontinuity handling.
- */
-@Value
-@Builder(toBuilder = true)
-public class GraphSamplingConfig {
-
-    /**
-     * MathContext used for step size computation.
-     */
-    @NonNull
-    @Builder.Default
-    MathContext stepMathContext = MathContext.DECIMAL128;
-
-    /**
-     * If |y(i) - y(i-1)| exceeds this value, the polyline is split into a new segment.
-     */
-    @Builder.Default
-    double discontinuityJumpThreshold = 1_000_000d;
-
-    /**
-     * Points with |y| > maxAbsY are treated as out-of-range and split the segment.
-     */
-    @Builder.Default
-    double maxAbsY = 1_000_000d;
-
-    /**
-     * Padding factor added to computed y bounds for nicer initial view fitting.
-     */
-    @Builder.Default
-    double yPaddingFactor = 0.08d;
-
-    /**
-     * Minimal segment size to keep (prevents tiny fragments).
-     */
-    @Builder.Default
-    int minSegmentPoints = 2;
+    public static void main(String[] args) {
+        GraphFxApp.main(args);
+    }
 
 }

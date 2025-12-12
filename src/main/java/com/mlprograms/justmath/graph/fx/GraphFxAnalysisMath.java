@@ -22,68 +22,34 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
-/**
- * Numerical analysis helpers (derivative, roots, intersections, integrals).
- */
-public final class GraphAnalysisMath {
+public final class GraphFxAnalysisMath {
 
-    private GraphAnalysisMath() {
+    private GraphFxAnalysisMath() {
     }
 
-    /**
-     * Evaluates f(x) as double for rendering/analysis, using CalculatorEngine and variables.
-     *
-     * @param engine     calculator engine
-     * @param expression function expression
-     * @param variables  variables map
-     * @param x          x value
-     * @return y as Double or null if not finite/evaluable
-     */
-    public static Double evalY(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String expression,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal x
-    ) {
+    public static Double evalY(final CalculatorEngine engine, final String expression, final Map<String, String> variables, final BigDecimal x) {
         try {
             final Map<String, String> vars = new HashMap<>(variables);
             vars.put("x", x.stripTrailingZeros().toPlainString());
+
             final BigNumber y = engine.evaluate(expression, vars);
             final double yd = y.toBigDecimal().doubleValue();
-            if (!Double.isFinite(yd)) {
-                return null;
-            }
-            return yd;
+            return Double.isFinite(yd) ? yd : null;
         } catch (Exception ex) {
             return null;
         }
     }
 
-    /**
-     * Approximates derivative f'(x) with central differences.
-     *
-     * @param engine     calculator engine
-     * @param expression expression
-     * @param variables  variables map
-     * @param x          x
-     * @return slope as BigDecimal or null
-     */
-    public static BigDecimal derivative(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String expression,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal x
-    ) {
+    public static BigDecimal derivative(final CalculatorEngine engine, final String expression, final Map<String, String> variables, final BigDecimal x) {
         final MathContext mc = MathContext.DECIMAL128;
         final BigDecimal h = chooseStep(x);
         final Double y1 = evalY(engine, expression, variables, x.add(h, mc));
@@ -99,26 +65,8 @@ public final class GraphAnalysisMath {
         return num.divide(den, mc);
     }
 
-    /**
-     * Finds a root near x0 by scanning for a sign change and using bisection.
-     *
-     * @param engine     calculator engine
-     * @param expression expression
-     * @param variables  variables map
-     * @param xMin       scan min
-     * @param xMax       scan max
-     * @param steps      scan steps
-     * @return roots (distinct) as BigDecimal
-     */
-    @NonNull
-    public static List<BigDecimal> rootsInRange(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String expression,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal xMin,
-            @NonNull final BigDecimal xMax,
-            final int steps
-    ) {
+    public static List<BigDecimal> rootsInRange(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
+                                                final BigDecimal xMin, final BigDecimal xMax, final int steps) {
         final MathContext mc = MathContext.DECIMAL128;
         final BigDecimal step = xMax.subtract(xMin, mc).divide(BigDecimal.valueOf(Math.max(2, steps)), mc);
 
@@ -152,56 +100,17 @@ public final class GraphAnalysisMath {
         return roots;
     }
 
-    /**
-     * Finds intersections of f and g by solving f(x)-g(x)=0 in range.
-     *
-     * @param engine    engine
-     * @param fExpr     f
-     * @param gExpr     g
-     * @param variables variables
-     * @param xMin      min
-     * @param xMax      max
-     * @param steps     scan steps
-     * @return x values of intersections
-     */
-    @NonNull
-    public static List<BigDecimal> intersectionsInRange(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String fExpr,
-            @NonNull final String gExpr,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal xMin,
-            @NonNull final BigDecimal xMax,
-            final int steps
-    ) {
+    public static List<BigDecimal> intersectionsInRange(final CalculatorEngine engine, final String fExpr, final String gExpr, final Map<String, String> variables,
+                                                        final BigDecimal xMin, final BigDecimal xMax, final int steps) {
         final String diff = "(" + fExpr + ")-(" + gExpr + ")";
         return rootsInRange(engine, diff, variables, xMin, xMax, steps);
     }
 
-    /**
-     * Computes integral \int_a^b f(x) dx using Simpson's rule.
-     *
-     * @param engine     engine
-     * @param expression expression
-     * @param variables  variables
-     * @param a          a
-     * @param b          b
-     * @param n          subdivisions (even)
-     * @return integral value or null
-     */
-    public static BigDecimal integralSimpson(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String expression,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal a,
-            @NonNull final BigDecimal b,
-            final int n
-    ) {
+    public static BigDecimal integralSimpson(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
+                                             final BigDecimal a, final BigDecimal b, final int n) {
         final MathContext mc = MathContext.DECIMAL128;
         int nn = Math.max(2, n);
-        if (nn % 2 == 1) {
-            nn++;
-        }
+        if (nn % 2 == 1) nn++;
 
         final BigDecimal h = b.subtract(a, mc).divide(BigDecimal.valueOf(nn), mc);
         if (h.compareTo(BigDecimal.ZERO) == 0) {
@@ -218,55 +127,32 @@ public final class GraphAnalysisMath {
             }
 
             final BigDecimal yd = BigDecimal.valueOf(y);
-            if (i == 0 || i == nn) {
-                sum = sum.add(yd, mc);
-            } else if (i % 2 == 0) {
-                sum = sum.add(yd.multiply(new BigDecimal("2"), mc), mc);
-            } else {
-                sum = sum.add(yd.multiply(new BigDecimal("4"), mc), mc);
-            }
+            if (i == 0 || i == nn) sum = sum.add(yd, mc);
+            else if (i % 2 == 0) sum = sum.add(yd.multiply(new BigDecimal("2"), mc), mc);
+            else sum = sum.add(yd.multiply(new BigDecimal("4"), mc), mc);
         }
 
         return sum.multiply(h, mc).divide(new BigDecimal("3"), mc);
     }
 
-    private static BigDecimal bisection(
-            @NonNull final CalculatorEngine engine,
-            @NonNull final String expression,
-            @NonNull final Map<String, String> variables,
-            @NonNull final BigDecimal left,
-            @NonNull final BigDecimal right,
-            @NonNull final MathContext mc
-    ) {
+    private static BigDecimal bisection(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
+                                        final BigDecimal left, final BigDecimal right, final MathContext mc) {
         BigDecimal a = left;
         BigDecimal b = right;
 
         Double fa = evalY(engine, expression, variables, a);
         Double fb = evalY(engine, expression, variables, b);
 
-        if (fa == null || fb == null) {
-            return null;
-        }
-
-        if (isZero(fa)) {
-            return a;
-        }
-        if (isZero(fb)) {
-            return b;
-        }
-        if (fa * fb > 0) {
-            return null;
-        }
+        if (fa == null || fb == null) return null;
+        if (isZero(fa)) return a;
+        if (isZero(fb)) return b;
+        if (fa * fb > 0) return null;
 
         for (int i = 0; i < 80; i++) {
             final BigDecimal mid = a.add(b, mc).divide(new BigDecimal("2"), mc);
             final Double fm = evalY(engine, expression, variables, mid);
-            if (fm == null) {
-                return null;
-            }
-            if (isZero(fm)) {
-                return mid;
-            }
+            if (fm == null) return null;
+            if (isZero(fm)) return mid;
 
             if (fa * fm < 0) {
                 b = mid;
@@ -284,7 +170,7 @@ public final class GraphAnalysisMath {
         return a.add(b, mc).divide(new BigDecimal("2"), mc);
     }
 
-    private static BigDecimal chooseStep(@NonNull final BigDecimal x) {
+    private static BigDecimal chooseStep(final BigDecimal x) {
         final BigDecimal ax = x.abs();
         final BigDecimal base = new BigDecimal("1e-6");
         final BigDecimal scaled = ax.multiply(new BigDecimal("1e-6"));
@@ -295,7 +181,7 @@ public final class GraphAnalysisMath {
         return Math.abs(v) < 1e-12;
     }
 
-    private static boolean addDistinct(@NonNull final List<BigDecimal> roots, @NonNull final BigDecimal candidate) {
+    private static boolean addDistinct(final List<BigDecimal> roots, final BigDecimal candidate) {
         for (final BigDecimal r : roots) {
             if (r.subtract(candidate).abs().compareTo(new BigDecimal("1e-9")) < 0) {
                 return false;
@@ -305,3 +191,4 @@ public final class GraphAnalysisMath {
         return true;
     }
 }
+
