@@ -148,6 +148,13 @@ public class GraphFxGraphView extends StackPane {
         requestRender();
     }
 
+    public void resetView() {
+        pushUndo();
+        view = new WorldView(-10, 10, -10, 10);
+        enforceAspectExpandOnly();
+        requestRenderNow();
+    }
+
     public void fitToData() {
         final BigDecimal xMin = BigDecimal.valueOf(view.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(view.xMax());

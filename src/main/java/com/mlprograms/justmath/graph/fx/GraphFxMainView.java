@@ -53,6 +53,9 @@ public class GraphFxMainView extends BorderPane {
     private static final String SLIDER_VALUE_STYLE =
             "-fx-text-fill: #111111;";
 
+    private static final String TAB_HINT_STYLE =
+            "-fx-text-fill: rgba(0,0,0,0.70); -fx-font-size: 12.6px;";
+
     private final GraphFxModel model;
     private final CalculatorEngine engine;
 
@@ -86,6 +89,16 @@ public class GraphFxMainView extends BorderPane {
         model.getVariables().addListener((ListChangeListener<GraphFxVariable>) c -> rebuildSliders());
         model.revisionProperty().addListener((obs, o, n) -> rebuildSliders());
         rebuildSliders();
+
+        // Shortcut: Reset view
+        graphView.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case R -> {
+                    graphView.resetView();
+                    e.consume();
+                }
+            }
+        });
     }
 
     private Node buildContentFixedSidebar() {
@@ -183,12 +196,18 @@ public class GraphFxMainView extends BorderPane {
                 "Step 1: Click near a function to select it.\nStep 2: Drag and release to choose the interval.\nAn area + numeric integral value will be added."
         );
 
-        final Button fit = new Button("Fit");
-        fit.setTooltip(tooltip("Fit view", "Adjust the y-range so all visible functions fit the current x-range.\nShortcut: F"));
-        fit.setOnAction(e -> graphView.fitToData());
+        final Button resetView = new Button("Reset view");
+        resetView.setTooltip(tooltip(
+                "Reset view",
+                "Reset to a clean default position and zoom.\nShortcut: R"
+        ));
+        resetView.setOnAction(e -> graphView.resetView());
 
         final Button clearMarks = new Button("Clear marks");
-        clearMarks.setTooltip(tooltip("Clear marks", "Remove all created points, lines and integrals.\nFunctions and variables remain unchanged."));
+        clearMarks.setTooltip(tooltip(
+                "Clear marks",
+                "Remove all created points, lines and integrals.\nFunctions and variables remain unchanged."
+        ));
         clearMarks.disableProperty().bind(Bindings.isEmpty(model.getObjects()));
         clearMarks.setOnAction(e -> model.clearObjects());
 
@@ -228,7 +247,7 @@ public class GraphFxMainView extends BorderPane {
                 new Separator(),
                 point, tan, normal, root, inter, integral,
                 new Separator(),
-                fit, clearMarks,
+                resetView, clearMarks,
                 new Separator(),
                 grid, axes,
                 new Separator(),
@@ -265,6 +284,13 @@ public class GraphFxMainView extends BorderPane {
         final Label title = new Label("Functions");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
 
+        final Label hint = new Label(
+                "Create and manage functions that will be drawn on the coordinate plane.\n" +
+                        "Use x as the input variable. Other variables (a, b, c, …) come from the Variables tab.\n"
+        );
+        hint.setWrapText(true);
+        hint.setStyle(TAB_HINT_STYLE);
+
         functionsTable.setItems(model.getFunctions());
         functionsTable.setEditable(true);
         functionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
@@ -287,7 +313,7 @@ public class GraphFxMainView extends BorderPane {
         nameCol.setPrefWidth(95);
 
         final TableColumn<GraphFxFunction, String> exprCol = new TableColumn<>();
-        setHeader(exprCol, "Expression", "Expression to evaluate.\nUse x as input.\nOther variables are defined in the Variables table.");
+        setHeader(exprCol, "Expression", "Expression to evaluate.\nUse x as input.\nOther variables are defined in the Variables tab.");
         exprCol.setCellValueFactory(c -> c.getValue().expressionProperty());
         exprCol.setCellFactory(TextFieldTableCell.forTableColumn());
         exprCol.setOnEditCommit(e -> safe(() -> e.getRowValue().setExpression(e.getNewValue())));
@@ -306,9 +332,11 @@ public class GraphFxMainView extends BorderPane {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
+        add.setTooltip(tooltip("Add function", "Create a new function.\nA unique color is assigned automatically."));
         add.setOnAction(e -> openAddFunctionDialog());
 
         final Button remove = new Button("Remove");
+        remove.setTooltip(tooltip("Remove function", "Remove the selected function."));
         remove.disableProperty().bind(functionsTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxFunction sel = functionsTable.getSelectionModel().getSelectedItem();
@@ -318,7 +346,7 @@ public class GraphFxMainView extends BorderPane {
         });
 
         buttons.getChildren().addAll(add, remove);
-        card.getChildren().addAll(title, functionsTable, buttons);
+        card.getChildren().addAll(title, hint, functionsTable, buttons);
         return card;
     }
 
@@ -327,6 +355,13 @@ public class GraphFxMainView extends BorderPane {
 
         final Label title = new Label("Variables");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
+
+        final Label hint = new Label(
+                "Define variables used inside your function expressions\n" +
+                        "If “Slider” is enabled, the variable appears in the Sliders tab for interactive control.\n"
+        );
+        hint.setWrapText(true);
+        hint.setStyle(TAB_HINT_STYLE);
 
         variablesTable.setItems(model.getVariables());
         variablesTable.setEditable(true);
@@ -387,9 +422,11 @@ public class GraphFxMainView extends BorderPane {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
+        add.setTooltip(tooltip("Add variable", "Create a new variable.\nOptionally enable a slider and configure min/max/step."));
         add.setOnAction(e -> openAddVariableDialog());
 
         final Button remove = new Button("Remove");
+        remove.setTooltip(tooltip("Remove variable", "Remove the selected variable."));
         remove.disableProperty().bind(variablesTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxVariable sel = variablesTable.getSelectionModel().getSelectedItem();
@@ -399,7 +436,7 @@ public class GraphFxMainView extends BorderPane {
         });
 
         buttons.getChildren().addAll(add, remove);
-        card.getChildren().addAll(title, variablesTable, buttons);
+        card.getChildren().addAll(title, hint, variablesTable, buttons);
         return card;
     }
 
@@ -409,6 +446,13 @@ public class GraphFxMainView extends BorderPane {
         final Label title = new Label("Sliders");
         title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
 
+        final Label hint = new Label(
+                "Sliders are an easy way to explore how variables affect your functions.\n" +
+                        "Enable a slider in the Variables tab, then drag it here to update the graph in real time."
+        );
+        hint.setWrapText(true);
+        hint.setStyle(TAB_HINT_STYLE);
+
         slidersBox.setPadding(new Insets(6));
 
         final ScrollPane sc = new ScrollPane(slidersBox);
@@ -417,7 +461,7 @@ public class GraphFxMainView extends BorderPane {
         sc.setStyle("-fx-background-color:transparent;");
         sc.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        card.getChildren().addAll(title, sc);
+        card.getChildren().addAll(title, hint, sc);
         return card;
     }
 
@@ -435,7 +479,7 @@ public class GraphFxMainView extends BorderPane {
             name.setPrefWidth(42);
             name.setMinWidth(42);
             name.setMaxWidth(42);
-            name.setStyle(SLIDER_LABEL_STYLE); // ensures it is visible
+            name.setStyle(SLIDER_LABEL_STYLE);
 
             final Slider slider = new Slider(0, 1, 0);
             slider.setMaxWidth(Double.MAX_VALUE);
@@ -447,7 +491,7 @@ public class GraphFxMainView extends BorderPane {
             value.setMinWidth(100);
             value.setMaxWidth(100);
             value.setAlignment(Pos.CENTER_RIGHT);
-            value.setStyle(SLIDER_VALUE_STYLE); // ensures it is visible
+            value.setStyle(SLIDER_VALUE_STYLE);
 
             final GraphFxSliderAdapter adapter = GraphFxSliderAdapter.of(
                     v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue()
@@ -571,7 +615,7 @@ public class GraphFxMainView extends BorderPane {
 
     private static void setHeader(final TableColumn<?, ?> col, final String text, final String tooltipText) {
         final Label lbl = new Label(text);
-        lbl.setStyle(HEADER_TEXT_STYLE);              // <-- forces black header text
+        lbl.setStyle(HEADER_TEXT_STYLE);
         lbl.setTooltip(tooltip(text, tooltipText));
         col.setText(null);
         col.setGraphic(lbl);
@@ -591,7 +635,6 @@ public class GraphFxMainView extends BorderPane {
     private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {}
 
     private static final class ColorSwatchCell extends TableCell<GraphFxFunction, Color> {
-
         private final ColorPicker picker = new ColorPicker();
 
         private ColorSwatchCell() {
