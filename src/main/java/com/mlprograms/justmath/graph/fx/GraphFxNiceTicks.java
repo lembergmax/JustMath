@@ -22,39 +22,30 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+public final class GraphFxNiceTicks {
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * GraphFunction implementation backed by CalculatorEngine for expressions like "sin(x)+x^2".
- */
-@RequiredArgsConstructor
-public class CalculatorEngineGraphFunction implements GraphFunction {
-
-    @NonNull
-    private final CalculatorEngine calculatorEngine;
-    @NonNull
-    private final String expression;
-    @NonNull
-    private final Map<String, String> baseVariables;
-
-    public CalculatorEngineGraphFunction(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String expression) {
-        this(calculatorEngine, expression, Map.of());
+    private GraphFxNiceTicks() {
     }
 
-    @Override
-    public BigNumber evaluate(@NonNull final BigDecimal x) {
-        final Map<String, String> variables = new HashMap<>(baseVariables);
-        variables.put("x", x.stripTrailingZeros().toPlainString());
-        return calculatorEngine.evaluate(expression, variables);
-    }
+    public static double niceStep(final double min, final double max, final int targetLines) {
+        final double range = Math.abs(max - min);
+        if (range == 0d || !Double.isFinite(range)) {
+            return 1d;
+        }
 
+        final double rough = range / Math.max(2, targetLines);
+        final double pow10 = Math.pow(10, Math.floor(Math.log10(rough)));
+        final double norm = rough / pow10;
+
+        final double nice;
+        if (norm < 1.5) nice = 1;
+        else if (norm < 3) nice = 2;
+        else if (norm < 7) nice = 5;
+        else nice = 10;
+
+        return nice * pow10;
+    }
 }
+

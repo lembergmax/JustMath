@@ -22,43 +22,20 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
-import lombok.NonNull;
-import lombok.Value;
+import javafx.scene.paint.Color;
 
-import java.util.List;
+public final class GraphFxPalette {
 
-/**
- * Graph data in world coordinates, represented as multiple segments.
- */
-@Value
-public class GraphData {
+    private static final double GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
 
-    @NonNull
-    List<GraphSegment> segments;
-
-    @NonNull
-    GraphWorldBounds bounds;
-
-    /**
-     * Represents world bounds used for initial view fitting.
-     */
-    @Value
-    public static class GraphWorldBounds {
-
-        double xMin;
-        double xMax;
-        double yMin;
-        double yMax;
-
-        public double width() {
-            return xMax - xMin;
-        }
-
-        public double height() {
-            return yMax - yMin;
-        }
+    private GraphFxPalette() {
     }
 
+    public static Color colorForIndex(final int index) {
+        final double hue = (0.12 + (index * GOLDEN_RATIO_CONJUGATE)) % 1.0;
+        return Color.hsb(hue * 360.0, 0.70, 0.95, 1.0);
+    }
 }
+

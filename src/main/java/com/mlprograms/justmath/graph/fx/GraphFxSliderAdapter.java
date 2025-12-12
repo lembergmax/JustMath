@@ -22,23 +22,25 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-import javax.swing.*;
+public record GraphFxSliderAdapter(BigDecimal min, BigDecimal step, int maxIndex) {
 
-/**
- * Demo entry point for the GeoGebra-like graph window.
- */
-public class GeoGebraGraphDemo {
-
-    public static void main(final String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            final CalculatorEngine engine = new CalculatorEngine();
-            final GeoGebraGraphFrame frame = new GeoGebraGraphFrame(engine);
-            frame.setVisible(true);
-        });
+    public static GraphFxSliderAdapter of(final BigDecimal min, final BigDecimal max, final BigDecimal step, final BigDecimal current) {
+        final BigDecimal range = max.subtract(min);
+        final int idx = range.divide(step, 0, RoundingMode.HALF_UP).max(BigDecimal.ONE).intValue();
+        return new GraphFxSliderAdapter(min, step, Math.max(1, idx));
     }
 
+    public int toIndex(final BigDecimal value) {
+        return value.subtract(min).divide(step, 0, RoundingMode.HALF_UP).intValue();
+    }
+
+    public BigDecimal fromIndex(final int index) {
+        return min.add(step.multiply(BigDecimal.valueOf(index)));
+    }
 }
+

@@ -22,20 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph;
+package com.mlprograms.justmath.graph.fx;
 
-import lombok.NonNull;
-import lombok.Value;
+import javafx.scene.paint.Color;
 
-import java.util.List;
+public record GraphFxStyle(Color color, double strokeWidth, double alpha) {
 
-/**
- * Represents a continuous polyline segment without discontinuities (e.g. asymptotes).
- */
-@Value
-public class GraphSegment {
+    public Color colorWithAlpha() {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), clamp(alpha));
+    }
 
-    @NonNull
-    List<GraphPoint> points;
-
+    private static double clamp(final double a) {
+        return Math.max(0, Math.min(1, a));
+    }
 }
+
