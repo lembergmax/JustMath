@@ -43,9 +43,13 @@ public class GraphFxModel {
     private final ObjectProperty<GraphFxFunction> selectedFunction = new SimpleObjectProperty<>(null);
 
     public GraphFxModel() {
-        addVariable("a", new BigDecimal("1"));
-        addVariable("b", new BigDecimal("1"));
-        addVariable("c", new BigDecimal("0"));
+        final GraphFxVariable a = addVariable("a", new BigDecimal("1"));
+        final GraphFxVariable b = addVariable("b", new BigDecimal("1"));
+        final GraphFxVariable c = addVariable("c", new BigDecimal("0"));
+
+        enableDefaultSlider(a, new BigDecimal("-5"), new BigDecimal("5"), new BigDecimal("0.1"));
+        enableDefaultSlider(b, new BigDecimal("-5"), new BigDecimal("5"), new BigDecimal("0.1"));
+        enableDefaultSlider(c, new BigDecimal("-10"), new BigDecimal("10"), new BigDecimal("0.1"));
     }
 
     public ObservableList<GraphFxFunction> getFunctions() {
@@ -81,13 +85,18 @@ public class GraphFxModel {
     }
 
     public GraphFxFunction addFunction(final String name, final String expression) {
+        final String n = requireNonBlank(name, "Function name must not be empty.");
+        final String expr = requireNonBlank(expression, "Function expression must not be empty.");
+
         final int idx = functions.size();
-        final GraphFxFunction f = GraphFxFunction.create(name, expression, GraphFxPalette.colorForIndex(idx));
+        final GraphFxFunction f = GraphFxFunction.create(n, expr, GraphFxPalette.colorForIndex(idx));
         functions.add(f);
 
-        f.visibleProperty().addListener((obs, o, n) -> bump());
-        f.nameProperty().addListener((obs, o, n) -> bump());
-        f.expressionProperty().addListener((obs, o, n) -> bump());
+        f.visibleProperty().addListener((obs, o, nn) -> bump());
+        f.nameProperty().addListener((obs, o, nn) -> bump());
+        f.expressionProperty().addListener((obs, o, nn) -> bump());
+        f.colorProperty().addListener((obs, o, nn) -> bump());
+        f.strokeWidthProperty().addListener((obs, o, nn) -> bump());
 
         bump();
         return f;
@@ -108,13 +117,13 @@ public class GraphFxModel {
     public GraphFxVariable addVariable(final String name, final BigDecimal value) {
         final String n = requireValidVarName(name);
         if ("x".equalsIgnoreCase(n)) {
-            throw new IllegalArgumentException("Variable 'x' ist reserviert.");
+            throw new IllegalArgumentException("The variable name 'x' is reserved for function input.");
         }
         if (variables.stream().anyMatch(v -> v.getName().equals(n))) {
-            throw new IllegalArgumentException("Variable existiert bereits: " + n);
+            throw new IllegalArgumentException("A variable with this name already exists: " + n);
         }
 
-        final GraphFxVariable v = GraphFxVariable.create(n, value);
+        final GraphFxVariable v = GraphFxVariable.create(n, value == null ? BigDecimal.ZERO : value);
         variables.add(v);
 
         v.nameProperty().addListener((obs, o, nn) -> bump());
@@ -142,10 +151,10 @@ public class GraphFxModel {
         }
         final String nn = requireValidVarName(newName);
         if ("x".equalsIgnoreCase(nn)) {
-            throw new IllegalArgumentException("Variable 'x' ist reserviert.");
+            throw new IllegalArgumentException("The variable name 'x' is reserved for function input.");
         }
         if (variables.stream().anyMatch(o -> o != v && o.getName().equals(nn))) {
-            throw new IllegalArgumentException("Variable existiert bereits: " + nn);
+            throw new IllegalArgumentException("A variable with this name already exists: " + nn);
         }
         v.setName(nn);
         bump();
@@ -155,7 +164,7 @@ public class GraphFxModel {
         if (v == null) {
             return;
         }
-        v.setValue(new BigDecimal(valueString.trim()));
+        v.setValue(parseNumber(valueString, "Invalid variable value."));
         bump();
     }
 
@@ -163,22 +172,28 @@ public class GraphFxModel {
         if (v == null) {
             return;
         }
-        v.setValue(value);
+        v.setValue(value == null ? BigDecimal.ZERO : value);
         bump();
     }
 
     public void setSliderMin(final GraphFxVariable v, final String s) {
-        v.setSliderMin(new BigDecimal(s.trim()));
+        if (v == null) return;
+        v.setSliderMin(parseNumber(s, "Invalid slider minimum."));
+        validateSlider(v);
         bump();
     }
 
     public void setSliderMax(final GraphFxVariable v, final String s) {
-        v.setSliderMax(new BigDecimal(s.trim()));
+        if (v == null) return;
+        v.setSliderMax(parseNumber(s, "Invalid slider maximum."));
+        validateSlider(v);
         bump();
     }
 
     public void setSliderStep(final GraphFxVariable v, final String s) {
-        v.setSliderStep(new BigDecimal(s.trim()));
+        if (v == null) return;
+        v.setSliderStep(parseNumber(s, "Invalid slider step."));
+        validateSlider(v);
         bump();
     }
 
@@ -200,6 +215,21 @@ public class GraphFxModel {
         bump();
     }
 
+    public void clearObjects() {
+        objects.clear();
+        bump();
+    }
+
+    public String nextSuggestedVariableName() {
+        for (char c = 'a'; c <= 'z'; c++) {
+            final String name = String.valueOf(c);
+            if (variables.stream().noneMatch(v -> v.getName().equals(name)) && !"x".equalsIgnoreCase(name)) {
+                return name;
+            }
+        }
+        return "k" + (variables.size() + 1);
+    }
+
     private void bump() {
         revision.set(revision.get() + 1);
     }
@@ -207,10 +237,44 @@ public class GraphFxModel {
     private static String requireValidVarName(final String name) {
         final String n = name == null ? "" : name.trim();
         if (!n.matches("[A-Za-z][A-Za-z0-9_]*")) {
-            throw new IllegalArgumentException("Ungültiger Variablenname: " + n);
+            throw new IllegalArgumentException("Invalid variable name: " + n);
         }
         return n;
     }
 
-}
+    private static String requireNonBlank(final String s, final String message) {
+        if (s == null || s.trim().isEmpty()) {
+            throw new IllegalArgumentException(message);
+        }
+        return s.trim();
+    }
 
+    private static BigDecimal parseNumber(final String s, final String message) {
+        try {
+            final String t = s == null ? "" : s.trim();
+            return new BigDecimal(t);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private static void validateSlider(final GraphFxVariable v) {
+        final BigDecimal min = v.getSliderMin();
+        final BigDecimal max = v.getSliderMax();
+        final BigDecimal step = v.getSliderStep();
+
+        if (max.compareTo(min) <= 0) {
+            throw new IllegalArgumentException("Slider range is invalid: Max must be greater than Min.");
+        }
+        if (step.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Slider step is invalid: Step must be greater than 0.");
+        }
+    }
+
+    private static void enableDefaultSlider(final GraphFxVariable v, final BigDecimal min, final BigDecimal max, final BigDecimal step) {
+        v.setSliderMin(min);
+        v.setSliderMax(max);
+        v.setSliderStep(step);
+        v.sliderEnabledProperty().set(true);
+    }
+}
