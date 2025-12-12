@@ -58,6 +58,8 @@ public class GraphFxMainView extends BorderPane {
         this.graphView = new GraphFxGraphView(model, engine);
 
         setPadding(new Insets(10));
+        setStyle("-fx-font-size: 13.5px;"); // bigger UI font
+
         setTop(buildToolbar());
         setCenter(buildSplit());
 
@@ -65,17 +67,9 @@ public class GraphFxMainView extends BorderPane {
                 "x=" + String.format(Locale.ROOT, "%.6f", x) + "   y=" + String.format(Locale.ROOT, "%.6f", y)
         ));
 
-        Tooltip.install(graphView, tooltip(
-                "Graph canvas",
-                "Mouse wheel: Zoom\n" +
-                        "Drag: Pan (Move tool)\n" +
-                        "Ctrl+Z / Ctrl+Y: Undo/Redo view\n" +
-                        "Double-click: Not used"
-        ));
-
         statusLabel.setTooltip(tooltip(
                 "Cursor coordinates",
-                "Shows the current cursor position in world coordinates."
+                "Shows the cursor position in world coordinates.\nTip: Use the mouse wheel to zoom. Drag to pan (Move tool)."
         ));
 
         model.getVariables().addListener((ListChangeListener<GraphFxVariable>) c -> rebuildSliders());
@@ -103,104 +97,112 @@ public class GraphFxMainView extends BorderPane {
     private ToolBar buildToolbar() {
         final ToggleGroup tools = new ToggleGroup();
 
-        final ToggleButton move = toolToggle("Move", GraphFxGraphView.ToolMode.MOVE, tools, true,
+        final ToggleButton move = toolToggle(
+                "Move",
+                GraphFxGraphView.ToolMode.MOVE,
+                tools,
+                true,
                 "Move tool",
-                "Drag to pan the view.\nMouse wheel zoom works in every tool."
+                "Drag with the left mouse button to pan.\nMouse wheel: Zoom in/out.\nCtrl+Z / Ctrl+Y: Undo/Redo view."
         );
 
-        final ToggleButton zoomBox = toolToggle("Zoom Box", GraphFxGraphView.ToolMode.ZOOM_BOX, tools, false,
+        final ToggleButton zoomBox = toolToggle(
+                "Zoom Box",
+                GraphFxGraphView.ToolMode.ZOOM_BOX,
+                tools,
+                false,
                 "Zoom box tool",
-                "Drag a rectangle to zoom into that region."
+                "Drag a rectangle to zoom into that region.\nThe view keeps equal scaling on x/y."
         );
 
-        final ToggleButton point = toolToggle("Point", GraphFxGraphView.ToolMode.POINT_ON_FUNCTION, tools, false,
+        final ToggleButton point = toolToggle(
+                "Point",
+                GraphFxGraphView.ToolMode.POINT_ON_FUNCTION,
+                tools,
+                false,
                 "Point tool",
-                "Click near a function to create a point on that function at the current x-position."
+                "Click near a function to create a point.\nThe point uses the clicked x-position."
         );
 
-        final ToggleButton tan = toolToggle("Tangent", GraphFxGraphView.ToolMode.TANGENT, tools, false,
+        final ToggleButton tan = toolToggle(
+                "Tangent",
+                GraphFxGraphView.ToolMode.TANGENT,
+                tools,
+                false,
                 "Tangent tool",
                 "Click near a function to create the tangent line at that x-position."
         );
 
-        final ToggleButton normal = toolToggle("Normal", GraphFxGraphView.ToolMode.NORMAL, tools, false,
+        final ToggleButton normal = toolToggle(
+                "Normal",
+                GraphFxGraphView.ToolMode.NORMAL,
+                tools,
+                false,
                 "Normal tool",
                 "Click near a function to create the normal line at that x-position."
         );
 
-        final ToggleButton root = toolToggle("Root", GraphFxGraphView.ToolMode.ROOT, tools, false,
+        final ToggleButton root = toolToggle(
+                "Root",
+                GraphFxGraphView.ToolMode.ROOT,
+                tools,
+                false,
                 "Root tool",
-                "Click near a function to search for a root close to the click position."
+                "Click near a function to find a nearby root (x-intercept).\nA point at y=0 will be added."
         );
 
-        final ToggleButton inter = toolToggle("Intersect", GraphFxGraphView.ToolMode.INTERSECTION, tools, false,
+        final ToggleButton inter = toolToggle(
+                "Intersect",
+                GraphFxGraphView.ToolMode.INTERSECTION,
+                tools,
+                false,
                 "Intersection tool",
-                "Click the first function, then click a second function.\nIntersection points in the visible range will be added."
+                "Step 1: Click the first function.\nStep 2: Click the second function.\nIntersection points in the visible x-range will be added."
         );
 
-        final ToggleButton integral = toolToggle("Integral", GraphFxGraphView.ToolMode.INTEGRAL, tools, false,
+        final ToggleButton integral = toolToggle(
+                "Integral",
+                GraphFxGraphView.ToolMode.INTEGRAL,
+                tools,
+                false,
                 "Integral tool",
-                "Click near a function to pick it.\nThen drag/release to select an interval.\nThe integral area and value will be added."
+                "Step 1: Click near a function to select it.\nStep 2: Drag and release to choose the interval.\nAn area + numeric integral value will be added."
         );
 
         final Button fit = new Button("Fit");
-        fit.setTooltip(tooltip(
-                "Fit view",
-                "Adjust the y-range to fit all visible functions in the current x-range."
-        ));
+        fit.setTooltip(tooltip("Fit view", "Adjust the y-range so all visible functions fit the current x-range.\nShortcut: F"));
         fit.setOnAction(e -> graphView.fitToData());
 
         final Button clearMarks = new Button("Clear marks");
-        clearMarks.setTooltip(tooltip(
-                "Clear marks",
-                "Remove all created points, lines and integral objects.\nFunctions and variables stay unchanged."
-        ));
+        clearMarks.setTooltip(tooltip("Clear marks", "Remove all created points, lines and integrals.\nFunctions and variables remain unchanged."));
         clearMarks.disableProperty().bind(Bindings.isEmpty(model.getObjects()));
         clearMarks.setOnAction(e -> model.clearObjects());
 
         final CheckBox grid = new CheckBox("Grid");
-        grid.setTooltip(tooltip(
-                "Grid",
-                "Toggle the background grid."
-        ));
+        grid.setTooltip(tooltip("Grid", "Toggle the background grid."));
         grid.selectedProperty().bindBidirectional(model.getSettings().showGridProperty());
 
         final CheckBox axes = new CheckBox("Axes");
-        axes.setTooltip(tooltip(
-                "Axes",
-                "Toggle x- and y-axes."
-        ));
+        axes.setTooltip(tooltip("Axes", "Toggle the x- and y-axis lines and tick labels."));
         axes.selectedProperty().bindBidirectional(model.getSettings().showAxesProperty());
 
         final Button exportPng = new Button("PNG");
-        exportPng.setTooltip(tooltip(
-                "Export PNG",
-                "Export the current view as a PNG image."
-        ));
+        exportPng.setTooltip(tooltip("Export PNG", "Export the current canvas as a PNG image.\nA default file name is pre-filled."));
         exportPng.disableProperty().bind(Bindings.isEmpty(model.getFunctions()));
-        exportPng.setOnAction(e -> GraphFxExportService.exportPng(graphView));
+        exportPng.setOnAction(e -> GraphFxExportService.exportPng(graphView, model));
 
         final Button exportSvg = new Button("SVG");
-        exportSvg.setTooltip(tooltip(
-                "Export SVG",
-                "Export the selected function as SVG paths (screen space).\nRequires a selected function."
-        ));
+        exportSvg.setTooltip(tooltip("Export SVG", "Export the selected function as SVG paths (screen space).\nA default file name is pre-filled."));
         exportSvg.disableProperty().bind(model.selectedFunctionProperty().isNull());
         exportSvg.setOnAction(e -> GraphFxExportService.exportSvg(graphView, model));
 
         final Button exportCsv = new Button("CSV");
-        exportCsv.setTooltip(tooltip(
-                "Export CSV",
-                "Export sampled points of the selected function as CSV.\nRequires a selected function."
-        ));
+        exportCsv.setTooltip(tooltip("Export CSV", "Export sampled points of the selected function as CSV.\nA default file name is pre-filled."));
         exportCsv.disableProperty().bind(model.selectedFunctionProperty().isNull());
         exportCsv.setOnAction(e -> GraphFxExportService.exportCsv(graphView, model));
 
         final Button exportJson = new Button("JSON");
-        exportJson.setTooltip(tooltip(
-                "Export JSON",
-                "Export sampled points of the selected function as JSON.\nRequires a selected function."
-        ));
+        exportJson.setTooltip(tooltip("Export JSON", "Export sampled points of the selected function as JSON.\nA default file name is pre-filled."));
         exportJson.disableProperty().bind(model.selectedFunctionProperty().isNull());
         exportJson.setOnAction(e -> GraphFxExportService.exportJson(graphView, model));
 
@@ -247,50 +249,42 @@ public class GraphFxMainView extends BorderPane {
         final VBox card = cardContainer();
 
         final Label title = new Label("Functions");
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip(
-                "Functions",
-                "Define and toggle functions.\nEach function is drawn with its own color."
-        ));
+        title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
+        title.setTooltip(tooltip("Functions", "Define and toggle functions.\nEach function uses its own color."));
 
         functionsTable.setItems(model.getFunctions());
         functionsTable.setEditable(true);
         functionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        functionsTable.setFixedCellSize(28);
+        functionsTable.setFixedCellSize(30);
         functionsTable.setPlaceholder(new Label(""));
-
-        Tooltip.install(functionsTable, tooltip(
-                "Functions table",
-                "Edit cells directly.\nSelect a function to enable exports (SVG/CSV/JSON)."
-        ));
 
         functionsTable.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> model.setSelectedFunction(n));
 
         final TableColumn<GraphFxFunction, Boolean> visibleCol = new TableColumn<>();
-        setHeader(visibleCol, "On", "Toggle visibility of the function.");
+        setHeader(visibleCol, "On", "Toggle function visibility.");
         visibleCol.setCellValueFactory(c -> c.getValue().visibleProperty());
         visibleCol.setCellFactory(CheckBoxTableCell.forTableColumn(visibleCol));
-        visibleCol.setPrefWidth(60);
+        visibleCol.setPrefWidth(62);
 
         final TableColumn<GraphFxFunction, String> nameCol = new TableColumn<>();
-        setHeader(nameCol, "Name", "A short name for the function (e.g., f, g, h).");
+        setHeader(nameCol, "Name", "Short function name (e.g., f, g, h).");
         nameCol.setCellValueFactory(c -> c.getValue().nameProperty());
         nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         nameCol.setOnEditCommit(e -> safe(() -> e.getRowValue().setName(e.getNewValue())));
-        nameCol.setPrefWidth(90);
+        nameCol.setPrefWidth(95);
 
         final TableColumn<GraphFxFunction, String> exprCol = new TableColumn<>();
-        setHeader(exprCol, "Expression", "The expression to evaluate.\nUse x as the input variable.\nOther variables come from the Variables table.");
+        setHeader(exprCol, "Expression", "Expression to evaluate.\nUse x as input.\nOther variables are defined in the Variables table.");
         exprCol.setCellValueFactory(c -> c.getValue().expressionProperty());
         exprCol.setCellFactory(TextFieldTableCell.forTableColumn());
         exprCol.setOnEditCommit(e -> safe(() -> e.getRowValue().setExpression(e.getNewValue())));
-        exprCol.setPrefWidth(280);
+        exprCol.setPrefWidth(320);
 
         final TableColumn<GraphFxFunction, Color> colorCol = new TableColumn<>();
-        setHeader(colorCol, "Color", "Change the drawing color of the function.");
+        setHeader(colorCol, "Color", "Pick a color for this function.");
         colorCol.setCellValueFactory(c -> c.getValue().colorProperty());
         colorCol.setCellFactory(col -> new ColorPickerCell());
-        colorCol.setPrefWidth(110);
+        colorCol.setPrefWidth(170); // wider so the picker text fits
 
         functionsTable.getColumns().setAll(visibleCol, nameCol, exprCol, colorCol);
         VBox.setVgrow(functionsTable, Priority.ALWAYS);
@@ -299,17 +293,11 @@ public class GraphFxMainView extends BorderPane {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
-        add.setTooltip(tooltip(
-                "Add function",
-                "Create a new function.\nA unique color is assigned automatically."
-        ));
+        add.setTooltip(tooltip("Add function", "Create a new function.\nA unique color is assigned automatically."));
         add.setOnAction(e -> openAddFunctionDialog());
 
         final Button remove = new Button("Remove");
-        remove.setTooltip(tooltip(
-                "Remove function",
-                "Remove the selected function."
-        ));
+        remove.setTooltip(tooltip("Remove function", "Remove the selected function."));
         remove.disableProperty().bind(functionsTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxFunction sel = functionsTable.getSelectionModel().getSelectedItem();
@@ -327,22 +315,14 @@ public class GraphFxMainView extends BorderPane {
         final VBox card = cardContainer();
 
         final Label title = new Label("Variables");
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip(
-                "Variables",
-                "Define numeric variables used by your functions.\nYou can optionally enable a slider for interactive exploration."
-        ));
+        title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
+        title.setTooltip(tooltip("Variables", "Define variables used inside function expressions.\nEnable a slider for interactive exploration."));
 
         variablesTable.setItems(model.getVariables());
         variablesTable.setEditable(true);
         variablesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        variablesTable.setFixedCellSize(28);
+        variablesTable.setFixedCellSize(30);
         variablesTable.setPlaceholder(new Label(""));
-
-        Tooltip.install(variablesTable, tooltip(
-                "Variables table",
-                "Edit cells directly.\nEnable “Slider” to show the variable in the slider panel."
-        ));
 
         final StringConverter<String> str = new StringConverter<>() {
             @Override public String toString(final String object) { return object; }
@@ -350,14 +330,14 @@ public class GraphFxMainView extends BorderPane {
         };
 
         final TableColumn<GraphFxVariable, String> nameCol = new TableColumn<>();
-        setHeader(nameCol, "Name", "Variable name (letters, digits, underscore).\nThe name 'x' is reserved for function input.");
+        setHeader(nameCol, "Name", "Variable name (letters, digits, underscore).\nThe name 'x' is reserved.");
         nameCol.setCellValueFactory(c -> c.getValue().nameProperty());
         nameCol.setCellFactory(TextFieldTableCell.forTableColumn(str));
         nameCol.setOnEditCommit(e -> safe(() -> model.renameVariable(e.getRowValue(), e.getNewValue())));
-        nameCol.setPrefWidth(90);
+        nameCol.setPrefWidth(95);
 
         final TableColumn<GraphFxVariable, String> valueCol = new TableColumn<>();
-        setHeader(valueCol, "Value", "Current value of the variable.\nMust be a valid number.");
+        setHeader(valueCol, "Value", "Current numeric value.");
         valueCol.setCellValueFactory(c -> c.getValue().valueStringProperty());
         valueCol.setCellFactory(TextFieldTableCell.forTableColumn());
         valueCol.setOnEditCommit(e -> safe(() -> model.setVariableValue(e.getRowValue(), e.getNewValue())));
@@ -367,7 +347,7 @@ public class GraphFxMainView extends BorderPane {
         setHeader(sliderCol, "Slider", "Enable a slider for this variable.");
         sliderCol.setCellValueFactory(c -> c.getValue().sliderEnabledProperty());
         sliderCol.setCellFactory(CheckBoxTableCell.forTableColumn(sliderCol));
-        sliderCol.setPrefWidth(80);
+        sliderCol.setPrefWidth(85);
 
         final TableColumn<GraphFxVariable, String> minCol = new TableColumn<>();
         setHeader(minCol, "Min", "Minimum slider value.");
@@ -384,30 +364,24 @@ public class GraphFxMainView extends BorderPane {
         maxCol.setPrefWidth(95);
 
         final TableColumn<GraphFxVariable, String> stepCol = new TableColumn<>();
-        setHeader(stepCol, "Step", "Slider step size.\nMust be > 0.");
+        setHeader(stepCol, "Step", "Slider step size (must be > 0).");
         stepCol.setCellValueFactory(c -> c.getValue().sliderStepStringProperty());
         stepCol.setCellFactory(TextFieldTableCell.forTableColumn());
         stepCol.setOnEditCommit(e -> safe(() -> model.setSliderStep(e.getRowValue(), e.getNewValue())));
         stepCol.setPrefWidth(95);
 
         variablesTable.getColumns().setAll(nameCol, valueCol, sliderCol, minCol, maxCol, stepCol);
-        variablesTable.setPrefHeight(220);
+        variablesTable.setPrefHeight(240);
 
         final HBox buttons = new HBox(8);
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         final Button add = new Button("Add");
-        add.setTooltip(tooltip(
-                "Add variable",
-                "Create a new variable.\nYou can enable a slider and configure min/max/step."
-        ));
+        add.setTooltip(tooltip("Add variable", "Create a new variable.\nOptionally enable a slider and configure min/max/step."));
         add.setOnAction(e -> openAddVariableDialog());
 
         final Button remove = new Button("Remove");
-        remove.setTooltip(tooltip(
-                "Remove variable",
-                "Remove the selected variable."
-        ));
+        remove.setTooltip(tooltip("Remove variable", "Remove the selected variable."));
         remove.disableProperty().bind(variablesTable.getSelectionModel().selectedItemProperty().isNull());
         remove.setOnAction(e -> {
             final GraphFxVariable sel = variablesTable.getSelectionModel().getSelectedItem();
@@ -417,7 +391,6 @@ public class GraphFxMainView extends BorderPane {
         });
 
         buttons.getChildren().addAll(add, remove);
-
         card.getChildren().addAll(title, variablesTable, buttons);
         return card;
     }
@@ -426,11 +399,8 @@ public class GraphFxMainView extends BorderPane {
         final VBox card = cardContainer();
 
         final Label title = new Label("Sliders");
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: 700;");
-        title.setTooltip(tooltip(
-                "Sliders",
-                "Only variables with “Slider = true” appear here.\nDragging a slider uses fast preview rendering."
-        ));
+        title.setStyle("-fx-font-size: 15px; -fx-font-weight: 700;");
+        title.setTooltip(tooltip("Sliders", "Only variables with “Slider = true” are shown.\nUpdates are optimized for smooth dragging."));
 
         slidersBox.setPadding(new Insets(6));
 
@@ -440,11 +410,6 @@ public class GraphFxMainView extends BorderPane {
         sc.setStyle("-fx-background-color:transparent;");
         sc.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        Tooltip.install(sc, tooltip(
-                "Slider panel",
-                "Drag to change values.\nThe graph updates in real time."
-        ));
-
         card.getChildren().addAll(title, sc);
         return card;
     }
@@ -453,47 +418,30 @@ public class GraphFxMainView extends BorderPane {
         slidersBox.getChildren().clear();
 
         for (final GraphFxVariable v : model.getVariables()) {
-            if (!v.isSliderEnabled()) {
-                continue;
-            }
+            if (!v.isSliderEnabled()) continue;
 
             final HBox row = new HBox(10);
-            row.setPadding(new Insets(4, 0, 4, 0));
+            row.setPadding(new Insets(6, 0, 6, 0));
             row.setAlignment(Pos.CENTER_LEFT);
 
             final Label name = new Label(v.getName());
-            name.setPrefWidth(40);
-            name.setTooltip(tooltip(
-                    "Variable: " + v.getName(),
-                    "Value updates the graph.\nConfigure min/max/step in the Variables table."
-            ));
+            name.setPrefWidth(42);
+            name.setTooltip(tooltip("Variable: " + v.getName(), "Drag the slider to change this variable.\nThe graph updates in real time."));
 
             final Slider slider = new Slider(0, 1, 0);
             slider.setMaxWidth(Double.MAX_VALUE);
+            slider.setBlockIncrement(1);
             HBox.setHgrow(slider, Priority.ALWAYS);
 
             final Label value = new Label(v.getValueString());
             value.setPrefWidth(100);
             value.setAlignment(Pos.CENTER_RIGHT);
-            value.setTooltip(tooltip(
-                    "Current value",
-                    "This is the current numeric value of the variable."
-            ));
 
-            final GraphFxSliderAdapter adapter = GraphFxSliderAdapter.of(
-                    v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue()
-            );
+            final GraphFxSliderAdapter adapter = GraphFxSliderAdapter.of(v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue());
 
             slider.setMin(0);
             slider.setMax(adapter.maxIndex());
             slider.setValue(adapter.toIndex(v.getValue()));
-
-            slider.setTooltip(tooltip(
-                    "Slider: " + v.getName(),
-                    "Min: " + v.getSliderMin().stripTrailingZeros().toPlainString() + "\n" +
-                            "Max: " + v.getSliderMax().stripTrailingZeros().toPlainString() + "\n" +
-                            "Step: " + v.getSliderStep().stripTrailingZeros().toPlainString()
-            ));
 
             slider.valueChangingProperty().addListener((obs, o, changing) -> graphView.setInteractiveMode(changing));
             slider.valueProperty().addListener((obs, o, n) -> safe(() -> {
@@ -525,13 +473,10 @@ public class GraphFxMainView extends BorderPane {
         final String defaultName = "f" + (model.getFunctions().size() + 1);
 
         final TextField nameField = new TextField(defaultName);
-        nameField.setTooltip(tooltip("Name", "A short name for the function (e.g., f, g, h)."));
+        nameField.setTooltip(tooltip("Name", "A short function name (e.g., f, g, h)."));
 
         final TextField exprField = new TextField("x");
-        exprField.setTooltip(tooltip(
-                "Expression",
-                "Use x as the input variable.\nExample: sin(x) + x^2\nVariables come from the Variables table."
-        ));
+        exprField.setTooltip(tooltip("Expression", "Use x as input.\nExample: sin(x) + x^2\nVariables come from the Variables table."));
 
         final Label nameLbl = new Label("Name");
         nameLbl.setTooltip(nameField.getTooltip());
@@ -544,14 +489,9 @@ public class GraphFxMainView extends BorderPane {
 
         dialog.getDialogPane().setContent(grid);
 
-        dialog.setResultConverter(bt -> {
-            if (bt != add) return null;
-            return new FunctionDraft(nameField.getText(), exprField.getText());
-        });
+        dialog.setResultConverter(bt -> bt == add ? new FunctionDraft(nameField.getText(), exprField.getText()) : null);
 
-        dialog.showAndWait().ifPresent(draft -> safe(() -> {
-            model.addFunction(draft.name().trim(), draft.expression().trim());
-        }));
+        dialog.showAndWait().ifPresent(draft -> safe(() -> model.addFunction(draft.name().trim(), draft.expression().trim())));
     }
 
     private void openAddVariableDialog() {
@@ -585,43 +525,22 @@ public class GraphFxMainView extends BorderPane {
         final TextField stepField = new TextField("0.1");
         stepField.setTooltip(tooltip("Step", "Slider step size. Must be > 0."));
 
-        final Label nameLbl = new Label("Name");
-        nameLbl.setTooltip(nameField.getTooltip());
-        final Label valueLbl = new Label("Value");
-        valueLbl.setTooltip(valueField.getTooltip());
-        final Label sliderLbl = new Label("Slider");
-        sliderLbl.setTooltip(sliderEnabled.getTooltip());
-        final Label minLbl = new Label("Min");
-        minLbl.setTooltip(minField.getTooltip());
-        final Label maxLbl = new Label("Max");
-        maxLbl.setTooltip(maxField.getTooltip());
-        final Label stepLbl = new Label("Step");
-        stepLbl.setTooltip(stepField.getTooltip());
-
         minField.disableProperty().bind(sliderEnabled.selectedProperty().not());
         maxField.disableProperty().bind(sliderEnabled.selectedProperty().not());
         stepField.disableProperty().bind(sliderEnabled.selectedProperty().not());
 
-        grid.addRow(0, nameLbl, nameField);
-        grid.addRow(1, valueLbl, valueField);
-        grid.addRow(2, sliderLbl, sliderEnabled);
-        grid.addRow(3, minLbl, minField);
-        grid.addRow(4, maxLbl, maxField);
-        grid.addRow(5, stepLbl, stepField);
+        grid.addRow(0, new Label("Name"), nameField);
+        grid.addRow(1, new Label("Value"), valueField);
+        grid.addRow(2, new Label("Slider"), sliderEnabled);
+        grid.addRow(3, new Label("Min"), minField);
+        grid.addRow(4, new Label("Max"), maxField);
+        grid.addRow(5, new Label("Step"), stepField);
 
         dialog.getDialogPane().setContent(grid);
 
-        dialog.setResultConverter(bt -> {
-            if (bt != add) return null;
-            return new VariableDraft(
-                    nameField.getText(),
-                    valueField.getText(),
-                    sliderEnabled.isSelected(),
-                    minField.getText(),
-                    maxField.getText(),
-                    stepField.getText()
-            );
-        });
+        dialog.setResultConverter(bt -> bt == add
+                ? new VariableDraft(nameField.getText(), valueField.getText(), sliderEnabled.isSelected(), minField.getText(), maxField.getText(), stepField.getText())
+                : null);
 
         dialog.showAndWait().ifPresent(draft -> safe(() -> {
             final GraphFxVariable v = model.addVariable(draft.name().trim(), new BigDecimal(draft.value().trim()));
@@ -641,7 +560,7 @@ public class GraphFxMainView extends BorderPane {
                 "-fx-background-color: -fx-control-inner-background;" +
                         "-fx-background-radius: 12;" +
                         "-fx-border-radius: 12;" +
-                        "-fx-border-color: rgba(0,0,0,0.08);"
+                        "-fx-border-color: rgba(0,0,0,0.10);"
         );
         return card;
     }
@@ -649,7 +568,7 @@ public class GraphFxMainView extends BorderPane {
     private static Tooltip tooltip(final String title, final String body) {
         final Tooltip t = new Tooltip(title + "\n" + body);
         t.setWrapText(true);
-        t.setMaxWidth(420);
+        t.setMaxWidth(520);
         return t;
     }
 
@@ -664,31 +583,26 @@ public class GraphFxMainView extends BorderPane {
         try {
             r.run();
         } catch (Exception ex) {
-            showError(ex.getMessage());
+            final Alert a = new Alert(Alert.AlertType.ERROR, ex.getMessage() == null ? "Unknown error." : ex.getMessage(), ButtonType.OK);
+            a.setHeaderText("Operation failed");
+            a.showAndWait();
         }
     }
 
-    private void showError(final String message) {
-        final Alert a = new Alert(Alert.AlertType.ERROR, message == null ? "Unknown error." : message, ButtonType.OK);
-        a.setHeaderText("Operation failed");
-        a.showAndWait();
-    }
-
-    private record FunctionDraft(String name, String expression) {
-    }
-
-    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {
-    }
+    private record FunctionDraft(String name, String expression) {}
+    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {}
 
     private static final class ColorPickerCell extends TableCell<GraphFxFunction, Color> {
         private final ColorPicker picker = new ColorPicker();
 
         private ColorPickerCell() {
+            picker.setPrefWidth(150);
+            picker.setMinWidth(150);
             picker.setTooltip(tooltip("Function color", "Pick a color for this function."));
             picker.setOnAction(e -> {
-                final GraphFxFunction item = getTableRow() == null ? null : (GraphFxFunction) getTableRow().getItem();
-                if (item != null) {
-                    item.setColor(picker.getValue());
+                final Object rowItem = getTableRow() == null ? null : getTableRow().getItem();
+                if (rowItem instanceof GraphFxFunction fn) {
+                    fn.setColor(picker.getValue());
                 }
             });
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
