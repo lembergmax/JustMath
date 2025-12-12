@@ -35,10 +35,6 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.ONE;
-import static com.mlprograms.justmath.bignumber.BigNumbers.TWO;
-import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
-
 /**
  * A mutable, list-like container for {@link BigNumber} instances implementing the full {@link List} interface.
  *
@@ -270,7 +266,7 @@ public class BigNumberList implements List<BigNumber> {
      * </p>
      * <ul>
      *   <li>For an odd number of elements: the middle element of the sorted list.</li>
-     *   <li>For an even number of elements: the arithmetic mean of the two middle elements.</li>
+     *   <li>For an even number of elements: the arithmetic mean of the BigNumbers.TWO middle elements.</li>
      * </ul>
      *
      * <p>The original list is not modified; a defensive copy is sorted internally.</p>
@@ -296,7 +292,7 @@ public class BigNumberList implements List<BigNumber> {
         final BigNumber lower = sorted.get(middleIndex - 1);
         final BigNumber upper = sorted.get(middleIndex);
 
-        return lower.add(upper).divide(TWO);
+        return lower.add(upper).divide(BigNumbers.TWO);
     }
 
     /**
@@ -420,7 +416,7 @@ public class BigNumberList implements List<BigNumber> {
      * <p>where {@code μ} is the arithmetic mean and {@code N} the number of elements.</p>
      *
      * @return a new {@link BigNumber} representing the population variance
-     * @throws IllegalStateException if this list contains fewer than two elements
+     * @throws IllegalStateException if this list contains fewer than BigNumbers.TWO elements
      */
     public BigNumber variance() {
         int minSize = 2;
@@ -446,7 +442,7 @@ public class BigNumberList implements List<BigNumber> {
      * {@code sqrt(variance())}.</p>
      *
      * @return a new {@link BigNumber} representing the population standard deviation
-     * @throws IllegalStateException if this list contains fewer than two elements
+     * @throws IllegalStateException if this list contains fewer than BigNumbers.TWO elements
      */
     public BigNumber standardDeviation() {
         return variance().squareRoot();
@@ -477,13 +473,13 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         BigNumber product = values.getFirst();
-        if (product.isLessThan(ZERO)) {
+        if (product.isLessThan(BigNumbers.ZERO)) {
             throw new IllegalStateException("Geometric mean is undefined for negative values.");
         }
 
         for (int i = 1; i < values.size(); i++) {
             final BigNumber value = values.get(i);
-            if (value.isLessThan(ZERO)) {
+            if (value.isLessThan(BigNumbers.ZERO)) {
                 throw new IllegalStateException("Geometric mean is undefined for negative values.");
             }
             product = product.multiply(value);
@@ -518,17 +514,17 @@ public class BigNumberList implements List<BigNumber> {
             throw new IllegalStateException("harmonicMean requires at least one element, but the list is empty.");
         }
 
-        BigNumber sumOfReciprocals = null;
+        BigNumber sumOfReciprocals = BigNumbers.ZERO;
         for (BigNumber value : values) {
-            if (value.compareTo(ZERO) == 0) {
+            if (value.compareTo(BigNumbers.ZERO) == 0) {
                 throw new ArithmeticException("Harmonic mean is undefined for value 0.");
             }
 
-            final BigNumber reciprocal = ONE.divide(value);
+            final BigNumber reciprocal = BigNumbers.ONE.divide(value);
             sumOfReciprocals = (sumOfReciprocals == null) ? reciprocal : sumOfReciprocals.add(reciprocal);
         }
 
-        // TODO: sumOfReciprocals is maybe null: check it
+        // TODO: sumOfReciprocals is may be null: check it
         final BigNumber count = new BigNumber(String.valueOf(values.size()));
         return count.divide(sumOfReciprocals);
     }
@@ -662,7 +658,7 @@ public class BigNumberList implements List<BigNumber> {
         Objects.requireNonNull(targetSum, "targetSum must not be null");
 
         final BigNumber currentSum = sum();
-        if (currentSum.compareTo(ZERO) == 0) {
+        if (currentSum.compareTo(BigNumbers.ZERO) == 0) {
             throw new IllegalStateException("Cannot normalize list with sum 0.");
         }
 
@@ -924,7 +920,7 @@ public class BigNumberList implements List<BigNumber> {
      * Checks whether this list is sorted in non-decreasing (ascending) order according to
      * the natural ordering of {@link BigNumber}.
      *
-     * @return {@code true} if the list is sorted ascending or contains fewer than two elements, {@code false} otherwise
+     * @return {@code true} if the list is sorted ascending or contains fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isSortedAscending() {
         for (int i = 1; i < values.size(); i++) {
@@ -940,7 +936,7 @@ public class BigNumberList implements List<BigNumber> {
      * Checks whether this list is sorted in non-increasing (descending) order according to
      * the natural ordering of {@link BigNumber}.
      *
-     * @return {@code true} if the list is sorted descending or contains fewer than two elements, {@code false} otherwise
+     * @return {@code true} if the list is sorted descending or contains fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isSortedDescending() {
         for (int i = 1; i < values.size(); i++) {
@@ -956,7 +952,7 @@ public class BigNumberList implements List<BigNumber> {
      * Checks whether this list is monotonically non-decreasing (each element greater than or equal
      * to the previous one).
      *
-     * @return {@code true} if the sequence is monotonically non-decreasing or has fewer than two elements, {@code false} otherwise
+     * @return {@code true} if the sequence is monotonically non-decreasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicIncreasing() {
         for (int i = 1; i < values.size(); i++) {
@@ -972,7 +968,7 @@ public class BigNumberList implements List<BigNumber> {
      * Checks whether this list is monotonically non-increasing (each element less than or equal
      * to the previous one).
      *
-     * @return {@code true} if the sequence is monotonically non-increasing or has fewer than two elements, {@code false} otherwise
+     * @return {@code true} if the sequence is monotonically non-increasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicDecreasing() {
         for (int i = 1; i < values.size(); i++) {
