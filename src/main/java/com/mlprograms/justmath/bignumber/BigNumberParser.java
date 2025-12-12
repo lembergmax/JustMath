@@ -104,8 +104,8 @@ class BigNumberParser {
 		char groupingSeparator = symbols.getGroupingSeparator();
 		char decimalSeparator = symbols.getDecimalSeparator();
 
-		String beforeDecimal = number.getValueBeforeDecimal();
-		String afterDecimal = number.getValueAfterDecimal();
+		String beforeDecimal = number.getValueBeforeDecimalPoint();
+		String afterDecimal = number.getValueAfterDecimalPoint();
 		boolean isNegative = number.isNegative();
 
 		StringBuilder groupedBeforeDecimal = getGroupedBeforeDecimal(beforeDecimal, groupingSeparator);
@@ -122,7 +122,6 @@ class BigNumberParser {
 
 		return parse(formattedNumber.toString(), targetLocale);
 	}
-
 
 	/**
 	 * Inserts grouping separators every 3 digits from right to left for the integer part.
@@ -192,8 +191,8 @@ class BigNumberParser {
 			       .mathContext(BigNumbers.DEFAULT_MATH_CONTEXT)
 			       .trigonometricMode(TrigonometricMode.DEG)
 			       .locale(originalLocale)
-			       .valueBeforeDecimal(beforeDecimal)
-			       .valueAfterDecimal(afterDecimal)
+			       .valueBeforeDecimalPoint(beforeDecimal)
+			       .valueAfterDecimalPoint(afterDecimal)
 			       .isNegative(isNegative)
 			       .build();
 	}
