@@ -524,7 +524,6 @@ public class BigNumberList implements List<BigNumber> {
             sumOfReciprocals = (sumOfReciprocals == null) ? reciprocal : sumOfReciprocals.add(reciprocal);
         }
 
-        // TODO: sumOfReciprocals is may be null: check it
         final BigNumber count = new BigNumber(String.valueOf(values.size()));
         return count.divide(sumOfReciprocals);
     }
