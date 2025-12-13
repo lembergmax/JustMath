@@ -36,12 +36,12 @@ public class GraphFxApp extends Application {
     @Override
     public void start(final Stage stage) {
         final CalculatorEngine engine = new CalculatorEngine();
-
         final GraphFxModel model = new GraphFxModel();
+
         model.addFunction("f(x)", "x^2");
 
-        final MainWindowController mainWindowController = new MainWindowController(model, engine);
-        final Scene scene = new Scene(mainWindowController.getRoot(), 1280, 820);
+        final MainWindowController controller = new MainWindowController(model, engine);
+        final Scene scene = new Scene(controller.getRoot(), 1280, 820);
 
         stage.setTitle("JustMath - Graph (JavaFX)");
         stage.setScene(scene);
@@ -49,6 +49,7 @@ public class GraphFxApp extends Application {
     }
 
     public static void main(final String[] args) {
-        launch(args);
+        Application.launch(GraphFxApp.class, args);
     }
+
 }

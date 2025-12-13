@@ -21,14 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.mlprograms.justmath.graph.fx.model;
+
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.*;
 
+@NoArgsConstructor
 public class GraphFxModel {
 
     private final ObservableList<GraphFxFunction> functions = FXCollections.observableArrayList();
@@ -39,16 +43,6 @@ public class GraphFxModel {
 
     private final LongProperty revision = new SimpleLongProperty(0);
     private final ObjectProperty<GraphFxFunction> selectedFunction = new SimpleObjectProperty<>(null);
-
-    public GraphFxModel() {
-        final GraphFxVariable a = addVariable("a", new BigDecimal("1"));
-        final GraphFxVariable b = addVariable("b", new BigDecimal("1"));
-        final GraphFxVariable c = addVariable("c", new BigDecimal("0"));
-
-        enableDefaultSlider(a, new BigDecimal("-5"), new BigDecimal("5"), new BigDecimal("0.1"));
-        enableDefaultSlider(b, new BigDecimal("-5"), new BigDecimal("5"), new BigDecimal("0.1"));
-        enableDefaultSlider(c, new BigDecimal("-10"), new BigDecimal("10"), new BigDecimal("0.1"));
-    }
 
     public ObservableList<GraphFxFunction> getFunctions() {
         return functions;
