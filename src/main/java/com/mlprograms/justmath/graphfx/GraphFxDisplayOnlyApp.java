@@ -123,8 +123,6 @@ public final class GraphFxDisplayOnlyApp {
      * @throws NullPointerException if {@code functions} is {@code null}
      */
     public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
-        Objects.requireNonNull(functions, "functions");
-
         return FxBootstrap.callAndWait(() -> {
             final DisplayWindowController controller = new DisplayWindowController(calculatorEngine, functions);
 
