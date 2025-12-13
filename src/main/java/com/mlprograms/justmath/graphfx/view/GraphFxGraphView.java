@@ -23,7 +23,6 @@
  */
 package com.mlprograms.justmath.graphfx.view;
 
-import com.mlprograms.justmath.graph.fx.model.*;
 import com.mlprograms.justmath.graphfx.model.*;
 import com.mlprograms.justmath.graphfx.service.GraphFxAnalysisMath;
 
