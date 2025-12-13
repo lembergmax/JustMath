@@ -148,8 +148,7 @@ public final class GraphFxDisplayWindow {
      * @param calculatorEngine the engine used to evaluate expressions
      * @param windowTitle      title shown in the window title bar
      */
-    public GraphFxDisplayWindow(@NonNull final CalculatorEngine calculatorEngine,
-                                @NonNull final String windowTitle) {
+    public GraphFxDisplayWindow(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String windowTitle) {
         this(calculatorEngine, windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
@@ -161,10 +160,7 @@ public final class GraphFxDisplayWindow {
      * @param width            desired stage width in pixels
      * @param height           desired stage height in pixels
      */
-    public GraphFxDisplayWindow(@NonNull final CalculatorEngine calculatorEngine,
-                                @NonNull final String windowTitle,
-                                final double width,
-                                final double height) {
+    public GraphFxDisplayWindow(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String windowTitle, final double width, final double height) {
         this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "calculatorEngine");
         this.windowTitle = Objects.requireNonNull(windowTitle, "windowTitle");
         this.width = width;
