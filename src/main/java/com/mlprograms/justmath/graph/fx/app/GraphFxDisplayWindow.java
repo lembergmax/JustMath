@@ -27,7 +27,6 @@ package com.mlprograms.justmath.graph.fx.app;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graph.fx.controller.DisplayWindowController;
 import com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec;
-import com.mlprograms.justmath.graph.fx.view.GraphFxCss;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -242,13 +241,8 @@ public final class GraphFxDisplayWindow {
     private Stage createAndShowStage(final List<GraphFxFunctionSpec> functions) {
         final DisplayWindowController controller = new DisplayWindowController(calculatorEngine, functions);
         final Scene scene = new Scene(controller.getRoot(), width, height);
-
-        final String css = GraphFxCss.stylesheet();
-        if (css != null) {
-            scene.getStylesheets().add(css);
-        }
-
         final Stage stage = new Stage();
+
         stage.setTitle(windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle);
         stage.setScene(scene);
         stage.show();

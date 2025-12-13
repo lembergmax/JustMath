@@ -27,7 +27,6 @@ package com.mlprograms.justmath.graph.fx.app;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graph.fx.controller.MainWindowController;
 import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
-import com.mlprograms.justmath.graph.fx.view.GraphFxCss;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -39,28 +38,14 @@ public class GraphFxApp extends Application {
         final CalculatorEngine engine = new CalculatorEngine();
 
         final GraphFxModel model = new GraphFxModel();
-        model.addFunction("f", "sin(x)+x^2");
-        model.addFunction("g", "a*sin(b*x)+c");
+        model.addFunction("f(x)", "x^2");
 
-        final MainWindowController controller = new MainWindowController(model, engine);
-
-        final Scene scene = new Scene(controller.getRoot(), 1280, 820);
-        final String css = GraphFxCss.stylesheet();
-        if (css != null) scene.getStylesheets().add(css);
+        final MainWindowController mainWindowController = new MainWindowController(model, engine);
+        final Scene scene = new Scene(mainWindowController.getRoot(), 1280, 820);
 
         stage.setTitle("JustMath - Graph (JavaFX)");
         stage.setScene(scene);
         stage.show();
-
-         // Example (programmatic): open read-only window
-         com.mlprograms.justmath.graph.fx.controller.GraphFxWindows.openDisplayWindow(
-                 stage, engine,
-                 java.util.List.of(
-                         com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("h", "cos(x)"),
-                         com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("p", "x^3-4*x")
-                 ),
-                 "Read-only graph"
-         );
     }
 
     public static void main(final String[] args) {

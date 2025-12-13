@@ -25,7 +25,11 @@
 package com.mlprograms.justmath.graph.fx.app;
 
 public class Launcher {
+
+    // TODO: remove this launcher
+
     public static void main(final String[] args) {
         GraphFxApp.main(args);
     }
+
 }
