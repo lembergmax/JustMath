@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graph.fx.view;
 
-package com.mlprograms.justmath.graph.fx;
+import com.mlprograms.justmath.graph.fx.model.*;
+import com.mlprograms.justmath.graph.fx.service.GraphFxAnalysisMath;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graph.GraphPoint;

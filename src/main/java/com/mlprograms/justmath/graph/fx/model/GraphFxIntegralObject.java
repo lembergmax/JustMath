@@ -22,76 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graph.fx.model;
 
 import javafx.scene.paint.Color;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public sealed interface GraphFxObject permits GraphFxPointObject, GraphFxLineObject, GraphFxIntegralObject {
-
-    UUID id();
-    String name();
-    boolean visible();
-    GraphFxStyle style();
-    UUID referencesFunctionId();
-}
-
-record GraphFxPointObject(
-        UUID id,
-        String name,
-        boolean visible,
-        GraphFxStyle style,
-        BigDecimal x,
-        BigDecimal y,
-        UUID functionId
-) implements GraphFxObject {
-
-    public static GraphFxPointObject of(final String name, final BigDecimal x, final BigDecimal y, final UUID functionId) {
-        return new GraphFxPointObject(
-                UUID.randomUUID(),
-                name,
-                true,
-                new GraphFxStyle(Color.BLACK, 2.0, 1.0),
-                x, y,
-                functionId
-        );
-    }
-
-    @Override
-    public UUID referencesFunctionId() {
-        return functionId;
-    }
-}
-
-record GraphFxLineObject(
-        UUID id,
-        String name,
-        boolean visible,
-        GraphFxStyle style,
-        BigDecimal x0,
-        BigDecimal y0,
-        BigDecimal slope
-) implements GraphFxObject {
-
-    public static GraphFxLineObject of(final String name, final BigDecimal x0, final BigDecimal y0, final BigDecimal slope) {
-        return new GraphFxLineObject(
-                UUID.randomUUID(),
-                name,
-                true,
-                new GraphFxStyle(Color.rgb(40, 40, 40), 2.0, 1.0),
-                x0, y0, slope
-        );
-    }
-
-    @Override
-    public UUID referencesFunctionId() {
-        return null;
-    }
-}
-
-record GraphFxIntegralObject(
+public record GraphFxIntegralObject(
         UUID id,
         String name,
         boolean visible,
@@ -119,4 +57,3 @@ record GraphFxIntegralObject(
         return functionId;
     }
 }
-

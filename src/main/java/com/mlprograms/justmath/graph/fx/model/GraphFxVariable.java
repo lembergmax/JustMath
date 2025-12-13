@@ -21,9 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.mlprograms.justmath.graph.fx;
-
+package com.mlprograms.justmath.graph.fx.model;
 import javafx.beans.property.*;
 
 import java.math.BigDecimal;

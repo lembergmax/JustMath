@@ -22,25 +22,36 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graph.fx.model;
+
+import javafx.scene.paint.Color;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.UUID;
 
-public record GraphFxSliderAdapter(BigDecimal min, BigDecimal step, int maxIndex) {
+public record GraphFxPointObject(
+        UUID id,
+        String name,
+        boolean visible,
+        GraphFxStyle style,
+        BigDecimal x,
+        BigDecimal y,
+        UUID functionId
+) implements GraphFxObject {
 
-    public static GraphFxSliderAdapter of(final BigDecimal min, final BigDecimal max, final BigDecimal step, final BigDecimal current) {
-        final BigDecimal range = max.subtract(min);
-        final int idx = range.divide(step, 0, RoundingMode.HALF_UP).max(BigDecimal.ONE).intValue();
-        return new GraphFxSliderAdapter(min, step, Math.max(1, idx));
+    public static GraphFxPointObject of(final String name, final BigDecimal x, final BigDecimal y, final UUID functionId) {
+        return new GraphFxPointObject(
+                UUID.randomUUID(),
+                name,
+                true,
+                new GraphFxStyle(Color.BLACK, 2.0, 1.0),
+                x, y,
+                functionId
+        );
     }
 
-    public int toIndex(final BigDecimal value) {
-        return value.subtract(min).divide(step, 0, RoundingMode.HALF_UP).intValue();
-    }
-
-    public BigDecimal fromIndex(final int index) {
-        return min.add(step.multiply(BigDecimal.valueOf(index)));
+    @Override
+    public UUID referencesFunctionId() {
+        return functionId;
     }
 }
-
