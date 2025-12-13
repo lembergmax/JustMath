@@ -92,14 +92,38 @@ public final class MainWindowController {
     }
 
     private void wireToolbar() {
-        toolbar.moveButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.MOVE); graphView.requestFocus(); });
-        toolbar.zoomBoxButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.ZOOM_BOX); graphView.requestFocus(); });
-        toolbar.pointButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.POINT_ON_FUNCTION); graphView.requestFocus(); });
-        toolbar.tangentButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.TANGENT); graphView.requestFocus(); });
-        toolbar.normalButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.NORMAL); graphView.requestFocus(); });
-        toolbar.rootButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.ROOT); graphView.requestFocus(); });
-        toolbar.intersectButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.INTERSECTION); graphView.requestFocus(); });
-        toolbar.integralButton().setOnAction(e -> { graphView.setToolMode(GraphFxGraphView.ToolMode.INTEGRAL); graphView.requestFocus(); });
+        toolbar.moveButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.MOVE);
+            graphView.requestFocus();
+        });
+        toolbar.zoomBoxButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.ZOOM_BOX);
+            graphView.requestFocus();
+        });
+        toolbar.pointButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.POINT_ON_FUNCTION);
+            graphView.requestFocus();
+        });
+        toolbar.tangentButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.TANGENT);
+            graphView.requestFocus();
+        });
+        toolbar.normalButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.NORMAL);
+            graphView.requestFocus();
+        });
+        toolbar.rootButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.ROOT);
+            graphView.requestFocus();
+        });
+        toolbar.intersectButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.INTERSECTION);
+            graphView.requestFocus();
+        });
+        toolbar.integralButton().setOnAction(e -> {
+            graphView.setToolMode(GraphFxGraphView.ToolMode.INTEGRAL);
+            graphView.requestFocus();
+        });
 
         toolbar.resetViewButton().setOnAction(e -> graphView.resetView());
 
@@ -143,8 +167,7 @@ public final class MainWindowController {
             if (sel != null) safe(() -> model.removeVariable(sel));
         });
 
-        @SuppressWarnings("unchecked")
-        final var cols = (java.util.List<TableColumn<GraphFxVariable, ?>>) (java.util.List<?>) view.variablesTable().getColumns();
+        @SuppressWarnings("unchecked") final var cols = (java.util.List<TableColumn<GraphFxVariable, ?>>) (java.util.List<?>) view.variablesTable().getColumns();
 
         ((TableColumn<GraphFxVariable, String>) cols.get(0)).setOnEditCommit(e -> safe(() -> model.renameVariable(e.getRowValue(), e.getNewValue())));
         ((TableColumn<GraphFxVariable, String>) cols.get(1)).setOnEditCommit(e -> safe(() -> model.setVariableValue(e.getRowValue(), e.getNewValue())));
@@ -290,6 +313,10 @@ public final class MainWindowController {
         }
     }
 
-    private record FunctionDraft(String name, String expression) {}
-    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max, String step) {}
+    private record FunctionDraft(String name, String expression) {
+    }
+
+    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max,
+                                 String step) {
+    }
 }
