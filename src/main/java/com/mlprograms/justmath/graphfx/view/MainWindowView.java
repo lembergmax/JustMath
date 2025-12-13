@@ -50,8 +50,6 @@ import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import lombok.NonNull;
 
-import java.util.Objects;
-
 /**
  * Builds the editable GraphFx main window user interface.
  * <p>
@@ -207,17 +205,6 @@ public final class MainWindowView extends BorderPane {
     }
 
     /**
-     * Exposes the scroll pane wrapping the sidebar cards (functions, variables, sliders).
-     * <p>
-     * Useful if a controller wants to adjust scroll policy, scroll position, or request layout.
-     *
-     * @return the sidebar scroll pane
-     */
-    public ScrollPane sidebarScroll() {
-        return sidebarScroll;
-    }
-
-    /**
      * Adds a slider row to the sliders container and associates the row with a model variable.
      * <p>
      * The provided {@code variable} is stored as {@code userData} on the row to enable controllers
@@ -243,28 +230,13 @@ public final class MainWindowView extends BorderPane {
     }
 
     /**
-     * Adds a slider row to the sliders container without linking it to a model object.
-     * <p>
-     * This is useful if the caller uses a different mechanism to track slider rows
-     * (e.g. mapping by variable name or direct node references).
-     *
-     * @param slider     the slider control
-     * @param nameLabel  label shown on the left side
-     * @param valueLabel label shown on the right side
-     * @throws NullPointerException if any parameter is {@code null}
-     */
-    public void addSliderRow(@NonNull final Slider slider, @NonNull final Label nameLabel, @NonNull final Label valueLabel) {
-        slidersBox.getChildren().add(createSliderRow(slider, nameLabel, valueLabel));
-    }
-
-    /**
      * Creates the overall content layout consisting of sidebar and graph view.
      *
      * @param sidebar   the sidebar node
      * @param graphView the graph view node
      * @return a node suitable for placement as the center of this {@link BorderPane}
      */
-    private Node createContentLayout(final ScrollPane sidebar, final GraphFxGraphView graphView) {
+    private Node createContentLayout(@NonNull final ScrollPane sidebar, @NonNull final GraphFxGraphView graphView) {
         final HBox content = new HBox(12, sidebar, graphView);
         HBox.setHgrow(graphView, Priority.ALWAYS);
         return content;
@@ -349,31 +321,31 @@ public final class MainWindowView extends BorderPane {
         functionsTable.setFixedCellSize(TABLE_FIXED_CELL_SIZE);
         functionsTable.setPlaceholder(new Label(""));
 
-        final TableColumn<GraphFxFunction, Boolean> visibleCol = new TableColumn<>();
-        configureHeader(visibleCol, "On", "Toggle function visibility.");
-        visibleCol.setCellValueFactory(c -> c.getValue().visibleProperty());
-        visibleCol.setCellFactory(CheckBoxTableCell.forTableColumn(visibleCol));
-        visibleCol.setPrefWidth(FUNCTIONS_VISIBLE_COL_WIDTH);
+        final TableColumn<GraphFxFunction, Boolean> visibleColumn = new TableColumn<>();
+        configureHeader(visibleColumn, "On", "Toggle function visibility.");
+        visibleColumn.setCellValueFactory(c -> c.getValue().visibleProperty());
+        visibleColumn.setCellFactory(CheckBoxTableCell.forTableColumn(visibleColumn));
+        visibleColumn.setPrefWidth(FUNCTIONS_VISIBLE_COL_WIDTH);
 
-        final TableColumn<GraphFxFunction, String> nameCol = new TableColumn<>();
-        configureHeader(nameCol, "Name", "Short function name (e.g., f, g, h).");
-        nameCol.setCellValueFactory(c -> c.getValue().nameProperty());
-        nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        nameCol.setPrefWidth(FUNCTIONS_NAME_COL_WIDTH);
+        final TableColumn<GraphFxFunction, String> nameColumn = new TableColumn<>();
+        configureHeader(nameColumn, "Name", "Short function name (e.g., f, g, h).");
+        nameColumn.setCellValueFactory(c -> c.getValue().nameProperty());
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setPrefWidth(FUNCTIONS_NAME_COL_WIDTH);
 
-        final TableColumn<GraphFxFunction, String> exprCol = new TableColumn<>();
-        configureHeader(exprCol, "Expression", "Expression to evaluate.\n" + "Use x as input.\n" + "Other variables are defined in the Variables tab.");
-        exprCol.setCellValueFactory(c -> c.getValue().expressionProperty());
-        exprCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        exprCol.setPrefWidth(FUNCTIONS_EXPR_COL_WIDTH);
+        final TableColumn<GraphFxFunction, String> expressionColumn = new TableColumn<>();
+        configureHeader(expressionColumn, "Expression", "Expression to evaluate.\n" + "Use x as input.\n" + "Other variables are defined in the Variables tab.");
+        expressionColumn.setCellValueFactory(c -> c.getValue().expressionProperty());
+        expressionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        expressionColumn.setPrefWidth(FUNCTIONS_EXPR_COL_WIDTH);
 
-        final TableColumn<GraphFxFunction, Color> colorCol = new TableColumn<>();
-        configureHeader(colorCol, "Color", "Pick a color for this function.");
-        colorCol.setCellValueFactory(c -> c.getValue().colorProperty());
-        colorCol.setCellFactory(col -> new ColorSwatchCell());
-        colorCol.setPrefWidth(FUNCTIONS_COLOR_COL_WIDTH);
+        final TableColumn<GraphFxFunction, Color> colorColumn = new TableColumn<>();
+        configureHeader(colorColumn, "Color", "Pick a color for this function.");
+        colorColumn.setCellValueFactory(c -> c.getValue().colorProperty());
+        colorColumn.setCellFactory(col -> new ColorSwatchCell());
+        colorColumn.setPrefWidth(FUNCTIONS_COLOR_COL_WIDTH);
 
-        functionsTable.getColumns().setAll(visibleCol, nameCol, exprCol, colorCol);
+        functionsTable.getColumns().setAll(visibleColumn, nameColumn, expressionColumn, colorColumn);
         VBox.setVgrow(functionsTable, Priority.ALWAYS);
 
         return functionsTable;
@@ -395,43 +367,43 @@ public final class MainWindowView extends BorderPane {
 
         final StringConverter<String> identity = identityStringConverter();
 
-        final TableColumn<GraphFxVariable, String> nameCol = new TableColumn<>();
-        configureHeader(nameCol, "Name", "Variable name (letters, digits, underscore).\n" + "The name 'x' is reserved.");
-        nameCol.setCellValueFactory(c -> c.getValue().nameProperty());
-        nameCol.setCellFactory(TextFieldTableCell.forTableColumn(identity));
-        nameCol.setPrefWidth(VARIABLES_NAME_COL_WIDTH);
+        final TableColumn<GraphFxVariable, String> nameColumn = new TableColumn<>();
+        configureHeader(nameColumn, "Name", "Variable name (letters, digits, underscore).\n" + "The name 'x' is reserved.");
+        nameColumn.setCellValueFactory(c -> c.getValue().nameProperty());
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn(identity));
+        nameColumn.setPrefWidth(VARIABLES_NAME_COL_WIDTH);
 
-        final TableColumn<GraphFxVariable, String> valueCol = new TableColumn<>();
-        configureHeader(valueCol, "Value", "Current numeric value.");
-        valueCol.setCellValueFactory(c -> c.getValue().valueStringProperty());
-        valueCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        valueCol.setPrefWidth(VARIABLES_VALUE_COL_WIDTH);
+        final TableColumn<GraphFxVariable, String> valueColumn = new TableColumn<>();
+        configureHeader(valueColumn, "Value", "Current numeric value.");
+        valueColumn.setCellValueFactory(c -> c.getValue().valueStringProperty());
+        valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        valueColumn.setPrefWidth(VARIABLES_VALUE_COL_WIDTH);
 
-        final TableColumn<GraphFxVariable, Boolean> sliderCol = new TableColumn<>();
-        configureHeader(sliderCol, "Slider", "Enable a slider for this variable.");
-        sliderCol.setCellValueFactory(c -> c.getValue().sliderEnabledProperty());
-        sliderCol.setCellFactory(CheckBoxTableCell.forTableColumn(sliderCol));
-        sliderCol.setPrefWidth(VARIABLES_SLIDER_COL_WIDTH);
+        final TableColumn<GraphFxVariable, Boolean> sliderColumn = new TableColumn<>();
+        configureHeader(sliderColumn, "Slider", "Enable a slider for this variable.");
+        sliderColumn.setCellValueFactory(c -> c.getValue().sliderEnabledProperty());
+        sliderColumn.setCellFactory(CheckBoxTableCell.forTableColumn(sliderColumn));
+        sliderColumn.setPrefWidth(VARIABLES_SLIDER_COL_WIDTH);
 
-        final TableColumn<GraphFxVariable, String> minCol = new TableColumn<>();
-        configureHeader(minCol, "Min", "Minimum slider value.");
-        minCol.setCellValueFactory(c -> c.getValue().sliderMinStringProperty());
-        minCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        minCol.setPrefWidth(VARIABLES_MIN_COL_WIDTH);
+        final TableColumn<GraphFxVariable, String> minColumn = new TableColumn<>();
+        configureHeader(minColumn, "Min", "Minimum slider value.");
+        minColumn.setCellValueFactory(c -> c.getValue().sliderMinStringProperty());
+        minColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        minColumn.setPrefWidth(VARIABLES_MIN_COL_WIDTH);
 
-        final TableColumn<GraphFxVariable, String> maxCol = new TableColumn<>();
-        configureHeader(maxCol, "Max", "Maximum slider value.");
-        maxCol.setCellValueFactory(c -> c.getValue().sliderMaxStringProperty());
-        maxCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        maxCol.setPrefWidth(VARIABLES_MAX_COL_WIDTH);
+        final TableColumn<GraphFxVariable, String> maxColumn = new TableColumn<>();
+        configureHeader(maxColumn, "Max", "Maximum slider value.");
+        maxColumn.setCellValueFactory(c -> c.getValue().sliderMaxStringProperty());
+        maxColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        maxColumn.setPrefWidth(VARIABLES_MAX_COL_WIDTH);
 
-        final TableColumn<GraphFxVariable, String> stepCol = new TableColumn<>();
-        configureHeader(stepCol, "Step", "Slider step size (must be > 0).");
-        stepCol.setCellValueFactory(c -> c.getValue().sliderStepStringProperty());
-        stepCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        stepCol.setPrefWidth(VARIABLES_STEP_COL_WIDTH);
+        final TableColumn<GraphFxVariable, String> stepColumn = new TableColumn<>();
+        configureHeader(stepColumn, "Step", "Slider step size (must be > 0).");
+        stepColumn.setCellValueFactory(c -> c.getValue().sliderStepStringProperty());
+        stepColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        stepColumn.setPrefWidth(VARIABLES_STEP_COL_WIDTH);
 
-        variablesTable.getColumns().setAll(nameCol, valueCol, sliderCol, minCol, maxCol, stepCol);
+        variablesTable.getColumns().setAll(nameColumn, valueColumn, sliderColumn, minColumn, maxColumn, stepColumn);
         variablesTable.setPrefHeight(240);
 
         return variablesTable;
@@ -457,7 +429,7 @@ public final class MainWindowView extends BorderPane {
      * @param text title text
      * @return title label
      */
-    private static Label createCardTitle(final String text) {
+    private static Label createCardTitle(@NonNull final String text) {
         return new Label(text);
     }
 
@@ -469,7 +441,7 @@ public final class MainWindowView extends BorderPane {
      * @param text hint content
      * @return hint label
      */
-    private static Label createHintLabel(final String text) {
+    private static Label createHintLabel(@NonNull final String text) {
         final Label hint = new Label(text);
         hint.setWrapText(true);
         return hint;
@@ -484,7 +456,7 @@ public final class MainWindowView extends BorderPane {
      * @param removeTooltip tooltip for the remove button
      * @return a button row container aligned to the left
      */
-    private static HBox createCardButtons(final Button addButton, final Button removeButton, final Tooltip addTooltip, final Tooltip removeTooltip) {
+    private static HBox createCardButtons(@NonNull final Button addButton, @NonNull final Button removeButton, @NonNull final Tooltip addTooltip, @NonNull final Tooltip removeTooltip) {
         addButton.setTooltip(addTooltip);
         removeButton.setTooltip(removeTooltip);
 
@@ -502,7 +474,7 @@ public final class MainWindowView extends BorderPane {
      * @param text        header text
      * @param tooltipText tooltip body describing the column purpose
      */
-    private static void configureHeader(final TableColumn<?, ?> column, final String text, final String tooltipText) {
+    private static void configureHeader(@NonNull final TableColumn<?, ?> column, @NonNull final String text, @NonNull final String tooltipText) {
         final Label label = new Label(text);
         label.setTooltip(tooltip(text, tooltipText));
         column.setText(null);
@@ -516,7 +488,7 @@ public final class MainWindowView extends BorderPane {
      * @param body  tooltip description
      * @return configured tooltip
      */
-    private static Tooltip tooltip(final String title, final String body) {
+    private static Tooltip tooltip(@NonNull final String title, @NonNull final String body) {
         final Tooltip tooltip = new Tooltip(title + "\n" + body);
         tooltip.setWrapText(true);
         tooltip.setMaxWidth(520);
@@ -556,7 +528,7 @@ public final class MainWindowView extends BorderPane {
      * @param valueLabel label on the right side, typically the current variable value
      * @return a fully configured row container
      */
-    private static HBox createSliderRow(final Slider slider, final Label nameLabel, final Label valueLabel) {
+    private static HBox createSliderRow(@NonNull final Slider slider, @NonNull final Label nameLabel, @NonNull final Label valueLabel) {
         configureFixedWidth(nameLabel, SLIDER_NAME_WIDTH);
         configureFixedWidth(valueLabel, SLIDER_VALUE_WIDTH);
         valueLabel.setAlignment(Pos.CENTER_RIGHT);
@@ -576,7 +548,7 @@ public final class MainWindowView extends BorderPane {
      * @param region the region to configure
      * @param width  the fixed width to apply
      */
-    private static void configureFixedWidth(final Region region, final double width) {
+    private static void configureFixedWidth(@NonNull final Region region, final double width) {
         region.setMinWidth(width);
         region.setPrefWidth(width);
         region.setMaxWidth(width);
@@ -619,7 +591,7 @@ public final class MainWindowView extends BorderPane {
          * @param empty whether this cell represents an actual item
          */
         @Override
-        protected void updateItem(final Color color, final boolean empty) {
+        protected void updateItem(@NonNull final  Color color, @NonNull final  boolean empty) {
             super.updateItem(color, empty);
 
             if (empty) {
@@ -627,7 +599,7 @@ public final class MainWindowView extends BorderPane {
                 return;
             }
 
-            picker.setValue(color == null ? Color.DODGERBLUE : color);
+            picker.setValue(color);
             setGraphic(picker);
         }
     }
