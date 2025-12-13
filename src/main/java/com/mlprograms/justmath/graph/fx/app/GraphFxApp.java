@@ -52,15 +52,15 @@ public class GraphFxApp extends Application {
         stage.setScene(scene);
         stage.show();
 
-        // Example (programmatic): open read-only window
-        // com.mlprograms.justmath.graph.fx.controller.GraphFxWindows.openDisplayWindow(
-        //         stage, engine,
-        //         java.util.List.of(
-        //                 com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("h", "cos(x)"),
-        //                 com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("p", "x^3-4*x")
-        //         ),
-        //         "Read-only graph"
-        // );
+         // Example (programmatic): open read-only window
+         com.mlprograms.justmath.graph.fx.controller.GraphFxWindows.openDisplayWindow(
+                 stage, engine,
+                 java.util.List.of(
+                         com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("h", "cos(x)"),
+                         com.mlprograms.justmath.graph.fx.controller.GraphFxFunctionSpec.of("p", "x^3-4*x")
+                 ),
+                 "Read-only graph"
+         );
     }
 
     public static void main(final String[] args) {
