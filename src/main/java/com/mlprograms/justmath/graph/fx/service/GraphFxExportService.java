@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.graph.fx.service;
 
-import com.mlprograms.justmath.graph.GraphPoint;
+import com.mlprograms.justmath.graph.fx.model.GraphPoint;
 import com.mlprograms.justmath.graph.fx.model.GraphFxFunction;
 import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
 import com.mlprograms.justmath.graph.fx.view.GraphFxGraphView;

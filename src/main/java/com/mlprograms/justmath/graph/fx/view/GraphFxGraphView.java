@@ -27,7 +27,7 @@ import com.mlprograms.justmath.graph.fx.model.*;
 import com.mlprograms.justmath.graph.fx.service.GraphFxAnalysisMath;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graph.GraphPoint;
+import com.mlprograms.justmath.graph.fx.model.GraphPoint;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
