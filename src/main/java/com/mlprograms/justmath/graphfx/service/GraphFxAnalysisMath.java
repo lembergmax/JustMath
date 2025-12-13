@@ -21,172 +21,325 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.mlprograms.justmath.graphfx.service;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
+/**
+ * Provides numerical analysis utilities (evaluation, derivative, root finding, intersections and integration)
+ * for GraphFX based features.
+ *
+ * <p>All internal arithmetic (differences, step sizes, bisection, Simpson summation) is performed using
+ * {@link BigNumber} to benefit from the project's consistent high-precision calculation model.
+ * Public APIs return {@link BigDecimal} (or {@link Double} for plotting convenience) to integrate
+ * easily with JavaFX and rendering code.</p>
+ *
+ * <p>All methods are fail-safe: if an expression cannot be evaluated in a specific point or if numeric
+ * constraints are violated (e.g., division by zero), the corresponding method returns {@code null}.</p>
+ */
 public final class GraphFxAnalysisMath {
+
+    private static final MathContext DEFAULT_MATH_CONTEXT = MathContext.DECIMAL128;
+
+    private static final BigNumber DERIVATIVE_ZERO_TOLERANCE = new BigNumber("1e-12", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+    private static final BigNumber ROOT_DISTINCT_TOLERANCE = new BigNumber("1e-9", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+    private static final BigNumber BISECTION_INTERVAL_TOLERANCE = new BigNumber("1e-12", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+
+    private static final BigNumber STEP_BASE = new BigNumber("1e-6", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+    private static final BigNumber STEP_SCALE = new BigNumber("1e-6", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
 
     private GraphFxAnalysisMath() {
     }
 
-    public static Double evalY(final CalculatorEngine engine, final String expression, final Map<String, String> variables, final BigDecimal x) {
-        try {
-            final Map<String, String> vars = new HashMap<>(variables);
-            vars.put("x", x.stripTrailingZeros().toPlainString());
-
-            final BigNumber y = engine.evaluate(expression, vars);
-            final double yd = y.toBigDecimal().doubleValue();
-            return Double.isFinite(yd) ? yd : null;
-        } catch (Exception ex) {
+    /**
+     * Evaluates an expression for a given x value and returns a finite {@link Double} suitable for plotting.
+     *
+     * <p>This method is intended for fast sampling during graph rendering. The expression is evaluated using
+     * {@link CalculatorEngine} and the resulting {@link BigNumber} is converted to {@link BigDecimal} and then
+     * to {@code double}. If the computed value is not finite (NaN/Infinity) or if evaluation fails, {@code null}
+     * is returned.</p>
+     *
+     * @param engine     the calculator engine used to evaluate the expression
+     * @param expression the expression to evaluate
+     * @param variables  additional variables used by the expression (will be copied and not mutated)
+     * @param x          the x-value to inject as variable {@code "x"}
+     * @return the evaluated y-value as finite {@link Double}, or {@code null} if evaluation fails or is non-finite
+     */
+    public static Double evalY(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+        final BigNumber yValue = evaluateYAsBigNumber(engine, expression, variables, x);
+        if (yValue == null) {
             return null;
         }
+
+        final double yAsDouble = yValue.toBigDecimal().doubleValue();
+        return Double.isFinite(yAsDouble) ? yAsDouble : null;
     }
 
-    public static BigDecimal derivative(final CalculatorEngine engine, final String expression, final Map<String, String> variables, final BigDecimal x) {
-        final MathContext mc = MathContext.DECIMAL128;
-        final BigDecimal h = chooseStep(x);
-        final Double y1 = evalY(engine, expression, variables, x.add(h, mc));
-        final Double y0 = evalY(engine, expression, variables, x.subtract(h, mc));
-        if (y1 == null || y0 == null) {
+    /**
+     * Computes the numerical derivative at a given point using the symmetric difference quotient:
+     * {@code f'(x) ≈ (f(x+h) - f(x-h)) / (2h)}.
+     *
+     * <p>The step size {@code h} is chosen relative to {@code x} to achieve a stable approximation:
+     * {@code h = max(1e-6, |x| * 1e-6)}.</p>
+     *
+     * @param engine     the calculator engine used to evaluate the expression
+     * @param expression the expression to differentiate
+     * @param variables  additional variables used by the expression (will be copied and not mutated)
+     * @param x          the point at which the derivative is approximated
+     * @return the derivative as {@link BigDecimal}, or {@code null} if evaluation fails or division becomes invalid
+     */
+    public static BigDecimal derivative(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+        final BigNumber xValue = toBigNumber(x, DEFAULT_MATH_CONTEXT);
+        final BigNumber stepSize = chooseStep(xValue);
+
+        final BigNumber yAtRight = evaluateYAsBigNumber(engine, expression, variables, xValue.add(stepSize).toBigDecimal());
+        final BigNumber yAtLeft = evaluateYAsBigNumber(engine, expression, variables, xValue.subtract(stepSize).toBigDecimal());
+
+        if (yAtRight == null || yAtLeft == null) {
             return null;
         }
-        final BigDecimal num = BigDecimal.valueOf(y1).subtract(BigDecimal.valueOf(y0), mc);
-        final BigDecimal den = h.multiply(new BigDecimal("2"), mc);
-        if (den.compareTo(BigDecimal.ZERO) == 0) {
+
+        final BigNumber numerator = yAtRight.subtract(yAtLeft);
+        final BigNumber denominator = stepSize.multiply(BigNumbers.TWO);
+
+        if (isApproximatelyZero(denominator, DERIVATIVE_ZERO_TOLERANCE)) {
             return null;
         }
-        return num.divide(den, mc);
+
+        final BigNumber derivative = numerator.divide(denominator, DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
+        return derivative.toBigDecimal();
     }
 
-    public static List<BigDecimal> rootsInRange(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
-                                                final BigDecimal xMin, final BigDecimal xMax, final int steps) {
-        final MathContext mc = MathContext.DECIMAL128;
-        final BigDecimal step = xMax.subtract(xMin, mc).divide(BigDecimal.valueOf(Math.max(2, steps)), mc);
+    /**
+     * Searches for real roots (x-values where {@code f(x) = 0}) in the interval {@code [xMin, xMax]} by sampling
+     * and applying a bisection refinement on sign changes.
+     *
+     * <p>The method splits the interval into {@code steps} segments (at least 2) and checks consecutive samples
+     * for sign changes. If a sign change is detected, a bisection is performed to approximate the root.</p>
+     *
+     * @param engine     the calculator engine used to evaluate the expression
+     * @param expression the expression whose roots should be found
+     * @param variables  additional variables used by the expression (will be copied and not mutated)
+     * @param xMin       the lower bound of the search interval (inclusive)
+     * @param xMax       the upper bound of the search interval (inclusive)
+     * @param steps      the number of sampling steps (minimum 2)
+     * @return a sorted list of distinct roots as {@link BigDecimal}; empty if none are found; {@code null} is never returned
+     */
+    public static List<BigDecimal> rootsInRange(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
+        final int effectiveSteps = Math.max(2, steps);
+
+        final BigNumber leftBound = toBigNumber(xMin, DEFAULT_MATH_CONTEXT);
+        final BigNumber rightBound = toBigNumber(xMax, DEFAULT_MATH_CONTEXT);
+
+        final BigNumber stepSize = rightBound.subtract(leftBound).divide(toBigNumber(BigDecimal.valueOf(effectiveSteps), DEFAULT_MATH_CONTEXT), DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
 
         final List<BigDecimal> roots = new ArrayList<>();
-        BigDecimal prevX = xMin;
-        Double prevY = evalY(engine, expression, variables, prevX);
 
-        for (int i = 1; i <= steps; i++) {
-            final BigDecimal x = (i == steps) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), mc), mc);
-            final Double y = evalY(engine, expression, variables, x);
+        BigNumber previousX = leftBound;
+        BigNumber previousY = evaluateYAsBigNumber(engine, expression, variables, previousX.toBigDecimal());
 
-            if (prevY != null && y != null) {
-                if (isZero(prevY) && addDistinct(roots, prevX)) {
-                    prevX = x;
-                    prevY = y;
-                    continue;
-                }
-                if (prevY * y < 0) {
-                    final BigDecimal r = bisection(engine, expression, variables, prevX, x, mc);
-                    if (r != null) {
-                        addDistinct(roots, r);
+        for (int index = 1; index <= effectiveSteps; index++) {
+            final BigNumber currentX = (index == effectiveSteps) ? rightBound : leftBound.add(stepSize.multiply(toBigNumber(BigDecimal.valueOf(index), DEFAULT_MATH_CONTEXT)));
+
+            final BigNumber currentY = evaluateYAsBigNumber(engine, expression, variables, currentX.toBigDecimal());
+
+            if (previousY != null && currentY != null) {
+                if (isApproximatelyZero(previousY, DERIVATIVE_ZERO_TOLERANCE)) {
+                    addDistinctRoot(roots, previousX.toBigDecimal());
+                } else if (hasOppositeSigns(previousY, currentY)) {
+                    final BigNumber refinedRoot = bisection(engine, expression, variables, previousX, currentX, DEFAULT_MATH_CONTEXT);
+                    if (refinedRoot != null) {
+                        addDistinctRoot(roots, refinedRoot.toBigDecimal());
                     }
                 }
             }
 
-            prevX = x;
-            prevY = y;
+            previousX = currentX;
+            previousY = currentY;
         }
 
         roots.sort(Comparator.naturalOrder());
         return roots;
     }
 
-    public static List<BigDecimal> intersectionsInRange(final CalculatorEngine engine, final String fExpr, final String gExpr, final Map<String, String> variables,
-                                                        final BigDecimal xMin, final BigDecimal xMax, final int steps) {
-        final String diff = "(" + fExpr + ")-(" + gExpr + ")";
-        return rootsInRange(engine, diff, variables, xMin, xMax, steps);
+    /**
+     * Computes the x-values in {@code [xMin, xMax]} where two expressions intersect, i.e. {@code f(x) = g(x)}.
+     *
+     * <p>This method transforms the intersection problem into a root problem by solving
+     * {@code (f(x) - g(x)) = 0} and delegates to {@link #rootsInRange(CalculatorEngine, String, Map, BigDecimal, BigDecimal, int)}.</p>
+     *
+     * @param engine    the calculator engine used to evaluate the expressions
+     * @param fExpr     the first expression f(x)
+     * @param gExpr     the second expression g(x)
+     * @param variables additional variables used by the expressions (will be copied and not mutated)
+     * @param xMin      the lower bound of the search interval (inclusive)
+     * @param xMax      the upper bound of the search interval (inclusive)
+     * @param steps     the number of sampling steps (minimum 2)
+     * @return a sorted list of intersection x-values as {@link BigDecimal}
+     */
+    public static List<BigDecimal> intersectionsInRange(@NonNull final CalculatorEngine engine, @NonNull final String fExpr, @NonNull final String gExpr, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
+        final String differenceExpression = "(" + fExpr + ")-(" + gExpr + ")";
+        return rootsInRange(engine, differenceExpression, variables, xMin, xMax, steps);
     }
 
-    public static BigDecimal integralSimpson(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
-                                             final BigDecimal a, final BigDecimal b, final int n) {
-        final MathContext mc = MathContext.DECIMAL128;
-        int nn = Math.max(2, n);
-        if (nn % 2 == 1) nn++;
+    /**
+     * Approximates the definite integral {@code ∫[a..b] f(x) dx} using Simpson's rule.
+     *
+     * <p>The number of sub-intervals {@code n} is forced to be even and at least 2.
+     * If any sample point cannot be evaluated, the method returns {@code null}.</p>
+     *
+     * @param engine     the calculator engine used to evaluate the expression
+     * @param expression the integrand expression f(x)
+     * @param variables  additional variables used by the expression (will be copied and not mutated)
+     * @param a          lower integration bound
+     * @param b          upper integration bound
+     * @param n          number of sub-intervals (will be normalized to an even number ≥ 2)
+     * @return the Simpson approximation as {@link BigDecimal}, or {@code null} if evaluation fails
+     */
+    public static BigDecimal integralSimpson(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal a, @NonNull final BigDecimal b, final int n) {
+        final int normalizedIntervals = normalizeSimpsonIntervals(n);
 
-        final BigDecimal h = b.subtract(a, mc).divide(BigDecimal.valueOf(nn), mc);
-        if (h.compareTo(BigDecimal.ZERO) == 0) {
+        final BigNumber leftBound = toBigNumber(a, DEFAULT_MATH_CONTEXT);
+        final BigNumber rightBound = toBigNumber(b, DEFAULT_MATH_CONTEXT);
+
+        final BigNumber intervalWidth = rightBound.subtract(leftBound).divide(toBigNumber(BigDecimal.valueOf(normalizedIntervals), DEFAULT_MATH_CONTEXT), DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
+
+        if (isApproximatelyZero(intervalWidth, DERIVATIVE_ZERO_TOLERANCE)) {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal sum = BigDecimal.ZERO;
+        BigNumber weightedSum = toBigNumber(BigDecimal.ZERO, DEFAULT_MATH_CONTEXT);
 
-        for (int i = 0; i <= nn; i++) {
-            final BigDecimal x = a.add(h.multiply(BigDecimal.valueOf(i), mc), mc);
-            final Double y = evalY(engine, expression, variables, x);
-            if (y == null) {
+        for (int index = 0; index <= normalizedIntervals; index++) {
+            final BigNumber xValue = leftBound.add(intervalWidth.multiply(toBigNumber(BigDecimal.valueOf(index), DEFAULT_MATH_CONTEXT)));
+            final BigNumber yValue = evaluateYAsBigNumber(engine, expression, variables, xValue.toBigDecimal());
+
+            if (yValue == null) {
                 return null;
             }
 
-            final BigDecimal yd = BigDecimal.valueOf(y);
-            if (i == 0 || i == nn) sum = sum.add(yd, mc);
-            else if (i % 2 == 0) sum = sum.add(yd.multiply(new BigDecimal("2"), mc), mc);
-            else sum = sum.add(yd.multiply(new BigDecimal("4"), mc), mc);
+            final BigNumber weight = simpsonWeight(index, normalizedIntervals);
+            weightedSum = weightedSum.add(yValue.multiply(weight));
         }
 
-        return sum.multiply(h, mc).divide(new BigDecimal("3"), mc);
+        final BigNumber integral = weightedSum.multiply(intervalWidth).divide(BigNumbers.THREE, DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
+
+        return integral.toBigDecimal();
     }
 
-    private static BigDecimal bisection(final CalculatorEngine engine, final String expression, final Map<String, String> variables,
-                                        final BigDecimal left, final BigDecimal right, final MathContext mc) {
-        BigDecimal a = left;
-        BigDecimal b = right;
+    private static BigNumber evaluateYAsBigNumber(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+        try {
+            final Map<String, String> resolvedVariables = new HashMap<>(variables);
+            resolvedVariables.put("x", x.stripTrailingZeros().toPlainString());
+            return engine.evaluate(expression, resolvedVariables);
+        } catch (final Exception ignored) {
+            return null;
+        }
+    }
 
-        Double fa = evalY(engine, expression, variables, a);
-        Double fb = evalY(engine, expression, variables, b);
+    private static BigNumber bisection(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigNumber left, @NonNull final BigNumber right, @NonNull final MathContext mathContext) {
+        BigNumber lowerBound = left;
+        BigNumber upperBound = right;
 
-        if (fa == null || fb == null) return null;
-        if (isZero(fa)) return a;
-        if (isZero(fb)) return b;
-        if (fa * fb > 0) return null;
+        BigNumber yAtLower = evaluateYAsBigNumber(engine, expression, variables, lowerBound.toBigDecimal());
+        BigNumber yAtUpper = evaluateYAsBigNumber(engine, expression, variables, upperBound.toBigDecimal());
 
-        for (int i = 0; i < 80; i++) {
-            final BigDecimal mid = a.add(b, mc).divide(new BigDecimal("2"), mc);
-            final Double fm = evalY(engine, expression, variables, mid);
-            if (fm == null) return null;
-            if (isZero(fm)) return mid;
+        if (yAtLower == null || yAtUpper == null) {
+            return null;
+        }
 
-            if (fa * fm < 0) {
-                b = mid;
-                fb = fm;
+        if (isApproximatelyZero(yAtLower, DERIVATIVE_ZERO_TOLERANCE)) {
+            return lowerBound;
+        }
+        if (isApproximatelyZero(yAtUpper, DERIVATIVE_ZERO_TOLERANCE)) {
+            return upperBound;
+        }
+        if (!hasOppositeSigns(yAtLower, yAtUpper)) {
+            return null;
+        }
+
+        for (int iteration = 0; iteration < 80; iteration++) {
+            final BigNumber midpoint = lowerBound.add(upperBound).divide(BigNumbers.TWO, mathContext, BigNumbers.CALCULATION_LOCALE);
+
+            final BigNumber yAtMidpoint = evaluateYAsBigNumber(engine, expression, variables, midpoint.toBigDecimal());
+            if (yAtMidpoint == null) {
+                return null;
+            }
+
+            if (isApproximatelyZero(yAtMidpoint, DERIVATIVE_ZERO_TOLERANCE)) {
+                return midpoint;
+            }
+
+            if (hasOppositeSigns(yAtLower, yAtMidpoint)) {
+                upperBound = midpoint;
+                yAtUpper = yAtMidpoint;
             } else {
-                a = mid;
-                fa = fm;
+                lowerBound = midpoint;
+                yAtLower = yAtMidpoint;
             }
 
-            if (b.subtract(a, mc).abs().compareTo(new BigDecimal("1e-12")) < 0) {
-                return a.add(b, mc).divide(new BigDecimal("2"), mc);
+            final BigNumber intervalSize = upperBound.subtract(lowerBound);
+            if (isApproximatelyZero(intervalSize, BISECTION_INTERVAL_TOLERANCE)) {
+                return lowerBound.add(upperBound).divide(BigNumbers.TWO, mathContext, BigNumbers.CALCULATION_LOCALE);
             }
         }
 
-        return a.add(b, mc).divide(new BigDecimal("2"), mc);
+        return lowerBound.add(upperBound).divide(BigNumbers.TWO, mathContext, BigNumbers.CALCULATION_LOCALE);
     }
 
-    private static BigDecimal chooseStep(final BigDecimal x) {
-        final BigDecimal ax = x.abs();
-        final BigDecimal base = new BigDecimal("1e-6");
-        final BigDecimal scaled = ax.multiply(new BigDecimal("1e-6"));
-        return scaled.compareTo(base) > 0 ? scaled : base;
+    private static BigNumber chooseStep(@NonNull final BigNumber xValue) {
+        final BigNumber absoluteX = new BigNumber(xValue, BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT).abs();
+        final BigNumber scaledStep = absoluteX.multiply(STEP_SCALE);
+
+        return (scaledStep.compareTo(STEP_BASE) > 0) ? scaledStep : STEP_BASE;
     }
 
-    private static boolean isZero(final double v) {
-        return Math.abs(v) < 1e-12;
+    private static boolean isApproximatelyZero(@NonNull final BigNumber value, @NonNull final BigNumber tolerance) {
+        final BigDecimal absoluteValue = value.toBigDecimal().abs();
+        return absoluteValue.compareTo(tolerance.toBigDecimal()) < 0;
     }
 
-    private static boolean addDistinct(final List<BigDecimal> roots, final BigDecimal candidate) {
-        for (final BigDecimal r : roots) {
-            if (r.subtract(candidate).abs().compareTo(new BigDecimal("1e-9")) < 0) {
+    private static boolean hasOppositeSigns(@NonNull final BigNumber leftValue, @NonNull final BigNumber rightValue) {
+        final int leftSignum = leftValue.toBigDecimal().signum();
+        final int rightSignum = rightValue.toBigDecimal().signum();
+        return leftSignum != 0 && rightSignum != 0 && (leftSignum != rightSignum);
+    }
+
+    private static boolean addDistinctRoot(@NonNull final List<BigDecimal> roots, @NonNull final BigDecimal candidate) {
+        for (final BigDecimal existingRoot : roots) {
+            if (existingRoot.subtract(candidate).abs().compareTo(ROOT_DISTINCT_TOLERANCE.toBigDecimal()) < 0) {
                 return false;
             }
         }
         roots.add(candidate);
         return true;
     }
-}
 
+    private static int normalizeSimpsonIntervals(final int n) {
+        int normalized = Math.max(2, n);
+        if (normalized % 2 != 0) {
+            normalized++;
+        }
+        return normalized;
+    }
+
+    private static BigNumber simpsonWeight(final int index, final int maxIndex) {
+        if (index == 0 || index == maxIndex) {
+            return BigNumbers.ONE;
+        }
+        return (index % 2 == 0) ? BigNumbers.TWO : BigNumbers.FOUR;
+    }
+
+    private static BigNumber toBigNumber(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
+        return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
+    }
+
+}
