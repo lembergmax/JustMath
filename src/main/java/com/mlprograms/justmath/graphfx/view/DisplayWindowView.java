@@ -22,25 +22,21 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.controller;
+package com.mlprograms.justmath.graphfx.view;
 
-import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
+import javafx.scene.layout.BorderPane;
 
 /**
- * DTO to pass functions into the read-only display window.
+ * Read-only display window: only graph + same toolbar (tools + export).
  */
-public record GraphFxFunctionSpec(String name, String expression, Color color) {
+public class DisplayWindowView extends BorderPane {
 
-    public GraphFxFunctionSpec {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Function name must not be empty.");
-        if (expression == null || expression.isBlank()) throw new IllegalArgumentException("Function expression must not be empty.");
-    }
+    public DisplayWindowView(final GraphToolbarView toolbar, final GraphFxGraphView graphView) {
+        getStyleClass().add("graphfx-root");
 
-    public static GraphFxFunctionSpec of(final String name, final String expression) {
-        return new GraphFxFunctionSpec(name, expression, null);
-    }
-
-    public static GraphFxFunctionSpec of(final String name, final String expression, final Color color) {
-        return new GraphFxFunctionSpec(name, expression, color);
+        setPadding(new Insets(10));
+        setTop(toolbar);
+        setCenter(graphView);
     }
 }

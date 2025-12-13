@@ -21,37 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graphfx.model;
+public final class GraphFxNiceTicks {
 
-package com.mlprograms.justmath.graph.fx.model;
-
-import javafx.scene.paint.Color;
-
-import java.math.BigDecimal;
-import java.util.UUID;
-
-public record GraphFxPointObject(
-        UUID id,
-        String name,
-        boolean visible,
-        GraphFxStyle style,
-        BigDecimal x,
-        BigDecimal y,
-        UUID functionId
-) implements GraphFxObject {
-
-    public static GraphFxPointObject of(final String name, final BigDecimal x, final BigDecimal y, final UUID functionId) {
-        return new GraphFxPointObject(
-                UUID.randomUUID(),
-                name,
-                true,
-                new GraphFxStyle(Color.BLACK, 2.0, 1.0),
-                x, y,
-                functionId
-        );
+    private GraphFxNiceTicks() {
     }
 
-    @Override
-    public UUID referencesFunctionId() {
-        return functionId;
+    public static double niceStep(final double min, final double max, final int targetLines) {
+        final double range = Math.abs(max - min);
+        if (range == 0d || !Double.isFinite(range)) {
+            return 1d;
+        }
+
+        final double rough = range / Math.max(2, targetLines);
+        final double pow10 = Math.pow(10, Math.floor(Math.log10(rough)));
+        final double norm = rough / pow10;
+
+        final double nice;
+        if (norm < 1.5) nice = 1;
+        else if (norm < 3) nice = 2;
+        else if (norm < 7) nice = 5;
+        else nice = 10;
+
+        return nice * pow10;
     }
 }
+

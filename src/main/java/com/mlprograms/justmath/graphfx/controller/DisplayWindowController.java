@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.controller;
+package com.mlprograms.justmath.graphfx.controller;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
-import com.mlprograms.justmath.graph.fx.model.GraphFxPalette;
-import com.mlprograms.justmath.graph.fx.service.GraphFxExportService;
-import com.mlprograms.justmath.graph.fx.view.DisplayWindowView;
-import com.mlprograms.justmath.graph.fx.view.GraphFxGraphView;
-import com.mlprograms.justmath.graph.fx.view.GraphToolbarView;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
+import com.mlprograms.justmath.graphfx.model.GraphFxPalette;
+import com.mlprograms.justmath.graphfx.service.GraphFxExportService;
+import com.mlprograms.justmath.graphfx.view.DisplayWindowView;
+import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
+import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Parent;
 

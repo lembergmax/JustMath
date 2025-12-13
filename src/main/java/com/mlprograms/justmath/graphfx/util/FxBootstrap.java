@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.util;
+package com.mlprograms.justmath.graphfx.util;
 
 import javafx.application.Platform;
 import lombok.NoArgsConstructor;

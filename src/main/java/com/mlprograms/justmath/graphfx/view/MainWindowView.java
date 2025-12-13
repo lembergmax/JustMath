@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.view;
+package com.mlprograms.justmath.graphfx.view;
 
-import com.mlprograms.justmath.graph.fx.model.GraphFxFunction;
-import com.mlprograms.justmath.graph.fx.model.GraphFxVariable;
+import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
+import com.mlprograms.justmath.graphfx.model.GraphFxVariable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

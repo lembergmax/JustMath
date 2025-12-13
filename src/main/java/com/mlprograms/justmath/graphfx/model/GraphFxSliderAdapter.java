@@ -21,19 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.model;
-import javafx.scene.paint.Color;
+package com.mlprograms.justmath.graphfx.model;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-public final class GraphFxPalette {
+public record GraphFxSliderAdapter(BigDecimal min, BigDecimal step, int maxIndex) {
 
-    private static final double GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
-
-    private GraphFxPalette() {
+    public static GraphFxSliderAdapter of(final BigDecimal min, final BigDecimal max, final BigDecimal step, final BigDecimal current) {
+        final BigDecimal range = max.subtract(min);
+        final int idx = range.divide(step, 0, RoundingMode.HALF_UP).max(BigDecimal.ONE).intValue();
+        return new GraphFxSliderAdapter(min, step, Math.max(1, idx));
     }
 
-    public static Color colorForIndex(final int index) {
-        final double hue = (0.12 + (index * GOLDEN_RATIO_CONJUGATE)) % 1.0;
-        return Color.hsb(hue * 360.0, 0.70, 0.95, 1.0);
+    public int toIndex(final BigDecimal value) {
+        return value.subtract(min).divide(step, 0, RoundingMode.HALF_UP).intValue();
+    }
+
+    public BigDecimal fromIndex(final int index) {
+        return min.add(step.multiply(BigDecimal.valueOf(index)));
     }
 }
 

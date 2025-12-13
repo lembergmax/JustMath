@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.model;
+package com.mlprograms.justmath.graphfx.model;
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
 

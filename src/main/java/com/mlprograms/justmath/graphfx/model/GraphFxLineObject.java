@@ -22,21 +22,35 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.view;
+package com.mlprograms.justmath.graphfx.model;
 
-import javafx.geometry.Insets;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 
-/**
- * Read-only display window: only graph + same toolbar (tools + export).
- */
-public class DisplayWindowView extends BorderPane {
+import java.math.BigDecimal;
+import java.util.UUID;
 
-    public DisplayWindowView(final GraphToolbarView toolbar, final GraphFxGraphView graphView) {
-        getStyleClass().add("graphfx-root");
+public record GraphFxLineObject(
+        UUID id,
+        String name,
+        boolean visible,
+        GraphFxStyle style,
+        BigDecimal x0,
+        BigDecimal y0,
+        BigDecimal slope
+) implements GraphFxObject {
 
-        setPadding(new Insets(10));
-        setTop(toolbar);
-        setCenter(graphView);
+    public static GraphFxLineObject of(final String name, final BigDecimal x0, final BigDecimal y0, final BigDecimal slope) {
+        return new GraphFxLineObject(
+                UUID.randomUUID(),
+                name,
+                true,
+                new GraphFxStyle(Color.rgb(40, 40, 40), 2.0, 1.0),
+                x0, y0, slope
+        );
+    }
+
+    @Override
+    public UUID referencesFunctionId() {
+        return null;
     }
 }

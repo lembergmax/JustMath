@@ -21,37 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.model;
-import javafx.beans.property.*;
 
-public class GraphFxSettings {
+package com.mlprograms.justmath.graphfx.model;
 
-    private final BooleanProperty showGrid = new SimpleBooleanProperty(true);
-    private final BooleanProperty showAxes = new SimpleBooleanProperty(true);
-    private final IntegerProperty targetGridLines = new SimpleIntegerProperty(10);
+import javafx.scene.paint.Color;
 
-    public BooleanProperty showGridProperty() {
-        return showGrid;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public record GraphFxPointObject(
+        UUID id,
+        String name,
+        boolean visible,
+        GraphFxStyle style,
+        BigDecimal x,
+        BigDecimal y,
+        UUID functionId
+) implements GraphFxObject {
+
+    public static GraphFxPointObject of(final String name, final BigDecimal x, final BigDecimal y, final UUID functionId) {
+        return new GraphFxPointObject(
+                UUID.randomUUID(),
+                name,
+                true,
+                new GraphFxStyle(Color.BLACK, 2.0, 1.0),
+                x, y,
+                functionId
+        );
     }
 
-    public BooleanProperty showAxesProperty() {
-        return showAxes;
-    }
-
-    public IntegerProperty targetGridLinesProperty() {
-        return targetGridLines;
-    }
-
-    public boolean isShowGrid() {
-        return showGrid.get();
-    }
-
-    public boolean isShowAxes() {
-        return showAxes.get();
-    }
-
-    public int getTargetGridLines() {
-        return targetGridLines.get();
+    @Override
+    public UUID referencesFunctionId() {
+        return functionId;
     }
 }
-
