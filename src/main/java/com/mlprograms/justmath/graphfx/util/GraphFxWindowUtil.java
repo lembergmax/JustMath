@@ -22,17 +22,23 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.view;
+package com.mlprograms.justmath.graphfx.util;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import lombok.NonNull;
 
-import javafx.geometry.Insets;
-import javafx.scene.layout.BorderPane;
+public class GraphFxWindowUtil {
 
-public class DisplayWindowView extends BorderPane {
+    public static Stage getDefaultStage(@NonNull final Parent root, final double width, final double height, @NonNull final String windowTitle, @NonNull final String defaultWindowTitle) {
+        final Scene scene = new Scene(root, width, height);
+        final Stage stage = new Stage();
 
-    public DisplayWindowView(final GraphToolbarView toolbar, final GraphFxGraphView graphView) {
-        setPadding(new Insets(10));
-        setTop(toolbar);
-        setCenter(graphView);
+        stage.setTitle(windowTitle.isBlank() ? defaultWindowTitle : windowTitle);
+        stage.setScene(scene);
+        stage.show();
+
+        return stage;
     }
 
 }

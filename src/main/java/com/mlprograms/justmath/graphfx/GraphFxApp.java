@@ -32,6 +32,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.NonNull;
 
+import static com.mlprograms.justmath.graphfx.util.GraphFxWindowUtil.getDefaultStage;
+
 /**
  * Convenience API for opening the <b>editable</b> GraphFx main window as a library consumer.
  * <p>
