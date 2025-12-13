@@ -22,24 +22,23 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.controller;
+package com.mlprograms.justmath.graphfx.controller;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graph.fx.model.GraphFxFunction;
-import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
-import com.mlprograms.justmath.graph.fx.model.GraphFxVariable;
-import com.mlprograms.justmath.graph.fx.service.GraphFxExportService;
-import com.mlprograms.justmath.graph.fx.view.GraphFxGraphView;
-import com.mlprograms.justmath.graph.fx.view.GraphToolbarView;
-import com.mlprograms.justmath.graph.fx.view.MainWindowView;
+import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
+import com.mlprograms.justmath.graphfx.model.GraphFxVariable;
+import com.mlprograms.justmath.graphfx.model.GraphFxSliderAdapter;
+import com.mlprograms.justmath.graphfx.service.GraphFxExportService;
+import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
+import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
+import com.mlprograms.justmath.graphfx.view.MainWindowView;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -182,7 +181,7 @@ public final class MainWindowController {
             final Slider slider = new Slider(0, 1, 0);
             final Label value = new Label(v.getValueString());
 
-            final var adapter = com.mlprograms.justmath.graph.fx.model.GraphFxSliderAdapter.of(
+            final var adapter = GraphFxSliderAdapter.of(
                     v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue()
             );
 

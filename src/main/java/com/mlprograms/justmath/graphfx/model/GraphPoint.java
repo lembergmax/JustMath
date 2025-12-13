@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.model;
+package com.mlprograms.justmath.graphfx.model;
 
 import lombok.NonNull;
 import lombok.Value;

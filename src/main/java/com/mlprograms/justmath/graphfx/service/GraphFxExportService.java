@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.service;
+package com.mlprograms.justmath.graphfx.service;
 
-import com.mlprograms.justmath.graph.fx.model.GraphPoint;
-import com.mlprograms.justmath.graph.fx.model.GraphFxFunction;
-import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
-import com.mlprograms.justmath.graph.fx.view.GraphFxGraphView;
+import com.mlprograms.justmath.graphfx.model.GraphPoint;
+import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
+import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.image.PixelReader;

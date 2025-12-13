@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx.view;
+package com.mlprograms.justmath.graphfx.view;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.view;
+package com.mlprograms.justmath.graphfx.view;
 
 import com.mlprograms.justmath.graph.fx.model.*;
-import com.mlprograms.justmath.graph.fx.service.GraphFxAnalysisMath;
+import com.mlprograms.justmath.graphfx.model.*;
+import com.mlprograms.justmath.graphfx.service.GraphFxAnalysisMath;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graph.fx.model.GraphPoint;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;

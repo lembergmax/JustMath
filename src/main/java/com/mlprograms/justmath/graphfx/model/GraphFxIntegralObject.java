@@ -21,17 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.model;
+
+package com.mlprograms.justmath.graphfx.model;
+
 import javafx.scene.paint.Color;
 
-public record GraphFxStyle(Color color, double strokeWidth, double alpha) {
+import java.math.BigDecimal;
+import java.util.UUID;
 
-    public Color colorWithAlpha() {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), clamp(alpha));
+public record GraphFxIntegralObject(
+        UUID id,
+        String name,
+        boolean visible,
+        GraphFxStyle style,
+        UUID functionId,
+        BigDecimal a,
+        BigDecimal b,
+        BigDecimal value
+) implements GraphFxObject {
+
+    public static GraphFxIntegralObject of(final UUID functionId, final BigDecimal a, final BigDecimal b, final BigDecimal value, final Color color) {
+        return new GraphFxIntegralObject(
+                UUID.randomUUID(),
+                "∫",
+                true,
+                new GraphFxStyle(color, 1.5, 0.20),
+                functionId,
+                a, b,
+                value
+        );
     }
 
-    private static double clamp(final double a) {
-        return Math.max(0, Math.min(1, a));
+    @Override
+    public UUID referencesFunctionId() {
+        return functionId;
     }
 }
-

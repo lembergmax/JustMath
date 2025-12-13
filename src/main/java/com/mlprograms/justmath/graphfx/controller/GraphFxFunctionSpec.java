@@ -21,29 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.mlprograms.justmath.graph.fx.model;
-public final class GraphFxNiceTicks {
 
-    private GraphFxNiceTicks() {
+package com.mlprograms.justmath.graphfx.controller;
+
+import javafx.scene.paint.Color;
+
+/**
+ * DTO to pass functions into the read-only display window.
+ */
+public record GraphFxFunctionSpec(String name, String expression, Color color) {
+
+    public GraphFxFunctionSpec {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Function name must not be empty.");
+        if (expression == null || expression.isBlank()) throw new IllegalArgumentException("Function expression must not be empty.");
     }
 
-    public static double niceStep(final double min, final double max, final int targetLines) {
-        final double range = Math.abs(max - min);
-        if (range == 0d || !Double.isFinite(range)) {
-            return 1d;
-        }
+    public static GraphFxFunctionSpec of(final String name, final String expression) {
+        return new GraphFxFunctionSpec(name, expression, null);
+    }
 
-        final double rough = range / Math.max(2, targetLines);
-        final double pow10 = Math.pow(10, Math.floor(Math.log10(rough)));
-        final double norm = rough / pow10;
-
-        final double nice;
-        if (norm < 1.5) nice = 1;
-        else if (norm < 3) nice = 2;
-        else if (norm < 7) nice = 5;
-        else nice = 10;
-
-        return nice * pow10;
+    public static GraphFxFunctionSpec of(final String name, final String expression, final Color color) {
+        return new GraphFxFunctionSpec(name, expression, color);
     }
 }
-

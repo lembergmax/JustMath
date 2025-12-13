@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graph.fx.controller.MainWindowController;
-import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
-import com.mlprograms.justmath.graph.fx.util.FxBootstrap;
+import com.mlprograms.justmath.graphfx.controller.MainWindowController;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
+import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.NonNull;
