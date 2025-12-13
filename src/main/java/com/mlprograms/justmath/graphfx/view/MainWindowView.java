@@ -48,6 +48,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -80,6 +81,7 @@ import lombok.NonNull;
  * <h2>Threading</h2>
  * Like all JavaFX UI code, this view must be constructed and accessed on the JavaFX Application Thread.
  */
+@Getter
 public final class MainWindowView extends BorderPane {
 
     private static final double SIDEBAR_WIDTH = 440;
