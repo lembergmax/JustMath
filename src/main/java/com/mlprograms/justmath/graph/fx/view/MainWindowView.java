@@ -237,7 +237,9 @@ public class MainWindowView extends BorderPane {
         hint.setWrapText(true);
         hint.getStyleClass().add("graphfx-hint");
 
-        slidersBox.setPadding(new Insets(6));
+        // Etwas mehr Luft innerhalb der Sliders-Liste
+        slidersBox.setSpacing(8);
+        slidersBox.setPadding(new Insets(8));
 
         final ScrollPane sc = new ScrollPane(slidersBox);
         sc.setFitToWidth(true);
@@ -245,12 +247,38 @@ public class MainWindowView extends BorderPane {
         sc.getStyleClass().add("graphfx-sliders-scroll");
         sc.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
+        // Leichter Abstand zwischen Titel, Hint und Inhalt
+        card.setSpacing(10);
         card.getChildren().addAll(title, hint, sc);
         return card;
     }
 
+    public void addSliderRow(final GraphFxVariable v, final Slider slider, final Label nameLabel, final Label valueLabel) {
+        final HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        nameLabel.getStyleClass().add("graphfx-slider-name");
+        valueLabel.getStyleClass().add("graphfx-slider-value");
+
+        nameLabel.setMinWidth(40);
+        nameLabel.setPrefWidth(40);
+        nameLabel.setMaxWidth(40);
+
+        valueLabel.setMinWidth(90);
+        valueLabel.setPrefWidth(90);
+        valueLabel.setMaxWidth(90);
+        valueLabel.setAlignment(Pos.CENTER_RIGHT);
+
+        HBox.setHgrow(slider, Priority.ALWAYS);
+
+        row.getChildren().addAll(nameLabel, slider, valueLabel);
+        slidersBox.getChildren().add(row);
+    }
+
     private static VBox cardContainer() {
         final VBox card = new VBox(8);
+        // kleines, konsistentes Padding rund um den Card-Inhalt
+        card.setPadding(new Insets(12));
         card.getStyleClass().add("graphfx-card");
         return card;
     }

@@ -178,27 +178,9 @@ public final class MainWindowController {
         for (final GraphFxVariable v : model.getVariables()) {
             if (!v.isSliderEnabled()) continue;
 
-            final HBox row = new HBox(10);
-            row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-            row.setPadding(new javafx.geometry.Insets(6, 0, 6, 0));
-
             final Label name = new Label(v.getName());
-            name.setPrefWidth(42);
-            name.setMinWidth(42);
-            name.setMaxWidth(42);
-            name.getStyleClass().add("graphfx-slider-label");
-
             final Slider slider = new Slider(0, 1, 0);
-            slider.setMaxWidth(Double.MAX_VALUE);
-            slider.setBlockIncrement(1);
-            HBox.setHgrow(slider, Priority.ALWAYS);
-
             final Label value = new Label(v.getValueString());
-            value.setPrefWidth(100);
-            value.setMinWidth(100);
-            value.setMaxWidth(100);
-            value.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-            value.getStyleClass().add("graphfx-slider-value");
 
             final var adapter = com.mlprograms.justmath.graph.fx.model.GraphFxSliderAdapter.of(
                     v.getSliderMin(), v.getSliderMax(), v.getSliderStep(), v.getValue()
@@ -218,8 +200,8 @@ public final class MainWindowController {
 
             v.valueStringProperty().addListener((obs, o, n) -> value.setText(n));
 
-            row.getChildren().addAll(name, slider, value);
-            view.slidersBox().getChildren().add(row);
+            // benutze die View-Hilfsmethode fuer Layout und Styling
+            view.addSliderRow(v, slider, name, value);
         }
     }
 
