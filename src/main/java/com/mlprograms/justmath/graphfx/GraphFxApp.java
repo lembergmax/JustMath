@@ -32,8 +32,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.NonNull;
 
-import static com.mlprograms.justmath.graphfx.util.GraphFxWindowUtil.getDefaultStage;
-
 /**
  * Convenience API for opening the <b>editable</b> GraphFx main window as a library consumer.
  * <p>
@@ -83,18 +81,6 @@ import static com.mlprograms.justmath.graphfx.util.GraphFxWindowUtil.getDefaultS
  *     <li>pre-populate the model before opening the window</li>
  *     <li>inspect and reuse the model after the window has been shown</li>
  * </ul>
- *
- * <h2>Typical usage</h2>
- * <pre>{@code
- * public class Main {
- *     public static void main(String[] args) {
- *         GraphFxModel model = new GraphFxModel();
- *         model.addFunction("f(x)", "x^2");
- *
- *         new GraphFxMainWindow(model).show();
- *     }
- * }
- * }</pre>
  *
  * <p><b>Note:</b> This class only creates and shows a {@link Stage}. If you want to control application shutdown
  * (e.g. exit when all windows close), configure that via {@link javafx.application.Platform#setImplicitExit(boolean)}
