@@ -591,7 +591,7 @@ public final class MainWindowView extends BorderPane {
          * @param empty whether this cell represents an actual item
          */
         @Override
-        protected void updateItem(@NonNull final  Color color, @NonNull final  boolean empty) {
+        protected void updateItem(final Color color, @NonNull final boolean empty) {
             super.updateItem(color, empty);
 
             if (empty) {
@@ -599,7 +599,7 @@ public final class MainWindowView extends BorderPane {
                 return;
             }
 
-            picker.setValue(color);
+            picker.setValue(color == null ? Color.DODGERBLUE : color);
             setGraphic(picker);
         }
     }
