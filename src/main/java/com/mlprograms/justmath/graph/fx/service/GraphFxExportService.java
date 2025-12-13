@@ -22,12 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graph.fx.service;
 
 import com.mlprograms.justmath.graph.GraphPoint;
+import com.mlprograms.justmath.graph.fx.model.GraphFxFunction;
+import com.mlprograms.justmath.graph.fx.model.GraphFxModel;
+import com.mlprograms.justmath.graph.fx.view.GraphFxGraphView;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
@@ -62,6 +64,9 @@ public final class GraphFxExportService {
     }
 
     public static void exportCsv(final GraphFxGraphView view, final GraphFxModel model) {
+        final GraphFxFunction selected = requireSelectedFunction(model);
+        if (selected == null) return;
+
         final var poly = view.getPolylineForSelectedFunction();
         if (poly == null) return;
 
@@ -84,6 +89,9 @@ public final class GraphFxExportService {
     }
 
     public static void exportJson(final GraphFxGraphView view, final GraphFxModel model) {
+        final GraphFxFunction selected = requireSelectedFunction(model);
+        if (selected == null) return;
+
         final var poly = view.getPolylineForSelectedFunction();
         if (poly == null) return;
 
@@ -111,6 +119,9 @@ public final class GraphFxExportService {
     }
 
     public static void exportSvg(final GraphFxGraphView view, final GraphFxModel model) {
+        final GraphFxFunction selected = requireSelectedFunction(model);
+        if (selected == null) return;
+
         final var poly = view.getPolylineForSelectedFunction();
         final var f = model.getSelectedFunction();
         if (poly == null || f == null) return;
@@ -143,6 +154,27 @@ public final class GraphFxExportService {
         } catch (Exception ex) {
             error(ex);
         }
+    }
+
+    private static GraphFxFunction requireSelectedFunction(final GraphFxModel model) {
+        GraphFxFunction f = model.getSelectedFunction();
+        if (f != null) {
+            return f;
+        }
+        if (model.getFunctions().isEmpty()) {
+            return null;
+        }
+        if (model.getFunctions().size() == 1) {
+            f = model.getFunctions().getFirst();
+            model.setSelectedFunction(f);
+            return f;
+        }
+
+        final ChoiceDialog<GraphFxFunction> dialog = new ChoiceDialog<>(model.getFunctions().getFirst(), model.getFunctions());
+        dialog.setTitle("Select function");
+        dialog.setHeaderText("Choose a function to export");
+        dialog.setContentText("Function:");
+        return dialog.showAndWait().orElse(null);
     }
 
     private static String exportBaseName(final GraphFxModel model, final String kind) {

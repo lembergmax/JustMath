@@ -22,34 +22,42 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graph.fx.controller;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import javafx.application.Application;
+import com.mlprograms.justmath.graph.fx.view.GraphFxCss;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class GraphFxApp extends Application {
+import java.util.List;
 
-    @Override
-    public void start(final Stage stage) {
-        final CalculatorEngine engine = new CalculatorEngine();
+/**
+ * Convenience helpers to open GraphFx windows.
+ */
+public final class GraphFxWindows {
 
-        final GraphFxModel model = new GraphFxModel();
-        model.addFunction("f", "sin(x)+x^2");
-        model.addFunction("g", "a*sin(b*x)+c");
+    private GraphFxWindows() {}
 
-        final GraphFxMainView root = new GraphFxMainView(model, engine);
-        final Scene scene = new Scene(root, 1280, 820);
+    public static Stage openDisplayWindow(final Stage owner,
+                                         final CalculatorEngine engine,
+                                         final List<GraphFxFunctionSpec> functions,
+                                         final String title) {
 
-        stage.setTitle("JustMath - Graph (JavaFX)");
+        final DisplayWindowController controller = new DisplayWindowController(engine, functions);
+
+        final Scene scene = new Scene(controller.getRoot(), 1100, 720);
+        final String css = GraphFxCss.stylesheet();
+        if (css != null) scene.getStylesheets().add(css);
+
+        final Stage stage = new Stage();
+        if (owner != null) {
+            stage.initOwner(owner);
+            stage.initModality(Modality.NONE);
+        }
+        stage.setTitle(title == null || title.isBlank() ? "JustMath - Graph (Display)" : title);
         stage.setScene(scene);
         stage.show();
+        return stage;
     }
-
-    public static void main(final String[] args) {
-        launch(args);
-    }
-
 }
-

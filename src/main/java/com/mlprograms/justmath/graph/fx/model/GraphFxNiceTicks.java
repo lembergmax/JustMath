@@ -21,19 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graph.fx.model;
+public final class GraphFxNiceTicks {
 
-package com.mlprograms.justmath.graph.fx;
-
-import javafx.scene.paint.Color;
-
-public record GraphFxStyle(Color color, double strokeWidth, double alpha) {
-
-    public Color colorWithAlpha() {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), clamp(alpha));
+    private GraphFxNiceTicks() {
     }
 
-    private static double clamp(final double a) {
-        return Math.max(0, Math.min(1, a));
+    public static double niceStep(final double min, final double max, final int targetLines) {
+        final double range = Math.abs(max - min);
+        if (range == 0d || !Double.isFinite(range)) {
+            return 1d;
+        }
+
+        final double rough = range / Math.max(2, targetLines);
+        final double pow10 = Math.pow(10, Math.floor(Math.log10(rough)));
+        final double norm = rough / pow10;
+
+        final double nice;
+        if (norm < 1.5) nice = 1;
+        else if (norm < 3) nice = 2;
+        else if (norm < 7) nice = 5;
+        else nice = 10;
+
+        return nice * pow10;
     }
 }
 

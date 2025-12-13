@@ -21,9 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.mlprograms.justmath.graph.fx;
-
+package com.mlprograms.justmath.graph.fx.model;
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
 
@@ -116,7 +114,13 @@ public class GraphFxFunction {
         color.set(c);
     }
 
-    private static String toHex(final Color c) {
+    
+    
+    public String toString() {
+        return getName() == null ? "" : getName();
+    }
+
+private static String toHex(final Color c) {
         final int r = (int) Math.round(c.getRed() * 255);
         final int g = (int) Math.round(c.getGreen() * 255);
         final int b = (int) Math.round(c.getBlue() * 255);

@@ -22,38 +22,21 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graph.fx;
+package com.mlprograms.justmath.graph.fx.view;
 
-import javafx.beans.property.*;
+import javafx.geometry.Insets;
+import javafx.scene.layout.BorderPane;
 
-public class GraphFxSettings {
+/**
+ * Read-only display window: only graph + same toolbar (tools + export).
+ */
+public class DisplayWindowView extends BorderPane {
 
-    private final BooleanProperty showGrid = new SimpleBooleanProperty(true);
-    private final BooleanProperty showAxes = new SimpleBooleanProperty(true);
-    private final IntegerProperty targetGridLines = new SimpleIntegerProperty(10);
+    public DisplayWindowView(final GraphToolbarView toolbar, final GraphFxGraphView graphView) {
+        getStyleClass().add("graphfx-root");
 
-    public BooleanProperty showGridProperty() {
-        return showGrid;
-    }
-
-    public BooleanProperty showAxesProperty() {
-        return showAxes;
-    }
-
-    public IntegerProperty targetGridLinesProperty() {
-        return targetGridLines;
-    }
-
-    public boolean isShowGrid() {
-        return showGrid.get();
-    }
-
-    public boolean isShowAxes() {
-        return showAxes.get();
-    }
-
-    public int getTargetGridLines() {
-        return targetGridLines.get();
+        setPadding(new Insets(10));
+        setTop(toolbar);
+        setCenter(graphView);
     }
 }
-

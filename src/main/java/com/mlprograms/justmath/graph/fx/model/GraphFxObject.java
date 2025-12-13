@@ -21,21 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.mlprograms.justmath.graph.fx;
-
+package com.mlprograms.justmath.graph.fx.model;
 import javafx.scene.paint.Color;
 
-public final class GraphFxPalette {
+import java.math.BigDecimal;
+import java.util.UUID;
 
-    private static final double GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
+public sealed interface GraphFxObject permits GraphFxPointObject, GraphFxLineObject, GraphFxIntegralObject {
 
-    private GraphFxPalette() {
-    }
-
-    public static Color colorForIndex(final int index) {
-        final double hue = (0.12 + (index * GOLDEN_RATIO_CONJUGATE)) % 1.0;
-        return Color.hsb(hue * 360.0, 0.70, 0.95, 1.0);
-    }
+    UUID id();
+    String name();
+    boolean visible();
+    GraphFxStyle style();
+    UUID referencesFunctionId();
 }
 
