@@ -26,21 +26,15 @@ package com.mlprograms.justmath.graphfx.controller;
 
 import javafx.scene.paint.Color;
 
-/**
- * DTO to pass functions into the read-only display window.
- */
-public record GraphFxFunctionSpec(String name, String expression, Color color) {
+public record GraphFxFunction(String name, String expression, Color color) {
 
-    public GraphFxFunctionSpec {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Function name must not be empty.");
-        if (expression == null || expression.isBlank()) throw new IllegalArgumentException("Function expression must not be empty.");
+    public GraphFxFunction {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Function name must not be empty.");
+        }
+        if (expression == null || expression.isBlank()) {
+            throw new IllegalArgumentException("Function expression must not be empty.");
+        }
     }
 
-    public static GraphFxFunctionSpec of(final String name, final String expression) {
-        return new GraphFxFunctionSpec(name, expression, null);
-    }
-
-    public static GraphFxFunctionSpec of(final String name, final String expression, final Color color) {
-        return new GraphFxFunctionSpec(name, expression, color);
-    }
 }

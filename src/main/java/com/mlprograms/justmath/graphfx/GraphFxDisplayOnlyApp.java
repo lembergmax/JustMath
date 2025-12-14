@@ -26,7 +26,7 @@ package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.controller.GraphFxDisplayOnlyController;
-import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
+import com.mlprograms.justmath.graphfx.controller.GraphFxFunction;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
@@ -92,7 +92,7 @@ public class GraphFxDisplayOnlyApp extends GraphFxDisplay {
         return show(List.of());
     }
 
-    public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
+    public Stage show(@NonNull final List<GraphFxFunction> functions) {
         return FxBootstrap.callAndWait(() -> {
             final GraphFxDisplayOnlyController controller = new GraphFxDisplayOnlyController(calculatorEngine, functions);
             return buildStage(controller);
