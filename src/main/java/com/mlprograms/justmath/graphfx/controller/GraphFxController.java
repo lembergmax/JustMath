@@ -94,13 +94,13 @@ public abstract class GraphFxController {
     }
 
     public Parent getRoot() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     protected final void safe(@NonNull final Runnable operation) {
         try {
             operation.run();
-        } catch (Exception exception) {
+        } catch (final Exception exception) {
             final Alert alert = new Alert(Alert.AlertType.ERROR, exception.getMessage() == null ? "Unknown error." : exception.getMessage(), ButtonType.OK);
             alert.setHeaderText("Operation failed");
             alert.showAndWait();
