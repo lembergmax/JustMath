@@ -25,14 +25,19 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.graphfx.GraphFxApp;
+import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("average(25;50;75)"));
-        System.out.println(calculatorEngine.evaluate("3*average(25;50;75)+10"));
+        GraphFxModel graphFxModel = new GraphFxModel();
+        graphFxModel.addFunction("f(x)", "x^2");
+
+        new GraphFxApp(new CalculatorEngine(), graphFxModel).show();
+        new GraphFxDisplayOnlyApp(new CalculatorEngine(), graphFxModel).show();
 
     }
 
