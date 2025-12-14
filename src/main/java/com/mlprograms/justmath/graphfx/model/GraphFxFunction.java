@@ -22,13 +22,30 @@
  * SOFTWARE.
  */
 package com.mlprograms.justmath.graphfx.model;
+
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
+import lombok.Getter;
 
 import java.util.UUID;
 
+/**
+ * Immutable identity and mutable properties of a single function displayed in GraphFX.
+ * <p>
+ * A function consists of:
+ * <ul>
+ *     <li>a unique identifier ({@link #getId()}) used to associate derived objects</li>
+ *     <li>a {@code visible} flag controlling rendering</li>
+ *     <li>a human-readable {@code name}</li>
+ *     <li>an {@code expression} string in the calculator language</li>
+ *     <li>styling information such as {@code color} and {@code strokeWidth}</li>
+ * </ul>
+ * All user-facing fields are implemented as JavaFX properties for convenient binding.
+ * </p>
+ */
 public class GraphFxFunction {
 
+    @Getter
     private final UUID id;
 
     private final BooleanProperty visible = new SimpleBooleanProperty(true);
@@ -42,20 +59,24 @@ public class GraphFxFunction {
 
     private GraphFxFunction(final UUID id) {
         this.id = id;
-        color.addListener((obs, o, n) -> colorHex.set(toHex(n)));
+        color.addListener((observable, oldColor, newColor) -> colorHex.set(toHex(newColor)));
         colorHex.set(toHex(color.get()));
     }
 
-    public static GraphFxFunction create(final String name, final String expr, final Color color) {
-        final GraphFxFunction f = new GraphFxFunction(UUID.randomUUID());
-        f.setName(name);
-        f.setExpression(expr);
-        f.setColor(color);
-        return f;
-    }
-
-    public UUID getId() {
-        return id;
+    /**
+     * Factory method that creates a new function with the given properties.
+     *
+     * @param name       function name used in the UI
+     * @param expression expression string in the calculator language
+     * @param color      base color used for rendering the function
+     * @return a newly created function instance
+     */
+    public static GraphFxFunction create(final String name, final String expression, final Color color) {
+        final GraphFxFunction function = new GraphFxFunction(UUID.randomUUID());
+        function.setName(name);
+        function.setExpression(expression);
+        function.setColor(color);
+        return function;
     }
 
     public BooleanProperty visibleProperty() {
@@ -102,29 +123,27 @@ public class GraphFxFunction {
         return strokeWidth.get();
     }
 
-    public void setName(final String v) {
-        name.set(v);
+    public void setName(final String value) {
+        name.set(value);
     }
 
-    public void setExpression(final String v) {
-        expression.set(v);
+    public void setExpression(final String value) {
+        expression.set(value);
     }
 
-    public void setColor(final Color c) {
-        color.set(c);
+    public void setColor(final Color value) {
+        color.set(value);
     }
 
-    
-    
+    @Override
     public String toString() {
         return getName() == null ? "" : getName();
     }
 
-private static String toHex(final Color c) {
-        final int r = (int) Math.round(c.getRed() * 255);
-        final int g = (int) Math.round(c.getGreen() * 255);
-        final int b = (int) Math.round(c.getBlue() * 255);
-        return String.format("#%02X%02X%02X", r, g, b);
+    private static String toHex(final Color color) {
+        final int red = (int) Math.round(color.getRed() * 255);
+        final int green = (int) Math.round(color.getGreen() * 255);
+        final int blue = (int) Math.round(color.getBlue() * 255);
+        return String.format("#%02X%02X%02X", red, green, blue);
     }
 }
-

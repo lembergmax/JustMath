@@ -22,10 +22,24 @@
  * SOFTWARE.
  */
 package com.mlprograms.justmath.graphfx.model;
+
 import javafx.beans.property.*;
 
 import java.math.BigDecimal;
 
+/**
+ * Represents a named variable that can be referenced by GraphFX function expressions.
+ * <p>
+ * A variable maintains its numeric value as a {@link BigDecimal} and also as a synchronized
+ * string representation for use in text fields. It can optionally be associated with a slider
+ * range ({@code sliderMin}, {@code sliderMax}, {@code sliderStep}) and a flag indicating whether
+ * a slider is enabled.
+ * </p>
+ * <p>
+ * All fields are implemented as JavaFX properties which allows the UI layer to bind controls
+ * directly to this model.
+ * </p>
+ */
 public class GraphFxVariable {
 
     private final StringProperty name = new SimpleStringProperty("");
@@ -42,23 +56,30 @@ public class GraphFxVariable {
     private final StringProperty sliderStepString = new SimpleStringProperty("0.1");
 
     private GraphFxVariable() {
-        value.addListener((obs, o, n) -> valueString.set(n.stripTrailingZeros().toPlainString()));
-        valueString.addListener((obs, o, n) -> value.set(new BigDecimal(n.trim())));
+        value.addListener((observable, oldValue, newValue) -> valueString.set(newValue.stripTrailingZeros().toPlainString()));
+        valueString.addListener((observable, oldValue, newValue) -> value.set(new BigDecimal(newValue.trim())));
 
-        sliderMin.addListener((obs, o, n) -> sliderMinString.set(n.stripTrailingZeros().toPlainString()));
-        sliderMax.addListener((obs, o, n) -> sliderMaxString.set(n.stripTrailingZeros().toPlainString()));
-        sliderStep.addListener((obs, o, n) -> sliderStepString.set(n.stripTrailingZeros().toPlainString()));
+        sliderMin.addListener((observable, oldValue, newValue) -> sliderMinString.set(newValue.stripTrailingZeros().toPlainString()));
+        sliderMax.addListener((observable, oldValue, newValue) -> sliderMaxString.set(newValue.stripTrailingZeros().toPlainString()));
+        sliderStep.addListener((observable, oldValue, newValue) -> sliderStepString.set(newValue.stripTrailingZeros().toPlainString()));
 
-        sliderMinString.addListener((obs, o, n) -> sliderMin.set(new BigDecimal(n.trim())));
-        sliderMaxString.addListener((obs, o, n) -> sliderMax.set(new BigDecimal(n.trim())));
-        sliderStepString.addListener((obs, o, n) -> sliderStep.set(new BigDecimal(n.trim())));
+        sliderMinString.addListener((observable, oldValue, newValue) -> sliderMin.set(new BigDecimal(newValue.trim())));
+        sliderMaxString.addListener((observable, oldValue, newValue) -> sliderMax.set(new BigDecimal(newValue.trim())));
+        sliderStepString.addListener((observable, oldValue, newValue) -> sliderStep.set(new BigDecimal(newValue.trim())));
     }
 
-    public static GraphFxVariable create(final String name, final BigDecimal value) {
-        final GraphFxVariable v = new GraphFxVariable();
-        v.setName(name);
-        v.setValue(value);
-        return v;
+    /**
+     * Factory method that creates a variable with the given name and initial value.
+     *
+     * @param name         variable name
+     * @param initialValue initial value; must not be {@code null}
+     * @return the created variable
+     */
+    public static GraphFxVariable create(final String name, final BigDecimal initialValue) {
+        final GraphFxVariable variable = new GraphFxVariable();
+        variable.setName(name);
+        variable.setValue(initialValue);
+        return variable;
     }
 
     public StringProperty nameProperty() {
@@ -129,24 +150,24 @@ public class GraphFxVariable {
         return sliderStep.get();
     }
 
-    public void setName(final String v) {
-        name.set(v);
+    public void setName(final String name) {
+        this.name.set(name);
     }
 
-    public void setValue(final BigDecimal v) {
-        value.set(v);
+    public void setValue(final BigDecimal newValue) {
+        value.set(newValue);
     }
 
-    public void setSliderMin(final BigDecimal v) {
-        sliderMin.set(v);
+    public void setSliderMin(final BigDecimal minimum) {
+        sliderMin.set(minimum);
     }
 
-    public void setSliderMax(final BigDecimal v) {
-        sliderMax.set(v);
+    public void setSliderMax(final BigDecimal maximum) {
+        sliderMax.set(maximum);
     }
 
-    public void setSliderStep(final BigDecimal v) {
-        sliderStep.set(v);
+    public void setSliderStep(final BigDecimal stepSize) {
+        sliderStep.set(stepSize);
     }
+
 }
-

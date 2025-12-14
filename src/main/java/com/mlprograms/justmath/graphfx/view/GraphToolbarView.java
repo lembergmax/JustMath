@@ -349,7 +349,7 @@ public final class GraphToolbarView extends ToolBar {
      * @param tooltip the tooltip to assign
      * @throws NullPointerException if any parameter is {@code null}
      */
-    private void configureToolToggle(@NonNull final ToggleButton button, @NonNull final  Tooltip tooltip) {
+    private void configureToolToggle(@NonNull final ToggleButton button, @NonNull final Tooltip tooltip) {
         button.setToggleGroup(tools);
         button.setTooltip(tooltip);
     }
@@ -373,7 +373,7 @@ public final class GraphToolbarView extends ToolBar {
      * @param body  tooltip body text
      * @return the configured tooltip
      */
-    private static Tooltip tooltip(@NonNull final  String title, @NonNull final  String body) {
+    private static Tooltip tooltip(@NonNull final String title, @NonNull final String body) {
         final Tooltip tooltip = new Tooltip(title + "\n" + body);
         tooltip.setWrapText(true);
         tooltip.setMaxWidth(TOOLTIP_MAX_WIDTH);
