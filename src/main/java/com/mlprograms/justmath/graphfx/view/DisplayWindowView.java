@@ -27,8 +27,26 @@ package com.mlprograms.justmath.graphfx.view;
 import javafx.geometry.Insets;
 import javafx.scene.layout.BorderPane;
 
+/**
+ * View used for the display-only GraphFX window.
+ * <p>
+ * This view composes a {@link GraphToolbarView} at the top and a {@link GraphFxGraphView} in the center.
+ * It intentionally contains no application logic; all behavior is delegated to the
+ * corresponding controller ({@code GraphFxDisplayOnlyController}).
+ * </p>
+ *
+ * <h2>Layout</h2>
+ * The view applies a small padding around its content so that the toolbar and graph are
+ * visually separated from the window borders.
+ */
 public class DisplayWindowView extends BorderPane {
 
+    /**
+     * Creates a new display window view with the given toolbar and graph view.
+     *
+     * @param toolbar   the shared toolbar instance
+     * @param graphView the graph view used for rendering and interaction
+     */
     public DisplayWindowView(final GraphToolbarView toolbar, final GraphFxGraphView graphView) {
         setPadding(new Insets(10));
         setTop(toolbar);
