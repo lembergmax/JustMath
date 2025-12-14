@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-
 package com.mlprograms.justmath.graphfx.controller;
 
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
@@ -38,12 +37,53 @@ import lombok.NonNull;
 import java.util.Locale;
 import java.util.function.Function;
 
+/**
+ * Base controller class for all GraphFX controllers.
+ * <p>
+ * This class is responsible for wiring together the {@link GraphFxModel},
+ * the {@link GraphFxGraphView}, and the {@link GraphToolbarView}.
+ * It provides common toolbar behavior, status bar updates, tool selection logic,
+ * and safe execution utilities for operations that may fail at runtime.
+ * </p>
+ * <p>
+ * Subclasses are expected to provide a concrete root node via {@link #getRoot()},
+ * which can then be embedded into a JavaFX scene.
+ * </p>
+ */
 public abstract class GraphFxController {
 
+    /**
+     * The underlying model containing functions, objects, and settings
+     * used by the graph view.
+     */
     protected final GraphFxModel model;
+
+    /**
+     * The main graphical view responsible for rendering the coordinate system,
+     * functions, and interactive graphical elements.
+     */
     protected final GraphFxGraphView graphView;
+
+    /**
+     * The toolbar view providing user interface controls for interaction,
+     * navigation, and export functionality.
+     */
     protected final GraphToolbarView toolbar;
 
+    /**
+     * Creates a new GraphFX controller and initializes all common bindings
+     * between model, view, and toolbar.
+     * <p>
+     * During construction, the graph view is created using the provided factory,
+     * common toolbar actions are wired, and the status bar listener is registered.
+     * </p>
+     *
+     * @param model            the data model backing the graph view
+     * @param toolbar          the toolbar providing user interaction controls
+     * @param graphViewFactory a factory function used to create the graph view
+     *                         from the given model
+     * @throws NullPointerException if any parameter is {@code null}
+     */
     protected GraphFxController(@NonNull final GraphFxModel model, @NonNull final GraphToolbarView toolbar, @NonNull final Function<GraphFxModel, GraphFxGraphView> graphViewFactory) {
         this.model = model;
         this.toolbar = toolbar;
@@ -53,6 +93,14 @@ public abstract class GraphFxController {
         wireStatusBar();
     }
 
+    /**
+     * Wires all toolbar controls that are common to every GraphFX controller.
+     * <p>
+     * This includes tool selection buttons, view reset functionality,
+     * grid and axes visibility toggles, object clearing, and export actions.
+     * Button enablement is dynamically bound to the model state where applicable.
+     * </p>
+     */
     protected final void wireToolbarCommon() {
         toolbar.moveButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.MOVE));
         toolbar.zoomBoxButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.ZOOM_BOX));
@@ -84,19 +132,55 @@ public abstract class GraphFxController {
         toolbar.exportJsonButton().setOnAction(e -> safe(() -> GraphFxExportService.exportJson(graphView, model)));
     }
 
+    /**
+     * Registers a status listener on the graph view and updates the toolbar
+     * status label with the current cursor coordinates.
+     * <p>
+     * Coordinates are formatted using a fixed locale and six decimal places
+     * to ensure consistent numerical representation.
+     * </p>
+     */
     protected final void wireStatusBar() {
         graphView.setStatusListener((x, y) -> toolbar.statusLabel().setText("x=" + String.format(Locale.ROOT, "%.6f", x) + "   y=" + String.format(Locale.ROOT, "%.6f", y)));
     }
 
+    /**
+     * Selects the given tool mode for the graph view and transfers focus
+     * to the view to ensure immediate user interaction.
+     *
+     * @param toolMode the tool mode to activate
+     * @throws NullPointerException if {@code toolMode} is {@code null}
+     */
     protected final void selectTool(@NonNull final GraphFxGraphView.ToolMode toolMode) {
         graphView.setToolMode(toolMode);
         graphView.requestFocus();
     }
 
+    /**
+     * Returns the root JavaFX node managed by this controller.
+     * <p>
+     * Subclasses must override this method to provide the actual root node
+     * used for scene construction.
+     * </p>
+     *
+     * @return the root JavaFX node
+     * @throws UnsupportedOperationException if not implemented by a subclass
+     */
     public Parent getRoot() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Executes the given operation and handles any thrown exception
+     * by displaying an error dialog to the user.
+     * <p>
+     * This method centralizes error handling for user-triggered actions,
+     * ensuring that failures are reported in a consistent and user-friendly way.
+     * </p>
+     *
+     * @param operation the operation to execute
+     * @throws NullPointerException if {@code operation} is {@code null}
+     */
     protected final void safe(@NonNull final Runnable operation) {
         try {
             operation.run();
