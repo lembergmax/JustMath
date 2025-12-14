@@ -49,7 +49,7 @@ import java.util.function.Supplier;
  * customizing window properties, or using defaults for quick usage.
  * </p>
  * <p>
- * UI creation is performed via {@link FxBootstrap#callAndWait(java.util.concurrent.Callable)} to ensure
+ * UI creation is performed via {@link FxBootstrap#callAndWait(Supplier)} to ensure
  * that stage construction happens on the JavaFX Application Thread and that the calling thread receives
  * the created {@link Stage} as a result.
  * </p>
