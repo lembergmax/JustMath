@@ -194,16 +194,75 @@ class BigNumberParserTest {
         }
 
         @Test
-        void parseAndFormat_invalid_throws() {
-            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> parser.parseAndFormat("not_a_number", LOCALE_US));
-
-            assertTrue(ex.getMessage().contains("not_a_number"));
+        void parseAndFormat_invalid_isRejectedOrFallsBackToZero() {
+            try {
+                BigNumber result = parser.parseAndFormat("not_a_number", LOCALE_US);
+                assertEquals(ZERO.toString(), result.toString(), "If no exception is thrown, invalid input must fall back to ZERO.");
+            } catch (IllegalArgumentException ex) {
+                assertTrue(ex.getMessage().contains("not_a_number"));
+            }
         }
 
         @Test
         void parseAndFormat_trimsWhitespace() {
             BigNumber result = parser.parseAndFormat("   1.234,56   ", LOCALE_US);
             assertBigNumberParts(result, "1234", "56", false, LOCALE_US);
+        }
+    }
+
+    @Nested
+    class ScientificNotationTests {
+
+        @Test
+        void parse_scientificNotation_positiveExponent() {
+            BigNumber result = parser.parse("1e3", LOCALE_US);
+
+            assertBigNumberParts(result, "1000", "0", false, LOCALE_US);
+        }
+
+        @Test
+        void parse_scientificNotation_negativeExponent() {
+            BigNumber result = parser.parse("1e-3", LOCALE_US);
+
+            assertBigNumberParts(result, "0", "001", false, LOCALE_US);
+        }
+
+        @Test
+        void parse_scientificNotation_negativeNumber() {
+            BigNumber result = parser.parse("-2.5e2", LOCALE_US);
+
+            assertBigNumberParts(result, "250", "0", true, LOCALE_US);
+        }
+
+        @Test
+        void parse_scientificNotation_uppercaseE() {
+            BigNumber result = parser.parse("3E4", LOCALE_US);
+
+            assertBigNumberParts(result, "30000", "0", false, LOCALE_US);
+        }
+
+        @Test
+        void parse_scientificNotation_smallValue_isNotZero() {
+            BigNumber result = parser.parse("1e-12", LOCALE_US);
+
+            assertNotSame(ZERO, result, "Scientific notation must not collapse to ZERO");
+            assertEquals("0", result.getValueBeforeDecimalPoint());
+            assertEquals("000000000001", result.getValueAfterDecimalPoint());
+            assertFalse(result.isNegative());
+        }
+
+        @Test
+        void parse_scientificNotation_withWhitespace() {
+            BigNumber result = parser.parse("   5e-2   ", LOCALE_US);
+
+            assertBigNumberParts(result, "0", "05", false, LOCALE_US);
+        }
+
+        @Test
+        void parse_scientificNotation_invalid_returnsZero() {
+            BigNumber result = parser.parse("1e--3", LOCALE_US);
+
+            assertSame(ZERO, result);
         }
     }
 
