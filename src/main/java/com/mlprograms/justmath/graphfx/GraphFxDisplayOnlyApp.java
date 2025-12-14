@@ -25,115 +25,77 @@
 package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graphfx.controller.DisplayWindowController;
+import com.mlprograms.justmath.graphfx.controller.GraphFxDisplayOnlyController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
+import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 
-/**
- * Convenience API to open the read-only ("Nur-Anzeige") graph window.
- * <p>
- * This class is designed to be usable as a library entry point:
- * it can be called from a plain {@code public static void main(...)} method
- * without requiring {@code Application.launch(...)} or a JavaFX {@code Application} subclass.
- * <p>
- * Internally, JavaFX initialization and threading is handled by {@link FxBootstrap}.
- */
-public final class GraphFxDisplayOnlyApp {
+public class GraphFxDisplayOnlyApp extends GraphFxDisplay {
 
-    private static final double DEFAULT_WIDTH = 1100;
-    private static final double DEFAULT_HEIGHT = 720;
-    private static final String DEFAULT_WINDOW_TITLE = "JustMath - Graph Display";
-
-    private final CalculatorEngine calculatorEngine;
-    private final String windowTitle;
-    private final double width;
-    private final double height;
-
-    /**
-     * Creates a display window using a new {@link CalculatorEngine}, default title and default size.
-     */
-    public GraphFxDisplayOnlyApp() {
-        this(new CalculatorEngine(), DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    public GraphFxDisplayOnlyApp(final CalculatorEngine calculatorEngine, final GraphFxModel model, final String windowTitle, final double width, final double height) {
+        super(calculatorEngine, model, windowTitle, width, height);
     }
 
-    /**
-     * Creates a display window using the provided {@link CalculatorEngine}, default title and default size.
-     *
-     * @param calculatorEngine the engine used to evaluate expressions
-     */
-    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine) {
-        this(calculatorEngine, DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final GraphFxModel model, @NonNull final String windowTitle) {
+        this(calculatorEngine, model, windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
-    /**
-     * Creates a display window using a new {@link CalculatorEngine}, a custom title and default size.
-     *
-     * @param windowTitle the stage title; if blank, a default title will be used
-     */
-    public GraphFxDisplayOnlyApp(@NonNull final String windowTitle) {
-        this(new CalculatorEngine(), windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final GraphFxModel model, final double width, final double height) {
+        this(calculatorEngine, model, DEFAULT_WINDOW_TITLE, width, height);
     }
 
-    /**
-     * Creates a display window using the provided {@link CalculatorEngine}, a custom title and default size.
-     *
-     * @param calculatorEngine the engine used to evaluate expressions
-     * @param windowTitle      the stage title; if blank, a default title will be used
-     */
-    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String windowTitle) {
-        this(calculatorEngine, windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final GraphFxModel model) {
+        this(calculatorEngine, model, DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
-    /**
-     * Creates a fully customized display window.
-     *
-     * @param calculatorEngine the engine used to evaluate expressions
-     * @param windowTitle      the stage title; if blank, a default title will be used
-     * @param width            desired stage width in pixels
-     * @param height           desired stage height in pixels
-     */
     public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String windowTitle, final double width, final double height) {
-        this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "calculatorEngine");
-        this.windowTitle = Objects.requireNonNull(windowTitle, "windowTitle");
-        this.width = width;
-        this.height = height;
+        this(calculatorEngine, new GraphFxModel(), windowTitle, width, height);
     }
 
-    /**
-     * Shows the read-only window and returns the created {@link Stage}.
-     * <p>
-     * This method works from:
-     * <ul>
-     *     <li>a plain {@code main()} method</li>
-     *     <li>any background thread</li>
-     *     <li>an already running JavaFX application</li>
-     * </ul>
-     * The JavaFX toolkit is initialized if required, and stage creation is executed on the FX thread.
-     * <p>
-     * If called from a non-FX thread, this call blocks until the window has been created and shown.
-     *
-     * @param functions functions to display
-     * @return the created and shown stage
-     * @throws NullPointerException if {@code functions} is {@code null}
-     */
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, @NonNull final String windowTitle) {
+        this(calculatorEngine, new GraphFxModel(), windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine, final double width, final double height) {
+        this(calculatorEngine, new GraphFxModel(), DEFAULT_WINDOW_TITLE, width, height);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final CalculatorEngine calculatorEngine) {
+        this(calculatorEngine, new GraphFxModel(), DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final GraphFxModel model, @NonNull final String windowTitle, final double width, final double height) {
+        this(new CalculatorEngine(), model, windowTitle, width, height);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final GraphFxModel model, @NonNull final String windowTitle) {
+        this(new CalculatorEngine(), model, windowTitle, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final GraphFxModel model, final double width, final double height) {
+        this(new CalculatorEngine(), model, DEFAULT_WINDOW_TITLE, width, height);
+    }
+
+    public GraphFxDisplayOnlyApp(@NonNull final GraphFxModel model) {
+        this(new CalculatorEngine(), model, DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public GraphFxDisplayOnlyApp() {
+        this(new CalculatorEngine(), new GraphFxModel(), DEFAULT_WINDOW_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    public Stage show() {
+        return show(List.of());
+    }
+
     public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
         return FxBootstrap.callAndWait(() -> {
-            final DisplayWindowController controller = new DisplayWindowController(calculatorEngine, functions);
-
-            final Scene scene = new Scene(controller.getRoot(), width, height);
-            final Stage stage = new Stage();
-
-            stage.setTitle(windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle);
-            stage.setScene(scene);
-            stage.show();
-
-            return stage;
+            final GraphFxDisplayOnlyController controller = new GraphFxDisplayOnlyController(calculatorEngine, functions);
+            return buildStage(controller);
         });
     }
 
