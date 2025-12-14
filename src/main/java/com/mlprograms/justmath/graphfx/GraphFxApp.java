@@ -26,7 +26,7 @@ package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
-import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
+import com.mlprograms.justmath.graphfx.controller.GraphFxFunction;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
@@ -92,9 +92,9 @@ public final class GraphFxApp extends GraphFxDisplay {
         return show(List.of());
     }
 
-    public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
+    public Stage show(@NonNull final List<GraphFxFunction> functions) {
         return FxBootstrap.callAndWait(() -> {
-            for (final GraphFxFunctionSpec function : functions) {
+            for (final GraphFxFunction function : functions) {
                 model.addFunction(function.name(), function.expression()).setColor(function.color());
             }
 

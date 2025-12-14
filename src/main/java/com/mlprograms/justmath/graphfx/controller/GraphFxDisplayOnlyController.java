@@ -39,7 +39,7 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
 
     private final DisplayWindowView view;
 
-    public GraphFxDisplayOnlyController(@NonNull final CalculatorEngine engine, @NonNull final List<GraphFxFunctionSpec> functions) {
+    public GraphFxDisplayOnlyController(@NonNull final CalculatorEngine engine, @NonNull final List<GraphFxFunction> functions) {
         super(createModelFromSpecs(functions), new GraphToolbarView(), model -> new GraphFxGraphView(model, engine));
 
         this.view = new DisplayWindowView(toolbar, graphView);
@@ -52,11 +52,11 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
         }
     }
 
-    private static GraphFxModel createModelFromSpecs(@NonNull final List<GraphFxFunctionSpec> functions) {
+    private static GraphFxModel createModelFromSpecs(@NonNull final List<GraphFxFunction> functions) {
         final GraphFxModel model = new GraphFxModel();
 
         int index = 0;
-        for (final GraphFxFunctionSpec spec : functions) {
+        for (final GraphFxFunction spec : functions) {
             final var color = spec.color() != null ? spec.color() : GraphFxPalette.colorForIndex(index);
             model.addFunction(spec.name(), spec.expression()).setColor(color);
             index++;
