@@ -40,18 +40,10 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
     private final DisplayWindowView view;
 
     public GraphFxDisplayOnlyController(@NonNull final CalculatorEngine engine, @NonNull final List<GraphFxFunctionSpec> functions) {
-        super(
-                createModelFromSpecs(functions),
-                new GraphToolbarView(),
-                model -> new GraphFxGraphView(model, engine)
-        );
+        super(createModelFromSpecs(functions), new GraphToolbarView(), model -> new GraphFxGraphView(model, engine));
 
         this.view = new DisplayWindowView(toolbar, graphView);
         selectFirstFunctionIfPresent();
-    }
-
-    public Parent getRoot() {
-        return view;
     }
 
     private void selectFirstFunctionIfPresent() {
@@ -75,6 +67,11 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
         }
 
         return model;
+    }
+
+    @Override
+    public Parent getRoot() {
+        return view;
     }
 
 }
