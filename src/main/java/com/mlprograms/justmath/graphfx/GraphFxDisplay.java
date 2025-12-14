@@ -25,13 +25,26 @@
 package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxController;
-import com.mlprograms.justmath.graphfx.controller.GraphFxDisplayOnlyController;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import javafx.scene.Scene;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
+/**
+ * Base class used by all GraphFX application wrappers to create and show JavaFX stages.
+ * <p>
+ * This class is intentionally lightweight: it holds the common window configuration
+ * (title, size) and core dependencies ({@link CalculatorEngine} and {@link GraphFxModel})
+ * and provides a single {@link #buildStage(GraphFxController)} method that turns a
+ * {@link GraphFxController} into a visible {@link Stage}.
+ * </p>
+ * <p>
+ * Subclasses are responsible for instantiating concrete controllers and invoking
+ * {@link #buildStage(GraphFxController)} from the JavaFX Application Thread. In this
+ * project, that responsibility is handled via {@code FxBootstrap} helpers.
+ * </p>
+ */
 class GraphFxDisplay {
 
     /**
@@ -50,22 +63,21 @@ class GraphFxDisplay {
     protected static final String DEFAULT_WINDOW_TITLE = "JustMath - Graph Display";
 
     /**
-     * The calculator engine used to evaluate expressions in the graph (e.g. {@code sin(x) + x^2}).
+     * The calculator engine used to evaluate expressions in the graph (for example {@code sin(x) + x^2}).
      * <p>
-     * This engine is passed to the {@link GraphFxAppController} and is responsible for parsing/evaluating
-     * the expression language supported by JustMath.
+     * Subclasses pass this engine to their controllers so that expression evaluation is consistent
+     * across all GraphFX windows.
+     * </p>
      */
     protected final CalculatorEngine calculatorEngine;
 
     /**
-     * The model used as the data source for functions, variables, settings, and objects.
-     * <p>
-     * This model instance is directly modified by UI interactions in the main window.
+     * The model used as the data source for functions, variables, settings and graphical objects.
      */
     protected final GraphFxModel model;
 
     /**
-     * Title displayed in the window title bar.
+     * Title text displayed in the window title bar.
      */
     protected final String windowTitle;
 
@@ -79,7 +91,20 @@ class GraphFxDisplay {
      */
     protected final double height;
 
-    public GraphFxDisplay(CalculatorEngine calculatorEngine, GraphFxModel model, String windowTitle, double width, double height) {
+    /**
+     * Creates a new display configuration with the given engine, model and window properties.
+     * <p>
+     * The provided {@code windowTitle} is normalized so that a blank or {@code null} title
+     * is replaced with {@link #DEFAULT_WINDOW_TITLE}.
+     * </p>
+     *
+     * @param calculatorEngine the calculator engine to be used by controllers
+     * @param model            the model backing the graph window
+     * @param windowTitle      the requested window title; may be blank to use the default
+     * @param width            the initial stage width in pixels
+     * @param height           the initial stage height in pixels
+     */
+    public GraphFxDisplay(final CalculatorEngine calculatorEngine, final GraphFxModel model, final String windowTitle, final double width, final double height) {
         this.calculatorEngine = calculatorEngine;
         this.model = model;
         this.windowTitle = windowTitle == null || windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle;
@@ -87,11 +112,29 @@ class GraphFxDisplay {
         this.height = height;
     }
 
+    /**
+     * Creates, configures and shows a new {@link Stage} for the given controller.
+     * <p>
+     * The controller must provide a concrete JavaFX root node via
+     * {@link GraphFxController#getRoot()}. That root node is wrapped into a {@link Scene}
+     * with the configured width and height. The stage's title is derived from
+     * {@link #windowTitle} falling back to {@link #DEFAULT_WINDOW_TITLE} when blank.
+     * </p>
+     * <p>
+     * This method must be called on the JavaFX Application Thread.
+     * </p>
+     *
+     * @param controller the controller whose root node should be displayed
+     * @param <T>        the concrete controller type
+     * @return the created and already shown {@link Stage}
+     * @throws NullPointerException if {@code controller} or its root node is {@code null}
+     */
     protected <T extends GraphFxController> Stage buildStage(final T controller) {
-        final Scene scene = new Scene(controller.getRoot(), width, height);
+        final Region root = (Region) controller.getRoot();
+        final Scene scene = new Scene(root, width, height);
         final Stage stage = new Stage();
 
-        stage.setTitle(windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle);
+        stage.setTitle(windowTitle == null || windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle);
         stage.setScene(scene);
         stage.show();
 
