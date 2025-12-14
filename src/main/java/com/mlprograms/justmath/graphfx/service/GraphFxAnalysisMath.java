@@ -27,6 +27,7 @@ package com.mlprograms.justmath.graphfx.service;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -45,19 +46,25 @@ import java.util.*;
  * <p>All methods are fail-safe: if an expression cannot be evaluated in a specific point or if numeric
  * constraints are violated (e.g., division by zero), the corresponding method returns {@code null}.</p>
  */
+@NoArgsConstructor
 public final class GraphFxAnalysisMath {
 
     private static final MathContext DEFAULT_MATH_CONTEXT = MathContext.DECIMAL128;
 
-    private static final BigNumber DERIVATIVE_ZERO_TOLERANCE = new BigNumber("1e-12", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
-    private static final BigNumber ROOT_DISTINCT_TOLERANCE = new BigNumber("1e-9", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
-    private static final BigNumber BISECTION_INTERVAL_TOLERANCE = new BigNumber("1e-12", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+    private static final BigNumber DERIVATIVE_ZERO_TOLERANCE =
+            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
 
-    private static final BigNumber STEP_BASE = new BigNumber("1e-6", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
-    private static final BigNumber STEP_SCALE = new BigNumber("1e-6", BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT);
+    private static final BigNumber ROOT_DISTINCT_TOLERANCE =
+            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-9), DEFAULT_MATH_CONTEXT);
 
-    private GraphFxAnalysisMath() {
-    }
+    private static final BigNumber BISECTION_INTERVAL_TOLERANCE =
+            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
+
+    private static final BigNumber STEP_BASE =
+            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
+
+    private static final BigNumber STEP_SCALE =
+            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
 
     /**
      * Evaluates an expression for a given x value and returns a finite {@link Double} suitable for plotting.
@@ -303,8 +310,8 @@ public final class GraphFxAnalysisMath {
     }
 
     private static boolean isApproximatelyZero(@NonNull final BigNumber value, @NonNull final BigNumber tolerance) {
-        final BigDecimal absoluteValue = value.toBigDecimal().abs();
-        return absoluteValue.compareTo(tolerance.toBigDecimal()) < 0;
+        final BigNumber absoluteValue = value.abs();
+        return absoluteValue.compareTo(tolerance) < 0;
     }
 
     private static boolean hasOppositeSigns(@NonNull final BigNumber leftValue, @NonNull final BigNumber rightValue) {
@@ -339,6 +346,10 @@ public final class GraphFxAnalysisMath {
     }
 
     private static BigNumber toBigNumber(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
+        return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
+    }
+
+    private static BigNumber bigNumberFromPlainDecimal(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
         return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
     }
 
