@@ -26,9 +26,9 @@ package com.mlprograms.justmath.graphfx.controller;
 
 import javafx.scene.paint.Color;
 
-public record GraphFxFunction(String name, String expression, Color color) {
+public record GraphFxFunctionSpec(String name, String expression, Color color) {
 
-    public GraphFxFunction {
+    public GraphFxFunctionSpec {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Function name must not be empty.");
         }
