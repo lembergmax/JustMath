@@ -30,6 +30,7 @@ import com.mlprograms.justmath.graphfx.service.GraphFxExportService;
 import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
 import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
 import javafx.beans.binding.Bindings;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import lombok.NonNull;
@@ -90,6 +91,10 @@ public abstract class GraphFxController {
     protected final void selectTool(@NonNull final GraphFxGraphView.ToolMode toolMode) {
         graphView.setToolMode(toolMode);
         graphView.requestFocus();
+    }
+
+    public Parent getRoot() {
+        return null;
     }
 
     protected final void safe(@NonNull final Runnable operation) {

@@ -26,6 +26,7 @@ package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
+import com.mlprograms.justmath.graphfx.controller.GraphFxController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxDisplayOnlyController;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import javafx.scene.Scene;
@@ -86,18 +87,7 @@ class GraphFxDisplay {
         this.height = height;
     }
 
-    protected Stage buildStage(final GraphFxDisplayOnlyController controller) {
-        final Scene scene = new Scene(controller.getRoot(), width, height);
-        final Stage stage = new Stage();
-
-        stage.setTitle(windowTitle.isBlank() ? DEFAULT_WINDOW_TITLE : windowTitle);
-        stage.setScene(scene);
-        stage.show();
-
-        return stage;
-    }
-
-    protected Stage buildStage(final GraphFxAppController controller) {
+    protected <T extends GraphFxController> Stage buildStage(final T controller) {
         final Scene scene = new Scene(controller.getRoot(), width, height);
         final Stage stage = new Stage();
 

@@ -46,6 +46,13 @@ public class GraphFxAppController extends GraphFxController {
 
     private final MainWindowView view;
 
+    private record FunctionDraft(String name, String expression) {
+    }
+
+    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max,
+                                 String step) {
+    }
+
     public GraphFxAppController(@NonNull final GraphFxModel model, @NonNull final CalculatorEngine engine) {
         super(model, new GraphToolbarView(), m -> new GraphFxGraphView(m, engine));
         this.view = new MainWindowView(toolbar, graphView);
@@ -53,10 +60,6 @@ public class GraphFxAppController extends GraphFxController {
         wireTables();
         wireSliders();
         wireHotkeys();
-    }
-
-    public Parent getRoot() {
-        return view;
     }
 
     private void wireHotkeys() {
@@ -226,11 +229,9 @@ public class GraphFxAppController extends GraphFxController {
         }));
     }
 
-    private record FunctionDraft(String name, String expression) {
-    }
-
-    private record VariableDraft(String name, String value, boolean sliderEnabled, String min, String max,
-                                 String step) {
+    @Override
+    public Parent getRoot() {
+        return view;
     }
 
 }
