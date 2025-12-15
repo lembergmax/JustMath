@@ -27,12 +27,11 @@ package com.mlprograms.justmath.graphfx;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
+import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
 import lombok.NonNull;
-
-import java.util.List;
 
 public final class GraphFxApp extends GraphFxDisplay {
 
@@ -185,19 +184,6 @@ public final class GraphFxApp extends GraphFxDisplay {
     }
 
     /**
-     * Shows the main editable graph window without any predefined functions.
-     * <p>
-     * This method delegates to {@link #show(List)} with an empty function list.
-     * Functions and variables can then be created interactively via the UI.
-     * </p>
-     *
-     * @return the created and shown {@link Stage}
-     */
-    public Stage show() {
-        return show(List.of());
-    }
-
-    /**
      * Shows the main editable graph window and pre-populates it with the given functions.
      * <p>
      * UI creation and controller construction are performed on the JavaFX Application Thread
@@ -206,14 +192,13 @@ public final class GraphFxApp extends GraphFxDisplay {
      * prior to creating the {@link GraphFxAppController}.
      * </p>
      *
-     * @param functions initial functions to add to the model before the window is shown
      * @return the created and shown {@link Stage}
      * @throws NullPointerException if {@code functions} is {@code null}
      */
-    public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
+    public Stage show() {
         return FxBootstrap.callAndWait(() -> {
-            for (final GraphFxFunctionSpec function : functions) {
-                model.addFunction(function.name(), function.expression()).setColor(function.color());
+            for (final GraphFxFunction function : model.getFunctions()) {
+                model.addFunction(function.getName(), function.getExpression()).setColor(function.getColor());
             }
 
             final GraphFxAppController controller = new GraphFxAppController(model, calculatorEngine);

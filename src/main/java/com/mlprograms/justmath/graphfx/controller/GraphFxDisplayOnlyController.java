@@ -30,6 +30,7 @@ import com.mlprograms.justmath.graphfx.model.GraphFxPalette;
 import com.mlprograms.justmath.graphfx.view.DisplayWindowView;
 import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
 import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
+import com.mlprograms.justmath.graphfx.view.MainWindowView;
 import javafx.scene.Parent;
 import lombok.NonNull;
 
@@ -56,19 +57,19 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
     private final DisplayWindowView view;
 
     /**
-     * Creates a new display-only controller from the given calculator engine and function specifications.
+     * Creates a new display-only controller from the given calculator calculatorEngine and function specifications.
      * <p>
      * The provided {@code functions} are transformed into entries in a new {@link GraphFxModel}. If a function
      * specification does not provide a color, a palette color is selected based on its index.
      * After initialization, the first function (if present) is selected to establish a consistent default state.
      * </p>
      *
-     * @param engine    the calculator engine used by the graph view for expression evaluation
-     * @param functions the functions to display initially
-     * @throws NullPointerException if {@code engine} or {@code functions} is {@code null}
+     * @param calculatorEngine    the calculator calculatorEngine used by the graph view for expression evaluation
+     * @param model the model containing the functions to display
+     * @throws NullPointerException if {@code calculatorEngine} or {@code functions} is {@code null}
      */
-    public GraphFxDisplayOnlyController(@NonNull final CalculatorEngine engine, @NonNull final List<GraphFxFunctionSpec> functions) {
-        super(createModelFromSpecs(functions), new GraphToolbarView(), model -> new GraphFxGraphView(model, engine));
+    public GraphFxDisplayOnlyController(@NonNull final GraphFxModel model, @NonNull final CalculatorEngine calculatorEngine) {
+        super(model, new GraphToolbarView(), m -> new GraphFxGraphView(m, calculatorEngine));
         this.view = new DisplayWindowView(toolbar, graphView);
 
         selectFirstFunctionIfPresent();

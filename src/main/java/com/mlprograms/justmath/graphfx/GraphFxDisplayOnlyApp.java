@@ -25,8 +25,10 @@
 package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxDisplayOnlyController;
 import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
+import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
@@ -211,32 +213,23 @@ public class GraphFxDisplayOnlyApp extends GraphFxDisplay {
     }
 
     /**
-     * Shows the graph window without any predefined functions.
-     * <p>
-     * This method delegates to {@link #show(List)} with an empty function list.
-     * </p>
-     *
-     * @return the created and shown {@link Stage}
-     */
-    public Stage show() {
-        return show(List.of());
-    }
-
-    /**
-     * Shows the graph window with the given list of functions.
+     * Shows the read-only graph window.
      * <p>
      * The window and its controller are constructed on the JavaFX Application Thread using
      * {@link FxBootstrap#callAndWait(Supplier)}. The returned stage is
      * created via the base class stage builder.
      * </p>
      *
-     * @param functions the functions to display initially
      * @return the created and shown {@link Stage}
      * @throws NullPointerException if {@code functions} is {@code null}
      */
-    public Stage show(@NonNull final List<GraphFxFunctionSpec> functions) {
+    public Stage show() {
         return FxBootstrap.callAndWait(() -> {
-            final GraphFxDisplayOnlyController controller = new GraphFxDisplayOnlyController(calculatorEngine, functions);
+            for (final GraphFxFunction function : model.getFunctions()) {
+                model.addFunction(function.getName(), function.getExpression()).setColor(function.getColor());
+            }
+
+            final GraphFxDisplayOnlyController controller = new GraphFxDisplayOnlyController(model, calculatorEngine);
             return buildStage(controller);
         });
     }
