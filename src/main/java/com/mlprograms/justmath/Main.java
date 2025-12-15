@@ -35,6 +35,7 @@ public class Main {
 
         GraphFxModel graphFxModel = new GraphFxModel();
         graphFxModel.addFunction("f(x)", "x^2");
+        graphFxModel.addFunction("g(x)", "x^(-3)");
 
         new GraphFxApp(new CalculatorEngine(), graphFxModel).show();
         new GraphFxDisplayOnlyApp(new CalculatorEngine(), graphFxModel).show();

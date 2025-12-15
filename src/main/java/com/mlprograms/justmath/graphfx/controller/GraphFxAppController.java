@@ -53,8 +53,8 @@ public class GraphFxAppController extends GraphFxController {
                                  String step) {
     }
 
-    public GraphFxAppController(@NonNull final GraphFxModel model, @NonNull final CalculatorEngine engine) {
-        super(model, new GraphToolbarView(), m -> new GraphFxGraphView(m, engine));
+    public GraphFxAppController(@NonNull final GraphFxModel model, @NonNull final CalculatorEngine calculatorEngine) {
+        super(model, new GraphToolbarView(), m -> new GraphFxGraphView(m, calculatorEngine));
         this.view = new MainWindowView(toolbar, graphView);
 
         wireTables();
