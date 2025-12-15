@@ -34,6 +34,7 @@ import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -225,7 +226,8 @@ public class GraphFxDisplayOnlyApp extends GraphFxDisplay {
      */
     public Stage show() {
         return FxBootstrap.callAndWait(() -> {
-            for (final GraphFxFunction function : model.getFunctions()) {
+            final List<GraphFxFunction> graphFxFunctions = new ArrayList<>(model.getFunctions());
+            for (final GraphFxFunction function : graphFxFunctions) {
                 model.addFunction(function.getName(), function.getExpression()).setColor(function.getColor());
             }
 
