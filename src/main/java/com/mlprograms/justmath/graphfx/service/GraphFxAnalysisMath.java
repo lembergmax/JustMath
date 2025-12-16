@@ -32,7 +32,11 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides numerical analysis utilities (evaluation, derivative, root finding, intersections and integration)
@@ -43,28 +47,23 @@ import java.util.*;
  * Public APIs return {@link BigDecimal} (or {@link Double} for plotting convenience) to integrate
  * easily with JavaFX and rendering code.</p>
  *
- * <p>All methods are fail-safe: if an expression cannot be evaluated in a specific point or if numeric
+ * <p>All methods are fail-safe: if an expression cannot be evaluated at a given point or if numeric
  * constraints are violated (e.g., division by zero), the corresponding method returns {@code null}.</p>
  */
 @NoArgsConstructor
 public final class GraphFxAnalysisMath {
 
-    private static final MathContext DEFAULT_MATH_CONTEXT = MathContext.DECIMAL128;
+    private final MathContext DEFAULT_MATH_CONTEXT = MathContext.DECIMAL128;
 
-    private static final BigNumber DERIVATIVE_ZERO_TOLERANCE =
-            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
+    private final BigNumber DERIVATIVE_ZERO_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
 
-    private static final BigNumber ROOT_DISTINCT_TOLERANCE =
-            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-9), DEFAULT_MATH_CONTEXT);
+    private final BigNumber ROOT_DISTINCT_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-9), DEFAULT_MATH_CONTEXT);
 
-    private static final BigNumber BISECTION_INTERVAL_TOLERANCE =
-            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
+    private final BigNumber BISECTION_INTERVAL_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
 
-    private static final BigNumber STEP_BASE =
-            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
+    private final BigNumber STEP_BASE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
 
-    private static final BigNumber STEP_SCALE =
-            bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
+    private final BigNumber STEP_SCALE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
 
     /**
      * Evaluates an expression for a given x value and returns a finite {@link Double} suitable for plotting.
@@ -80,7 +79,7 @@ public final class GraphFxAnalysisMath {
      * @param x          the x-value to inject as variable {@code "x"}
      * @return the evaluated y-value as finite {@link Double}, or {@code null} if evaluation fails or is non-finite
      */
-    public static Double evalY(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+    public Double evalY(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
         final BigNumber yValue = evaluateYAsBigNumber(engine, expression, variables, x);
         if (yValue == null) {
             return null;
@@ -94,8 +93,11 @@ public final class GraphFxAnalysisMath {
      * Computes the numerical derivative at a given point using the symmetric difference quotient:
      * {@code f'(x) ≈ (f(x+h) - f(x-h)) / (2h)}.
      *
-     * <p>The step size {@code h} is chosen relative to {@code x} to achieve a stable approximation:
-     * {@code h = max(1e-6, |x| * 1e-6)}.</p>
+     * <p>The step size {@code h} is chosen relative to {@code x} to reduce cancellation effects:
+     * {@code h = max(1e-6, |x| * 1e-6)} (performed in {@link BigNumber} arithmetic).</p>
+     *
+     * <p>If either sample value cannot be evaluated or if the denominator becomes too close to zero,
+     * this method returns {@code null}.</p>
      *
      * @param engine     the calculator engine used to evaluate the expression
      * @param expression the expression to differentiate
@@ -103,7 +105,7 @@ public final class GraphFxAnalysisMath {
      * @param x          the point at which the derivative is approximated
      * @return the derivative as {@link BigDecimal}, or {@code null} if evaluation fails or division becomes invalid
      */
-    public static BigDecimal derivative(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+    public BigDecimal derivative(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
         final BigNumber xValue = toBigNumber(x, DEFAULT_MATH_CONTEXT);
         final BigNumber stepSize = chooseStep(xValue);
 
@@ -127,20 +129,27 @@ public final class GraphFxAnalysisMath {
 
     /**
      * Searches for real roots (x-values where {@code f(x) = 0}) in the interval {@code [xMin, xMax]} by sampling
-     * and applying a bisection refinement on sign changes.
+     * and refining sign changes with bisection.
      *
-     * <p>The method splits the interval into {@code steps} segments (at least 2) and checks consecutive samples
-     * for sign changes. If a sign change is detected, a bisection is performed to approximate the root.</p>
+     * <p>The method splits the interval into {@code steps} sub-intervals (at least 2). For each consecutive sample
+     * pair {@code (x[i-1], x[i])}, it checks:
+     * <ul>
+     *     <li>if {@code f(x[i-1])} is approximately zero → a root at {@code x[i-1]}</li>
+     *     <li>if {@code f(x[i-1])} and {@code f(x[i])} have opposite signs → a root in between, refined by bisection</li>
+     * </ul>
+     * Candidate roots are merged if they are closer than {@link #ROOT_DISTINCT_TOLERANCE} to prevent duplicates.</p>
+     *
+     * <p>This method never returns {@code null}. If no roots can be determined, an empty list is returned.</p>
      *
      * @param engine     the calculator engine used to evaluate the expression
      * @param expression the expression whose roots should be found
      * @param variables  additional variables used by the expression (will be copied and not mutated)
      * @param xMin       the lower bound of the search interval (inclusive)
      * @param xMax       the upper bound of the search interval (inclusive)
-     * @param steps      the number of sampling steps (minimum 2)
-     * @return a sorted list of distinct roots as {@link BigDecimal}; empty if none are found; {@code null} is never returned
+     * @param steps      the number of sampling steps (minimum 2; values &lt; 2 are coerced to 2)
+     * @return a sorted list of distinct roots as {@link BigDecimal}; empty if none are found
      */
-    public static List<BigDecimal> rootsInRange(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
+    public List<BigDecimal> rootsInRange(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
         final int effectiveSteps = Math.max(2, steps);
 
         final BigNumber leftBound = toBigNumber(xMin, DEFAULT_MATH_CONTEXT);
@@ -178,9 +187,9 @@ public final class GraphFxAnalysisMath {
     }
 
     /**
-     * Computes the x-values in {@code [xMin, xMax]} where two expressions intersect, i.e. {@code f(x) = g(x)}.
+     * Computes intersection x-values within {@code [xMin, xMax]} for two expressions {@code f(x)} and {@code g(x)}.
      *
-     * <p>This method transforms the intersection problem into a root problem by solving
+     * <p>This method transforms the intersection problem into a root finding problem by solving
      * {@code (f(x) - g(x)) = 0} and delegates to {@link #rootsInRange(CalculatorEngine, String, Map, BigDecimal, BigDecimal, int)}.</p>
      *
      * @param engine    the calculator engine used to evaluate the expressions
@@ -189,10 +198,10 @@ public final class GraphFxAnalysisMath {
      * @param variables additional variables used by the expressions (will be copied and not mutated)
      * @param xMin      the lower bound of the search interval (inclusive)
      * @param xMax      the upper bound of the search interval (inclusive)
-     * @param steps     the number of sampling steps (minimum 2)
-     * @return a sorted list of intersection x-values as {@link BigDecimal}
+     * @param steps     the number of sampling steps (minimum 2; values &lt; 2 are coerced to 2)
+     * @return a sorted list of intersection x-values as {@link BigDecimal}; empty if none are found
      */
-    public static List<BigDecimal> intersectionsInRange(@NonNull final CalculatorEngine engine, @NonNull final String fExpr, @NonNull final String gExpr, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
+    public List<BigDecimal> intersectionsInRange(@NonNull final CalculatorEngine engine, @NonNull final String fExpr, @NonNull final String gExpr, @NonNull final Map<String, String> variables, @NonNull final BigDecimal xMin, @NonNull final BigDecimal xMax, final int steps) {
         final String differenceExpression = "(" + fExpr + ")-(" + gExpr + ")";
         return rootsInRange(engine, differenceExpression, variables, xMin, xMax, steps);
     }
@@ -200,8 +209,13 @@ public final class GraphFxAnalysisMath {
     /**
      * Approximates the definite integral {@code ∫[a..b] f(x) dx} using Simpson's rule.
      *
-     * <p>The number of sub-intervals {@code n} is forced to be even and at least 2.
-     * If any sample point cannot be evaluated, the method returns {@code null}.</p>
+     * <p>The number of sub-intervals {@code n} is normalized to be even and at least 2.
+     * Simpson's rule then computes:
+     * {@code (h/3) * [f(x0) + f(xn) + 4*sum(f(x_odd)) + 2*sum(f(x_even))]}
+     * with {@code h = (b-a)/n}.</p>
+     *
+     * <p>If the integrand cannot be evaluated at any sample point, {@code null} is returned.
+     * If the interval width becomes approximately zero, {@code BigDecimal.ZERO} is returned.</p>
      *
      * @param engine     the calculator engine used to evaluate the expression
      * @param expression the integrand expression f(x)
@@ -211,7 +225,7 @@ public final class GraphFxAnalysisMath {
      * @param n          number of sub-intervals (will be normalized to an even number ≥ 2)
      * @return the Simpson approximation as {@link BigDecimal}, or {@code null} if evaluation fails
      */
-    public static BigDecimal integralSimpson(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal a, @NonNull final BigDecimal b, final int n) {
+    public BigDecimal integralSimpson(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal a, @NonNull final BigDecimal b, final int n) {
         final int normalizedIntervals = normalizeSimpsonIntervals(n);
 
         final BigNumber leftBound = toBigNumber(a, DEFAULT_MATH_CONTEXT);
@@ -242,7 +256,22 @@ public final class GraphFxAnalysisMath {
         return integral.toBigDecimal();
     }
 
-    private static BigNumber evaluateYAsBigNumber(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+    /**
+     * Evaluates {@code expression} at the given x-value using the provided calculator engine.
+     *
+     * <p>This helper creates a defensive copy of {@code variables}, injects {@code "x"} with a plain string
+     * representation of the input, and delegates to {@link CalculatorEngine#evaluate(String, Map)}.</p>
+     *
+     * <p>If the engine throws an exception (syntax error, domain error, etc.), {@code null} is returned to keep
+     * callers fail-safe.</p>
+     *
+     * @param engine     calculator engine used for evaluation
+     * @param expression expression to evaluate
+     * @param variables  variable map (copied; never mutated)
+     * @param x          x-value for variable {@code "x"}
+     * @return evaluated y-value as {@link BigNumber}, or {@code null} if evaluation fails
+     */
+    private BigNumber evaluateYAsBigNumber(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
         try {
             final Map<String, String> resolvedVariables = new HashMap<>(variables);
             resolvedVariables.put("x", x.stripTrailingZeros().toPlainString());
@@ -252,7 +281,28 @@ public final class GraphFxAnalysisMath {
         }
     }
 
-    private static BigNumber bisection(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigNumber left, @NonNull final BigNumber right, @NonNull final MathContext mathContext) {
+    /**
+     * Refines a single root within an interval using the bisection method.
+     *
+     * <p>Preconditions for bisection:
+     * <ul>
+     *     <li>{@code f(left)} and {@code f(right)} must be evaluable</li>
+     *     <li>The values must have opposite signs, or one endpoint must already be approximately zero</li>
+     * </ul>
+     * If these constraints are not met, {@code null} is returned.</p>
+     *
+     * <p>The loop runs a fixed maximum number of iterations and also stops early if the interval length
+     * drops below {@link #BISECTION_INTERVAL_TOLERANCE}.</p>
+     *
+     * @param engine      calculator engine used for evaluation
+     * @param expression  expression to evaluate
+     * @param variables   variable map (copied by the evaluation helper)
+     * @param left        left interval endpoint
+     * @param right       right interval endpoint
+     * @param mathContext math context used for divisions during refinement
+     * @return refined root as {@link BigNumber}, or {@code null} if bisection cannot be applied
+     */
+    private BigNumber bisection(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigNumber left, @NonNull final BigNumber right, @NonNull final MathContext mathContext) {
         BigNumber lowerBound = left;
         BigNumber upperBound = right;
 
@@ -302,25 +352,60 @@ public final class GraphFxAnalysisMath {
         return lowerBound.add(upperBound).divide(BigNumbers.TWO, mathContext, BigNumbers.CALCULATION_LOCALE);
     }
 
-    private static BigNumber chooseStep(@NonNull final BigNumber xValue) {
+    /**
+     * Chooses a numeric step size for finite differences based on the magnitude of {@code x}.
+     *
+     * <p>The step is computed as {@code max(STEP_BASE, |x| * STEP_SCALE)}. This keeps the step sufficiently
+     * large near zero (to avoid catastrophic cancellation) while scaling appropriately for larger magnitudes.</p>
+     *
+     * @param xValue x-value as {@link BigNumber}
+     * @return step size as {@link BigNumber}
+     */
+    private BigNumber chooseStep(@NonNull final BigNumber xValue) {
         final BigNumber absoluteX = new BigNumber(xValue, BigNumbers.CALCULATION_LOCALE, DEFAULT_MATH_CONTEXT).abs();
         final BigNumber scaledStep = absoluteX.multiply(STEP_SCALE);
-
         return (scaledStep.compareTo(STEP_BASE) > 0) ? scaledStep : STEP_BASE;
     }
 
-    private static boolean isApproximatelyZero(@NonNull final BigNumber value, @NonNull final BigNumber tolerance) {
+    /**
+     * Checks whether a value is approximately zero according to a given tolerance.
+     *
+     * @param value     the value to check
+     * @param tolerance absolute tolerance threshold
+     * @return {@code true} if {@code |value| < tolerance}, otherwise {@code false}
+     */
+    private boolean isApproximatelyZero(@NonNull final BigNumber value, @NonNull final BigNumber tolerance) {
         final BigNumber absoluteValue = value.abs();
         return absoluteValue.compareTo(tolerance) < 0;
     }
 
-    private static boolean hasOppositeSigns(@NonNull final BigNumber leftValue, @NonNull final BigNumber rightValue) {
+    /**
+     * Checks whether two values have opposite signs (both non-zero).
+     *
+     * <p>This method uses {@link BigDecimal#signum()} on the underlying {@link BigDecimal} representation.
+     * If either value is zero, the method returns {@code false}.</p>
+     *
+     * @param leftValue  left value
+     * @param rightValue right value
+     * @return {@code true} if signs differ and neither is zero
+     */
+    private boolean hasOppositeSigns(@NonNull final BigNumber leftValue, @NonNull final BigNumber rightValue) {
         final int leftSignum = leftValue.toBigDecimal().signum();
         final int rightSignum = rightValue.toBigDecimal().signum();
         return leftSignum != 0 && rightSignum != 0 && (leftSignum != rightSignum);
     }
 
-    private static boolean addDistinctRoot(@NonNull final List<BigDecimal> roots, @NonNull final BigDecimal candidate) {
+    /**
+     * Adds a root candidate to the list if it is not too close to an existing root.
+     *
+     * <p>Two roots are considered identical if their absolute distance is smaller than
+     * {@link #ROOT_DISTINCT_TOLERANCE}.</p>
+     *
+     * @param roots     current list of roots (modified in-place)
+     * @param candidate candidate root to add
+     * @return {@code true} if the candidate was added, {@code false} if it was considered a duplicate
+     */
+    private boolean addDistinctRoot(@NonNull final List<BigDecimal> roots, @NonNull final BigDecimal candidate) {
         for (final BigDecimal existingRoot : roots) {
             if (existingRoot.subtract(candidate).abs().compareTo(ROOT_DISTINCT_TOLERANCE.toBigDecimal()) < 0) {
                 return false;
@@ -330,7 +415,19 @@ public final class GraphFxAnalysisMath {
         return true;
     }
 
-    private static int normalizeSimpsonIntervals(final int n) {
+    /**
+     * Normalizes a requested number of Simpson sub-intervals.
+     *
+     * <p>Simpson's rule requires an even number of intervals. This method enforces:
+     * <ul>
+     *     <li>minimum of 2</li>
+     *     <li>even parity (odd values are incremented)</li>
+     * </ul>
+     *
+     * @param n requested interval count
+     * @return normalized even interval count (≥ 2)
+     */
+    private int normalizeSimpsonIntervals(final int n) {
         int normalized = Math.max(2, n);
         if (normalized % 2 != 0) {
             normalized++;
@@ -338,19 +435,51 @@ public final class GraphFxAnalysisMath {
         return normalized;
     }
 
-    private static BigNumber simpsonWeight(final int index, final int maxIndex) {
+    /**
+     * Returns the Simpson weight for a sample index in {@code [0..maxIndex]}.
+     *
+     * <p>Weights:
+     * <ul>
+     *     <li>index 0 and maxIndex: 1</li>
+     *     <li>odd indices: 4</li>
+     *     <li>even indices (excluding endpoints): 2</li>
+     * </ul>
+     *
+     * @param index    sample index
+     * @param maxIndex last index (equals the number of intervals)
+     * @return Simpson weight as {@link BigNumber}
+     */
+    private BigNumber simpsonWeight(final int index, final int maxIndex) {
         if (index == 0 || index == maxIndex) {
             return BigNumbers.ONE;
         }
         return (index % 2 == 0) ? BigNumbers.TWO : BigNumbers.FOUR;
     }
 
-    private static BigNumber toBigNumber(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
+    /**
+     * Converts a {@link BigDecimal} to a {@link BigNumber} using the given math context and the global calculation locale.
+     *
+     * <p>The conversion uses {@link BigDecimal#toPlainString()} to avoid scientific notation and maintain a stable
+     * textual representation for {@link BigNumber} parsing.</p>
+     *
+     * @param value       decimal value to convert
+     * @param mathContext math context to associate with the created {@link BigNumber}
+     * @return created {@link BigNumber}
+     */
+    private BigNumber toBigNumber(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
         return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
     }
 
-    private static BigNumber bigNumberFromPlainDecimal(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
+    /**
+     * Creates a {@link BigNumber} from a plain {@link BigDecimal} using the given math context.
+     *
+     * <p>This helper exists to make constant initialization explicit and consistent throughout this class.</p>
+     *
+     * @param value       decimal value to convert
+     * @param mathContext math context to associate with the created {@link BigNumber}
+     * @return created {@link BigNumber}
+     */
+    private BigNumber bigNumberFromPlainDecimal(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
         return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
     }
-
 }

@@ -158,6 +158,7 @@ public class GraphFxGraphView extends StackPane {
     private static final int SAMPLE_DELAY_INTERACTIVE_MS = 25;
     private static final int SAMPLE_DELAY_QUALITY_MS = 65;
 
+    private final GraphFxAnalysisMath graphFxAnalysisMath = new GraphFxAnalysisMath();
     private final GraphFxModel model;
     private final CalculatorEngine calculatorEngine;
 
@@ -293,7 +294,7 @@ public class GraphFxGraphView extends StackPane {
                         ? xMax
                         : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
-                final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
+                final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
                 if (y == null) {
                     continue;
                 }
@@ -1017,7 +1018,6 @@ public class GraphFxGraphView extends StackPane {
      * @param graphics graphics context
      */
     private void drawAxisTicks(@NonNull final GraphicsContext graphics) {
-        final double canvasWidth = plotCanvas.getWidth();
         final double canvasHeight = plotCanvas.getHeight();
 
         final double step = GraphFxNiceTicks.niceStep(worldView.xMin(), worldView.xMax(), model.getSettings().getTargetGridLines());
@@ -1184,7 +1184,7 @@ public class GraphFxGraphView extends StackPane {
                     ? max
                     : min.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
-            final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
+            final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
             if (y == null) {
                 continue;
             }
@@ -1314,7 +1314,7 @@ public class GraphFxGraphView extends StackPane {
                     ? xMax
                     : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
-            final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
+            final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
 
             if (y == null || !Double.isFinite(y) || Math.abs(y) > POLYLINE_Y_ABS_LIMIT) {
                 flushSegment(segments, currentSegment);
@@ -1365,7 +1365,7 @@ public class GraphFxGraphView extends StackPane {
         final Map<String, String> variables = model.variablesAsStringMap();
 
         if (activeToolMode == ToolMode.POINT_ON_FUNCTION) {
-            final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
+            final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
             if (y == null) {
                 return;
             }
@@ -1374,8 +1374,8 @@ public class GraphFxGraphView extends StackPane {
         }
 
         if (activeToolMode == ToolMode.TANGENT || activeToolMode == ToolMode.NORMAL) {
-            final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
-            final BigDecimal slope = GraphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX);
+            final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
+            final BigDecimal slope = graphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX);
 
             if (y == null || slope == null) {
                 return;
@@ -1395,7 +1395,7 @@ public class GraphFxGraphView extends StackPane {
             final BigDecimal left = worldX.subtract(xRange.multiply(new BigDecimal("0.08")), MATH_CONTEXT);
             final BigDecimal right = worldX.add(xRange.multiply(new BigDecimal("0.08")), MATH_CONTEXT);
 
-            final List<BigDecimal> roots = GraphFxAnalysisMath.rootsInRange(
+            final List<BigDecimal> roots = graphFxAnalysisMath.rootsInRange(
                     calculatorEngine,
                     function.getExpression(),
                     variables,
@@ -1451,7 +1451,7 @@ public class GraphFxGraphView extends StackPane {
         final BigDecimal xMin = BigDecimal.valueOf(worldView.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(worldView.xMax());
 
-        final List<BigDecimal> intersectionXs = GraphFxAnalysisMath.intersectionsInRange(
+        final List<BigDecimal> intersectionXs = graphFxAnalysisMath.intersectionsInRange(
                 calculatorEngine,
                 firstFunction.getExpression(),
                 secondFunction.getExpression(),
@@ -1462,7 +1462,7 @@ public class GraphFxGraphView extends StackPane {
         );
 
         for (final BigDecimal x : intersectionXs) {
-            final Double y = GraphFxAnalysisMath.evalY(calculatorEngine, firstFunction.getExpression(), variables, x);
+            final Double y = graphFxAnalysisMath.evalY(calculatorEngine, firstFunction.getExpression(), variables, x);
             if (y == null) {
                 continue;
             }
@@ -1494,7 +1494,7 @@ public class GraphFxGraphView extends StackPane {
 
         final int steps = isInteractiveModeEnabled ? INTEGRAL_STEPS_INTERACTIVE : INTEGRAL_STEPS_QUALITY;
 
-        final BigDecimal value = GraphFxAnalysisMath.integralSimpson(
+        final BigDecimal value = graphFxAnalysisMath.integralSimpson(
                 calculatorEngine,
                 function.getExpression(),
                 model.variablesAsStringMap(),
@@ -1530,7 +1530,7 @@ public class GraphFxGraphView extends StackPane {
                 continue;
             }
 
-            final Double functionY = GraphFxAnalysisMath.evalY(
+            final Double functionY = graphFxAnalysisMath.evalY(
                     calculatorEngine,
                     function.getExpression(),
                     variables,
