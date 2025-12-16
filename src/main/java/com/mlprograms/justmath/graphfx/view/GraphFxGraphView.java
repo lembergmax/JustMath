@@ -555,7 +555,7 @@ public class GraphFxGraphView extends StackPane {
      * Installs listeners on the model and settings that trigger renders when relevant state changes.
      */
     private void installModelListeners() {
-        model.revisionProperty().addListener((obs, oldRevision, newRevision) -> scheduleRender());
+        model.getRevision().addListener((obs, oldRevision, newRevision) -> scheduleRender());
 
         model.getSettings().showGridProperty().addListener((obs, o, n) -> renderImmediately());
         model.getSettings().showAxesProperty().addListener((obs, o, n) -> renderImmediately());
@@ -1240,7 +1240,7 @@ public class GraphFxGraphView extends StackPane {
      * is allowed to publish results to the UI thread.
      */
     private void resampleFunctionsIfNeeded() {
-        final long currentRevision = model.revisionProperty().get();
+        final long currentRevision = model.getRevision().get();
         final WorldView viewSnapshot = worldView;
         final Map<String, String> variablesSnapshot = model.variablesAsStringMap();
 
