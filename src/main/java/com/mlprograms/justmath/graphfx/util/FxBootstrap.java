@@ -78,22 +78,6 @@ public final class FxBootstrap {
     }
 
     /**
-     * Runs a task on the JavaFX Application Thread.
-     *
-     * @param runnable the task to run
-     */
-    public static void runLater(final Runnable runnable) {
-        Objects.requireNonNull(runnable, "runnable");
-        init();
-
-        if (Platform.isFxApplicationThread()) {
-            runnable.run();
-        } else {
-            Platform.runLater(runnable);
-        }
-    }
-
-    /**
      * Runs a supplier on the JavaFX Application Thread and blocks until it completes.
      * <p>
      * If called from the JavaFX Application Thread, the supplier is executed immediately.
