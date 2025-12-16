@@ -226,11 +226,6 @@ public class GraphFxDisplayOnlyApp extends GraphFxDisplay {
      */
     public Stage show() {
         return FxBootstrap.callAndWait(() -> {
-            final List<GraphFxFunction> graphFxFunctions = new ArrayList<>(model.getFunctions());
-            for (final GraphFxFunction function : graphFxFunctions) {
-                model.addFunction(function.getName(), function.getExpression()).setColor(function.getColor());
-            }
-
             final GraphFxDisplayOnlyController controller = new GraphFxDisplayOnlyController(model, calculatorEngine);
             return buildStage(controller);
         });

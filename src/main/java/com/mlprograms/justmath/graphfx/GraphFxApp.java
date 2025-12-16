@@ -200,11 +200,6 @@ public final class GraphFxApp extends GraphFxDisplay {
      */
     public Stage show() {
         return FxBootstrap.callAndWait(() -> {
-            final List<GraphFxFunction> graphFxFunctions = new ArrayList<>(model.getFunctions());
-            for (final GraphFxFunction function : graphFxFunctions) {
-                model.addFunction(function.getName(), function.getExpression()).setColor(function.getColor());
-            }
-
             final GraphFxAppController controller = new GraphFxAppController(model, calculatorEngine);
             return buildStage(controller);
         });
