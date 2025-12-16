@@ -67,9 +67,9 @@ import java.util.Locale;
 @NoArgsConstructor
 public final class GraphFxExportService {
 
-    private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-    private static final String FILE_PREFIX = "justmath";
-    private static final String DEFAULT_FUNCTION_FILE_PART = "graph";
+    private final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+    private final String FILE_PREFIX = "justmath";
+    private final String DEFAULT_FUNCTION_FILE_PART = "graph";
 
     /**
      * Exports a PNG snapshot of the given view.
@@ -77,7 +77,7 @@ public final class GraphFxExportService {
      * @param view  the graph view to snapshot (must not be {@code null})
      * @param model the graph model (must not be {@code null}); used for naming only
      */
-    public static void exportPng(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
+    public void exportPng(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
         final String defaultFileName = createBaseFileName(model, "graph") + ".png";
         final File targetFile = chooseTargetFile("Export PNG", "png", defaultFileName);
         if (targetFile == null) {
@@ -105,7 +105,7 @@ public final class GraphFxExportService {
      * @param view  the graph view providing the sampled polyline (must not be {@code null})
      * @param model the graph model providing selection and function list (must not be {@code null})
      */
-    public static void exportCsv(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
+    public void exportCsv(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
         final GraphFxFunction exportFunction = resolveExportFunction(model);
         if (exportFunction == null) {
             return;
@@ -148,7 +148,7 @@ public final class GraphFxExportService {
      * @param view  the graph view providing the sampled polyline (must not be {@code null})
      * @param model the graph model providing selection and function list (must not be {@code null})
      */
-    public static void exportJson(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
+    public void exportJson(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
         final GraphFxFunction exportFunction = resolveExportFunction(model);
         if (exportFunction == null) {
             return;
@@ -203,7 +203,7 @@ public final class GraphFxExportService {
      * @param view  the graph view providing the viewport and sampled polyline (must not be {@code null})
      * @param model the graph model providing selection and function properties (must not be {@code null})
      */
-    public static void exportSvg(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
+    public void exportSvg(@NonNull final GraphFxGraphView view, @NonNull final GraphFxModel model) {
         final GraphFxFunction exportFunction = resolveExportFunction(model);
         if (exportFunction == null) {
             return;
@@ -267,7 +267,7 @@ public final class GraphFxExportService {
      * @param model model containing function list and selected function (must not be {@code null})
      * @return the function to export, or {@code null} if none can be resolved
      */
-    private static GraphFxFunction resolveExportFunction(@NonNull final GraphFxModel model) {
+    private GraphFxFunction resolveExportFunction(@NonNull final GraphFxModel model) {
         GraphFxFunction selectedFunction = model.getSelectedFunction();
         if (selectedFunction != null) {
             return selectedFunction;
@@ -301,7 +301,7 @@ public final class GraphFxExportService {
      * @param kind  export kind (e.g. {@code "points"}, {@code "path"}, {@code "graph"}) (must not be {@code null})
      * @return base file name without extension
      */
-    private static String createBaseFileName(@NonNull final GraphFxModel model, @NonNull final String kind) {
+    private String createBaseFileName(@NonNull final GraphFxModel model, @NonNull final String kind) {
         final GraphFxFunction selectedFunction = model.getSelectedFunction();
         final String functionPart = selectedFunction == null
                 ? DEFAULT_FUNCTION_FILE_PART
@@ -319,7 +319,7 @@ public final class GraphFxExportService {
      * @param rawPart raw text (nullable)
      * @return sanitized file name part (never {@code null})
      */
-    private static String sanitizeFileNamePart(final String rawPart) {
+    private String sanitizeFileNamePart(final String rawPart) {
         final String safe = (rawPart == null || rawPart.isBlank()) ? "f" : rawPart.trim();
         return safe.replaceAll("[^A-Za-z0-9._-]", "_");
     }
@@ -331,7 +331,7 @@ public final class GraphFxExportService {
      * @param file  destination file (must not be {@code null})
      * @throws Exception if writing fails
      */
-    private static void writeWritableImageAsPng(@NonNull final WritableImage image, @NonNull final File file) throws Exception {
+    private void writeWritableImageAsPng(@NonNull final WritableImage image, @NonNull final File file) throws Exception {
         final int width = (int) image.getWidth();
         final int height = (int) image.getHeight();
 
@@ -354,7 +354,7 @@ public final class GraphFxExportService {
      * @param worldX world x-coordinate
      * @return mapped x-coordinate in pixels
      */
-    private static double worldToSvgX(@NonNull final GraphFxGraphView view, final double worldX) {
+    private double worldToSvgX(@NonNull final GraphFxGraphView view, final double worldX) {
         final GraphFxGraphView.WorldView viewport = view.getView();
         final double t = (worldX - viewport.xMin()) / (viewport.xMax() - viewport.xMin());
         return t * Math.max(1, view.getWidth());
@@ -369,7 +369,7 @@ public final class GraphFxExportService {
      * @param worldY world y-coordinate
      * @return mapped y-coordinate in pixels
      */
-    private static double worldToSvgY(@NonNull final GraphFxGraphView view, final double worldY) {
+    private double worldToSvgY(@NonNull final GraphFxGraphView view, final double worldY) {
         final GraphFxGraphView.WorldView viewport = view.getView();
         final double t = (worldY - viewport.yMin()) / (viewport.yMax() - viewport.yMin());
         final double height = Math.max(1, view.getHeight());
@@ -385,7 +385,7 @@ public final class GraphFxExportService {
      * @param initialFileName suggested initial file name (must not be {@code null})
      * @return chosen file or {@code null} if the dialog was cancelled
      */
-    private static File chooseTargetFile(@NonNull final String title, @NonNull final String extension, @NonNull final String initialFileName) {
+    private File chooseTargetFile(@NonNull final String title, @NonNull final String extension, @NonNull final String initialFileName) {
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(title);
         fileChooser.setInitialFileName(initialFileName);
@@ -409,7 +409,7 @@ public final class GraphFxExportService {
      *
      * @param exception failure cause (must not be {@code null})
      */
-    private static void showExportError(@NonNull final Exception exception) {
+    private void showExportError(@NonNull final Exception exception) {
         final Alert alert = new Alert(Alert.AlertType.ERROR, exception.getMessage(), ButtonType.OK);
         alert.setHeaderText("Export failed");
         alert.showAndWait();

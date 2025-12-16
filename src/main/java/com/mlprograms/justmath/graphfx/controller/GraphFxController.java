@@ -26,6 +26,7 @@ package com.mlprograms.justmath.graphfx.controller;
 
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.service.GraphFxExportService;
+import com.mlprograms.justmath.graphfx.service.graphFxExportService;
 import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
 import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
 import javafx.beans.binding.Bindings;
@@ -69,6 +70,11 @@ public abstract class GraphFxController {
      * navigation, and export functionality.
      */
     protected final GraphToolbarView toolbar;
+
+    /**
+     * Service used for exporting the graph view to various formats.
+     */
+    private final GraphFxExportService graphFxExportService = new GraphFxExportService();
 
     /**
      * Creates a new GraphFX controller and initializes all common bindings
@@ -120,16 +126,16 @@ public abstract class GraphFxController {
         toolbar.axesCheckBox().selectedProperty().bindBidirectional(model.getSettings().showAxesProperty());
 
         toolbar.exportPngButton().disableProperty().bind(Bindings.isEmpty(model.getFunctions()));
-        toolbar.exportPngButton().setOnAction(e -> safe(() -> GraphFxExportService.exportPng(graphView, model)));
+        toolbar.exportPngButton().setOnAction(e -> safe(() -> graphFxExportService.exportPng(graphView, model)));
 
         toolbar.exportSvgButton().disableProperty().bind(Bindings.isEmpty(model.getFunctions()));
-        toolbar.exportSvgButton().setOnAction(e -> safe(() -> GraphFxExportService.exportSvg(graphView, model)));
+        toolbar.exportSvgButton().setOnAction(e -> safe(() -> graphFxExportService.exportSvg(graphView, model)));
 
         toolbar.exportCsvButton().disableProperty().bind(Bindings.isEmpty(model.getFunctions()));
-        toolbar.exportCsvButton().setOnAction(e -> safe(() -> GraphFxExportService.exportCsv(graphView, model)));
+        toolbar.exportCsvButton().setOnAction(e -> safe(() -> graphFxExportService.exportCsv(graphView, model)));
 
         toolbar.exportJsonButton().disableProperty().bind(Bindings.isEmpty(model.getFunctions()));
-        toolbar.exportJsonButton().setOnAction(e -> safe(() -> GraphFxExportService.exportJson(graphView, model)));
+        toolbar.exportJsonButton().setOnAction(e -> safe(() -> graphFxExportService.exportJson(graphView, model)));
     }
 
     /**
