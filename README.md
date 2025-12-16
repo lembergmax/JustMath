@@ -306,6 +306,8 @@ Cannot wait? Just download the latest jar:
   </tr>
 </table>
 
+Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
+
 ## 📜 License
 
 **MIT License**
