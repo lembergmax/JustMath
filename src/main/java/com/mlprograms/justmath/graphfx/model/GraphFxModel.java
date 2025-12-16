@@ -22,94 +22,94 @@
  * SOFTWARE.
  */
 
+/*
+ * Copyright (c) 2025 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.graphfx.model;
 
-import javafx.beans.property.*;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Central data model for the GraphFX component.
  * <p>
  * The model keeps track of:
+ * </p>
  * <ul>
  *     <li>functions to be rendered ({@link GraphFxFunction})</li>
- *     <li>named variables that can be referenced from expressions ({@link GraphFxVariable})</li>
+ *     <li>named variables referenced by expressions ({@link GraphFxVariable})</li>
  *     <li>derived graphical objects such as points, lines and integrals ({@link GraphFxObject})</li>
  *     <li>global rendering settings ({@link GraphFxSettings})</li>
  * </ul>
- * Changes to the collections or to individual properties increment an internal {@code revision}
- * counter which can be used by views to schedule re-rendering.
- * </p>
+ *
+ * <h2>Revision tracking</h2>
  * <p>
- * This class does not know anything about JavaFX controls; it only exposes JavaFX properties
- * and observable lists that can be bound to from the UI layer.
+ * Every relevant change increments {@link #getRevision()} so views can react efficiently
+ * (e.g., re-render, resample, or update UI).
+ * </p>
+ *
+ * <p>
+ * This model is UI-agnostic: it only exposes JavaFX properties and observable lists that can be bound to.
  * </p>
  */
-@NoArgsConstructor
-public class GraphFxModel {
+public final class GraphFxModel {
 
-    /**
-     * -- GETTER --
-     * Returns the list of functions that should be rendered.
-     * <p>
-     * The list is observable and can be bound to UI controls such as tables or combo boxes.
-     * </p>
-     *
-     * @return an observable list of functions
-     */
-    @Getter
+    private static final String RESERVED_FUNCTION_INPUT_VARIABLE = "x";
+    private static final String VARIABLE_NAME_PATTERN = "[A-Za-z][A-Za-z0-9_]*";
+
     private final ObservableList<GraphFxFunction> functions = FXCollections.observableArrayList();
-    /**
-     * -- GETTER --
-     * Returns the list of variables that can be referenced by expressions.
-     *
-     * @return an observable list of variables
-     */
-    @Getter
     private final ObservableList<GraphFxVariable> variables = FXCollections.observableArrayList();
-    /**
-     * -- GETTER --
-     * Returns the list of graphical objects created by tools (points, lines, integrals, ...).
-     *
-     * @return an observable list of graphical objects
-     */
-    @Getter
     private final ObservableList<GraphFxObject> objects = FXCollections.observableArrayList();
-
-    /**
-     * -- GETTER --
-     * Returns the global rendering/settings object.
-     *
-     * @return the settings instance
-     */
-    @Getter
     private final GraphFxSettings settings = new GraphFxSettings();
 
-    private final LongProperty revision = new SimpleLongProperty(0);
+    private final LongProperty revision = new SimpleLongProperty(0L);
     private final ObjectProperty<GraphFxFunction> selectedFunction = new SimpleObjectProperty<>(null);
 
     /**
-     * Returns a property that is incremented whenever a relevant change occurs in the model.
-     * <p>
-     * Views can observe this property to trigger re-rendering.
-     * </p>
-     *
-     * @return the revision property
+     * Creates an empty model and installs listeners that bump the revision for global settings changes.
      */
-    public LongProperty revisionProperty() {
-        return revision;
+    public GraphFxModel() {
+        settings.showGridProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        settings.showAxesProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        settings.targetGridLinesProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        selectedFunction.addListener((obs, oldValue, newValue) -> bumpRevision());
     }
 
     /**
-     * Returns the currently selected function or {@code null} if none is selected.
+     * Returns the currently selected function.
      *
-     * @return the selected function or {@code null}
+     * @return the selected function, or {@code null} if none is selected
      */
     public GraphFxFunction getSelectedFunction() {
         return selectedFunction.get();
@@ -127,28 +127,28 @@ public class GraphFxModel {
     /**
      * Adds a new function to the model.
      * <p>
-     * A default color is chosen by {@link GraphFxPalette#colorForIndex(int)} based on the current function count.
-     * The function is wired so that any property change will increment the model revision.
+     * A default color is chosen via {@link GraphFxPalette#colorForIndex(int)} based on the current function count.
+     * The function is registered so that any property change bumps the model revision.
      * </p>
      *
-     * @param name       human-readable name of the function
-     * @param expression expression string in the calculator language
-     * @return the created function instance
-     * @throws IllegalArgumentException if name or expression is blank
+     * @param name       the human-readable function name (must not be blank)
+     * @param expression the expression string in the calculator language (must not be blank)
+     * @return the created {@link GraphFxFunction} instance
+     * @throws IllegalArgumentException if {@code name} or {@code expression} is blank
      */
     public GraphFxFunction addFunction(final String name, final String expression) {
         final String normalizedName = requireNonBlank(name, "Function name must not be empty.");
         final String normalizedExpression = requireNonBlank(expression, "Function expression must not be empty.");
 
         final int functionIndex = functions.size();
-        final GraphFxFunction function = GraphFxFunction.create(normalizedName, normalizedExpression, GraphFxPalette.colorForIndex(functionIndex));
-        functions.add(function);
+        final GraphFxFunction function = GraphFxFunction.create(
+                normalizedName,
+                normalizedExpression,
+                GraphFxPalette.colorForIndex(functionIndex)
+        );
 
-        function.visibleProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        function.nameProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        function.expressionProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        function.colorProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        function.strokeWidthProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        functions.add(function);
+        registerFunctionRevisionListeners(function);
 
         bumpRevision();
         return function;
@@ -157,8 +157,7 @@ public class GraphFxModel {
     /**
      * Removes a function from the model.
      * <p>
-     * All graphical objects that reference the function are removed as well. If the function was selected,
-     * the selection is cleared.
+     * All objects referencing the function are removed as well. If the function was selected, the selection is cleared.
      * </p>
      *
      * @param function the function to remove; may be {@code null}
@@ -167,47 +166,51 @@ public class GraphFxModel {
         if (function == null) {
             return;
         }
+
         objects.removeIf(object -> Objects.equals(object.referencesFunctionId(), function.getId()));
         functions.remove(function);
+
         if (selectedFunction.get() == function) {
             selectedFunction.set(null);
         }
+
         bumpRevision();
     }
 
     /**
      * Adds a new variable to the model.
+     * <p>
+     * Variable names must follow {@link #VARIABLE_NAME_PATTERN}, must not be the reserved {@code "x"}, and must be unique.
+     * The variable is registered so that any property change bumps the model revision.
+     * </p>
      *
-     * @param name         variable name (must be a valid identifier and must not be "x")
-     * @param initialValue initial numeric value; if {@code null}, zero is used
-     * @return the created variable instance
-     * @throws IllegalArgumentException if the name is invalid or already in use
+     * @param name         variable name (must be a valid identifier and must not be {@code "x"})
+     * @param initialValue initial numeric value; if {@code null}, {@link BigDecimal#ZERO} is used
+     * @return the created {@link GraphFxVariable} instance
+     * @throws IllegalArgumentException if the name is invalid, reserved, or already in use
      */
     public GraphFxVariable addVariable(final String name, final BigDecimal initialValue) {
         final String validatedName = requireValidVariableName(name);
-        if ("x".equalsIgnoreCase(validatedName)) {
+
+        if (isReservedVariableName(validatedName)) {
             throw new IllegalArgumentException("The variable name 'x' is reserved for function input.");
         }
-        if (variables.stream().anyMatch(existingVariable -> existingVariable.getName().equals(validatedName))) {
+        if (isVariableNameTaken(validatedName, null)) {
             throw new IllegalArgumentException("A variable with this name already exists: " + validatedName);
         }
 
-        final GraphFxVariable variable = GraphFxVariable.create(validatedName, initialValue == null ? BigDecimal.ZERO : initialValue);
-        variables.add(variable);
+        final BigDecimal normalizedInitialValue = (initialValue == null) ? BigDecimal.ZERO : initialValue;
+        final GraphFxVariable variable = GraphFxVariable.create(validatedName, normalizedInitialValue);
 
-        variable.nameProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        variable.valueStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        variable.sliderEnabledProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        variable.sliderMinStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        variable.sliderMaxStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
-        variable.sliderStepStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variables.add(variable);
+        registerVariableRevisionListeners(variable);
 
         bumpRevision();
         return variable;
     }
 
     /**
-     * Removes the given variable from the model.
+     * Removes a variable from the model.
      *
      * @param variable the variable to remove; may be {@code null}
      */
@@ -215,6 +218,7 @@ public class GraphFxModel {
         if (variable == null) {
             return;
         }
+
         variables.remove(variable);
         bumpRevision();
     }
@@ -223,36 +227,41 @@ public class GraphFxModel {
      * Renames an existing variable while ensuring name validity and uniqueness.
      *
      * @param variable    the variable to rename; may be {@code null}
-     * @param newNameText the new variable name
+     * @param newNameText the new variable name (must be a valid identifier and must not be {@code "x"})
      * @throws IllegalArgumentException if the new name is invalid, reserved, or already taken
      */
     public void renameVariable(final GraphFxVariable variable, final String newNameText) {
         if (variable == null) {
             return;
         }
-        final String normalizedName = requireValidVariableName(newNameText);
-        if ("x".equalsIgnoreCase(normalizedName)) {
+
+        final String validatedName = requireValidVariableName(newNameText);
+
+        if (isReservedVariableName(validatedName)) {
             throw new IllegalArgumentException("The variable name 'x' is reserved for function input.");
         }
-        if (variables.stream().anyMatch(otherVariable -> otherVariable != variable && otherVariable.getName().equals(normalizedName))) {
-            throw new IllegalArgumentException("A variable with this name already exists: " + normalizedName);
+        if (isVariableNameTaken(validatedName, variable)) {
+            throw new IllegalArgumentException("A variable with this name already exists: " + validatedName);
         }
-        variable.setName(normalizedName);
+
+        variable.setName(validatedName);
         bumpRevision();
     }
 
     /**
-     * Updates the value of a variable based on a textual representation.
+     * Updates the value of a variable from a textual representation.
      *
      * @param variable  the variable to update; may be {@code null}
-     * @param valueText the new value as a string
-     * @throws IllegalArgumentException if {@code valueText} cannot be parsed as a {@link BigDecimal}
+     * @param valueText the new value as text
+     * @throws IllegalArgumentException if {@code valueText} cannot be parsed as {@link BigDecimal}
      */
     public void setVariableValue(final GraphFxVariable variable, final String valueText) {
         if (variable == null) {
             return;
         }
-        variable.setValue(parseNumber(valueText, "Invalid variable value."));
+
+        final BigDecimal parsedValue = parseBigDecimal(valueText, "Invalid variable value.");
+        variable.setValue(parsedValue);
         bumpRevision();
     }
 
@@ -260,12 +269,13 @@ public class GraphFxModel {
      * Updates the value of a variable.
      *
      * @param variable the variable to update; may be {@code null}
-     * @param value    the new numeric value; if {@code null}, zero is used
+     * @param value    the new numeric value; if {@code null}, {@link BigDecimal#ZERO} is used
      */
     public void setVariableValue(final GraphFxVariable variable, final BigDecimal value) {
         if (variable == null) {
             return;
         }
+
         variable.setValue(value == null ? BigDecimal.ZERO : value);
         bumpRevision();
     }
@@ -275,14 +285,15 @@ public class GraphFxModel {
      *
      * @param variable    the variable whose slider minimum should be updated; may be {@code null}
      * @param minimumText textual representation of the new minimum
-     * @throws IllegalArgumentException if the text cannot be parsed or results in an invalid slider range
+     * @throws IllegalArgumentException if the text cannot be parsed or results in an invalid slider configuration
      */
     public void setSliderMin(final GraphFxVariable variable, final String minimumText) {
         if (variable == null) {
             return;
         }
-        variable.setSliderMin(parseNumber(minimumText, "Invalid slider minimum."));
-        validateSlider(variable);
+
+        variable.setSliderMin(parseBigDecimal(minimumText, "Invalid slider minimum."));
+        validateSliderConfiguration(variable);
         bumpRevision();
     }
 
@@ -291,21 +302,22 @@ public class GraphFxModel {
      *
      * @param variable    the variable whose slider maximum should be updated; may be {@code null}
      * @param maximumText textual representation of the new maximum
-     * @throws IllegalArgumentException if the text cannot be parsed or results in an invalid slider range
+     * @throws IllegalArgumentException if the text cannot be parsed or results in an invalid slider configuration
      */
     public void setSliderMax(final GraphFxVariable variable, final String maximumText) {
         if (variable == null) {
             return;
         }
-        variable.setSliderMax(parseNumber(maximumText, "Invalid slider maximum."));
-        validateSlider(variable);
+
+        variable.setSliderMax(parseBigDecimal(maximumText, "Invalid slider maximum."));
+        validateSliderConfiguration(variable);
         bumpRevision();
     }
 
     /**
      * Updates the step size of the slider attached to the given variable using a textual value.
      *
-     * @param variable the variable whose slider step size should be updated; may be {@code null}
+     * @param variable the variable whose slider step should be updated; may be {@code null}
      * @param stepText textual representation of the new step size
      * @throws IllegalArgumentException if the text cannot be parsed or results in an invalid slider configuration
      */
@@ -313,34 +325,39 @@ public class GraphFxModel {
         if (variable == null) {
             return;
         }
-        variable.setSliderStep(parseNumber(stepText, "Invalid slider step."));
-        validateSlider(variable);
+
+        variable.setSliderStep(parseBigDecimal(stepText, "Invalid slider step."));
+        validateSliderConfiguration(variable);
         bumpRevision();
     }
 
     /**
-     * Returns the current variable values as a {@link Map} of name to string representation.
+     * Returns a snapshot map of the current variables (name → value as plain string).
      * <p>
-     * The returned map is detached from the underlying model and represents a snapshot at the
-     * time of the call.
+     * The returned map is detached from the model and safe to pass into calculators/evaluators.
      * </p>
      *
-     * @return a new map containing variable values as strings
+     * @return a new map containing variable values as strings (never {@code null})
      */
     public Map<String, String> variablesAsStringMap() {
         final Map<String, String> variableValuesByName = new HashMap<>();
+
         for (final GraphFxVariable variable : variables) {
-            variableValuesByName.put(variable.getName(), variable.getValue().stripTrailingZeros().toPlainString());
+            final String variableName = variable.getName();
+            final BigDecimal variableValue = variable.getValue();
+            variableValuesByName.put(variableName, variableValue.stripTrailingZeros().toPlainString());
         }
+
         return variableValuesByName;
     }
 
     /**
-     * Adds a new graphical object to the model.
+     * Adds a new graphical object (point, line, integral, ...) to the model.
      *
-     * @param object the object to add
+     * @param object the object to add (must not be {@code null})
+     * @throws NullPointerException if {@code object} is {@code null}
      */
-    public void addObject(final GraphFxObject object) {
+    public void addObject(@NonNull final GraphFxObject object) {
         objects.add(object);
         bumpRevision();
     }
@@ -356,51 +373,118 @@ public class GraphFxModel {
     /**
      * Suggests the next available variable name.
      * <p>
-     * Lowercase letters from {@code a} to {@code z} are used first (excluding {@code x}).
-     * If all are taken, names of the form {@code kN} are generated.
+     * The method prefers single lowercase letters from {@code a} to {@code z}, excluding {@code x}.
+     * If all are taken, it falls back to names of the form {@code kN}.
      * </p>
      *
-     * @return a suggested variable name that is currently unused
+     * @return a currently unused variable name suggestion (never {@code null})
      */
     public String nextSuggestedVariableName() {
         for (char candidate = 'a'; candidate <= 'z'; candidate++) {
-            final String nameCandidate = String.valueOf(candidate);
-            if (variables.stream().noneMatch(variable -> variable.getName().equals(nameCandidate)) && !"x".equalsIgnoreCase(nameCandidate)) {
-                return nameCandidate;
+            final String candidateName = String.valueOf(candidate);
+            if (!isReservedVariableName(candidateName) && !isVariableNameTaken(candidateName, null)) {
+                return candidateName;
             }
         }
+
         return "k" + (variables.size() + 1);
     }
 
-    private void bumpRevision() {
-        revision.set(revision.get() + 1);
+    /**
+     * Registers listeners on a function so that any function property change bumps the model revision.
+     *
+     * @param function the function to register (must not be {@code null})
+     */
+    private void registerFunctionRevisionListeners(@NonNull final GraphFxFunction function) {
+        function.visibleProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        function.nameProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        function.expressionProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        function.colorProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        function.strokeWidthProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
     }
 
-    private static String requireValidVariableName(final String name) {
-        final String trimmedName = name == null ? "" : name.trim();
-        if (!trimmedName.matches("[A-Za-z][A-Za-z0-9_]*")) {
+    /**
+     * Registers listeners on a variable so that any variable property change bumps the model revision.
+     *
+     * @param variable the variable to register (must not be {@code null})
+     */
+    private void registerVariableRevisionListeners(@NonNull final GraphFxVariable variable) {
+        variable.nameProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variable.valueStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variable.sliderEnabledProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variable.sliderMinStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variable.sliderMaxStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+        variable.sliderStepStringProperty().addListener((obs, oldValue, newValue) -> bumpRevision());
+    }
+
+    /**
+     * Increments the revision counter by one.
+     */
+    private void bumpRevision() {
+        revision.set(revision.get() + 1L);
+    }
+
+    /**
+     * Validates that a variable name is syntactically valid and returns a normalized form (trimmed).
+     *
+     * @param name raw variable name input
+     * @return trimmed variable name (never {@code null})
+     * @throws IllegalArgumentException if the name is {@code null}, blank, or does not match {@link #VARIABLE_NAME_PATTERN}
+     */
+    private String requireValidVariableName(final String name) {
+        final String trimmedName = (name == null) ? "" : name.trim();
+        if (!trimmedName.matches(VARIABLE_NAME_PATTERN)) {
             throw new IllegalArgumentException("Invalid variable name: " + trimmedName);
         }
         return trimmedName;
     }
 
-    private static String requireNonBlank(final String value, final String message) {
+    /**
+     * Validates that a string is not blank and returns the trimmed value.
+     *
+     * @param value   raw input value
+     * @param message exception message used if validation fails
+     * @return trimmed, non-blank value
+     * @throws IllegalArgumentException if {@code value} is {@code null} or blank
+     */
+    private String requireNonBlank(final String value, final String message) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(message);
         }
         return value.trim();
     }
 
-    private static BigDecimal parseNumber(final String value, final String message) {
+    /**
+     * Parses a {@link BigDecimal} from a textual representation.
+     *
+     * @param valueText raw text input
+     * @param message   exception message used if parsing fails
+     * @return parsed {@link BigDecimal}
+     * @throws IllegalArgumentException if the text is {@code null}, blank, or not a valid decimal number
+     */
+    private BigDecimal parseBigDecimal(final String valueText, final String message) {
         try {
-            final String trimmed = value == null ? "" : value.trim();
-            return new BigDecimal(trimmed);
-        } catch (Exception exception) {
+            final String trimmedText = (valueText == null) ? "" : valueText.trim();
+            return new BigDecimal(trimmedText);
+        } catch (final Exception exception) {
             throw new IllegalArgumentException(message);
         }
     }
 
-    private static void validateSlider(final GraphFxVariable variable) {
+    /**
+     * Validates the slider configuration of a variable.
+     * <p>
+     * Rules:
+     * </p>
+     * <ul>
+     *     <li>{@code max > min}</li>
+     *     <li>{@code step > 0}</li>
+     * </ul>
+     *
+     * @param variable variable whose slider values are validated (must not be {@code null})
+     * @throws IllegalArgumentException if the slider configuration is invalid
+     */
+    private void validateSliderConfiguration(@NonNull final GraphFxVariable variable) {
         final BigDecimal minimum = variable.getSliderMin();
         final BigDecimal maximum = variable.getSliderMax();
         final BigDecimal stepSize = variable.getSliderStep();
@@ -413,4 +497,45 @@ public class GraphFxModel {
         }
     }
 
+    /**
+     * Checks whether a variable name is reserved for internal usage.
+     *
+     * @param variableName candidate name
+     * @return {@code true} if reserved, otherwise {@code false}
+     */
+    private boolean isReservedVariableName(@NonNull final String variableName) {
+        return RESERVED_FUNCTION_INPUT_VARIABLE.equalsIgnoreCase(variableName);
+    }
+
+    /**
+     * Checks whether a variable name is already used by another variable in the model.
+     *
+     * @param variableName    candidate name (must not be {@code null})
+     * @param ignoredVariable a variable to ignore during the search (useful for rename operations); may be {@code null}
+     * @return {@code true} if another variable already uses the name, otherwise {@code false}
+     */
+    private boolean isVariableNameTaken(@NonNull final String variableName, final GraphFxVariable ignoredVariable) {
+        return variables.stream()
+                .anyMatch(existing -> existing != ignoredVariable && variableName.equals(existing.getName()));
+    }
+
+    public ObservableList<GraphFxFunction> getFunctions() {
+        return this.functions;
+    }
+
+    public ObservableList<GraphFxVariable> getVariables() {
+        return this.variables;
+    }
+
+    public ObservableList<GraphFxObject> getObjects() {
+        return this.objects;
+    }
+
+    public GraphFxSettings getSettings() {
+        return this.settings;
+    }
+
+    public LongProperty getRevision() {
+        return this.revision;
+    }
 }
