@@ -119,7 +119,7 @@ public class GraphFxAppController extends GraphFxController {
 
     private void wireSliders() {
         model.getVariables().addListener((ListChangeListener<GraphFxVariable>) c -> rebuildSliders());
-        model.revisionProperty().addListener((obs, o, n) -> rebuildSliders());
+        model.getRevision().addListener((obs, o, n) -> rebuildSliders());
         rebuildSliders();
     }
 
