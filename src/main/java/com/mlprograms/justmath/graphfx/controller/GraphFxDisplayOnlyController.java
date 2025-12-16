@@ -64,8 +64,8 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
      * After initialization, the first function (if present) is selected to establish a consistent default state.
      * </p>
      *
-     * @param calculatorEngine    the calculator calculatorEngine used by the graph view for expression evaluation
-     * @param model the model containing the functions to display
+     * @param calculatorEngine the calculator calculatorEngine used by the graph view for expression evaluation
+     * @param model            the model containing the functions to display
      * @throws NullPointerException if {@code calculatorEngine} or {@code functions} is {@code null}
      */
     public GraphFxDisplayOnlyController(@NonNull final GraphFxModel model, @NonNull final CalculatorEngine calculatorEngine) {
@@ -86,38 +86,6 @@ public class GraphFxDisplayOnlyController extends GraphFxController {
         if (model.getSelectedFunction() == null && !model.getFunctions().isEmpty()) {
             model.setSelectedFunction(model.getFunctions().getFirst());
         }
-    }
-
-    /**
-     * Creates a new model instance from the provided function specifications.
-     * <p>
-     * Each {@link GraphFxFunctionSpec} is added to the model using its name and expression. If the specification
-     * does not define a color, {@link GraphFxPalette#colorForIndex(int)} is used to assign a deterministic
-     * color based on insertion order.
-     * </p>
-     * <p>
-     * If at least one function is added, the first function is selected as the model's initial selection.
-     * </p>
-     *
-     * @param functions the function specifications to convert into model functions
-     * @return a fully initialized {@link GraphFxModel} containing the provided functions
-     * @throws NullPointerException if {@code functions} is {@code null}
-     */
-    private static GraphFxModel createModelFromSpecs(@NonNull final List<GraphFxFunctionSpec> functions) {
-        final GraphFxModel model = new GraphFxModel();
-        int index = 0;
-
-        for (final GraphFxFunctionSpec spec : functions) {
-            final var color = spec.color() != null ? spec.color() : GraphFxPalette.colorForIndex(index);
-            model.addFunction(spec.name(), spec.expression()).setColor(color);
-            index++;
-        }
-
-        if (!model.getFunctions().isEmpty()) {
-            model.setSelectedFunction(model.getFunctions().getFirst());
-        }
-
-        return model;
     }
 
     /**
