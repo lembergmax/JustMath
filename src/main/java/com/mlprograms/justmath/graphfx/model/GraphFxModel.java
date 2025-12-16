@@ -27,6 +27,7 @@ package com.mlprograms.justmath.graphfx.model;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -53,16 +54,8 @@ import java.util.*;
 @NoArgsConstructor
 public class GraphFxModel {
 
-    private final ObservableList<GraphFxFunction> functions = FXCollections.observableArrayList();
-    private final ObservableList<GraphFxVariable> variables = FXCollections.observableArrayList();
-    private final ObservableList<GraphFxObject> objects = FXCollections.observableArrayList();
-
-    private final GraphFxSettings settings = new GraphFxSettings();
-
-    private final LongProperty revision = new SimpleLongProperty(0);
-    private final ObjectProperty<GraphFxFunction> selectedFunction = new SimpleObjectProperty<>(null);
-
     /**
+     * -- GETTER --
      * Returns the list of functions that should be rendered.
      * <p>
      * The list is observable and can be bound to UI controls such as tables or combo boxes.
@@ -70,36 +63,36 @@ public class GraphFxModel {
      *
      * @return an observable list of functions
      */
-    public ObservableList<GraphFxFunction> getFunctions() {
-        return functions;
-    }
-
+    @Getter
+    private final ObservableList<GraphFxFunction> functions = FXCollections.observableArrayList();
     /**
+     * -- GETTER --
      * Returns the list of variables that can be referenced by expressions.
      *
      * @return an observable list of variables
      */
-    public ObservableList<GraphFxVariable> getVariables() {
-        return variables;
-    }
-
+    @Getter
+    private final ObservableList<GraphFxVariable> variables = FXCollections.observableArrayList();
     /**
+     * -- GETTER --
      * Returns the list of graphical objects created by tools (points, lines, integrals, ...).
      *
      * @return an observable list of graphical objects
      */
-    public ObservableList<GraphFxObject> getObjects() {
-        return objects;
-    }
+    @Getter
+    private final ObservableList<GraphFxObject> objects = FXCollections.observableArrayList();
 
     /**
+     * -- GETTER --
      * Returns the global rendering/settings object.
      *
      * @return the settings instance
      */
-    public GraphFxSettings getSettings() {
-        return settings;
-    }
+    @Getter
+    private final GraphFxSettings settings = new GraphFxSettings();
+
+    private final LongProperty revision = new SimpleLongProperty(0);
+    private final ObjectProperty<GraphFxFunction> selectedFunction = new SimpleObjectProperty<>(null);
 
     /**
      * Returns a property that is incremented whenever a relevant change occurs in the model.
@@ -111,15 +104,6 @@ public class GraphFxModel {
      */
     public LongProperty revisionProperty() {
         return revision;
-    }
-
-    /**
-     * Property representing the currently selected function, if any.
-     *
-     * @return the selected function property
-     */
-    public ObjectProperty<GraphFxFunction> selectedFunctionProperty() {
-        return selectedFunction;
     }
 
     /**
@@ -358,16 +342,6 @@ public class GraphFxModel {
      */
     public void addObject(final GraphFxObject object) {
         objects.add(object);
-        bumpRevision();
-    }
-
-    /**
-     * Removes a graphical object by its identifier.
-     *
-     * @param id the identifier of the object to remove
-     */
-    public void removeObject(final UUID id) {
-        objects.removeIf(object -> object.id().equals(id));
         bumpRevision();
     }
 
