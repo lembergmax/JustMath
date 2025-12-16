@@ -26,7 +26,6 @@ package com.mlprograms.justmath.graphfx.controller;
 
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.service.GraphFxExportService;
-import com.mlprograms.justmath.graphfx.service.graphFxExportService;
 import com.mlprograms.justmath.graphfx.view.GraphFxGraphView;
 import com.mlprograms.justmath.graphfx.view.GraphToolbarView;
 import javafx.beans.binding.Bindings;
