@@ -42,9 +42,6 @@ package com.mlprograms.justmath.graphfx.model;
  */
 public final class GraphFxNiceTicks {
 
-    private GraphFxNiceTicks() {
-    }
-
     /**
      * Computes a "nice" step size for the interval {@code [min, max]} given a desired number of grid lines.
      * <p>
