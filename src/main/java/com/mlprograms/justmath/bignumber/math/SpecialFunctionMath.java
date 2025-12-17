@@ -135,7 +135,7 @@ public class SpecialFunctionMath {
 		BigNumber gammaY = gamma(yClone, mathContext, locale);
 		BigNumber gammaXY = gamma(xClone.add(yClone), mathContext, locale);
 
-		return gammaX.multiply(gammaY).divide(gammaXY, mathContext);
+		return new BigNumber(gammaX.multiply(gammaY).divide(gammaXY, mathContext));
 	}
 
 }
