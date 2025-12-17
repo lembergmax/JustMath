@@ -54,16 +54,11 @@ import java.util.Map;
 public final class GraphFxAnalysisMath {
 
     private final MathContext DEFAULT_MATH_CONTEXT = MathContext.DECIMAL128;
-
-    private final BigNumber DERIVATIVE_ZERO_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
-
-    private final BigNumber ROOT_DISTINCT_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-9), DEFAULT_MATH_CONTEXT);
-
-    private final BigNumber BISECTION_INTERVAL_TOLERANCE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-12), DEFAULT_MATH_CONTEXT);
-
-    private final BigNumber STEP_BASE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
-
-    private final BigNumber STEP_SCALE = bigNumberFromPlainDecimal(BigDecimal.ONE.scaleByPowerOfTen(-6), DEFAULT_MATH_CONTEXT);
+    private final BigNumber DERIVATIVE_ZERO_TOLERANCE = BigNumbers.ONE.power(new BigNumber("-12"), DEFAULT_MATH_CONTEXT);
+    private final BigNumber ROOT_DISTINCT_TOLERANCE = BigNumbers.ONE.power(new BigNumber("-9"), DEFAULT_MATH_CONTEXT);
+    private final BigNumber BISECTION_INTERVAL_TOLERANCE = BigNumbers.ONE.power(new BigNumber("-12"), DEFAULT_MATH_CONTEXT);
+    private final BigNumber STEP_BASE = BigNumbers.ONE.power(new BigNumber("-6"), DEFAULT_MATH_CONTEXT);
+    private final BigNumber STEP_SCALE = BigNumbers.ONE.power(new BigNumber("-6"), DEFAULT_MATH_CONTEXT);
 
     /**
      * Evaluates an expression for a given x value and returns a finite {@link Double} suitable for plotting.
@@ -105,7 +100,7 @@ public final class GraphFxAnalysisMath {
      * @param x          the point at which the derivative is approximated
      * @return the derivative as {@link BigDecimal}, or {@code null} if evaluation fails or division becomes invalid
      */
-    public BigDecimal derivative(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
+    public BigNumber derivative(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal x) {
         final BigNumber xValue = toBigNumber(x, DEFAULT_MATH_CONTEXT);
         final BigNumber stepSize = chooseStep(xValue);
 
@@ -123,8 +118,7 @@ public final class GraphFxAnalysisMath {
             return null;
         }
 
-        final BigNumber derivative = numerator.divide(denominator, DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
-        return derivative.toBigDecimal();
+        return numerator.divide(denominator, DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
     }
 
     /**
@@ -156,7 +150,6 @@ public final class GraphFxAnalysisMath {
         final BigNumber rightBound = toBigNumber(xMax, DEFAULT_MATH_CONTEXT);
 
         final BigNumber stepSize = rightBound.subtract(leftBound).divide(toBigNumber(BigDecimal.valueOf(effectiveSteps), DEFAULT_MATH_CONTEXT), DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
-
         final List<BigDecimal> roots = new ArrayList<>();
 
         BigNumber previousX = leftBound;
@@ -164,7 +157,6 @@ public final class GraphFxAnalysisMath {
 
         for (int index = 1; index <= effectiveSteps; index++) {
             final BigNumber currentX = (index == effectiveSteps) ? rightBound : leftBound.add(stepSize.multiply(toBigNumber(BigDecimal.valueOf(index), DEFAULT_MATH_CONTEXT)));
-
             final BigNumber currentY = evaluateYAsBigNumber(engine, expression, variables, currentX.toBigDecimal());
 
             if (previousY != null && currentY != null) {
