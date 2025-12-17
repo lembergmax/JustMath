@@ -98,11 +98,7 @@ public final class GraphFxFunction {
      * @param color      base color used for rendering the function (must not be {@code null})
      * @return a new {@link GraphFxFunction} instance
      */
-    public static GraphFxFunction create(
-            @NonNull final String name,
-            @NonNull final String expression,
-            @NonNull final Color color
-    ) {
+    public static GraphFxFunction create(@NonNull final String name, @NonNull final String expression, @NonNull final Color color) {
         final GraphFxFunction function = new GraphFxFunction(UUID.randomUUID());
         function.setName(name);
         function.setExpression(expression);

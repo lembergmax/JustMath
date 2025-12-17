@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.view;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.model.*;
 import com.mlprograms.justmath.graphfx.service.GraphFxAnalysisMath;
@@ -1333,13 +1334,13 @@ public class GraphFxGraphView extends StackPane {
 
         if (activeToolMode == ToolMode.TANGENT || activeToolMode == ToolMode.NORMAL) {
             final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
-            final BigDecimal slope = graphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX).toBigDecimal();
+            final BigNumber slope = graphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX);
 
             if (y == null || slope == null) {
                 return;
             }
 
-            final BigDecimal lineSlope = activeToolMode == ToolMode.TANGENT ? slope : invertSlope(slope);
+            final BigDecimal lineSlope = activeToolMode == ToolMode.TANGENT ? slope.toBigDecimal() : invertSlope(slope.toBigDecimal());
             if (lineSlope == null) {
                 return;
             }

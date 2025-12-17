@@ -26,15 +26,10 @@ package com.mlprograms.justmath.graphfx;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.controller.GraphFxAppController;
-import com.mlprograms.justmath.graphfx.controller.GraphFxFunctionSpec;
-import com.mlprograms.justmath.graphfx.model.GraphFxFunction;
 import com.mlprograms.justmath.graphfx.model.GraphFxModel;
 import com.mlprograms.justmath.graphfx.util.FxBootstrap;
 import javafx.stage.Stage;
 import lombok.NonNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class GraphFxApp extends GraphFxDisplay {
 
