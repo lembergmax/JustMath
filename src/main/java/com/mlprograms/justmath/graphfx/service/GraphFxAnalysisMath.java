@@ -329,7 +329,6 @@ public final class GraphFxAnalysisMath {
 
             if (hasOppositeSigns(yAtLower, yAtMidpoint)) {
                 upperBound = midpoint;
-                yAtUpper = yAtMidpoint;
             } else {
                 lowerBound = midpoint;
                 yAtLower = yAtMidpoint;
@@ -462,16 +461,4 @@ public final class GraphFxAnalysisMath {
         return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
     }
 
-    /**
-     * Creates a {@link BigNumber} from a plain {@link BigDecimal} using the given math context.
-     *
-     * <p>This helper exists to make constant initialization explicit and consistent throughout this class.</p>
-     *
-     * @param value       decimal value to convert
-     * @param mathContext math context to associate with the created {@link BigNumber}
-     * @return created {@link BigNumber}
-     */
-    private BigNumber bigNumberFromPlainDecimal(@NonNull final BigDecimal value, @NonNull final MathContext mathContext) {
-        return new BigNumber(value.toPlainString(), BigNumbers.CALCULATION_LOCALE, mathContext);
-    }
 }
