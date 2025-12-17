@@ -133,7 +133,7 @@ public class BasicMath {
         }
 
         if (dividend.isNegative()) {
-            return divisorAbs.subtract(remainder).trim();
+            return new BigNumber(divisorAbs.subtract(remainder).trim());
         } else {
             return new BigNumber(remainder, locale).trim();
         }
@@ -187,12 +187,12 @@ public class BasicMath {
 
         // Exponent == 0 → result = 1
         if (BigDecimal.ZERO.compareTo(bigDecimalValue) == 0) {
-            return ONE;
+            return new BigNumber(ONE);
         }
 
         // Exponent == 1 → result = base
         if (BigDecimal.ONE.compareTo(bigDecimalValue) == 0) {
-            return base.trim();
+            return new BigNumber(base.trim());
         }
 
         // Exponent == -1 → result = 1 / base
@@ -215,7 +215,7 @@ public class BasicMath {
             if (bigDecimalValue.signum() < 0) {
                 throw new ArithmeticException("Cannot compute 0^" + bigDecimalValue + " (log undefined)");
             } else if (bigDecimalValue.signum() > 0) {
-                return ZERO; // 0^positive = 0
+                return new BigNumber(ZERO); // 0^positive = 0
             }
             // 0^0 is handled above (returns 1)
         }
