@@ -290,9 +290,7 @@ public class GraphFxGraphView extends StackPane {
             }
 
             for (int i = 0; i <= sampleCount; i++) {
-                final BigDecimal x = (i == sampleCount)
-                        ? xMax
-                        : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
+                final BigDecimal x = (i == sampleCount) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
                 final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
                 if (y == null) {
@@ -450,12 +448,7 @@ public class GraphFxGraphView extends StackPane {
         public WorldView pad(final double factor) {
             final double width = xMax - xMin;
             final double height = yMax - yMin;
-            return new WorldView(
-                    xMin - width * factor,
-                    xMax + width * factor,
-                    yMin - height * factor,
-                    yMax + height * factor
-            );
+            return new WorldView(xMin - width * factor, xMax + width * factor, yMin - height * factor, yMax + height * factor);
         }
 
         /**
@@ -779,12 +772,7 @@ public class GraphFxGraphView extends StackPane {
         final double worldY2 = screenToWorldY(zoomBoxScreenY);
 
         pushUndoView();
-        worldView = new WorldView(
-                Math.min(worldX1, worldX2),
-                Math.max(worldX1, worldX2),
-                Math.min(worldY1, worldY2),
-                Math.max(worldY1, worldY2)
-        );
+        worldView = new WorldView(Math.min(worldX1, worldX2), Math.max(worldX1, worldX2), Math.min(worldY1, worldY2), Math.max(worldY1, worldY2));
 
         enforceAspectExpandOnly();
         redoStack.clear();
@@ -961,14 +949,7 @@ public class GraphFxGraphView extends StackPane {
      * @param color        line color
      * @param lineWidth    stroke width in pixels
      */
-    private void drawGridLines(
-            @NonNull final GraphicsContext graphics,
-            final double canvasWidth,
-            final double canvasHeight,
-            final double step,
-            @NonNull final Color color,
-            final double lineWidth
-    ) {
+    private void drawGridLines(@NonNull final GraphicsContext graphics, final double canvasWidth, final double canvasHeight, final double step, @NonNull final Color color, final double lineWidth) {
         if (!(step > 0) || !Double.isFinite(step)) {
             return;
         }
@@ -1136,12 +1117,7 @@ public class GraphFxGraphView extends StackPane {
 
         graphics.setStroke(line.style().colorWithAlpha());
         graphics.setLineWidth(line.style().strokeWidth());
-        graphics.strokeLine(
-                worldToScreenX(xMin),
-                worldToScreenY(yAtLeft),
-                worldToScreenX(xMax),
-                worldToScreenY(yAtRight)
-        );
+        graphics.strokeLine(worldToScreenX(xMin), worldToScreenY(yAtLeft), worldToScreenX(xMax), worldToScreenY(yAtRight));
     }
 
     /**
@@ -1153,10 +1129,7 @@ public class GraphFxGraphView extends StackPane {
      * @param integral integral object to draw
      */
     private void drawIntegralObject(@NonNull final GraphicsContext graphics, @NonNull final GraphFxIntegralObject integral) {
-        final GraphFxFunction function = model.getFunctions().stream()
-                .filter(f -> f.getId().equals(integral.functionId()))
-                .findFirst()
-                .orElse(null);
+        final GraphFxFunction function = model.getFunctions().stream().filter(f -> f.getId().equals(integral.functionId())).findFirst().orElse(null);
 
         if (function == null) {
             return;
@@ -1180,9 +1153,7 @@ public class GraphFxGraphView extends StackPane {
         polygonYs.add(worldToScreenY(0));
 
         for (int i = 0; i <= fillSamples; i++) {
-            final BigDecimal x = (i == fillSamples)
-                    ? max
-                    : min.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
+            final BigDecimal x = (i == fillSamples) ? max : min.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
             final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
             if (y == null) {
@@ -1203,11 +1174,7 @@ public class GraphFxGraphView extends StackPane {
         }
 
         graphics.setFill(Color.rgb(55, 55, 55));
-        graphics.fillText(
-                "∫ = " + integral.value().stripTrailingZeros().toPlainString(),
-                worldToScreenX(min.doubleValue()) + 10,
-                worldToScreenY(0) - 10
-        );
+        graphics.fillText("∫ = " + integral.value().stripTrailingZeros().toPlainString(), worldToScreenX(min.doubleValue()) + 10, worldToScreenY(0) - 10);
     }
 
     /**
@@ -1244,9 +1211,7 @@ public class GraphFxGraphView extends StackPane {
         final WorldView viewSnapshot = worldView;
         final Map<String, String> variablesSnapshot = model.variablesAsStringMap();
 
-        final int desiredSamples = isInteractiveModeEnabled
-                ? Math.max(MIN_INTERACTIVE_SAMPLES, (int) plotCanvas.getWidth())
-                : Math.max(MIN_QUALITY_SAMPLES, (int) plotCanvas.getWidth() * 2);
+        final int desiredSamples = isInteractiveModeEnabled ? Math.max(MIN_INTERACTIVE_SAMPLES, (int) plotCanvas.getWidth()) : Math.max(MIN_QUALITY_SAMPLES, (int) plotCanvas.getWidth() * 2);
 
         for (final GraphFxFunction function : model.getFunctions()) {
             if (!function.isVisible()) {
@@ -1294,12 +1259,7 @@ public class GraphFxGraphView extends StackPane {
      * @param samples   number of samples across the x-range
      * @return sampled polyline with one or more segments
      */
-    private GraphPolyline sampleFunctionPolyline(
-            @NonNull final GraphFxFunction function,
-            @NonNull final WorldView view,
-            @NonNull final Map<String, String> variables,
-            final int samples
-    ) {
+    private GraphPolyline sampleFunctionPolyline(@NonNull final GraphFxFunction function, @NonNull final WorldView view, @NonNull final Map<String, String> variables, final int samples) {
         final BigDecimal xMin = BigDecimal.valueOf(view.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(view.xMax());
         final BigDecimal step = xMax.subtract(xMin, MATH_CONTEXT).divide(BigDecimal.valueOf(samples), MATH_CONTEXT);
@@ -1310,9 +1270,7 @@ public class GraphFxGraphView extends StackPane {
         Double lastY = null;
 
         for (int i = 0; i <= samples; i++) {
-            final BigDecimal x = (i == samples)
-                    ? xMax
-                    : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
+            final BigDecimal x = (i == samples) ? xMax : xMin.add(step.multiply(BigDecimal.valueOf(i), MATH_CONTEXT), MATH_CONTEXT);
 
             final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, x);
 
@@ -1375,7 +1333,7 @@ public class GraphFxGraphView extends StackPane {
 
         if (activeToolMode == ToolMode.TANGENT || activeToolMode == ToolMode.NORMAL) {
             final Double y = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, worldX);
-            final BigDecimal slope = graphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX);
+            final BigDecimal slope = graphFxAnalysisMath.derivative(calculatorEngine, function.getExpression(), variables, worldX).toBigDecimal();
 
             if (y == null || slope == null) {
                 return;
@@ -1395,14 +1353,7 @@ public class GraphFxGraphView extends StackPane {
             final BigDecimal left = worldX.subtract(xRange.multiply(new BigDecimal("0.08")), MATH_CONTEXT);
             final BigDecimal right = worldX.add(xRange.multiply(new BigDecimal("0.08")), MATH_CONTEXT);
 
-            final List<BigDecimal> roots = graphFxAnalysisMath.rootsInRange(
-                    calculatorEngine,
-                    function.getExpression(),
-                    variables,
-                    left,
-                    right,
-                    ROOT_SEARCH_STEPS
-            );
+            final List<BigDecimal> roots = graphFxAnalysisMath.rootsInRange(calculatorEngine, function.getExpression(), variables, left, right, ROOT_SEARCH_STEPS);
 
             if (roots.isEmpty()) {
                 return;
@@ -1438,10 +1389,7 @@ public class GraphFxGraphView extends StackPane {
             return;
         }
 
-        final GraphFxFunction firstFunction = model.getFunctions().stream()
-                .filter(f -> f.getId().equals(intersectionFirstFunctionId))
-                .findFirst()
-                .orElse(null);
+        final GraphFxFunction firstFunction = model.getFunctions().stream().filter(f -> f.getId().equals(intersectionFirstFunctionId)).findFirst().orElse(null);
 
         if (firstFunction == null) {
             intersectionFirstFunctionId = null;
@@ -1451,15 +1399,7 @@ public class GraphFxGraphView extends StackPane {
         final BigDecimal xMin = BigDecimal.valueOf(worldView.xMin());
         final BigDecimal xMax = BigDecimal.valueOf(worldView.xMax());
 
-        final List<BigDecimal> intersectionXs = graphFxAnalysisMath.intersectionsInRange(
-                calculatorEngine,
-                firstFunction.getExpression(),
-                secondFunction.getExpression(),
-                variables,
-                xMin,
-                xMax,
-                INTERSECTION_SEARCH_STEPS
-        );
+        final List<BigDecimal> intersectionXs = graphFxAnalysisMath.intersectionsInRange(calculatorEngine, firstFunction.getExpression(), secondFunction.getExpression(), variables, xMin, xMax, INTERSECTION_SEARCH_STEPS);
 
         for (final BigDecimal x : intersectionXs) {
             final Double y = graphFxAnalysisMath.evalY(calculatorEngine, firstFunction.getExpression(), variables, x);
@@ -1480,10 +1420,7 @@ public class GraphFxGraphView extends StackPane {
      * @param endX world x-coordinate where the selection ends
      */
     private void finalizeIntegral(@NonNull final BigDecimal endX) {
-        final GraphFxFunction function = model.getFunctions().stream()
-                .filter(f -> f.getId().equals(integralFunctionId))
-                .findFirst()
-                .orElse(null);
+        final GraphFxFunction function = model.getFunctions().stream().filter(f -> f.getId().equals(integralFunctionId)).findFirst().orElse(null);
 
         if (function == null) {
             return;
@@ -1494,14 +1431,7 @@ public class GraphFxGraphView extends StackPane {
 
         final int steps = isInteractiveModeEnabled ? INTEGRAL_STEPS_INTERACTIVE : INTEGRAL_STEPS_QUALITY;
 
-        final BigDecimal value = graphFxAnalysisMath.integralSimpson(
-                calculatorEngine,
-                function.getExpression(),
-                model.variablesAsStringMap(),
-                a,
-                b,
-                steps
-        );
+        final BigDecimal value = graphFxAnalysisMath.integralSimpson(calculatorEngine, function.getExpression(), model.variablesAsStringMap(), a, b, steps);
 
         if (value == null) {
             return;
@@ -1530,12 +1460,7 @@ public class GraphFxGraphView extends StackPane {
                 continue;
             }
 
-            final Double functionY = graphFxAnalysisMath.evalY(
-                    calculatorEngine,
-                    function.getExpression(),
-                    variables,
-                    BigDecimal.valueOf(worldX)
-            );
+            final Double functionY = graphFxAnalysisMath.evalY(calculatorEngine, function.getExpression(), variables, BigDecimal.valueOf(worldX));
 
             if (functionY == null) {
                 continue;
