@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Controller for a display-only GraphFX window.
  * <p>
- * This controller creates a {@link GraphFxModel} from a list of {@link GraphFxFunctionSpec} specifications and
+ * This controller creates a {@link GraphFxModel} from a list of {@link com.mlprograms.justmath.graphfx.model.GraphFxFunction} specifications and
  * wires it to a {@link GraphFxGraphView} and a {@link GraphToolbarView}. Unlike an editor-style controller,
  * this controller focuses on presenting functions for visualization and interaction (e.g., move/zoom tools)
  * while not providing an explicit authoring workflow.
