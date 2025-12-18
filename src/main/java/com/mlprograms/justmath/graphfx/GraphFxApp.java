@@ -186,7 +186,7 @@ public final class GraphFxApp extends GraphFxDisplay {
      * <p>
      * UI creation and controller construction are performed on the JavaFX Application Thread
      * using {@link FxBootstrap#callAndWait(java.util.function.Supplier)}. For each
-     * {@link GraphFxFunctionSpec}, a corresponding {@code GraphFxFunction} is added to the model
+     * {@link com.mlprograms.justmath.graphfx.model.GraphFxFunction}, a corresponding {@code GraphFxFunction} is added to the model
      * prior to creating the {@link GraphFxAppController}.
      * </p>
      *
