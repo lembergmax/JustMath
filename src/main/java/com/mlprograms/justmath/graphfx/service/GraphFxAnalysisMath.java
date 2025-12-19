@@ -199,56 +199,6 @@ public final class GraphFxAnalysisMath {
     }
 
     /**
-     * Approximates the definite integral {@code ∫[a..b] f(x) dx} using Simpson's rule.
-     *
-     * <p>The number of sub-intervals {@code n} is normalized to be even and at least 2.
-     * Simpson's rule then computes:
-     * {@code (h/3) * [f(x0) + f(xn) + 4*sum(f(x_odd)) + 2*sum(f(x_even))]}
-     * with {@code h = (b-a)/n}.</p>
-     *
-     * <p>If the integrand cannot be evaluated at any sample point, {@code null} is returned.
-     * If the interval width becomes approximately zero, {@code BigDecimal.ZERO} is returned.</p>
-     *
-     * @param engine     the calculator engine used to evaluate the expression
-     * @param expression the integrand expression f(x)
-     * @param variables  additional variables used by the expression (will be copied and not mutated)
-     * @param a          lower integration bound
-     * @param b          upper integration bound
-     * @param n          number of sub-intervals (will be normalized to an even number ≥ 2)
-     * @return the Simpson approximation as {@link BigDecimal}, or {@code null} if evaluation fails
-     */
-    public BigDecimal integralSimpson(@NonNull final CalculatorEngine engine, @NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final BigDecimal a, @NonNull final BigDecimal b, final int n) {
-        final int normalizedIntervals = normalizeSimpsonIntervals(n);
-
-        final BigNumber leftBound = toBigNumber(a, DEFAULT_MATH_CONTEXT);
-        final BigNumber rightBound = toBigNumber(b, DEFAULT_MATH_CONTEXT);
-
-        final BigNumber intervalWidth = rightBound.subtract(leftBound).divide(toBigNumber(BigDecimal.valueOf(normalizedIntervals), DEFAULT_MATH_CONTEXT), DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
-
-        if (isApproximatelyZero(intervalWidth, DERIVATIVE_ZERO_TOLERANCE)) {
-            return BigDecimal.ZERO;
-        }
-
-        BigNumber weightedSum = toBigNumber(BigDecimal.ZERO, DEFAULT_MATH_CONTEXT);
-
-        for (int index = 0; index <= normalizedIntervals; index++) {
-            final BigNumber xValue = leftBound.add(intervalWidth.multiply(toBigNumber(BigDecimal.valueOf(index), DEFAULT_MATH_CONTEXT)));
-            final BigNumber yValue = evaluateYAsBigNumber(engine, expression, variables, xValue.toBigDecimal());
-
-            if (yValue == null) {
-                return null;
-            }
-
-            final BigNumber weight = simpsonWeight(index, normalizedIntervals);
-            weightedSum = weightedSum.add(yValue.multiply(weight));
-        }
-
-        final BigNumber integral = weightedSum.multiply(intervalWidth).divide(BigNumbers.THREE, DEFAULT_MATH_CONTEXT, BigNumbers.CALCULATION_LOCALE);
-
-        return integral.toBigDecimal();
-    }
-
-    /**
      * Evaluates {@code expression} at the given x-value using the provided calculator engine.
      *
      * <p>This helper creates a defensive copy of {@code variables}, injects {@code "x"} with a plain string
