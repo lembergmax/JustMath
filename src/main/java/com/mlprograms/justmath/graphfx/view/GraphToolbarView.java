@@ -80,7 +80,6 @@ public final class GraphToolbarView extends ToolBar {
     private final ToggleButton normal = new ToggleButton("Normal");
     private final ToggleButton root = new ToggleButton("Root");
     private final ToggleButton intersect = new ToggleButton("Intersect");
-    private final ToggleButton integral = new ToggleButton("Integral");
 
     private final Button resetView = new Button("Reset view");
     private final Button clearMarks = new Button("Clear marks");
@@ -139,10 +138,6 @@ public final class GraphToolbarView extends ToolBar {
                 "Intersection tool",
                 "Step 1: Click the first function.\nStep 2: Click the second function.\nIntersection points in the visible x-range will be added."
         ));
-        configureToolToggle(integral, tooltip(
-                "Integral tool",
-                "Step 1: Click near a function to select it.\nStep 2: Drag and release to choose the interval.\nAn area + numeric integral value will be added."
-        ));
 
         move.setSelected(true);
 
@@ -164,7 +159,7 @@ public final class GraphToolbarView extends ToolBar {
         getItems().setAll(
                 move, zoomBox,
                 new Separator(),
-                point, tangent, normal, root, intersect, integral,
+                point, tangent, normal, root, intersect,
                 new Separator(),
                 resetView, clearMarks,
                 new Separator(),
@@ -237,15 +232,6 @@ public final class GraphToolbarView extends ToolBar {
      */
     public ToggleButton intersectButton() {
         return intersect;
-    }
-
-    /**
-     * Returns the "Integral" tool toggle button.
-     *
-     * @return the integral tool button
-     */
-    public ToggleButton integralButton() {
-        return integral;
     }
 
     /**
