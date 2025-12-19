@@ -108,11 +108,7 @@ public class GraphFxGraphView extends StackPane {
         /**
          * Pick two different functions and place intersection markers in the current x-range.
          */
-        INTERSECTION,
-        /**
-         * Click-drag to create an integral object between start and end x on a function.
-         */
-        INTEGRAL
+        INTERSECTION
     }
 
     /**
@@ -654,11 +650,6 @@ public class GraphFxGraphView extends StackPane {
             return;
         }
 
-        if (activeToolMode == ToolMode.INTEGRAL) {
-            beginIntegralSelection(screenX, screenY);
-            return;
-        }
-
         if (activeToolMode != ToolMode.MOVE && primaryButtonDown) {
             handleToolClick(screenX, screenY);
         }
@@ -699,14 +690,6 @@ public class GraphFxGraphView extends StackPane {
             applyZoomBoxIfValid();
             zoomBoxScreenWidth = 0;
             zoomBoxScreenHeight = 0;
-            renderImmediately();
-            return;
-        }
-
-        if (activeToolMode == ToolMode.INTEGRAL && integralStartX != null && integralFunctionId != null) {
-            finalizeIntegral(BigDecimal.valueOf(screenToWorldX(screenX)));
-            integralStartX = null;
-            integralFunctionId = null;
             renderImmediately();
         }
     }
@@ -1411,34 +1394,6 @@ public class GraphFxGraphView extends StackPane {
         }
 
         intersectionFirstFunctionId = null;
-    }
-
-    /**
-     * Finalizes an integral selection by computing its value and adding a {@link GraphFxIntegralObject} to the model.
-     * <p>
-     * The integral is evaluated numerically using Simpson's rule via {@link GraphFxAnalysisMath}.
-     *
-     * @param endX world x-coordinate where the selection ends
-     */
-    private void finalizeIntegral(@NonNull final BigDecimal endX) {
-        final GraphFxFunction function = model.getFunctions().stream().filter(f -> f.getId().equals(integralFunctionId)).findFirst().orElse(null);
-
-        if (function == null) {
-            return;
-        }
-
-        final BigDecimal a = integralStartX;
-        final BigDecimal b = endX;
-
-        final int steps = isInteractiveModeEnabled ? INTEGRAL_STEPS_INTERACTIVE : INTEGRAL_STEPS_QUALITY;
-
-        final BigDecimal value = graphFxAnalysisMath.integralSimpson(calculatorEngine, function.getExpression(), model.variablesAsStringMap(), a, b, steps);
-
-        if (value == null) {
-            return;
-        }
-
-        model.addObject(GraphFxIntegralObject.of(function.getId(), a, b, value, function.getColor()));
     }
 
     /**

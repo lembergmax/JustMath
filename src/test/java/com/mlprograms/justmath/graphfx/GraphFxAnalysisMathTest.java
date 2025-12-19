@@ -108,17 +108,6 @@ final class GraphFxAnalysisMathTest {
                 "Expected intersection near x=0.5.");
     }
 
-    @Test
-    void integralSimpson_integratesXFrom0To1_isApproximatelyHalf_evenWhenNOdd() {
-        final CalculatorEngine engine = mockEngineForExpressions();
-        final GraphFxAnalysisMath math = new GraphFxAnalysisMath();
-
-        final BigDecimal area = math.integralSimpson(engine, "x", Map.of(), BigDecimal.ZERO, BigDecimal.ONE, 9);
-
-        assertNotNull(area);
-        assertTrue(area.subtract(new BigDecimal("0.5")).abs().compareTo(new BigDecimal("0.01")) < 0);
-    }
-
     private static CalculatorEngine mockEngineForExpressions() {
         final CalculatorEngine engine = Mockito.mock(CalculatorEngine.class);
 

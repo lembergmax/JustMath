@@ -114,7 +114,6 @@ public abstract class GraphFxController {
         toolbar.normalButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.NORMAL));
         toolbar.rootButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.ROOT));
         toolbar.intersectButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.INTERSECTION));
-        toolbar.integralButton().setOnAction(e -> selectTool(GraphFxGraphView.ToolMode.INTEGRAL));
 
         toolbar.resetViewButton().setOnAction(e -> graphView.resetView());
 
