@@ -24,25 +24,32 @@
 
 package com.mlprograms.justmath.graphfx;
 
+
+import com.mlprograms.justmath.graphfx.config.WindowConfig;
 import javafx.scene.Parent;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.Objects;
 
+/**
+ * Minimal "display-only" wrapper for quickly showing the cartesian pane in a Stage.
+ * Useful for demos, previews and non-JavaFX callers.
+ */
 @Getter
-public final class ZoomableCartesianSystem {
+public final class GraphFxDisplayOnlyApp {
 
-    private final ZoomableCartesianPane pane;
+    private final GraphFxDisplayPane pane;
 
-    public ZoomableCartesianSystem() {
+    public GraphFxDisplayOnlyApp() {
         this(CartesianTheme.LIGHT);
     }
 
-    public ZoomableCartesianSystem(final CartesianTheme theme) {
-        this.pane = new ZoomableCartesianPane(theme);
+    public GraphFxDisplayOnlyApp(final CartesianTheme theme) {
+        this(new GraphFxDisplayPane(theme == null ? CartesianTheme.LIGHT : theme));
     }
 
-    public ZoomableCartesianSystem(final ZoomableCartesianPane pane) {
+    public GraphFxDisplayOnlyApp(@NonNull final GraphFxDisplayPane pane) {
         this.pane = Objects.requireNonNull(pane, "pane");
     }
 
@@ -50,25 +57,20 @@ public final class ZoomableCartesianSystem {
         return pane;
     }
 
-    public void setTheme(final CartesianTheme theme) {
-        FxBootstrap.runLater(() -> pane.setTheme(theme));
-    }
-
-    public CartesianTheme getTheme() {
-        return pane.getTheme();
-    }
-
     public void centerOrigin() {
         FxBootstrap.runLater(pane::centerOrigin);
     }
 
-    public void show() {
-        show("Koordinatensystem", 1000, 700);
+    public void setTheme(final CartesianTheme theme) {
+        FxBootstrap.runLater(() -> pane.setTheme(theme));
     }
 
-    public void show(final String title, final double width, final double height) {
+    public void show() {
+        show(WindowConfig.DEFAULT_WINDOW_TITLE, WindowConfig.DEFAULT_WINDOW_WIDTH, WindowConfig.DEFAULT_WINDOW_HEIGHT);
+    }
+
+    public void show(@NonNull final String title, final double width, final double height) {
         FxBootstrap.showInWindow(title, pane, width, height);
     }
 
 }
-
