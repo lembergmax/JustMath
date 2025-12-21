@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.graphfx;
 
-public enum CartesianTheme {
+public enum DisplayTheme {
 
     DARK,
     LIGHT

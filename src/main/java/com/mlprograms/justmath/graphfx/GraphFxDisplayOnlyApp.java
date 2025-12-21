@@ -42,11 +42,11 @@ public final class GraphFxDisplayOnlyApp {
     private final GraphFxDisplayPane pane;
 
     public GraphFxDisplayOnlyApp() {
-        this(CartesianTheme.LIGHT);
+        this(DisplayTheme.LIGHT);
     }
 
-    public GraphFxDisplayOnlyApp(final CartesianTheme theme) {
-        this(new GraphFxDisplayPane(theme == null ? CartesianTheme.LIGHT : theme));
+    public GraphFxDisplayOnlyApp(final DisplayTheme theme) {
+        this(new GraphFxDisplayPane(theme == null ? DisplayTheme.LIGHT : theme));
     }
 
     public GraphFxDisplayOnlyApp(@NonNull final GraphFxDisplayPane pane) {
@@ -61,7 +61,7 @@ public final class GraphFxDisplayOnlyApp {
         FxBootstrap.runLater(pane::centerOrigin);
     }
 
-    public void setTheme(final CartesianTheme theme) {
+    public void setTheme(final DisplayTheme theme) {
         FxBootstrap.runLater(() -> pane.setTheme(theme));
     }
 

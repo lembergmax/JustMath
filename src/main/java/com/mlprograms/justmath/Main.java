@@ -24,15 +24,15 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.CartesianTheme;
+import com.mlprograms.justmath.graphfx.DisplayTheme;
 import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        new GraphFxDisplayOnlyApp(CartesianTheme.LIGHT).show();
-        new GraphFxDisplayOnlyApp(CartesianTheme.DARK).show();
+        new GraphFxDisplayOnlyApp(DisplayTheme.LIGHT).show();
+        new GraphFxDisplayOnlyApp(DisplayTheme.DARK).show();
 
     }
 
