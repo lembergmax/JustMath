@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Safe JavaFX bootstrap helper for library usage outside a JavaFX Application.
  */
 @UtilityClass
-public class FxBootstrap {
+class FxBootstrap {
 
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
