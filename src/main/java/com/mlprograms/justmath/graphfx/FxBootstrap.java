@@ -28,14 +28,17 @@ import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@NoArgsConstructor
-public final class FxBootstrap {
+/**
+ * Safe JavaFX bootstrap helper for library usage outside a JavaFX Application.
+ */
+@UtilityClass
+public class FxBootstrap {
 
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
@@ -61,29 +64,38 @@ public final class FxBootstrap {
                     latch.countDown();
                 });
                 latch.await();
-            } catch (final IllegalStateException illegalStateException) {
-                STARTED.set(true); // Already started
+            } catch (final IllegalStateException alreadyStarted) {
+                STARTED.set(true);
             } catch (final InterruptedException interruptedException) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while starting JavaFX.", interruptedException);
+                throw new IllegalStateException("Interrupted while starting JavaFX.", interruptedException);
             }
         }
+    }
+
+    public static void runLater(@NonNull final Runnable runnable) {
+        ensureStarted();
+
+        if (Platform.isFxApplicationThread()) {
+            runnable.run();
+            return;
+        }
+
+        Platform.runLater(runnable);
     }
 
     public static void showInWindow(@NonNull final String title, @NonNull final Parent content, final double width, final double height) {
         ensureStarted();
 
-        Platform.runLater(() -> {
+        final double safeWidth = width > 0 ? width : 800.0;
+        final double safeHeight = height > 0 ? height : 600.0;
+
+        runLater(() -> {
             final Stage stage = new Stage();
             stage.setTitle(title);
-            stage.setScene(new Scene(content, width, height));
+            stage.setScene(new Scene(content, safeWidth, safeHeight));
             stage.show();
         });
-    }
-
-    public static void runLater(@NonNull final Runnable runnable) {
-        ensureStarted();
-        Platform.runLater(runnable);
     }
 
 }
