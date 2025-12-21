@@ -22,18 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx;
 
-import com.mlprograms.justmath.graphfx.CartesianTheme;
-import com.mlprograms.justmath.graphfx.ZoomableCartesianSystem;
+public enum CartesianTheme {
 
-public class Main {
-
-    public static void main(String[] args) {
-
-        new ZoomableCartesianSystem(CartesianTheme.LIGHT).show();
-        new ZoomableCartesianSystem(CartesianTheme.DARK).show();
-
-    }
+    DARK,
+    LIGHT
 
 }

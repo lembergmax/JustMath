@@ -22,18 +22,53 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx;
 
-import com.mlprograms.justmath.graphfx.CartesianTheme;
-import com.mlprograms.justmath.graphfx.ZoomableCartesianSystem;
+import javafx.scene.Parent;
+import lombok.Getter;
 
-public class Main {
+import java.util.Objects;
 
-    public static void main(String[] args) {
+@Getter
+public final class ZoomableCartesianSystem {
 
-        new ZoomableCartesianSystem(CartesianTheme.LIGHT).show();
-        new ZoomableCartesianSystem(CartesianTheme.DARK).show();
+    private final ZoomableCartesianPane pane;
 
+    public ZoomableCartesianSystem() {
+        this(CartesianTheme.LIGHT);
+    }
+
+    public ZoomableCartesianSystem(final CartesianTheme theme) {
+        this.pane = new ZoomableCartesianPane(theme);
+    }
+
+    public ZoomableCartesianSystem(final ZoomableCartesianPane pane) {
+        this.pane = Objects.requireNonNull(pane, "pane");
+    }
+
+    public Parent asNode() {
+        return pane;
+    }
+
+    public void setTheme(final CartesianTheme theme) {
+        FxBootstrap.runLater(() -> pane.setTheme(theme));
+    }
+
+    public CartesianTheme getTheme() {
+        return pane.getTheme();
+    }
+
+    public void centerOrigin() {
+        FxBootstrap.runLater(pane::centerOrigin);
+    }
+
+    public void show() {
+        show("Koordinatensystem", 1000, 700);
+    }
+
+    public void show(final String title, final double width, final double height) {
+        FxBootstrap.showInWindow(title, pane, width, height);
     }
 
 }
+
