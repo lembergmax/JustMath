@@ -25,14 +25,14 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.graphfx.CartesianTheme;
-import com.mlprograms.justmath.graphfx.ZoomableCartesianSystem;
+import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        new ZoomableCartesianSystem(CartesianTheme.LIGHT).show();
-        new ZoomableCartesianSystem(CartesianTheme.DARK).show();
+        new GraphFxDisplayOnlyApp(CartesianTheme.LIGHT).show();
+        new GraphFxDisplayOnlyApp(CartesianTheme.DARK).show();
 
     }
 
