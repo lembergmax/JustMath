@@ -49,7 +49,7 @@ import java.text.DecimalFormat;
  * The default theme is LIGHT.
  */
 @Getter
-public final class GraphFxDisplayPane extends Region {
+final class GraphFxDisplayPane extends Region {
 
     private final Canvas canvas;
 
