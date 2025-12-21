@@ -61,7 +61,7 @@ final class GraphFxDisplayPane extends Region {
     private final double maxScalePxPerUnit;
 
     private final BooleanProperty primaryButtonPanningEnabled;
-    private final ObjectProperty<CartesianTheme> theme;
+    private final ObjectProperty<DisplayTheme> theme;
 
     private final DecimalFormat tickLabelFormat;
 
@@ -69,18 +69,18 @@ final class GraphFxDisplayPane extends Region {
     private Point2D lastDragPoint;
 
     public GraphFxDisplayPane() {
-        this(WindowConfig.INITIAL_SCALE_PX_PER_UNIT, WindowConfig.MIN_SCALE_PX_PER_UNIT, WindowConfig.MAX_SCALE_PX_PER_UNIT, CartesianTheme.LIGHT);
+        this(WindowConfig.INITIAL_SCALE_PX_PER_UNIT, WindowConfig.MIN_SCALE_PX_PER_UNIT, WindowConfig.MAX_SCALE_PX_PER_UNIT, DisplayTheme.LIGHT);
     }
 
-    public GraphFxDisplayPane(final CartesianTheme theme) {
+    public GraphFxDisplayPane(final DisplayTheme theme) {
         this(WindowConfig.INITIAL_SCALE_PX_PER_UNIT, WindowConfig.MIN_SCALE_PX_PER_UNIT, WindowConfig.MAX_SCALE_PX_PER_UNIT, normalizeTheme(theme));
     }
 
     public GraphFxDisplayPane(final double initialScalePxPerUnit, final double minScalePxPerUnit, final double maxScalePxPerUnit) {
-        this(initialScalePxPerUnit, minScalePxPerUnit, maxScalePxPerUnit, CartesianTheme.LIGHT);
+        this(initialScalePxPerUnit, minScalePxPerUnit, maxScalePxPerUnit, DisplayTheme.LIGHT);
     }
 
-    public GraphFxDisplayPane(final double initialScalePxPerUnit, final double minScalePxPerUnit, final double maxScalePxPerUnit, final CartesianTheme initialTheme) {
+    public GraphFxDisplayPane(final double initialScalePxPerUnit, final double minScalePxPerUnit, final double maxScalePxPerUnit, final DisplayTheme initialTheme) {
         this.canvas = new Canvas();
 
         this.scalePxPerUnit = new SimpleDoubleProperty(clampScale(initialScalePxPerUnit, minScalePxPerUnit, maxScalePxPerUnit));
@@ -109,7 +109,7 @@ final class GraphFxDisplayPane extends Region {
         setCursor(Cursor.OPEN_HAND);
     }
 
-    public void setTheme(final CartesianTheme theme) {
+    public void setTheme(final DisplayTheme theme) {
         this.theme.set(normalizeTheme(theme));
     }
 
@@ -205,12 +205,12 @@ final class GraphFxDisplayPane extends Region {
         draw();
     }
 
-    private static CartesianTheme normalizeTheme(final CartesianTheme theme) {
-        return theme == null ? CartesianTheme.LIGHT : theme;
+    private static DisplayTheme normalizeTheme(final DisplayTheme theme) {
+        return theme == null ? DisplayTheme.LIGHT : theme;
     }
 
-    private void applyTheme(final CartesianTheme theme) {
-        activePalette = theme == CartesianTheme.DARK ? WindowConfig.DARK_THEME : WindowConfig.LIGHT_THEME;
+    private void applyTheme(final DisplayTheme theme) {
+        activePalette = theme == DisplayTheme.DARK ? WindowConfig.DARK_THEME : WindowConfig.LIGHT_THEME;
     }
 
     private void handleZoomScroll(final ScrollEvent event) {
