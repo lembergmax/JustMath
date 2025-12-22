@@ -106,7 +106,7 @@ final class GraphFxDisplayPane extends Region {
         setCursor(Cursor.OPEN_HAND);
     }
 
-    public void setTheme(final DisplayTheme theme) {
+    public void setTheme(@NonNull final DisplayTheme theme) {
         this.theme.set(normalizeTheme(theme));
     }
 
@@ -185,7 +185,7 @@ final class GraphFxDisplayPane extends Region {
         });
     }
 
-    private boolean isPanningButton(final MouseButton button) {
+    private boolean isPanningButton(@NonNull final MouseButton button) {
         if (button == MouseButton.MIDDLE || button == MouseButton.SECONDARY) {
             return true;
         }
@@ -206,11 +206,11 @@ final class GraphFxDisplayPane extends Region {
         return theme == null ? DisplayTheme.LIGHT : theme;
     }
 
-    private void applyTheme(final DisplayTheme theme) {
+    private void applyTheme(@NonNull final DisplayTheme theme) {
         activePalette = theme == DisplayTheme.DARK ? WindowConfig.DARK_THEME : WindowConfig.LIGHT_THEME;
     }
 
-    private void handleZoomScroll(final ScrollEvent event) {
+    private void handleZoomScroll(@NonNull final ScrollEvent event) {
         final double zoomFactor = Math.exp(event.getDeltaY() * WindowConfig.ZOOM_SENSITIVITY);
 
         final double currentScale = scalePxPerUnit.get();
@@ -248,7 +248,7 @@ final class GraphFxDisplayPane extends Region {
         drawAxes(graphicsContext, width, height);
     }
 
-    private void drawGrid(final GraphicsContext graphicsContext, final double width, final double height) {
+    private void drawGrid(@NonNull final GraphicsContext graphicsContext, final double width, final double height) {
         final double pxPerUnit = scalePxPerUnit.get();
 
         final double majorStepWorld = niceStep(WindowConfig.TARGET_MAJOR_GRID_SPACING_PX / pxPerUnit);
@@ -273,7 +273,7 @@ final class GraphFxDisplayPane extends Region {
         drawTickLabels(graphicsContext, width, height, minWorldX, maxWorldX, minWorldY, maxWorldY, majorStepWorld);
     }
 
-    private void drawAxes(final GraphicsContext graphicsContext, final double width, final double height) {
+    private void drawAxes(@NonNull final GraphicsContext graphicsContext, final double width, final double height) {
         final double xAxisScreenY = worldToScreenY(0);
         final double yAxisScreenX = worldToScreenX(0);
 
@@ -291,7 +291,7 @@ final class GraphFxDisplayPane extends Region {
         }
     }
 
-    private void drawVerticalLines(final GraphicsContext graphicsContext, final double canvasHeight, final double minWorldX, final double maxWorldX, final double stepWorld) {
+    private void drawVerticalLines(@NonNull final GraphicsContext graphicsContext, final double canvasHeight, final double minWorldX, final double maxWorldX, final double stepWorld) {
         if (stepWorld <= 0) {
             return;
         }
@@ -304,7 +304,7 @@ final class GraphFxDisplayPane extends Region {
         }
     }
 
-    private void drawHorizontalLines(final GraphicsContext graphicsContext, final double canvasWidth, final double minWorldY, final double maxWorldY, final double stepWorld) {
+    private void drawHorizontalLines(@NonNull final GraphicsContext graphicsContext, final double canvasWidth, final double minWorldY, final double maxWorldY, final double stepWorld) {
         if (stepWorld <= 0) {
             return;
         }
@@ -317,7 +317,7 @@ final class GraphFxDisplayPane extends Region {
         }
     }
 
-    private void drawTickLabels(final GraphicsContext graphicsContext, final double width, final double height, final double minWorldX, final double maxWorldX, final double minWorldY, final double maxWorldY, final double stepWorld) {
+    private void drawTickLabels(@NonNull final GraphicsContext graphicsContext, final double width, final double height, final double minWorldX, final double maxWorldX, final double minWorldY, final double maxWorldY, final double stepWorld) {
         final boolean isYAxisVisible = isBetween(worldToScreenX(0), 0, width);
         final boolean isXAxisVisible = isBetween(worldToScreenY(0), 0, height);
 
