@@ -27,10 +27,6 @@ package com.mlprograms.justmath.graphfx.config;
 import javafx.scene.paint.Color;
 import lombok.experimental.UtilityClass;
 
-/**
- * Central configuration for the zoomable cartesian window/component.
- * Keep all "magic numbers" here to make rendering and interaction predictable and tunable.
- */
 @UtilityClass
 public class WindowConfig {
 
@@ -76,4 +72,5 @@ public class WindowConfig {
 
     public record ThemePalette(Color background, Color minorGrid, Color majorGrid, Color axis, Color label) {
     }
+    
 }

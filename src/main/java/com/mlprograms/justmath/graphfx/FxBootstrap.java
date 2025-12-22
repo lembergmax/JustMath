@@ -34,9 +34,6 @@ import lombok.experimental.UtilityClass;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Safe JavaFX bootstrap helper for library usage outside a JavaFX Application.
- */
 @UtilityClass
 class FxBootstrap {
 
