@@ -41,13 +41,10 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.text.DecimalFormat;
 
-/**
- * Zoomable + pannable cartesian coordinate system rendered on a Canvas.
- * The default theme is LIGHT.
- */
 @Getter
 final class GraphFxDisplayPane extends Region {
 
@@ -72,7 +69,7 @@ final class GraphFxDisplayPane extends Region {
         this(WindowConfig.INITIAL_SCALE_PX_PER_UNIT, WindowConfig.MIN_SCALE_PX_PER_UNIT, WindowConfig.MAX_SCALE_PX_PER_UNIT, DisplayTheme.LIGHT);
     }
 
-    public GraphFxDisplayPane(final DisplayTheme theme) {
+    public GraphFxDisplayPane(@NonNull final DisplayTheme theme) {
         this(WindowConfig.INITIAL_SCALE_PX_PER_UNIT, WindowConfig.MIN_SCALE_PX_PER_UNIT, WindowConfig.MAX_SCALE_PX_PER_UNIT, normalizeTheme(theme));
     }
 

@@ -30,12 +30,6 @@ import javafx.scene.Parent;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.Objects;
-
-/**
- * Minimal "display-only" wrapper for quickly showing the cartesian pane in a Stage.
- * Useful for demos, previews and non-JavaFX callers.
- */
 @Getter
 public final class GraphFxDisplayOnlyApp {
 
@@ -45,12 +39,12 @@ public final class GraphFxDisplayOnlyApp {
         this(DisplayTheme.LIGHT);
     }
 
-    public GraphFxDisplayOnlyApp(final DisplayTheme theme) {
-        this(new GraphFxDisplayPane(theme == null ? DisplayTheme.LIGHT : theme));
+    public GraphFxDisplayOnlyApp(@NonNull final DisplayTheme theme) {
+        this(new GraphFxDisplayPane(theme));
     }
 
     public GraphFxDisplayOnlyApp(@NonNull final GraphFxDisplayPane pane) {
-        this.pane = Objects.requireNonNull(pane, "pane");
+        this.pane = pane;
     }
 
     public Parent asNode() {
@@ -61,7 +55,7 @@ public final class GraphFxDisplayOnlyApp {
         FxBootstrap.runLater(pane::centerOrigin);
     }
 
-    public void setTheme(final DisplayTheme theme) {
+    public void setTheme(@NonNull final DisplayTheme theme) {
         FxBootstrap.runLater(() -> pane.setTheme(theme));
     }
 
