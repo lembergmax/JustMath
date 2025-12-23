@@ -151,7 +151,10 @@ class CalculatorEngineUtils {
                     throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
                 }
 
-                tokens.set(i, new Token(Token.Type.NUMBER, calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()));
+                // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
+                // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
+                final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
+                tokens.set(i, new Token(Token.Type.NUMBER, evaluatedVariableValue));
             }
         }
     }
