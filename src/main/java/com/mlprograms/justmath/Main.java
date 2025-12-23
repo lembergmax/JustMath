@@ -24,44 +24,35 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.DisplayTheme;
 import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
 import javafx.geometry.Point2D;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        final GraphFxDisplayOnlyApp light = new GraphFxDisplayOnlyApp(DisplayTheme.LIGHT);
-        light.setPoints(List.of(
-                new Point2D(0, 0),
-                new Point2D(2, 3),
-                new Point2D(-4, 1)
-        ));
-        light.setPolyline(List.of(
-                new Point2D(-6, -2),
-                new Point2D(-2, 2),
-                new Point2D(2, -1),
-                new Point2D(6, 3)
-        ));
-        light.show("GraphFx Light (Overlay)", 1000, 700);
-        light.centerOrigin();
+//        CalculatorEngine engine = new CalculatorEngine();
+//        System.out.println(engine.evaluate("Pol(3;4)"));
+//        System.out.println(engine.evaluate("Pol(3;4)").add(BigNumbers.ZERO));
+//
+//        if(true) return;
 
-//        final GraphFxDisplayOnlyApp dark = new GraphFxDisplayOnlyApp(DisplayTheme.DARK);
-//        dark.setPoints(List.of(
-//                new Point2D(-3, 2),
-//                new Point2D(0, 4),
-//                new Point2D(3, 2)
-//        ));
-//        dark.setPolyline(List.of(
-//                new Point2D(-5, -5),
-//                new Point2D(0, 0),
-//                new Point2D(5, 5)
-//        ));
-//        dark.show("GraphFx Dark (Overlay)", 1000, 700);
-//        dark.centerOrigin();
+        final GraphFxDisplayOnlyApp app = new GraphFxDisplayOnlyApp(DisplayTheme.DARK);
+
+        app.plotExpression("2x-3y+4.3a", Map.of(
+                "a", "2"
+        ));
+
+        app.show();
+        app.centerOrigin();
 
     }
 
