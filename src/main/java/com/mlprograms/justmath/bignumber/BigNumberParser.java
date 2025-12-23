@@ -182,17 +182,17 @@ class BigNumberParser {
         }
 
         String[] parts = value.split("\\.", 2);
-        String beforeDecimal = parts[0];
-        String afterDecimal = (parts.length > 1) ? parts[1] : "0";
+        String valueBeforeDecimalPoint = parts[0];
+        String valueAfterDecimalPoint = (parts.length > 1) ? parts[1] : "0";
 
-        return BigNumber.builder()
-                .mathContext(BigNumbers.DEFAULT_MATH_CONTEXT)
-                .trigonometricMode(TrigonometricMode.DEG)
-                .locale(originalLocale)
-                .valueBeforeDecimalPoint(beforeDecimal)
-                .valueAfterDecimalPoint(afterDecimal)
-                .isNegative(isNegative)
-                .build();
+        return new BigNumber(
+                originalLocale,
+                valueBeforeDecimalPoint,
+                valueAfterDecimalPoint,
+                isNegative,
+                BigNumbers.DEFAULT_MATH_CONTEXT,
+                TrigonometricMode.DEG
+        );
     }
 
     /**
