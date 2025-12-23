@@ -70,11 +70,14 @@ import java.util.stream.Collectors;
 class Tokenizer {
 
     /**
-     * Set of all valid operator and function symbols recognized by the tokenizer.
-     * Populated from the registry of {@link ExpressionElement} instances.
-     * Used to identify operators and functions during tokenization.
+     * Cached view of the registered operator and function symbols.
+     * <p>
+     * This set references the key set of the {@link ExpressionElements} registry and is
+     * used during tokenization to quickly determine whether a substring corresponds to
+     * a known operator or function. It is a live view and will reflect changes in the
+     * registry.
      */
-    private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
+    private static final Set<String> VALID_OPERATORS_AND_FUNCTIONS = ExpressionElements.registry.keySet();
 
     /**
      * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
@@ -132,6 +135,7 @@ class Tokenizer {
 
         while (index < expression.length()) {
             char character = expression.charAt(index);
+            Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
@@ -154,13 +158,7 @@ class Tokenizer {
 
                 nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
                 index++;
-            } else if (matchThreeArgumentFunction(expression, index).isPresent()) {
-                Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
-
-                if (matchedFunction.isEmpty()) {
-                    throw new SyntaxErrorException("Invalid function at position " + index);
-                }
-
+            } else if (matchedFunction.isPresent()) {
                 ExpressionElement expressionElement = matchedFunction.get();
                 String symbol = expressionElement.getSymbol();
 
@@ -542,7 +540,7 @@ class Tokenizer {
      * @return the input string with all whitespace removed
      */
     private String removeWhitespace(String input) {
-        return input.replaceAll("\\s+", "");
+        return input.replace("\\s+", "");
     }
 
     /**
@@ -717,10 +715,7 @@ class Tokenizer {
      * @throws NullPointerException     if expression or tokens is null
      */
     private int getLengthOfMatchingOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
-        int maxTokenLength = validOperatorsAndFunctions.stream()
-                .mapToInt(String::length)
-                .max()
-                .orElse(0);
+        int maxTokenLength = ExpressionElements.getMaxTokenLength();
 
         for (int length = maxTokenLength; length > 0; length--) {
             int endIndex = startIndex + length;
@@ -736,7 +731,7 @@ class Tokenizer {
                 return length;
             }
 
-            if (validOperatorsAndFunctions.contains(candidate)) {
+            if (VALID_OPERATORS_AND_FUNCTIONS.contains(candidate)) {
                 if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
                     // must not be in the beginning or after another expressionElement
                     Token previous = tokens.getLast();
