@@ -26,13 +26,42 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.graphfx.DisplayTheme;
 import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
+import javafx.geometry.Point2D;
+
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        new GraphFxDisplayOnlyApp(DisplayTheme.LIGHT).show();
-        new GraphFxDisplayOnlyApp(DisplayTheme.DARK).show();
+        final GraphFxDisplayOnlyApp light = new GraphFxDisplayOnlyApp(DisplayTheme.LIGHT);
+        light.setPoints(List.of(
+                new Point2D(0, 0),
+                new Point2D(2, 3),
+                new Point2D(-4, 1)
+        ));
+        light.setPolyline(List.of(
+                new Point2D(-6, -2),
+                new Point2D(-2, 2),
+                new Point2D(2, -1),
+                new Point2D(6, 3)
+        ));
+        light.show("GraphFx Light (Overlay)", 1000, 700);
+        light.centerOrigin();
+
+//        final GraphFxDisplayOnlyApp dark = new GraphFxDisplayOnlyApp(DisplayTheme.DARK);
+//        dark.setPoints(List.of(
+//                new Point2D(-3, 2),
+//                new Point2D(0, 4),
+//                new Point2D(3, 2)
+//        ));
+//        dark.setPolyline(List.of(
+//                new Point2D(-5, -5),
+//                new Point2D(0, 0),
+//                new Point2D(5, 5)
+//        ));
+//        dark.show("GraphFx Dark (Overlay)", 1000, 700);
+//        dark.centerOrigin();
 
     }
 
