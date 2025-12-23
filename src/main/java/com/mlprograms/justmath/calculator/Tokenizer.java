@@ -226,7 +226,7 @@ class Tokenizer {
             }
 
             // Insert * where implicit multiplication is likely
-            if (needsMultiplication(current, next)) {
+            if (needsMultiplicationSign(current, next)) {
                 tokens.add(i + 1, new Token(Token.Type.OPERATOR, ExpressionElements.OP_MULTIPLY));
                 i++; // Skip the inserted token
             }
@@ -249,14 +249,17 @@ class Tokenizer {
      * @param next    the next token in the sequence
      * @return true if implicit multiplication is needed, false otherwise
      */
-    private boolean needsMultiplication(final Token current, final Token next) {
+    private boolean needsMultiplicationSign(final Token current, final Token next) {
         return isNumberFollowedByParenOrFunction(current, next)
-                || isRightParenFollowedByValid(current, next)
+                || isRightParenFollowedByValidToken(current, next)
                 || isNumberOrConstantFollowedByZeroArgFunction(current, next)
                 || isZeroArgFunctionFollowedByNumberOrVariable(current, next)
                 || isConstantFollowedByFunction(current, next)
                 || isVariableFollowedByVariableOrConstant(current, next)
-                || isConstantFollowedByVariable(current, next);
+                || isVariableOrConstantFollowedByNumber(current, next)
+                || isNumberFollowedByVariableOrConstant(current, next)
+                || isConstantFollowedByVariable(current, next)
+                || isVariableOrConstantFollowedByLeftParenOrFunction(current, next);
     }
 
     /**
@@ -281,11 +284,13 @@ class Tokenizer {
      * @param next    the following token to inspect
      * @return true if current is RIGHT_PAREN and next is NUMBER, FUNCTION, or LEFT_PAREN
      */
-    private boolean isRightParenFollowedByValid(final Token current, final Token next) {
+    private boolean isRightParenFollowedByValidToken(final Token current, final Token next) {
         return current.getType() == Token.Type.RIGHT_PAREN
                 && (next.getType() == Token.Type.NUMBER
                 || next.getType() == Token.Type.FUNCTION
-                || next.getType() == Token.Type.LEFT_PAREN);
+                || next.getType() == Token.Type.LEFT_PAREN
+                || next.getType() == Token.Type.VARIABLE
+                || next.getType() == Token.Type.CONSTANT);
     }
 
     /**
@@ -329,6 +334,20 @@ class Tokenizer {
     }
 
     /**
+     * Determines whether a VARIABLE or CONSTANT token is immediately followed by a left parenthesis
+     * or a function token. This is used to detect contexts where implicit multiplication is implied,
+     * e.g. `x(` or `pi sin` should behave like `x * (` or `pi * sin`.
+     *
+     * @param current the current token (expected to be VARIABLE or CONSTANT)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is VARIABLE or CONSTANT and {@code next} is LEFT_PAREN or FUNCTION
+     */
+    private boolean isVariableOrConstantFollowedByLeftParenOrFunction(final Token current, final Token next) {
+        return (current.getType() == Token.Type.VARIABLE || current.getType() == Token.Type.CONSTANT)
+                && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION);
+    }
+
+    /**
      * Determines whether a variable token is followed by another variable or a constant.
      * Useful for detecting implicit multiplication in sequences like "xy" or "xpi".
      *
@@ -338,6 +357,32 @@ class Tokenizer {
      */
     private boolean isVariableFollowedByVariableOrConstant(final Token current, final Token next) {
         return current.getType() == Token.Type.VARIABLE
+                && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
+    }
+
+    /**
+     * Returns true when a variable or a constant token is immediately followed by a numeric token.
+     * This scenario commonly implies implicit multiplication (e.g. `x2` or `pi2`).
+     *
+     * @param current the current token (expected VARIABLE or CONSTANT)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is VARIABLE or CONSTANT and {@code next} is NUMBER
+     */
+    private boolean isVariableOrConstantFollowedByNumber(final Token current, final Token next) {
+        return (current.getType() == Token.Type.VARIABLE || current.getType() == Token.Type.CONSTANT)
+                && next.getType() == Token.Type.NUMBER;
+    }
+
+    /**
+     * Returns true when a numeric token is immediately followed by a variable or constant token.
+     * This also commonly implies implicit multiplication (e.g. `2x` or `2pi`).
+     *
+     * @param current the current token (expected NUMBER)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is NUMBER and {@code next} is VARIABLE or CONSTANT
+     */
+    private boolean isNumberFollowedByVariableOrConstant(final Token current, final Token next) {
+        return current.getType() == Token.Type.NUMBER
                 && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
     }
 
@@ -586,7 +631,6 @@ class Tokenizer {
     private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
         int currentIndex = startIndex;
 
-        // optional sign char
         if (currentIndex < expression.length()) {
             char fc = expression.charAt(currentIndex);
             if (fc == '+' || fc == '-') {
@@ -600,12 +644,10 @@ class Tokenizer {
 
         String rawNumber = expression.substring(startIndex, currentIndex);
 
-        // Always strip leading '+' for tests/expectation.
         if (rawNumber.startsWith("+")) {
             rawNumber = rawNumber.substring(1);
         }
 
-        // keep leading '-' (negative numbers)
         tokens.add(new Token(Token.Type.NUMBER, rawNumber));
         return currentIndex;
     }
