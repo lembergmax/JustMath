@@ -24,9 +24,19 @@
 
 package com.mlprograms.justmath.graphfx;
 
+/**
+ * Simple theme selector for the GraphFx coordinate system.
+ */
 public enum DisplayTheme {
 
+    /**
+     * Dark theme palette.
+     */
     DARK,
+
+    /**
+     * Light theme palette.
+     */
     LIGHT
 
 }
