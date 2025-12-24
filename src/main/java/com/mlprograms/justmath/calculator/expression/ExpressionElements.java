@@ -55,7 +55,7 @@ public class ExpressionElements {
     public static final Map<String, ExpressionElement> registry = new HashMap<>();
 
     @Getter
-    private static int maxTokenLength = 0;
+    private static int maxTokenLength = -1;
 
     public static final String PI = "pi";
     public static final String PI_S = "π";
@@ -246,7 +246,6 @@ public class ExpressionElements {
                 new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum),
                 //
                 new UnlimitedArgumentFunction(FUNC_MEDIAN, 6, BigNumber::median)
-
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
