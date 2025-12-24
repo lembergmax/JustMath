@@ -47,10 +47,6 @@ public final class NumberChecker {
 
     private static final ConcurrentHashMap<Locale, LocaleSeparators> SEPARATORS_CACHE = new ConcurrentHashMap<>();
 
-    private NumberChecker() {
-        throw new AssertionError("Utility class must not be instantiated.");
-    }
-
     /**
      * Checks whether the given input represents a valid locale-aware number.
      * <p>
