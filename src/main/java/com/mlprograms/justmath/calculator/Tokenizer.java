@@ -34,6 +34,7 @@ import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
@@ -70,6 +71,38 @@ import java.util.stream.Collectors;
 class Tokenizer {
 
     /**
+     * Candidate descriptor for registered three-argument functions used by the tokenizer.
+     *
+     * <p>This record stores:
+     * <ul>
+     *   <li>{@code symbol} — the function symbol as registered in {@link ExpressionElements},</li>
+     *   <li>{@code symbolLength} — the precomputed length of the symbol (used to optimize matching),</li>
+     *   <li>{@code element} — the corresponding {@link ExpressionElement} instance.</li>
+     * </ul>
+     *
+     * <p>Instances of this record are sorted by {@code symbolLength} (longest first) to
+     * implement a maximal-munch lexical matching strategy.</p>
+     *
+     * @param symbol       the function symbol string
+     * @param symbolLength the length of the function symbol (precomputed)
+     * @param element      the associated ExpressionElement instance
+     */
+    private record ThreeArgCandidate(String symbol, int symbolLength, ExpressionElement element) {
+
+        /**
+         * Convenience constructor that computes {@code symbolLength} from the provided {@code symbol}
+         * and delegates to the canonical record constructor.
+         *
+         * @param symbol  the function symbol
+         * @param element the associated ExpressionElement instance
+         */
+        private ThreeArgCandidate(final String symbol, final ExpressionElement element) {
+            this(symbol, symbol.length(), element);
+        }
+
+    }
+
+    /**
      * Cached view of the registered operator and function symbols.
      * <p>
      * This set references the key set of the {@link ExpressionElements} registry and is
@@ -78,6 +111,17 @@ class Tokenizer {
      * registry.
      */
     private static final Set<String> VALID_OPERATORS_AND_FUNCTIONS = ExpressionElements.registry.keySet();
+
+    /**
+     * Precomputed candidates for registered three-argument functions.
+     *
+     * <p>This array is constructed once at class initialization by scanning
+     * {@link ExpressionElements#registry} for instances of {@link ThreeArgumentFunction}.
+     * Candidates are sorted by decreasing symbol length to ensure a maximal-munch
+     * matching strategy during tokenization.</p>
+     */
+    private static final ThreeArgCandidate[] THREE_ARGUMENT_FUNCTION_CANDIDATES =
+            buildThreeArgumentFunctionCandidates();
 
     /**
      * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
@@ -514,6 +558,47 @@ class Tokenizer {
     }
 
     /**
+     * Build an array of candidates representing registered three-argument functions.
+     *
+     * <p>This method performs two passes over the {@link ExpressionElements#registry}:
+     * <ol>
+     *   <li>First pass: counts how many registry entries are instances of {@link ThreeArgumentFunction}
+     *       to allocate an array of the exact required size.</li>
+     *   <li>Second pass: creates a {@link ThreeArgCandidate} for each matching entry and fills the array.</li>
+     * </ol>
+     *
+     * <p>Finally, the resulting array is sorted in descending order by symbol length. Sorting
+     * longest-first is important for lexical scanning: when attempting to match a function
+     * symbol in the input expression, longer symbols must be tested before shorter ones so
+     * that the tokenizer implements a maximal-munch strategy and avoids premature shorter matches.
+     *
+     * @return a non-null array of {@link ThreeArgCandidate} instances sorted by decreasing symbol length;
+     * the array may be empty if no three-argument functions are registered
+     */
+    private static ThreeArgCandidate[] buildThreeArgumentFunctionCandidates() {
+        int count = 0;
+        for (final var element : ExpressionElements.registry.values()) {
+            if (element instanceof ThreeArgumentFunction) {
+                count++;
+            }
+        }
+
+        final ThreeArgCandidate[] candidates = new ThreeArgCandidate[count];
+        int writeIndex = 0;
+
+        for (final var entry : ExpressionElements.registry.entrySet()) {
+            final ExpressionElement element = entry.getValue();
+            if (element instanceof ThreeArgumentFunction) {
+                final String symbol = entry.getKey();
+                candidates[writeIndex++] = new ThreeArgCandidate(symbol, element);
+            }
+        }
+
+        Arrays.sort(candidates, (a, b) -> Integer.compare(b.symbolLength, a.symbolLength));
+        return candidates;
+    }
+
+    /**
      * Tries to match a three-argument function starting at the given index.
      *
      * @param expression the full input expression
@@ -521,15 +606,36 @@ class Tokenizer {
      * @return an Optional containing the matched function symbol, or empty if not found
      */
     private Optional<ExpressionElement> matchThreeArgumentFunction(String expression, int index) {
-        for (Map.Entry<String, ExpressionElement> entry : ExpressionElements.registry.entrySet()) {
-            String symbol = entry.getKey();
-            ExpressionElement expressionElement = entry.getValue();
+        if (expression == null) {
+            return Optional.empty();
+        }
 
-            if (expressionElement instanceof ThreeArgumentFunction &&
-                    expression.startsWith(symbol + ExpressionElements.PAR_LEFT, index)) {
-                return Optional.of(expressionElement);
+        final int expressionLength = expression.length();
+        if (index < 0 || index >= expressionLength) {
+            return Optional.empty();
+        }
+
+        final char firstChar = expression.charAt(index);
+
+        for (final ThreeArgCandidate candidate : THREE_ARGUMENT_FUNCTION_CANDIDATES) {
+            if (candidate.symbol.charAt(0) != firstChar) {
+                continue;
+            }
+
+            final int afterSymbolIndex = index + candidate.symbolLength;
+            if (afterSymbolIndex >= expressionLength) {
+                continue;
+            }
+
+            if (expression.charAt(afterSymbolIndex) != ExpressionElements.PAR_LEFT.charAt(0)) {
+                continue;
+            }
+
+            if (expression.regionMatches(index, candidate.symbol, 0, candidate.symbolLength)) {
+                return Optional.of(candidate.element);
             }
         }
+
         return Optional.empty();
     }
 
@@ -539,8 +645,22 @@ class Tokenizer {
      * @param input the string to process
      * @return the input string with all whitespace removed
      */
-    private String removeWhitespace(String input) {
-        return input.replace("\\s+", "");
+    private String removeWhitespace(final String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        final int length = input.length();
+        final StringBuilder stringBuilder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            final char charAt = input.charAt(i);
+            if (!Character.isWhitespace(charAt)) {
+                stringBuilder.append(charAt);
+            }
+        }
+
+        return stringBuilder.length() == length ? input : stringBuilder.toString();
     }
 
     /**
