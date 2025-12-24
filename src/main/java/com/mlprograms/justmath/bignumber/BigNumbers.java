@@ -75,6 +75,36 @@ public class BigNumbers {
 	 */
 	public static final BigNumber THREE = new BigNumber("3", DEFAULT_MATH_CONTEXT);
 
+	/**
+	 * Constant representing the value 4 as a {@link BigNumber}.
+	 */
+	public static final BigNumber FOUR = new BigNumber("4", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 5 as a {@link BigNumber}.
+	 */
+	public static final BigNumber FIVE = new BigNumber("5", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 6 as a {@link BigNumber}.
+	 */
+	public static final BigNumber SIX = new BigNumber("6", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 7 as a {@link BigNumber}.
+	 */
+	public static final BigNumber SEVEN = new BigNumber("7", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 8 as a {@link BigNumber}.
+	 */
+	public static final BigNumber EIGHT = new BigNumber("8", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 9 as a {@link BigNumber}.
+	 */
+	public static final BigNumber NINE = new BigNumber("9", DEFAULT_MATH_CONTEXT);
+
     /**
      * Constant representing the value 10 as a {@link BigNumber}.
      */

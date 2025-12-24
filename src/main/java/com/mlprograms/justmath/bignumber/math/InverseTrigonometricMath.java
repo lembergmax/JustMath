@@ -182,7 +182,7 @@ public class InverseTrigonometricMath {
             result = new BigNumber(degrees.toPlainString(), locale, mathContext);
         }
 
-        return result;
+        return new BigNumber(result);
     }
 
     /**

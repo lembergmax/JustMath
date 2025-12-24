@@ -35,6 +35,7 @@ import com.mlprograms.justmath.calculator.expression.elements.function.*;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,9 @@ import java.util.Optional;
 public class ExpressionElements {
 
     public static final Map<String, ExpressionElement> registry = new HashMap<>();
+
+    @Getter
+    private static int maxTokenLength = -1;
 
     public static final String PI = "pi";
     public static final String PI_S = "π";
@@ -242,7 +246,6 @@ public class ExpressionElements {
                 new SimpleUnlimitedArgumentFunction(FUNC_SUM, 6, BigNumber::sum),
                 //
                 new UnlimitedArgumentFunction(FUNC_MEDIAN, 6, BigNumber::median)
-
         );
 
         for (ExpressionElement expressionElement : expressionElementList) {
@@ -267,6 +270,7 @@ public class ExpressionElements {
      * @param element the {@code ExpressionElement} to register
      */
     public static void register(ExpressionElement element) {
+        maxTokenLength = Math.max(element.getSymbol().length(), maxTokenLength);
         registry.put(element.getSymbol(), element);
     }
 

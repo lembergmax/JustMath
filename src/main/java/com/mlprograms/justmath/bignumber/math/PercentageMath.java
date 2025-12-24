@@ -59,7 +59,7 @@ public class PercentageMath {
 	public static BigNumber nPercentFromM(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return m.multiply(n.divide(ONE_HUNDRED, mathContext, locale), locale).trim();
+		return new BigNumber(m.multiply(n.divide(ONE_HUNDRED, mathContext, locale), locale).trim());
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class PercentageMath {
 	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return n.divide(m, mathContext, locale).multiply(ONE_HUNDRED, locale).trim();
+		return new BigNumber(n.divide(m, mathContext, locale).multiply(ONE_HUNDRED, locale).trim());
 	}
 
 }

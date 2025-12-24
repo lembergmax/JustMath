@@ -66,7 +66,7 @@ public class MatrixMath {
 			result.set(row, col, valueA.add(valueB));
 		});
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class MatrixMath {
 			result.set(row, col, a.subtract(b));
 		});
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -148,7 +148,7 @@ public class MatrixMath {
 			result.set(i, j, sum);
 		});
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class MatrixMath {
 			result.set(row, col, a.divide(b));
 		});
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class MatrixMath {
 
 		matrix.forEachElement((row, col, value) -> result.set(row, col, value.multiply(scalar)));
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 
@@ -234,7 +234,7 @@ public class MatrixMath {
 
 		matrix.forEachElement((row, col, value) -> result.set(col, row, value));
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -279,7 +279,7 @@ public class MatrixMath {
 			det = det.add(sign.multiply(element).multiply(determinant(minor)));
 		}
 
-		return det;
+		return new BigNumber(det);
 	}
 
 	/**
@@ -308,7 +308,7 @@ public class MatrixMath {
 			throw new IllegalArgumentException("Matrix is not invertible (determinant is zero).");
 		}
 
-		return scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant));
+		return new BigNumberMatrix(scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant)));
 	}
 
 	/**
@@ -348,7 +348,7 @@ public class MatrixMath {
 			exp = exp.divide(BigNumbers.TWO).floor();
 		}
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -387,7 +387,7 @@ public class MatrixMath {
 			newRow = newRow.add(BigNumbers.ONE);
 		}
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -401,14 +401,14 @@ public class MatrixMath {
 	 * @return an identity matrix of dimension size × size
 	 */
 	public static BigNumberMatrix identity(@NonNull BigNumber size, @NonNull Locale locale) {
-		int n = size.intValue();
+		int sizeAsInt = size.intValue();
 		BigNumberMatrix result = new BigNumberMatrix(size, size, locale);
 
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < sizeAsInt; i++) {
 			result.set(new BigNumber(String.valueOf(i)), new BigNumber(String.valueOf(i)), BigNumbers.ONE);
 		}
 
-		return result;
+		return new BigNumberMatrix(result);
 	}
 
 	/**
@@ -421,11 +421,11 @@ public class MatrixMath {
 	 * @return the adjugate matrix
 	 */
 	public static BigNumberMatrix adjugate(@NonNull BigNumberMatrix matrix) {
-		BigNumber n = matrix.getRows();
-		BigNumberMatrix cofactorMatrix = new BigNumberMatrix(n, n, matrix.getLocale());
+		BigNumber rows = matrix.getRows();
+		BigNumberMatrix cofactorMatrix = new BigNumberMatrix(rows, rows, matrix.getLocale());
 
-		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(n); row = row.add(BigNumbers.ONE)) {
-			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(n); col = col.add(BigNumbers.ONE)) {
+		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(rows); row = row.add(BigNumbers.ONE)) {
+			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(rows); col = col.add(BigNumbers.ONE)) {
 				BigNumber sign = (row.add(col).modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ZERO)) ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
 				BigNumber minorDet = MatrixMath.determinant(minor(matrix, row, col));
 
@@ -433,7 +433,7 @@ public class MatrixMath {
 			}
 		}
 
-		return MatrixMath.transpose(cofactorMatrix);
+		return new BigNumberMatrix(transpose(cofactorMatrix));
 	}
 
 	/**

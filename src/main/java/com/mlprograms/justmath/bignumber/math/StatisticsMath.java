@@ -79,7 +79,7 @@ public class StatisticsMath {
             sum = sum.add(number, locale);
         }
 
-        return sum;
+        return new BigNumber(sum);
     }
 
     /**
@@ -122,7 +122,7 @@ public class StatisticsMath {
         final BigNumber upperMiddle = sortedNumbers.get(middleIndex);
         final BigNumber sumOfMiddles = lowerMiddle.add(upperMiddle, locale);
 
-        return sumOfMiddles.divide(BigNumbers.TWO, mathContext, locale);
+        return new BigNumber(sumOfMiddles.divide(BigNumbers.TWO, mathContext, locale));
     }
 
 }

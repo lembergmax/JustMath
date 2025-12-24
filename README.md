@@ -176,7 +176,7 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 ## 🔤 Variables
 
 JustMath allows you to **define and substitute variables** directly in expressions.  
-Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
+Variables are passed as a `Map<String, String>` when calling `evaluate`.
 
 - Variables can be reused across nested evaluations.
 - An **exception** is thrown if an undefined variable is encountered.
@@ -187,7 +187,7 @@ Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
 CalculatorEngine calculator = new CalculatorEngine();
 
 // Define variables
-Map<String, BigNumber> variables = new HashMap<>();
+Map<String, String> variables = new HashMap<>();
 variables.put("a", "5+3");
 variables.put("b", "3");
 
@@ -196,6 +196,16 @@ BigNumber result = calculator.evaluate("2*a + b^2", variables);
 
 System.out.println(result);
 // 25
+
+// Call other variables in a variable
+variables = new HashMap<>();
+variables.put("a", "root(b)");
+variables.put("b", "3");
+
+result = calculator.evaluate("2*a + b^2", variables);
+
+System.out.println(result);
+// 12.464101615...
 ```
 
 ## 📚 Static Utility Methods
@@ -385,6 +395,8 @@ Cannot wait? Just download the latest jar:
     <td>Release</td>
   </tr>
 </table>
+
+Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
 
 ## 📜 License
 
