@@ -134,21 +134,6 @@
                 <version>3.2.5</version>
             </plugin>
 
-            <!-- PIT Mutation Testing Plugin -->
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>${pitest.version}</version>
-                <configuration>
-                    <targetClasses>
-                        <param>com.mlprograms.*</param>
-                    </targetClasses>
-                    <targetTests>
-                        <param>com.mlprograms.*</param>
-                    </targetTests>
-                </configuration>
-            </plugin>
-
             <!-- Attach Sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
