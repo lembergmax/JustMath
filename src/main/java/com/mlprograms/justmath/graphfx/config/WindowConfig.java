@@ -62,7 +62,7 @@ public class WindowConfig {
     public static final double LABEL_FONT_SIZE = 12.0;
 
     // --- Standalone window defaults ---
-    public static final String DEFAULT_WINDOW_TITLE = "Koordinatensystem";
+    public static final String DEFAULT_WINDOW_TITLE = "GraphFx Plot Viewer";
     public static final double DEFAULT_WINDOW_WIDTH = 1000.0;
     public static final double DEFAULT_WINDOW_HEIGHT = 700.0;
 
