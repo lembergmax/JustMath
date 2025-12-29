@@ -72,5 +72,5 @@ public class WindowConfig {
 
     public record ThemePalette(Color background, Color minorGrid, Color majorGrid, Color axis, Color label) {
     }
-    
+
 }
