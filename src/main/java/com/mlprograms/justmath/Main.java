@@ -24,35 +24,24 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graphfx.DisplayTheme;
-import com.mlprograms.justmath.graphfx.GraphFxDisplayOnlyApp;
-import javafx.geometry.Point2D;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.mlprograms.justmath.graphfx.api.DisplayTheme;
+import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
+        GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+        viewer.plotExpression("sin(10x)/x+0.2x^3-2x", "#ff5500");
+        viewer.plotExpression("sin(10x)", "#0055ff");
+        viewer.plotExpression("sin(10x)/x", "#ff0055");
+        viewer.plotExpression("(10x)/x", "#5500ff");
+        viewer.show();
 
-//        CalculatorEngine engine = new CalculatorEngine();
-//        System.out.println(engine.evaluate("Pol(3;4)"));
-//        System.out.println(engine.evaluate("Pol(3;4)").add(BigNumbers.ZERO));
-//
-//        if(true) return;
-
-        final GraphFxDisplayOnlyApp app = new GraphFxDisplayOnlyApp(DisplayTheme.DARK);
-
-        app.plotExpression("2x-3y+4.3a", Map.of(
-                "a", "2"
-        ));
-
-        app.show();
-        app.centerOrigin();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
