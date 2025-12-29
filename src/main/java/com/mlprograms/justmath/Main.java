@@ -24,8 +24,12 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.api.DisplayTheme;
 import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
 
@@ -37,11 +41,19 @@ public class Main {
         viewer.plotExpression("(10x)/x", "#5500ff");
         viewer.show();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        GraphFxPlotViewer viewer2 = new GraphFxPlotViewer(DisplayTheme.DARK);
+
+        Map<String, BigNumber> variables = new HashMap<>();
+        variables.put("a", new BigNumber("2.5"));
+        variables.put("b", new BigNumber("1.2"));
+
+        viewer2.plotExpression("a*sin(x) + b", variables, "#00B7FF");
+        viewer2.show();
+
+        GraphFxPlotViewer viewer3 = new GraphFxPlotViewer(DisplayTheme.DARK);
+        viewer3.plotExpression("1/x", "#5500ff");
+        viewer3.show();
+
 
     }
 
