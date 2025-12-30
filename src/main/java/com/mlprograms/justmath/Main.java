@@ -27,33 +27,25 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.api.DisplayTheme;
 import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
+import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main {
 
     public static void main(final String[] args) {
-        GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
-        viewer.plotExpression("sin(10x)/x+0.2x^3-2x", "#ff5500");
-        viewer.plotExpression("sin(10x)", "#0055ff");
-        viewer.plotExpression("sin(10x)/x", "#ff0055");
-        viewer.plotExpression("(10x)/x", "#5500ff");
-        viewer.show();
 
-        GraphFxPlotViewer viewer2 = new GraphFxPlotViewer(DisplayTheme.DARK);
+        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
 
-        Map<String, BigNumber> variables = new HashMap<>();
-        variables.put("a", new BigNumber("2.5"));
-        variables.put("b", new BigNumber("1.2"));
+        // Expression plots
+        viewer.plotExpression("sin(x)", "#00B7FF");
+        viewer.plotExpression("cos(x)", "#FF5500");
+        viewer.plotExpression("tan(x)", "#5500FF");
 
-        viewer2.plotExpression("a*sin(x) + b", variables, "#00B7FF");
-        viewer2.show();
-
-        GraphFxPlotViewer viewer3 = new GraphFxPlotViewer(DisplayTheme.DARK);
-        viewer3.plotExpression("1/x", "#5500ff");
-        viewer3.show();
-
+        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
 
     }
 
