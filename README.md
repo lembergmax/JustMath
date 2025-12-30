@@ -344,8 +344,6 @@ with high numerical precision.
 GraphFx is designed as a **developer-oriented library component** and can be embedded into custom JavaFX applications
 or shown as a standalone plotting window.
 
----
-
 ### ️ Screenshots
 
 <p align="center">
@@ -366,8 +364,6 @@ or shown as a standalone plotting window.
   <em>Zooming &amp; panning interaction</em>
 </p>
 
----
-
 ### ✨ Features
 
 * 🧮 **String-based expression plotting**
@@ -378,8 +374,6 @@ or shown as a standalone plotting window.
 * 📊 **Multiple expressions per plot**
 * 📍 **Overlay layers (points & polylines)**
 * 🔒 **Thread-safe public API**
-
----
 
 ### 📋 GraphFx API Overview
 
@@ -401,8 +395,6 @@ or shown as a standalone plotting window.
 | **Overlay – Polyline**  | `setPolyline(List<Point2D> polyline)`                                           | Draws a manual polyline                             |
 |                         | `setPolylineStyle(Color color, double widthPx)`                                 | Changes polyline color and width                    |
 
----
-
 ### 🚀 Quick Start
 
 ```java
@@ -421,8 +413,6 @@ public static void main(final String[] args) {
   <em>Quick start output</em>
 </p>
 
----
-
 ### 🔤 Variables (`Map<String, String>`)
 
 ```java
@@ -438,8 +428,6 @@ viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
   <br/>
   <em>Variable-based plot</em>
 </p>
-
----
 
 ### 📍 Overlays (Points & Polylines)
 
@@ -475,8 +463,8 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.2.10</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.10.jar">JustMath v1.2.2.10</a></td>
+    <td>v1.2.2.13</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.13.jar">JustMath v1.2.2.13</a></td>
     <td>Preview</td>
   </tr>
   <tr>
