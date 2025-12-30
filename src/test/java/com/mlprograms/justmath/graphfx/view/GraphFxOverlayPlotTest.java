@@ -53,9 +53,8 @@ final class GraphFxOverlayPlotTest {
     void styleClampsToMinimum() {
         FxTestUtil.runOnFxThreadAndWait(() -> {
             final GraphFxOverlayPlot overlay = new GraphFxOverlayPlot(new GraphFxDisplayPane());
-            overlay.setPointStyle(Color.RED, -10);      // clamp
-            overlay.setPolylineStyle(Color.BLUE, 0);    // clamp
-            // Wenn keine Exception: OK (Rendering bleibt stabil)
+            overlay.setPointStyle(Color.RED, -10);
+            overlay.setPolylineStyle(Color.BLUE, 0);
         });
     }
 
