@@ -58,70 +58,185 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A lightweight JavaFX viewer for GraphFx that is intended to be used by library consumers.
+ * A lightweight JavaFX plot viewer that renders GraphFx expressions and user-managed overlay elements.
  *
- * <p>This class owns a {@link Stage} optionally (when {@link #show()} is used), and always exposes an embeddable
- * JavaFX {@link Parent} via {@link #asNode()}.</p>
+ * <p>This class is designed as a library-friendly facade around {@link GraphFxDisplayPane}. It provides:</p>
+ * <ul>
+ *   <li>an embeddable JavaFX {@link Parent} via {@link #asNode()} for integration into existing JavaFX applications,</li>
+ *   <li>an optional self-managed window via {@link #show()} / {@link #show(String, double, double)},</li>
+ *   <li>expression plotting with cancellation and debounced recomputation,</li>
+ *   <li>id-based overlay management for polylines and points (add/remove/style individual elements).</li>
+ * </ul>
  *
- * <p><b>Threading:</b> All public methods are safe to call from any thread. UI work is dispatched to the JavaFX
- * thread via {@link FxBootstrap#runLater(Runnable)}.</p>
+ * <h2>Threading and safety</h2>
+ * <p>
+ * All public API methods are safe to call from any thread. Every UI mutation is dispatched onto the JavaFX Application
+ * Thread using {@link FxBootstrap#runLater(Runnable)}.
+ * </p>
+ *
+ * <h2>Lifetime</h2>
+ * <p>
+ * The viewer owns background executors for plot computation. Call {@link #dispose()} (or {@link #close()}) when the
+ * instance is no longer required to prevent thread leaks.
+ * </p>
  */
 public final class GraphFxPlotViewer implements AutoCloseable {
 
-    private static final long PLOT_DEBOUNCE_MS = 80L;
+    /**
+     * Debounce delay in milliseconds used for plot recomputation to avoid heavy redraws while the viewport is changing.
+     */
+    private static final long PLOT_DEBOUNCE_MILLISECONDS = 80L;
 
+    /**
+     * Default overlay point color used by {@link #addPoint(Point2D)} and {@link #setPoints(List)}.
+     */
     private static final Color DEFAULT_POINT_COLOR = Color.RED;
-    private static final double DEFAULT_POINT_RADIUS_PX = 4.0;
 
+    /**
+     * Default overlay point radius in pixels used by {@link #addPoint(Point2D)} and {@link #setPoints(List)}.
+     */
+    private static final double DEFAULT_POINT_RADIUS_PIXELS = 4.0;
+
+    /**
+     * Default overlay polyline stroke color used by {@link #addPolyline(List)} and {@link #setPolyline(List)}.
+     */
     private static final Color DEFAULT_POLYLINE_COLOR = Color.DODGERBLUE;
-    private static final double DEFAULT_POLYLINE_WIDTH_PX = 2.0;
 
-    private static final double DEFAULT_PLOT_WIDTH_PX = 2.0;
+    /**
+     * Default overlay polyline stroke width in pixels used by {@link #addPolyline(List)} and {@link #setPolyline(List)}.
+     */
+    private static final double DEFAULT_POLYLINE_WIDTH_PIXELS = 2.0;
 
+    /**
+     * Default stroke width in pixels used for expression plots created through {@link #plotExpression(String, String)}
+     * and {@link #plotExpression(String, Map, String)}.
+     */
+    private static final double DEFAULT_EXPRESSION_PLOT_WIDTH_PIXELS = 2.0;
+
+    /**
+     * The underlying display pane that provides coordinate system, scaling, and theme management.
+     *
+     * <p>This value is never {@code null}.</p>
+     */
     @Getter
     private final GraphFxDisplayPane pane;
 
+    /**
+     * Canvas used exclusively for drawing overlays and expression polylines/segments above the display pane.
+     */
     private final Canvas overlayCanvas;
+
+    /**
+     * Root node containing the display pane and overlay canvas.
+     */
     private final StackPane root;
 
-    private final List<Point2D> pointsWorld;
-    private final List<Point2D> manualPolylineWorld;
+    /**
+     * Mutable list of user-managed overlay points. All mutations happen on the JavaFX Application Thread.
+     */
+    private final List<OverlayPoint> overlayPoints;
+
+    /**
+     * Mutable list of user-managed overlay polylines. All mutations happen on the JavaFX Application Thread.
+     */
+    private final List<OverlayPolyline> overlayPolylines;
+
+    /**
+     * Mutable list of expression plots. Each plot has an id and stores computed geometry.
+     * All mutations happen on the JavaFX Application Thread.
+     */
     private final List<ExpressionPlot> expressionPlots;
 
-    private Color pointColor;
-    private double pointRadiusPx;
+    /**
+     * Default point color applied when the user does not provide an explicit point color.
+     */
+    private Color defaultPointColor;
 
-    private Color manualPolylineColor;
-    private double manualPolylineWidthPx;
+    /**
+     * Default point radius in pixels applied when the user does not provide an explicit point radius.
+     */
+    private double defaultPointRadiusPixels;
 
-    private final GraphFxCalculator calculator;
+    /**
+     * Default polyline color applied when the user does not provide an explicit polyline color.
+     */
+    private Color defaultPolylineColor;
 
-    private final Object plotLock;
-    private final ScheduledExecutorService plotScheduler;
-    private final ExecutorService plotExecutor;
+    /**
+     * Default polyline stroke width in pixels applied when the user does not provide an explicit polyline stroke width.
+     */
+    private double defaultPolylineWidthPixels;
 
-    private final AtomicLong plotGeneration;
-    private final AtomicLong plotIdSequence;
+    /**
+     * Calculator used to generate plot geometry from expressions.
+     */
+    private final GraphFxCalculator graphFxCalculator;
 
-    private ScheduledFuture<?> scheduledPlotStart;
-    private Future<?> runningPlotTask;
+    /**
+     * Synchronization lock guarding plot scheduling and cancellation fields.
+     */
+    private final Object plotWorkLock;
 
+    /**
+     * Scheduler used to implement debouncing before submitting expensive plot calculations.
+     */
+    private final ScheduledExecutorService plotSchedulerExecutorService;
+
+    /**
+     * Single-thread executor used to compute plots in sequence and allow fast cancellation.
+     */
+    private final ExecutorService plotComputationExecutorService;
+
+    /**
+     * Monotonically increasing generation number that invalidates older plot tasks.
+     */
+    private final AtomicLong plotGenerationCounter;
+
+    /**
+     * Monotonically increasing id sequence used for overlays and expression plots.
+     */
+    private final AtomicLong elementIdentifierSequence;
+
+    /**
+     * Scheduled task handle for the next debounced plot calculation.
+     */
+    private ScheduledFuture<?> scheduledPlotStartFuture;
+
+    /**
+     * Running computation task handle for cancellation.
+     */
+    private Future<?> runningPlotComputationFuture;
+
+    /**
+     * Flag to ensure overlay redraw is scheduled at most once per pulse.
+     */
     private boolean overlayRedrawScheduled;
 
+    /**
+     * Optional stage owned by this viewer when {@link #show()} or {@link #show(String, double, double)} is used.
+     */
     private Stage stage;
+
+    /**
+     * Scene owned by {@link #stage} when a window is created.
+     */
     private Scene scene;
 
     /**
-     * Creates a new viewer window using {@link DisplayTheme#LIGHT}.
+     * Creates a new viewer using {@link DisplayTheme#LIGHT}.
+     *
+     * <p>The viewer can be embedded via {@link #asNode()} or shown as a standalone window via {@link #show()}.</p>
      */
     public GraphFxPlotViewer() {
         this(DisplayTheme.LIGHT);
     }
 
     /**
-     * Creates a new viewer window using the given theme.
+     * Creates a new viewer using the given theme.
      *
-     * @param theme the initial theme (must not be {@code null})
+     * <p>The theme is applied to an internally created {@link GraphFxDisplayPane} instance.</p>
+     *
+     * @param theme the initial theme to use; must not be {@code null}
      * @throws NullPointerException if {@code theme} is {@code null}
      */
     public GraphFxPlotViewer(@NonNull final DisplayTheme theme) {
@@ -131,7 +246,10 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     /**
      * Creates a new viewer by wrapping an existing {@link GraphFxDisplayPane}.
      *
-     * @param pane the pane to wrap (must not be {@code null})
+     * <p>This constructor is useful when you want full control over the display pane configuration before
+     * instantiating the viewer.</p>
+     *
+     * @param pane the pane to wrap; must not be {@code null}
      * @throws NullPointerException if {@code pane} is {@code null}
      */
     public GraphFxPlotViewer(@NonNull final GraphFxDisplayPane pane) {
@@ -140,32 +258,32 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         this.overlayCanvas = new Canvas();
         this.root = new StackPane(this.pane, this.overlayCanvas);
 
-        this.pointsWorld = new ArrayList<>();
-        this.manualPolylineWorld = new ArrayList<>();
+        this.overlayPoints = new ArrayList<>();
+        this.overlayPolylines = new ArrayList<>();
         this.expressionPlots = new ArrayList<>();
 
-        this.pointColor = DEFAULT_POINT_COLOR;
-        this.pointRadiusPx = DEFAULT_POINT_RADIUS_PX;
+        this.defaultPointColor = DEFAULT_POINT_COLOR;
+        this.defaultPointRadiusPixels = DEFAULT_POINT_RADIUS_PIXELS;
 
-        this.manualPolylineColor = DEFAULT_POLYLINE_COLOR;
-        this.manualPolylineWidthPx = DEFAULT_POLYLINE_WIDTH_PX;
+        this.defaultPolylineColor = DEFAULT_POLYLINE_COLOR;
+        this.defaultPolylineWidthPixels = DEFAULT_POLYLINE_WIDTH_PIXELS;
 
-        this.calculator = new GraphFxCalculator();
+        this.graphFxCalculator = new GraphFxCalculator();
 
-        this.plotLock = new Object();
-        this.plotGeneration = new AtomicLong(0L);
-        this.plotIdSequence = new AtomicLong(1L);
+        this.plotWorkLock = new Object();
+        this.plotGenerationCounter = new AtomicLong(0L);
+        this.elementIdentifierSequence = new AtomicLong(1L);
 
-        this.plotScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            final Thread thread = new Thread(r, "GraphFx-PlotScheduler");
-            thread.setDaemon(true);
-            return thread;
+        this.plotSchedulerExecutorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            final Thread schedulerThread = new Thread(runnable, "GraphFx-PlotScheduler");
+            schedulerThread.setDaemon(true);
+            return schedulerThread;
         });
 
-        this.plotExecutor = Executors.newSingleThreadExecutor(r -> {
-            final Thread thread = new Thread(r, "GraphFx-PlotWorker");
-            thread.setDaemon(true);
-            return thread;
+        this.plotComputationExecutorService = Executors.newSingleThreadExecutor(runnable -> {
+            final Thread workerThread = new Thread(runnable, "GraphFx-PlotWorker");
+            workerThread.setDaemon(true);
+            return workerThread;
         });
 
         FxBootstrap.runLater(() -> {
@@ -176,38 +294,52 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Returns an embeddable JavaFX node containing the display pane and the overlay canvas.
+     * Returns an embeddable JavaFX node that contains the display pane and the overlay layer.
      *
-     * @return the root node (never {@code null})
+     * <p>
+     * This node can be inserted into any JavaFX layout. The overlay canvas automatically binds its size to the
+     * display pane, ensuring overlays always match the visible viewport.
+     * </p>
+     *
+     * @return a non-null JavaFX {@link Parent} node
      */
     public Parent asNode() {
         return root;
     }
 
     /**
-     * Shows this viewer in its own window using {@link WindowConfig} defaults.
+     * Shows this viewer in its own JavaFX window using {@link WindowConfig} defaults.
+     *
+     * <p>
+     * If the window was never created, this method creates it. If the window already exists, it is brought to front.
+     * </p>
      */
     public void show() {
         show(WindowConfig.DEFAULT_WINDOW_TITLE, WindowConfig.DEFAULT_WINDOW_WIDTH, WindowConfig.DEFAULT_WINDOW_HEIGHT);
     }
 
     /**
-     * Shows this viewer in its own window. If the window already exists, it is brought to front and resized.
+     * Shows this viewer in its own JavaFX window.
      *
-     * @param title  window title (must not be {@code null})
-     * @param width  window width in pixels
-     * @param height window height in pixels
+     * <p>
+     * If the window was never created, it is created with the provided dimensions. If it already exists, it is resized
+     * and brought to the foreground.
+     * </p>
+     *
+     * @param title  the window title; must not be {@code null}
+     * @param width  requested window width in pixels; values smaller than 1 are clamped
+     * @param height requested window height in pixels; values smaller than 1 are clamped
      * @throws NullPointerException if {@code title} is {@code null}
      */
     public void show(@NonNull final String title, final double width, final double height) {
-        final double safeWidth = Math.max(1.0, width);
-        final double safeHeight = Math.max(1.0, height);
+        final double safeWidthPixels = Math.max(1.0, width);
+        final double safeHeightPixels = Math.max(1.0, height);
 
         FxBootstrap.runLater(() -> {
-            ensureStageFx(safeWidth, safeHeight);
+            ensureStageFx(safeWidthPixels, safeHeightPixels);
             stage.setTitle(title);
-            stage.setWidth(safeWidth);
-            stage.setHeight(safeHeight);
+            stage.setWidth(safeWidthPixels);
+            stage.setHeight(safeHeightPixels);
             stage.show();
             stage.toFront();
             scheduleOverlayRedrawFx();
@@ -216,7 +348,9 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Hides the window if it is currently shown.
+     * Hides the window if it is currently displayed.
+     *
+     * <p>If the viewer is embedded via {@link #asNode()}, this method has no effect on the embedded usage.</p>
      */
     public void hide() {
         FxBootstrap.runLater(() -> {
@@ -227,42 +361,311 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Replaces all overlay points.
+     * Adds a single overlay point using the current default point style.
      *
-     * @param worldPoints points in world coordinates (must not be {@code null} and must not contain {@code null})
+     * <p>
+     * The point is stored in world coordinates. It is converted to screen coordinates during rendering based on the
+     * current viewport transform of {@link #getPane()}.
+     * </p>
+     *
+     * @param worldPoint the point in world coordinates; must not be {@code null}
+     * @return a stable identifier that can be used to remove or re-style the point later
+     * @throws NullPointerException if {@code worldPoint} is {@code null}
+     */
+    public long addPoint(@NonNull final Point2D worldPoint) {
+        return addPoint(worldPoint, defaultPointColor, defaultPointRadiusPixels);
+    }
+
+    /**
+     * Adds a single overlay point with an individual style.
+     *
+     * <p>
+     * The provided radius is interpreted in pixels (screen space). Values less than or equal to zero are clamped to 1
+     * pixel to ensure the point is visible and rendering remains stable.
+     * </p>
+     *
+     * @param worldPoint   the point in world coordinates; must not be {@code null}
+     * @param color        the fill color for the point; must not be {@code null}
+     * @param radiusPixels the point radius in pixels; values &lt;= 0 are clamped to 1
+     * @return a stable identifier that can be used to remove or re-style the point later
+     * @throws NullPointerException if {@code worldPoint} or {@code color} is {@code null}
+     */
+    public long addPoint(@NonNull final Point2D worldPoint, @NonNull final Color color, final double radiusPixels) {
+        final long pointIdentifier = elementIdentifierSequence.getAndIncrement();
+        final double safeRadiusPixels = radiusPixels > 0 ? radiusPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            overlayPoints.add(new OverlayPoint(pointIdentifier, worldPoint, color, safeRadiusPixels));
+            scheduleOverlayRedrawFx();
+        });
+
+        return pointIdentifier;
+    }
+
+    /**
+     * Removes a single overlay point by identifier.
+     *
+     * <p>If the identifier is unknown, this method performs no changes and does not throw.</p>
+     *
+     * @param pointIdentifier the point identifier returned by {@link #addPoint(Point2D)} or {@link #addPoint(Point2D, Color, double)}
+     */
+    public void removePoint(final long pointIdentifier) {
+        FxBootstrap.runLater(() -> {
+            final boolean removed = overlayPoints.removeIf(overlayPoint -> overlayPoint.id == pointIdentifier);
+            if (removed) {
+                scheduleOverlayRedrawFx();
+            }
+        });
+    }
+
+    /**
+     * Removes all overlay points.
+     *
+     * <p>This does not affect polylines or expression plots.</p>
+     */
+    public void clearPoints() {
+        FxBootstrap.runLater(() -> {
+            overlayPoints.clear();
+            scheduleOverlayRedrawFx();
+        });
+    }
+
+    /**
+     * Sets the default style applied by {@link #addPoint(Point2D)} and {@link #setPoints(List)}.
+     *
+     * <p>
+     * Default styles only affect points added afterwards (or via replacement methods). Existing points are not modified.
+     * </p>
+     *
+     * @param color        the new default point color; must not be {@code null}
+     * @param radiusPixels the new default radius in pixels; values &lt;= 0 are clamped to 1
+     * @throws NullPointerException if {@code color} is {@code null}
+     */
+    public void setDefaultPointStyle(@NonNull final Color color, final double radiusPixels) {
+        final double safeRadiusPixels = radiusPixels > 0 ? radiusPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            defaultPointColor = color;
+            defaultPointRadiusPixels = safeRadiusPixels;
+            scheduleOverlayRedrawFx();
+        });
+    }
+
+    /**
+     * Updates the style of an existing overlay point.
+     *
+     * <p>If the identifier is unknown, this method performs no changes and does not throw.</p>
+     *
+     * @param pointIdentifier the point identifier returned by {@link #addPoint(Point2D)} or {@link #addPoint(Point2D, Color, double)}
+     * @param color           the new fill color; must not be {@code null}
+     * @param radiusPixels    the new radius in pixels; values &lt;= 0 are clamped to 1
+     * @throws NullPointerException if {@code color} is {@code null}
+     */
+    public void setPointStyle(final long pointIdentifier, @NonNull final Color color, final double radiusPixels) {
+        final double safeRadiusPixels = radiusPixels > 0 ? radiusPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            for (int overlayPointIndex = 0; overlayPointIndex < overlayPoints.size(); overlayPointIndex++) {
+                final OverlayPoint overlayPoint = overlayPoints.get(overlayPointIndex);
+                if (overlayPoint.id == pointIdentifier) {
+                    overlayPoints.set(
+                            overlayPointIndex,
+                            new OverlayPoint(pointIdentifier, overlayPoint.worldPoint, color, safeRadiusPixels)
+                    );
+                    scheduleOverlayRedrawFx();
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Adds a polyline overlay using the current default polyline style.
+     *
+     * <p>
+     * The polyline is defined by a list of world-coordinate points. During rendering, each point is transformed into
+     * screen space using the current viewport settings of the display pane.
+     * </p>
+     *
+     * @param worldPolyline points in world coordinates; must not be {@code null} and must not contain {@code null}
+     * @return a stable identifier that can be used to remove or re-style the polyline later
+     * @throws NullPointerException if {@code worldPolyline} is {@code null} or contains {@code null}
+     */
+    public long addPolyline(@NonNull final List<Point2D> worldPolyline) {
+        return addPolyline(worldPolyline, defaultPolylineColor, defaultPolylineWidthPixels);
+    }
+
+    /**
+     * Adds a polyline overlay with an individual style.
+     *
+     * <p>
+     * The provided width is interpreted in pixels (screen space). Values less than or equal to zero are clamped to 1
+     * pixel to ensure visibility and stable rendering.
+     * </p>
+     *
+     * @param worldPolyline points in world coordinates; must not be {@code null} and must not contain {@code null}
+     * @param color         stroke color; must not be {@code null}
+     * @param widthPixels   stroke width in pixels; values &lt;= 0 are clamped to 1
+     * @return a stable identifier that can be used to remove or re-style the polyline later
+     * @throws NullPointerException if {@code worldPolyline} is {@code null} orl contains {@code null}, or if {@code color} is {@code null}
+     */
+    public long addPolyline(@NonNull final List<Point2D> worldPolyline, @NonNull final Color color, final double widthPixels) {
+        final List<Point2D> safePolylinePoints = copyPoints(worldPolyline);
+        final long polylineIdentifier = elementIdentifierSequence.getAndIncrement();
+        final double safeWidthPixels = widthPixels > 0 ? widthPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            overlayPolylines.add(new OverlayPolyline(polylineIdentifier, safePolylinePoints, color, safeWidthPixels));
+            scheduleOverlayRedrawFx();
+        });
+
+        return polylineIdentifier;
+    }
+
+    /**
+     * Removes a single polyline by identifier.
+     *
+     * <p>If the identifier is unknown, this method performs no changes and does not throw.</p>
+     *
+     * @param polylineIdentifier the polyline identifier returned by {@link #addPolyline(List)} or {@link #addPolyline(List, Color, double)}
+     */
+    public void removePolyline(final long polylineIdentifier) {
+        FxBootstrap.runLater(() -> {
+            final boolean removed = overlayPolylines.removeIf(overlayPolyline -> overlayPolyline.id == polylineIdentifier);
+            if (removed) {
+                scheduleOverlayRedrawFx();
+            }
+        });
+    }
+
+    /**
+     * Removes all overlay polylines.
+     *
+     * <p>This does not affect points or expression plots.</p>
+     */
+    public void clearPolylines() {
+        FxBootstrap.runLater(() -> {
+            overlayPolylines.clear();
+            scheduleOverlayRedrawFx();
+        });
+    }
+
+    /**
+     * Sets the default style applied by {@link #addPolyline(List)} and {@link #setPolyline(List)}.
+     *
+     * <p>
+     * Default styles only affect polylines added afterwards (or via replacement methods). Existing polylines are not modified.
+     * </p>
+     *
+     * @param color       the new default stroke color; must not be {@code null}
+     * @param widthPixels the new default stroke width in pixels; values &lt;= 0 are clamped to 1
+     * @throws NullPointerException if {@code color} is {@code null}
+     */
+    public void setDefaultPolylineStyle(@NonNull final Color color, final double widthPixels) {
+        final double safeWidthPixels = widthPixels > 0 ? widthPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            defaultPolylineColor = color;
+            defaultPolylineWidthPixels = safeWidthPixels;
+            scheduleOverlayRedrawFx();
+        });
+    }
+
+    /**
+     * Updates the style of an existing overlay polyline.
+     *
+     * <p>If the identifier is unknown, this method performs no changes and does not throw.</p>
+     *
+     * @param polylineIdentifier the polyline identifier returned by {@link #addPolyline(List)} or {@link #addPolyline(List, Color, double)}
+     * @param color              the new stroke color; must not be {@code null}
+     * @param widthPixels        the new stroke width in pixels; values &lt;= 0 are clamped to 1
+     * @throws NullPointerException if {@code color} is {@code null}
+     */
+    public void setPolylineStyle(final long polylineIdentifier, @NonNull final Color color, final double widthPixels) {
+        final double safeWidthPixels = widthPixels > 0 ? widthPixels : 1.0;
+
+        FxBootstrap.runLater(() -> {
+            for (int overlayPolylineIndex = 0; overlayPolylineIndex < overlayPolylines.size(); overlayPolylineIndex++) {
+                final OverlayPolyline overlayPolyline = overlayPolylines.get(overlayPolylineIndex);
+                if (overlayPolyline.id == polylineIdentifier) {
+                    overlayPolylines.set(
+                            overlayPolylineIndex,
+                            new OverlayPolyline(polylineIdentifier, overlayPolyline.worldPolyline, color, safeWidthPixels)
+                    );
+                    scheduleOverlayRedrawFx();
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Replaces all overlay points with the provided list.
+     *
+     * <p>
+     * This is a convenience method for scatter-like overlays. Each created overlay point receives a new identifier and
+     * uses the current default point style. For per-point styling, prefer {@link #addPoint(Point2D, Color, double)}.
+     * </p>
+     *
+     * @param worldPoints points in world coordinates; must not be {@code null} and must not contain {@code null}
      * @throws NullPointerException if {@code worldPoints} is {@code null} or contains {@code null}
      */
     public void setPoints(@NonNull final List<Point2D> worldPoints) {
-        final List<Point2D> safeCopy = copyPoints(worldPoints);
+        final List<Point2D> safePointList = copyPoints(worldPoints);
+
         FxBootstrap.runLater(() -> {
-            pointsWorld.clear();
-            pointsWorld.addAll(safeCopy);
+            overlayPoints.clear();
+            for (final Point2D worldPoint : safePointList) {
+                overlayPoints.add(
+                        new OverlayPoint(
+                                elementIdentifierSequence.getAndIncrement(),
+                                worldPoint,
+                                defaultPointColor,
+                                defaultPointRadiusPixels
+                        )
+                );
+            }
             scheduleOverlayRedrawFx();
         });
     }
 
     /**
-     * Replaces the manual overlay polyline.
+     * Replaces all polylines with a single polyline using the current default polyline style.
      *
-     * @param worldPolyline polyline in world coordinates (must not be {@code null} and must not contain {@code null})
+     * <p>
+     * This method exists mainly as a compatibility convenience. For multiple polylines and individual styling, use
+     * {@link #addPolyline(List, Color, double)} repeatedly.
+     * </p>
+     *
+     * @param worldPolyline polyline points in world coordinates; must not be {@code null} and must not contain {@code null}
      * @throws NullPointerException if {@code worldPolyline} is {@code null} or contains {@code null}
      */
     public void setPolyline(@NonNull final List<Point2D> worldPolyline) {
-        final List<Point2D> safeCopy = copyPoints(worldPolyline);
+        final List<Point2D> safePolylinePoints = copyPoints(worldPolyline);
+
         FxBootstrap.runLater(() -> {
-            manualPolylineWorld.clear();
-            manualPolylineWorld.addAll(safeCopy);
+            overlayPolylines.clear();
+            overlayPolylines.add(
+                    new OverlayPolyline(
+                            elementIdentifierSequence.getAndIncrement(),
+                            safePolylinePoints,
+                            defaultPolylineColor,
+                            defaultPolylineWidthPixels
+                    )
+            );
             scheduleOverlayRedrawFx();
         });
     }
 
     /**
-     * Clears points, manual polyline, and all expression plots.
+     * Clears overlay points, overlay polylines, and all expression plots.
+     *
+     * <p>This method also cancels any ongoing plot computation work.</p>
      */
     public void clearOverlay() {
         FxBootstrap.runLater(() -> {
-            pointsWorld.clear();
-            manualPolylineWorld.clear();
+            overlayPoints.clear();
+            overlayPolylines.clear();
             expressionPlots.clear();
             cancelPlotWork();
             scheduleOverlayRedrawFx();
@@ -271,6 +674,8 @@ public final class GraphFxPlotViewer implements AutoCloseable {
 
     /**
      * Clears only expression plots.
+     *
+     * <p>This method also cancels any ongoing plot computation work.</p>
      */
     public void clearExpressionPlots() {
         FxBootstrap.runLater(() -> {
@@ -281,11 +686,16 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Adds a new expression plot without variables.
+     * Adds an expression plot without variables.
      *
-     * @param expression expression to plot (must not be {@code null})
-     * @param hexColor   plot color as hex string (must not be {@code null})
-     * @return the plot id that can be used for removal
+     * <p>
+     * The provided color must be a hexadecimal string in {@code RRGGBB} or {@code AARRGGBB} format. A leading {@code '#'}
+     * is optional.
+     * </p>
+     *
+     * @param expression the expression to plot; must not be {@code null}
+     * @param hexColor   the plot color as hex string; must not be {@code null}
+     * @return a stable plot identifier that can be used to remove the plot later
      * @throws NullPointerException     if {@code expression} or {@code hexColor} is {@code null}
      * @throws IllegalArgumentException if {@code hexColor} is not a valid hex color
      */
@@ -294,36 +704,51 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Adds a new expression plot.
+     * Adds an expression plot.
      *
-     * @param expression expression to plot (must not be {@code null})
-     * @param variables  variables as {@link String} (must not be {@code null}; keys and values must not be {@code null})
-     * @param hexColor   plot color as hex string (must not be {@code null})
-     * @return the plot id that can be used for removal
+     * <p>
+     * Variables are provided as string values and forwarded to the underlying evaluation engine. Keys and values must
+     * be non-null. The plot is computed asynchronously and will be updated when computation completes.
+     * </p>
+     *
+     * @param expression the expression to plot; must not be {@code null}
+     * @param variables  variable mapping (name -&gt; value) as strings; must not be {@code null} and must not contain {@code null} keys/values
+     * @param hexColor   the plot color as hex string; must not be {@code null}
+     * @return a stable plot identifier that can be used to remove the plot later
      * @throws NullPointerException     if any argument is {@code null}, or if {@code variables} contains {@code null} key/value
      * @throws IllegalArgumentException if {@code hexColor} is not a valid hex color
      */
     public long plotExpression(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final String hexColor) {
         final Color strokeColor = parseHexColor(hexColor);
-        final long plotId = plotIdSequence.getAndIncrement();
+        final long plotIdentifier = elementIdentifierSequence.getAndIncrement();
 
         FxBootstrap.runLater(() -> {
-            expressionPlots.add(new ExpressionPlot(plotId, expression, variables, strokeColor, DEFAULT_PLOT_WIDTH_PX));
+            expressionPlots.add(
+                    new ExpressionPlot(
+                            plotIdentifier,
+                            expression,
+                            variables,
+                            strokeColor,
+                            DEFAULT_EXPRESSION_PLOT_WIDTH_PIXELS
+                    )
+            );
             schedulePlotUpdateFx(0L);
             scheduleOverlayRedrawFx();
         });
 
-        return plotId;
+        return plotIdentifier;
     }
 
     /**
-     * Removes a plot by id. If no plot exists for the given id, this method does nothing.
+     * Removes a plotted expression by identifier.
      *
-     * @param plotId plot id
+     * <p>If the identifier is unknown, this method performs no changes and does not throw.</p>
+     *
+     * @param plotIdentifier the plot identifier returned by {@link #plotExpression(String, String)} or {@link #plotExpression(String, Map, String)}
      */
-    public void removeExpressionPlot(final long plotId) {
+    public void removeExpressionPlot(final long plotIdentifier) {
         FxBootstrap.runLater(() -> {
-            final boolean removed = expressionPlots.removeIf(p -> p.id == plotId);
+            final boolean removed = expressionPlots.removeIf(expressionPlot -> expressionPlot.id == plotIdentifier);
             if (removed) {
                 schedulePlotUpdateFx(0L);
                 scheduleOverlayRedrawFx();
@@ -332,67 +757,45 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Sets the style of manual overlay points.
-     *
-     * @param color    point color (must not be {@code null})
-     * @param radiusPx radius in pixels; values &lt;= 0 are clamped to 1
-     * @throws NullPointerException if {@code color} is {@code null}
-     */
-    public void setPointStyle(@NonNull final Color color, final double radiusPx) {
-        final double safeRadius = radiusPx > 0 ? radiusPx : 1.0;
-        FxBootstrap.runLater(() -> {
-            pointColor = color;
-            pointRadiusPx = safeRadius;
-            scheduleOverlayRedrawFx();
-        });
-    }
-
-    /**
-     * Sets the style of the manual overlay polyline.
-     *
-     * @param color   line color (must not be {@code null})
-     * @param widthPx stroke width in pixels; values &lt;= 0 are clamped to 1
-     * @throws NullPointerException if {@code color} is {@code null}
-     */
-    public void setPolylineStyle(@NonNull final Color color, final double widthPx) {
-        final double safeWidth = widthPx > 0 ? widthPx : 1.0;
-        FxBootstrap.runLater(() -> {
-            manualPolylineColor = color;
-            manualPolylineWidthPx = safeWidth;
-            scheduleOverlayRedrawFx();
-        });
-    }
-
-    /**
      * Centers the origin of the underlying display pane.
+     *
+     * <p>This affects how world coordinates map to screen coordinates and triggers overlay/plot recalculation.</p>
      */
     public void centerOrigin() {
         FxBootstrap.runLater(pane::centerOrigin);
     }
 
     /**
-     * Applies a theme to the underlying pane and refreshes the overlay and expression plots.
+     * Applies a new theme to the underlying display pane.
      *
-     * @param theme theme to apply (must not be {@code null})
+     * <p>
+     * The overlay and expression plots are refreshed after applying the theme. Plot recomputation is debounced to avoid
+     * heavy work when multiple changes occur quickly.
+     * </p>
+     *
+     * @param theme the theme to apply; must not be {@code null}
      * @throws NullPointerException if {@code theme} is {@code null}
      */
     public void setTheme(@NonNull final DisplayTheme theme) {
         FxBootstrap.runLater(() -> {
             pane.setTheme(theme);
             scheduleOverlayRedrawFx();
-            schedulePlotUpdateFx(PLOT_DEBOUNCE_MS);
+            schedulePlotUpdateFx(PLOT_DEBOUNCE_MILLISECONDS);
         });
     }
 
     /**
-     * Disposes background executors and closes the window.
+     * Releases all resources held by this viewer.
      *
-     * <p>This method is safe to call multiple times.</p>
+     * <p>
+     * This method cancels ongoing plot computations, shuts down background executors, and closes the optional owned
+     * window if present. The method is idempotent and can be called multiple times safely.
+     * </p>
      */
     public void dispose() {
         cancelPlotWork();
-        plotScheduler.shutdownNow();
-        plotExecutor.shutdownNow();
+        plotSchedulerExecutorService.shutdownNow();
+        plotComputationExecutorService.shutdownNow();
 
         FxBootstrap.runLater(() -> {
             if (stage != null) {
@@ -403,134 +806,224 @@ public final class GraphFxPlotViewer implements AutoCloseable {
 
     /**
      * Equivalent to {@link #dispose()}.
+     *
+     * <p>This is provided to integrate cleanly with try-with-resources blocks.</p>
      */
     @Override
     public void close() {
         dispose();
     }
 
+    /**
+     * Internal data class representing a plotted expression and its computed geometry.
+     *
+     * <p>
+     * The geometry is stored as either a continuous polyline (for explicit functions) or a list of line segments
+     * (for implicit contours). The plotting engine may choose either representation based on the expression type.
+     * </p>
+     */
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     private static final class ExpressionPlot {
-        private final long id;
-        private final @NonNull String expression;
-        private final @NonNull Map<String, String> variables;
-        private final @NonNull Color strokeColor;
-        private final double strokeWidthPx;
 
+        /**
+         * Stable identifier for this plot, used for removal and lookup.
+         */
+        private final long id;
+
+        /**
+         * Original user-provided expression string.
+         */
+        private final @NonNull String expression;
+
+        /**
+         * Original variable mapping (string values) used by the evaluation engine.
+         */
+        private final @NonNull Map<String, String> variables;
+
+        /**
+         * Plot stroke color.
+         */
+        private final @NonNull Color strokeColor;
+
+        /**
+         * Plot stroke width in pixels.
+         */
+        private final double strokeWidthPixels;
+
+        /**
+         * Computed polyline geometry for explicit plots.
+         */
         private List<GraphFxPoint> polyline = List.of();
+
+        /**
+         * Computed line segment geometry for implicit contour plots.
+         */
         private List<GraphFxCalculator.LineSegment> segments = List.of();
     }
 
     /**
-     * Immutable snapshot of a plot configuration used to compute geometry off the UI thread.
+     * Immutable snapshot of an {@link ExpressionPlot} that is safe to use from a background thread.
      *
-     * @param id            plot id
-     * @param expression    expression string
-     * @param variables     variables as engine strings
-     * @param strokeColor   stroke color
-     * @param strokeWidthPx stroke width in pixels
+     * <p>This prevents races between UI thread mutations and background plot computation.</p>
+     *
+     * @param id                stable plot identifier
+     * @param expression        expression string
+     * @param variables         variable mapping as strings
+     * @param strokeColor       stroke color
+     * @param strokeWidthPixels stroke width in pixels
      */
-    private record PlotSnapshot(long id, String expression, Map<String, String> variables, Color strokeColor,
-                                double strokeWidthPx) {
+    private record PlotSnapshot(
+            long id,
+            String expression,
+            Map<String, String> variables,
+            Color strokeColor,
+            double strokeWidthPixels
+    ) {
     }
 
     /**
-     * Computation result for a single plot.
+     * Result of a completed plot computation.
      *
-     * @param id       plot id
-     * @param geometry computed geometry
+     * <p>The geometry is applied back to the matching {@link ExpressionPlot} on the JavaFX thread.</p>
+     *
+     * @param id       stable plot identifier
+     * @param geometry computed plot geometry
      */
     private record PlotResult(long id, GraphFxCalculator.PlotGeometry geometry) {
     }
 
     /**
-     * Creates an immutable defensive copy of a list of points and validates that it contains no {@code null} elements.
+     * Creates an immutable defensive copy of a list of {@link Point2D} and validates that no element is {@code null}.
      *
-     * @param points list of points to copy (must not be {@code null})
-     * @return an immutable copy of the input list
+     * @param points list of points; must not be {@code null} and must not contain {@code null}
+     * @return an immutable copy of the provided points
      * @throws NullPointerException if {@code points} is {@code null} or contains {@code null}
      */
     private static List<Point2D> copyPoints(@NonNull final List<Point2D> points) {
-        for (int i = 0; i < points.size(); i++) {
-            Objects.requireNonNull(points.get(i), "points[" + i + "] must not be null");
+        for (int pointIndex = 0; pointIndex < points.size(); pointIndex++) {
+            Objects.requireNonNull(points.get(pointIndex), "points[" + pointIndex + "] must not be null");
         }
         return List.copyOf(points);
     }
 
     /**
-     * Converts user variables from {@link BigNumber} to string form for the expression engine.
+     * Converts a variable map from {@link BigNumber} values to string values.
      *
-     * @param variables variables map (must not be {@code null}; keys and values must not be {@code null})
-     * @return an immutable map suitable for the calculation engine
-     * @throws NullPointerException if {@code variables} is {@code null} or contains {@code null} key/value
+     * <p>
+     * This helper exists to allow API layers to accept high precision variables while still delegating evaluation
+     * to the underlying plotting engine that consumes string inputs.
+     * </p>
+     *
+     * @param variables variables with {@link BigNumber} values; must not be {@code null} and must not contain {@code null} keys/values
+     * @return an immutable copy of variables converted to string values
+     * @throws NullPointerException if {@code variables} is {@code null} or contains {@code null} keys/values
      */
     private static Map<String, String> convertBigNumberVariables(@NonNull final Map<String, BigNumber> variables) {
-        final Map<String, String> out = new HashMap<>(Math.max(8, variables.size()));
-        for (final Map.Entry<String, BigNumber> entry : variables.entrySet()) {
-            final String key = Objects.requireNonNull(entry.getKey(), "variable name must not be null");
-            final BigNumber value = Objects.requireNonNull(entry.getValue(), "variable '" + key + "' must not be null");
-            out.put(key, value.toString());
+        final Map<String, String> convertedVariables = new HashMap<>(Math.max(8, variables.size()));
+
+        for (final Map.Entry<String, BigNumber> variableEntry : variables.entrySet()) {
+            final String variableName = Objects.requireNonNull(variableEntry.getKey(), "variable name must not be null");
+            final BigNumber variableValue = Objects.requireNonNull(
+                    variableEntry.getValue(),
+                    "variable '" + variableName + "' must not be null"
+            );
+            convertedVariables.put(variableName, variableValue.toString());
         }
-        return Map.copyOf(out);
+
+        return Map.copyOf(convertedVariables);
     }
 
     /**
-     * Parses a hex color string in {@code RRGGBB} or {@code AARRGGBB} format with an optional leading {@code #}.
+     * Parses a hex color string and returns a JavaFX {@link Color}.
      *
-     * @param hexColor hex color (must not be {@code null})
-     * @return a JavaFX {@link Color}
+     * <p>
+     * Supported input formats:
+     * </p>
+     * <ul>
+     *   <li>{@code RRGGBB}</li>
+     *   <li>{@code #RRGGBB}</li>
+     *   <li>{@code AARRGGBB}</li>
+     *   <li>{@code #AARRGGBB}</li>
+     * </ul>
+     *
+     * <p>
+     * When alpha is supplied, it is provided as the first two bytes (AA). Internally, JavaFX expects alpha at the end
+     * for {@link Color#web(String)}, therefore the string is converted accordingly.
+     * </p>
+     *
+     * @param hexColor a hex color string; must not be {@code null}
+     * @return parsed JavaFX color
      * @throws NullPointerException     if {@code hexColor} is {@code null}
-     * @throws IllegalArgumentException if the string is empty or not a valid hex color
+     * @throws IllegalArgumentException if {@code hexColor} is empty, has invalid length, or contains non-hex characters
      */
     private static Color parseHexColor(@NonNull final String hexColor) {
-        final String raw = hexColor.trim();
-        if (raw.isEmpty()) {
+        final String trimmedHexColor = hexColor.trim();
+        if (trimmedHexColor.isEmpty()) {
             throw new IllegalArgumentException("hexColor must not be empty");
         }
 
-        final String digits = raw.startsWith("#") ? raw.substring(1) : raw;
-        if (!(digits.length() == 6 || digits.length() == 8)) {
-            throw new IllegalArgumentException("hexColor must be RRGGBB or AARRGGBB (with optional leading '#'): " + hexColor);
+        final String hexDigits = trimmedHexColor.startsWith("#") ? trimmedHexColor.substring(1) : trimmedHexColor;
+        if (!(hexDigits.length() == 6 || hexDigits.length() == 8)) {
+            throw new IllegalArgumentException(
+                    "hexColor must be RRGGBB or AARRGGBB (with optional leading '#'): " + hexColor
+            );
         }
 
-        for (int i = 0; i < digits.length(); i++) {
-            final char c = digits.charAt(i);
-            final boolean isHex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-            if (!isHex) {
-                throw new IllegalArgumentException("hexColor contains non-hex character '" + c + "': " + hexColor);
+        for (int digitIndex = 0; digitIndex < hexDigits.length(); digitIndex++) {
+            final char currentDigit = hexDigits.charAt(digitIndex);
+            final boolean isHexDigit =
+                    (currentDigit >= '0' && currentDigit <= '9')
+                            || (currentDigit >= 'a' && currentDigit <= 'f')
+                            || (currentDigit >= 'A' && currentDigit <= 'F');
+
+            if (!isHexDigit) {
+                throw new IllegalArgumentException(
+                        "hexColor contains non-hex character '" + currentDigit + "': " + hexColor
+                );
             }
         }
 
-        final String css;
-        if (digits.length() == 6) {
-            css = "#" + digits;
+        final String cssHexColor;
+        if (hexDigits.length() == 6) {
+            cssHexColor = "#" + hexDigits;
         } else {
-            final String aa = digits.substring(0, 2);
-            final String rrggbb = digits.substring(2);
-            css = "#" + rrggbb + aa;
+            final String alphaHex = hexDigits.substring(0, 2);
+            final String rgbHex = hexDigits.substring(2);
+            cssHexColor = "#" + rgbHex + alphaHex;
         }
 
-        return Color.web(css);
+        return Color.web(cssHexColor);
     }
 
     /**
-     * Ensures a {@link Stage} and {@link Scene} exist for this viewer.
+     * Ensures the owned JavaFX {@link Stage} exists and is configured.
      *
-     * @param width  initial width
-     * @param height initial height
+     * <p>
+     * If the stage does not exist, this method creates it, attaches the scene, and wires cancellation behavior for
+     * when the window is hidden.
+     * </p>
+     *
+     * @param widthPixels  initial scene width in pixels
+     * @param heightPixels initial scene height in pixels
      */
-    private void ensureStageFx(final double width, final double height) {
+    private void ensureStageFx(final double widthPixels, final double heightPixels) {
         if (stage != null) {
             return;
         }
+
         stage = new Stage();
-        stage.setOnHidden(e -> cancelPlotWork());
-        scene = new Scene(root, width, height);
+        stage.setOnHidden(event -> cancelPlotWork());
+
+        scene = new Scene(root, widthPixels, heightPixels);
         stage.setScene(scene);
     }
 
     /**
-     * Configures the overlay canvas to match the pane size and to ignore mouse events.
+     * Configures the overlay canvas so it behaves like a transparent drawing layer above the display pane.
+     *
+     * <p>
+     * The canvas is made mouse-transparent and its size is bound to the display pane size.
+     * </p>
      */
     private void configureOverlayCanvasFx() {
         overlayCanvas.setMouseTransparent(true);
@@ -539,129 +1032,187 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Registers listeners that trigger redraws and plot recomputation when the viewport changes.
+     * Registers listeners that trigger overlay redraw and plot recomputation when the viewport changes.
+     *
+     * <p>
+     * Viewport changes include resizing, scaling (zoom), and origin offset changes (panning).
+     * </p>
      */
     private void registerViewportListenersFx() {
-        final InvalidationListener listener = obs -> {
-            schedulePlotUpdateFx(PLOT_DEBOUNCE_MS);
+        final InvalidationListener viewportInvalidationListener = observable -> {
+            schedulePlotUpdateFx(PLOT_DEBOUNCE_MILLISECONDS);
             scheduleOverlayRedrawFx();
         };
 
-        overlayCanvas.widthProperty().addListener(listener);
-        overlayCanvas.heightProperty().addListener(listener);
+        overlayCanvas.widthProperty().addListener(viewportInvalidationListener);
+        overlayCanvas.heightProperty().addListener(viewportInvalidationListener);
 
-        pane.getScalePxPerUnit().addListener(listener);
-        pane.getOriginOffsetX().addListener(listener);
-        pane.getOriginOffsetY().addListener(listener);
+        pane.getScalePxPerUnit().addListener(viewportInvalidationListener);
+        pane.getOriginOffsetX().addListener(viewportInvalidationListener);
+        pane.getOriginOffsetY().addListener(viewportInvalidationListener);
     }
 
     /**
-     * Schedules a debounced plot recomputation for all expression plots.
+     * Schedules a plot recomputation after a debounce delay.
      *
-     * @param debounceMs debounce time in milliseconds
+     * <p>
+     * The current viewport bounds and the current set of expression plots are snapshotted on the JavaFX thread. The
+     * expensive computation runs on a dedicated worker thread. If a newer generation is scheduled while a computation
+     * is pending or running, older work is cancelled.
+     * </p>
+     *
+     * @param debounceMilliseconds debounce delay in milliseconds; negative values are treated as zero
      */
-    private void schedulePlotUpdateFx(final long debounceMs) {
+    private void schedulePlotUpdateFx(final long debounceMilliseconds) {
         if (expressionPlots.isEmpty()) {
             return;
         }
 
-        final int pixelWidth = (int) Math.max(1.0, overlayCanvas.getWidth());
-        final int pixelHeight = (int) Math.max(1.0, overlayCanvas.getHeight());
+        final int viewportPixelWidth = (int) Math.max(1.0, overlayCanvas.getWidth());
+        final int viewportPixelHeight = (int) Math.max(1.0, overlayCanvas.getHeight());
 
-        final GraphFxCalculator.WorldBounds boundsSnapshot = currentViewportWorldBoundsFx();
-        final List<PlotSnapshot> plotsSnapshot = snapshotPlotsFx();
-        if (plotsSnapshot.isEmpty()) {
+        final GraphFxCalculator.WorldBounds worldBoundsSnapshot = currentViewportWorldBoundsFx();
+        final List<PlotSnapshot> plotSnapshots = snapshotPlotsFx();
+        if (plotSnapshots.isEmpty()) {
             return;
         }
 
-        final long generation = plotGeneration.incrementAndGet();
+        final long generation = plotGenerationCounter.incrementAndGet();
 
-        synchronized (plotLock) {
+        synchronized (plotWorkLock) {
             cancelScheduledPlotStartLocked();
             cancelRunningPlotTaskLocked();
 
-            scheduledPlotStart = plotScheduler.schedule(() -> submitPlotComputation(plotsSnapshot, boundsSnapshot, pixelWidth, pixelHeight, generation), Math.max(0L, debounceMs), TimeUnit.MILLISECONDS);
+            scheduledPlotStartFuture = plotSchedulerExecutorService.schedule(
+                    () -> submitPlotComputation(plotSnapshots, worldBoundsSnapshot, viewportPixelWidth, viewportPixelHeight, generation),
+                    Math.max(0L, debounceMilliseconds),
+                    TimeUnit.MILLISECONDS
+            );
         }
     }
 
     /**
-     * Creates an immutable snapshot of all current plots for background computation.
+     * Creates thread-safe snapshots of the currently registered expression plots.
      *
-     * @return a snapshot list
+     * <p>
+     * The snapshot contains only immutable state needed for computation and can safely be used from a background thread.
+     * </p>
+     *
+     * @return immutable snapshots for all expression plots
      */
     private List<PlotSnapshot> snapshotPlotsFx() {
-        final List<PlotSnapshot> snapshot = new ArrayList<>(expressionPlots.size());
-        for (final ExpressionPlot plot : expressionPlots) {
-            snapshot.add(new PlotSnapshot(plot.id, plot.expression, plot.variables, plot.strokeColor, plot.strokeWidthPx));
+        final List<PlotSnapshot> plotSnapshots = new ArrayList<>(expressionPlots.size());
+        for (final ExpressionPlot expressionPlot : expressionPlots) {
+            plotSnapshots.add(
+                    new PlotSnapshot(
+                            expressionPlot.id,
+                            expressionPlot.expression,
+                            expressionPlot.variables,
+                            expressionPlot.strokeColor,
+                            expressionPlot.strokeWidthPixels
+                    )
+            );
         }
-        return snapshot;
+        return plotSnapshots;
     }
 
     /**
-     * Submits plot computation work to the plot worker executor if the generation is still current.
+     * Submits plot computation work to the worker executor if the generation is still current.
      *
-     * @param plotsSnapshot  plots snapshot
-     * @param boundsSnapshot world bounds snapshot
-     * @param pixelWidth     pixel width
-     * @param pixelHeight    pixel height
-     * @param generation     generation id
+     * @param plotSnapshots       immutable plot snapshots
+     * @param worldBoundsSnapshot immutable world bounds snapshot
+     * @param viewportPixelWidth  viewport width in pixels
+     * @param viewportPixelHeight viewport height in pixels
+     * @param generation          generation token that must still match {@link #plotGenerationCounter}
      */
-    private void submitPlotComputation(@NonNull final List<PlotSnapshot> plotsSnapshot, @NonNull final GraphFxCalculator.WorldBounds boundsSnapshot, final int pixelWidth, final int pixelHeight, final long generation) {
-        synchronized (plotLock) {
-            if (plotGeneration.get() != generation) {
+    private void submitPlotComputation(
+            @NonNull final List<PlotSnapshot> plotSnapshots,
+            @NonNull final GraphFxCalculator.WorldBounds worldBoundsSnapshot,
+            final int viewportPixelWidth,
+            final int viewportPixelHeight,
+            final long generation
+    ) {
+        synchronized (plotWorkLock) {
+            if (plotGenerationCounter.get() != generation) {
                 return;
             }
-            runningPlotTask = plotExecutor.submit(() -> computePlots(plotsSnapshot, boundsSnapshot, pixelWidth, pixelHeight, generation));
+
+            runningPlotComputationFuture = plotComputationExecutorService.submit(() ->
+                    computePlots(plotSnapshots, worldBoundsSnapshot, viewportPixelWidth, viewportPixelHeight, generation)
+            );
         }
     }
 
     /**
-     * Computes plot geometries for all plots in the snapshot and applies results on the JavaFX thread.
+     * Computes plot geometry for all snapshots and applies the result on the JavaFX thread.
      *
-     * @param plotsSnapshot  plots snapshot
-     * @param boundsSnapshot world bounds snapshot
-     * @param pixelWidth     pixel width
-     * @param pixelHeight    pixel height
-     * @param generation     generation id
+     * <p>
+     * This method runs on a background thread. It checks cancellation frequently using the generation token and
+     * interruption status.
+     * </p>
+     *
+     * @param plotSnapshots       snapshots of the plots to compute
+     * @param worldBoundsSnapshot viewport bounds
+     * @param viewportPixelWidth  viewport width in pixels
+     * @param viewportPixelHeight viewport height in pixels
+     * @param generation          generation token for cancellation
      */
-    private void computePlots(@NonNull final List<PlotSnapshot> plotsSnapshot, @NonNull final GraphFxCalculator.WorldBounds boundsSnapshot, final int pixelWidth, final int pixelHeight, final long generation) {
-        final GraphFxCalculator.PlotCancellation cancellation = () -> Thread.currentThread().isInterrupted() || plotGeneration.get() != generation;
-        final List<PlotResult> results = new ArrayList<>(plotsSnapshot.size());
+    private void computePlots(
+            @NonNull final List<PlotSnapshot> plotSnapshots,
+            @NonNull final GraphFxCalculator.WorldBounds worldBoundsSnapshot,
+            final int viewportPixelWidth,
+            final int viewportPixelHeight,
+            final long generation
+    ) {
+        final GraphFxCalculator.PlotCancellation plotCancellation =
+                () -> Thread.currentThread().isInterrupted() || plotGenerationCounter.get() != generation;
 
-        for (final PlotSnapshot plot : plotsSnapshot) {
-            if (cancellation.isCancelled()) {
+        final List<PlotResult> plotResults = new ArrayList<>(plotSnapshots.size());
+
+        for (final PlotSnapshot plotSnapshot : plotSnapshots) {
+            if (plotCancellation.isCancelled()) {
                 return;
             }
 
-            final GraphFxCalculator.PlotGeometry geometry = calculator.plot(plot.expression(), plot.variables(), boundsSnapshot, pixelWidth, pixelHeight, cancellation);
+            final GraphFxCalculator.PlotGeometry computedGeometry = graphFxCalculator.plot(
+                    plotSnapshot.expression(),
+                    plotSnapshot.variables(),
+                    worldBoundsSnapshot,
+                    viewportPixelWidth,
+                    viewportPixelHeight,
+                    plotCancellation
+            );
 
-            if (cancellation.isCancelled()) {
+            if (plotCancellation.isCancelled()) {
                 return;
             }
 
-            results.add(new PlotResult(plot.id(), geometry));
+            plotResults.add(new PlotResult(plotSnapshot.id(), computedGeometry));
         }
 
         FxBootstrap.runLater(() -> {
-            if (plotGeneration.get() != generation) {
+            if (plotGenerationCounter.get() != generation) {
                 return;
             }
-            applyPlotResultsFx(results);
+
+            applyPlotResultsFx(plotResults);
             scheduleOverlayRedrawFx();
         });
     }
 
     /**
-     * Applies computed results to the corresponding live plots.
+     * Applies computed plot geometry to the matching {@link ExpressionPlot} instances.
      *
-     * @param results computed results
+     * <p>This method must be executed on the JavaFX Application Thread.</p>
+     *
+     * @param plotResults computed plot results to apply
      */
-    private void applyPlotResultsFx(@NonNull final List<PlotResult> results) {
-        for (final PlotResult result : results) {
-            for (final ExpressionPlot plot : expressionPlots) {
-                if (plot.id == result.id()) {
-                    plot.polyline = result.geometry().polyline();
-                    plot.segments = result.geometry().segments();
+    private void applyPlotResultsFx(@NonNull final List<PlotResult> plotResults) {
+        for (final PlotResult plotResult : plotResults) {
+            for (final ExpressionPlot expressionPlot : expressionPlots) {
+                if (expressionPlot.id == plotResult.id()) {
+                    expressionPlot.polyline = plotResult.geometry().polyline();
+                    expressionPlot.segments = plotResult.geometry().segments();
                     break;
                 }
             }
@@ -669,67 +1220,84 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Cancels any scheduled and running plot computation work.
+     * Cancels any scheduled or running plot work by advancing the generation token.
+     *
+     * <p>
+     * This method does not clear plots; it only prevents current computations from applying their results.
+     * </p>
      */
     private void cancelPlotWork() {
-        plotGeneration.incrementAndGet();
-        synchronized (plotLock) {
+        plotGenerationCounter.incrementAndGet();
+        synchronized (plotWorkLock) {
             cancelScheduledPlotStartLocked();
             cancelRunningPlotTaskLocked();
         }
     }
 
     /**
-     * Cancels a pending scheduled plot start if present.
+     * Cancels the scheduled debounced plot start task.
+     *
+     * <p>This method must be called while holding {@link #plotWorkLock}.</p>
      */
     private void cancelScheduledPlotStartLocked() {
-        final ScheduledFuture<?> scheduled = scheduledPlotStart;
-        if (scheduled != null) {
-            scheduled.cancel(true);
-            scheduledPlotStart = null;
+        final ScheduledFuture<?> scheduledFuture = scheduledPlotStartFuture;
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+            scheduledPlotStartFuture = null;
         }
     }
 
     /**
-     * Cancels the running plot computation task if present.
+     * Cancels the currently running plot computation task.
+     *
+     * <p>This method must be called while holding {@link #plotWorkLock}.</p>
      */
     private void cancelRunningPlotTaskLocked() {
-        final Future<?> running = runningPlotTask;
-        if (running != null) {
-            running.cancel(true);
-            runningPlotTask = null;
+        final Future<?> runningFuture = runningPlotComputationFuture;
+        if (runningFuture != null) {
+            runningFuture.cancel(true);
+            runningPlotComputationFuture = null;
         }
     }
 
     /**
-     * Computes the current viewport bounds in world units based on pane size, scale, and origin.
+     * Calculates the current world bounds that are visible within the pane.
      *
-     * @return world bounds
+     * <p>
+     * The bounds are derived from the display pane size, the origin offsets, and the scale (pixels per world unit).
+     * </p>
+     *
+     * @return world bounds representing the visible viewport
      */
     private GraphFxCalculator.WorldBounds currentViewportWorldBoundsFx() {
-        final double width = Math.max(1.0, pane.getWidth());
-        final double height = Math.max(1.0, pane.getHeight());
+        final double viewportWidthPixels = Math.max(1.0, pane.getWidth());
+        final double viewportHeightPixels = Math.max(1.0, pane.getHeight());
 
-        final double scale = pane.getScalePxPerUnit().get();
-        final double originX = pane.getOriginOffsetX().get();
-        final double originY = pane.getOriginOffsetY().get();
+        final double pixelsPerWorldUnit = pane.getScalePxPerUnit().get();
+        final double originOffsetXPixels = pane.getOriginOffsetX().get();
+        final double originOffsetYPixels = pane.getOriginOffsetY().get();
 
-        final double minX = (0.0 - originX) / scale;
-        final double maxX = (width - originX) / scale;
+        final double minimumWorldX = (0.0 - originOffsetXPixels) / pixelsPerWorldUnit;
+        final double maximumWorldX = (viewportWidthPixels - originOffsetXPixels) / pixelsPerWorldUnit;
 
-        final double minY = (originY - height) / scale;
-        final double maxY = (originY - 0.0) / scale;
+        final double minimumWorldY = (originOffsetYPixels - viewportHeightPixels) / pixelsPerWorldUnit;
+        final double maximumWorldY = (originOffsetYPixels - 0.0) / pixelsPerWorldUnit;
 
-        return new GraphFxCalculator.WorldBounds(minX, maxX, minY, maxY);
+        return new GraphFxCalculator.WorldBounds(minimumWorldX, maximumWorldX, minimumWorldY, maximumWorldY);
     }
 
     /**
-     * Schedules an overlay redraw on the JavaFX thread, coalescing multiple calls into a single frame.
+     * Schedules a single overlay redraw on the JavaFX Application Thread.
+     *
+     * <p>
+     * Multiple calls within one JavaFX pulse are coalesced into a single redraw, reducing unnecessary work.
+     * </p>
      */
     private void scheduleOverlayRedrawFx() {
         if (overlayRedrawScheduled) {
             return;
         }
+
         overlayRedrawScheduled = true;
 
         FxBootstrap.runLater(() -> {
@@ -739,24 +1307,28 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Redraws the overlay canvas immediately.
+     * Redraws the entire overlay layer immediately.
+     *
+     * <p>This method must be executed on the JavaFX Application Thread.</p>
      */
     private void redrawOverlayNowFx() {
-        final double width = overlayCanvas.getWidth();
-        final double height = overlayCanvas.getHeight();
+        final double canvasWidthPixels = overlayCanvas.getWidth();
+        final double canvasHeightPixels = overlayCanvas.getHeight();
 
         final GraphicsContext graphicsContext = overlayCanvas.getGraphicsContext2D();
-        graphicsContext.clearRect(0, 0, width, height);
+        graphicsContext.clearRect(0, 0, canvasWidthPixels, canvasHeightPixels);
 
         drawExpressionPlotsFx(graphicsContext);
-        drawManualPolylineFx(graphicsContext);
+        drawPolylinesFx(graphicsContext);
         drawPointsFx(graphicsContext);
     }
 
     /**
-     * Draws all expression plots to the overlay canvas.
+     * Draws all expression plots (segments and polylines).
      *
-     * @param graphicsContext target graphics context (must not be {@code null})
+     * <p>This method must be executed on the JavaFX Application Thread.</p>
+     *
+     * @param graphicsContext the graphics context used to draw onto the overlay canvas; must not be {@code null}
      * @throws NullPointerException if {@code graphicsContext} is {@code null}
      */
     private void drawExpressionPlotsFx(@NonNull final GraphicsContext graphicsContext) {
@@ -764,56 +1336,61 @@ public final class GraphFxPlotViewer implements AutoCloseable {
             return;
         }
 
-        for (final ExpressionPlot plot : expressionPlots) {
-            drawPlotSegments(graphicsContext, plot);
-            drawPlotPolyline(graphicsContext, plot);
+        for (final ExpressionPlot expressionPlot : expressionPlots) {
+            drawPlotSegments(graphicsContext, expressionPlot);
+            drawPlotPolyline(graphicsContext, expressionPlot);
         }
     }
 
     /**
-     * Draws the implicit contour segments of a single plot.
+     * Draws segment-based plot geometry (typically used for implicit contours).
      *
-     * @param graphicsContext target graphics context (must not be {@code null})
-     * @param plot            plot to draw (must not be {@code null})
-     * @throws NullPointerException if any argument is {@code null}
+     * @param graphicsContext the graphics context used to draw; must not be {@code null}
+     * @param expressionPlot  plot definition containing stroke style and computed segments; must not be {@code null}
+     * @throws NullPointerException if {@code graphicsContext} or {@code expressionPlot} is {@code null}
      */
-    private void drawPlotSegments(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
-        if (plot.segments.isEmpty()) {
+    private void drawPlotSegments(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot expressionPlot) {
+        if (expressionPlot.segments.isEmpty()) {
             return;
         }
 
-        graphicsContext.setStroke(plot.strokeColor);
-        graphicsContext.setLineWidth(plot.strokeWidthPx);
+        graphicsContext.setStroke(expressionPlot.strokeColor);
+        graphicsContext.setLineWidth(expressionPlot.strokeWidthPixels);
 
-        for (final GraphFxCalculator.LineSegment segment : plot.segments) {
-            final Point2D a = GraphFxUtil.worldToScreen(pane, segment.a());
-            final Point2D b = GraphFxUtil.worldToScreen(pane, segment.b());
-            graphicsContext.strokeLine(a.getX(), a.getY(), b.getX(), b.getY());
+        for (final GraphFxCalculator.LineSegment lineSegment : expressionPlot.segments) {
+            final Point2D screenPointA = GraphFxUtil.worldToScreen(pane, lineSegment.a());
+            final Point2D screenPointB = GraphFxUtil.worldToScreen(pane, lineSegment.b());
+            graphicsContext.strokeLine(screenPointA.getX(), screenPointA.getY(), screenPointB.getX(), screenPointB.getY());
         }
     }
 
     /**
-     * Draws the polyline of a single plot.
+     * Draws polyline-based plot geometry (typically used for explicit functions).
      *
-     * @param graphicsContext target graphics context (must not be {@code null})
-     * @param plot            plot to draw (must not be {@code null})
-     * @throws NullPointerException if any argument is {@code null}
+     * <p>
+     * The polyline may contain non-finite points as separators. When a non-finite point is encountered, the current
+     * path is ended and a new path may start afterwards.
+     * </p>
+     *
+     * @param graphicsContext the graphics context used to draw; must not be {@code null}
+     * @param expressionPlot  plot definition containing stroke style and computed polyline; must not be {@code null}
+     * @throws NullPointerException if {@code graphicsContext} or {@code expressionPlot} is {@code null}
      */
-    private void drawPlotPolyline(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
-        if (plot.polyline.size() < 2) {
+    private void drawPlotPolyline(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot expressionPlot) {
+        if (expressionPlot.polyline.size() < 2) {
             return;
         }
 
-        graphicsContext.setStroke(plot.strokeColor);
-        graphicsContext.setLineWidth(plot.strokeWidthPx);
+        graphicsContext.setStroke(expressionPlot.strokeColor);
+        graphicsContext.setLineWidth(expressionPlot.strokeWidthPixels);
 
         boolean pathOpen = false;
 
-        for (final GraphFxPoint worldPoint : plot.polyline) {
-            final double x = worldPoint.x();
-            final double y = worldPoint.y();
+        for (final GraphFxPoint worldPoint : expressionPlot.polyline) {
+            final double worldX = worldPoint.x();
+            final double worldY = worldPoint.y();
 
-            if (!Double.isFinite(x) || !Double.isFinite(y)) {
+            if (!Double.isFinite(worldX) || !Double.isFinite(worldY)) {
                 if (pathOpen) {
                     graphicsContext.stroke();
                     pathOpen = false;
@@ -838,52 +1415,132 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     }
 
     /**
-     * Draws the manual polyline overlay.
+     * Draws all user-managed overlay polylines.
      *
-     * @param graphicsContext target graphics context (must not be {@code null})
+     * @param graphicsContext the graphics context used to draw; must not be {@code null}
      * @throws NullPointerException if {@code graphicsContext} is {@code null}
      */
-    private void drawManualPolylineFx(@NonNull final GraphicsContext graphicsContext) {
-        if (manualPolylineWorld.size() < 2) {
+    private void drawPolylinesFx(@NonNull final GraphicsContext graphicsContext) {
+        if (overlayPolylines.isEmpty()) {
             return;
         }
 
-        graphicsContext.setStroke(manualPolylineColor);
-        graphicsContext.setLineWidth(manualPolylineWidthPx);
+        for (final OverlayPolyline overlayPolyline : overlayPolylines) {
+            if (overlayPolyline.worldPolyline.size() < 2) {
+                continue;
+            }
 
-        Point2D firstPoint2D = manualPolylineWorld.getFirst();
-        final Point2D first = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(firstPoint2D.getX(), firstPoint2D.getY()));
-        graphicsContext.beginPath();
-        graphicsContext.moveTo(first.getX(), first.getY());
+            graphicsContext.setStroke(overlayPolyline.color);
+            graphicsContext.setLineWidth(overlayPolyline.widthPixels);
 
-        for (int i = 1; i < manualPolylineWorld.size(); i++) {
-            Point2D point2dAtI = manualPolylineWorld.get(i);
-            final Point2D point2d = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(point2dAtI.getX(), point2dAtI.getY()));
-            graphicsContext.lineTo(point2d.getX(), point2d.getY());
+            final Point2D firstWorldPoint2D = overlayPolyline.worldPolyline.getFirst();
+            final Point2D firstScreenPoint = GraphFxUtil.worldToScreen(
+                    pane,
+                    new GraphFxPoint(firstWorldPoint2D.getX(), firstWorldPoint2D.getY())
+            );
+
+            graphicsContext.beginPath();
+            graphicsContext.moveTo(firstScreenPoint.getX(), firstScreenPoint.getY());
+
+            for (int pointIndex = 1; pointIndex < overlayPolyline.worldPolyline.size(); pointIndex++) {
+                final Point2D worldPointAtIndex = overlayPolyline.worldPolyline.get(pointIndex);
+                final Point2D screenPointAtIndex = GraphFxUtil.worldToScreen(
+                        pane,
+                        new GraphFxPoint(worldPointAtIndex.getX(), worldPointAtIndex.getY())
+                );
+                graphicsContext.lineTo(screenPointAtIndex.getX(), screenPointAtIndex.getY());
+            }
+
+            graphicsContext.stroke();
         }
-
-        graphicsContext.stroke();
     }
 
     /**
-     * Draws the manual point overlay.
+     * Draws all user-managed overlay points.
      *
-     * @param graphicsContext target graphics context (must not be {@code null})
+     * @param graphicsContext the graphics context used to draw; must not be {@code null}
      * @throws NullPointerException if {@code graphicsContext} is {@code null}
      */
     private void drawPointsFx(@NonNull final GraphicsContext graphicsContext) {
-        if (pointsWorld.isEmpty()) {
+        if (overlayPoints.isEmpty()) {
             return;
         }
 
-        graphicsContext.setFill(pointColor);
+        for (final OverlayPoint overlayPoint : overlayPoints) {
+            graphicsContext.setFill(overlayPoint.color);
 
-        for (final Point2D worldPoint : pointsWorld) {
-            final Point2D screenPoint = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(worldPoint.getX(), worldPoint.getY()));
-            final double x = screenPoint.getX() - pointRadiusPx;
-            final double y = screenPoint.getY() - pointRadiusPx;
-            graphicsContext.fillOval(x, y, pointRadiusPx * 2.0, pointRadiusPx * 2.0);
+            final Point2D screenPoint = GraphFxUtil.worldToScreen(
+                    pane,
+                    new GraphFxPoint(overlayPoint.worldPoint.getX(), overlayPoint.worldPoint.getY())
+            );
+
+            final double drawX = screenPoint.getX() - overlayPoint.radiusPixels;
+            final double drawY = screenPoint.getY() - overlayPoint.radiusPixels;
+
+            graphicsContext.fillOval(drawX, drawY, overlayPoint.radiusPixels * 2.0, overlayPoint.radiusPixels * 2.0);
         }
+    }
+
+    /**
+     * Internal immutable overlay point.
+     *
+     * <p>
+     * The point is stored in world coordinates and rendered in screen space each time the overlay is redrawn.
+     * </p>
+     */
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static final class OverlayPoint {
+
+        /**
+         * Stable identifier of the point.
+         */
+        private final long id;
+
+        /**
+         * Point position in world coordinates.
+         */
+        private final @NonNull Point2D worldPoint;
+
+        /**
+         * Fill color of the point.
+         */
+        private final @NonNull Color color;
+
+        /**
+         * Radius in pixels.
+         */
+        private final double radiusPixels;
+    }
+
+    /**
+     * Internal immutable overlay polyline.
+     *
+     * <p>
+     * The polyline is stored as a list of world-coordinate points and rendered in screen space during redraw.
+     * </p>
+     */
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static final class OverlayPolyline {
+
+        /**
+         * Stable identifier of the polyline.
+         */
+        private final long id;
+
+        /**
+         * Polyline points in world coordinates.
+         */
+        private final @NonNull List<Point2D> worldPolyline;
+
+        /**
+         * Stroke color of the polyline.
+         */
+        private final @NonNull Color color;
+
+        /**
+         * Stroke width in pixels.
+         */
+        private final double widthPixels;
     }
 
 }
