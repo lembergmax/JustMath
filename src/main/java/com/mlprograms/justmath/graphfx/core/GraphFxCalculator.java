@@ -270,20 +270,27 @@ public final class GraphFxCalculator {
      * @return polyline points in world coordinates (possibly empty)
      * @throws NullPointerException if any required argument is {@code null}
      */
-    public List<GraphFxPoint> createExplicitPolyline(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final WorldBounds bounds, final int samples, @NonNull final PlotCancellation cancellation) {
-        final String normalizedExpression = normalizeExpression(expression);
-        final Map<String, String> baseVariables = copyVariables(variables);
-
+    private List<GraphFxPoint> createExplicitPolyline(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final WorldBounds bounds, final int samples, @NonNull final PlotCancellation cancellation) {
         final double minX = Math.min(bounds.minX(), bounds.maxX());
         final double maxX = Math.max(bounds.minX(), bounds.maxX());
 
+        final double minY = Math.min(bounds.minY(), bounds.maxY());
+        final double maxY = Math.max(bounds.minY(), bounds.maxY());
+        final double yRange = Math.max(1e-12, maxY - minY);
+
+        final double jumpThreshold = yRange * 3.0;
+        final double hardAbsThreshold = yRange * 20.0;
+
         final int safeSamples = Math.max(2, samples);
-        final double step = (maxX - minX) / Math.max(1, safeSamples - 1);
+        final double step = (maxX - minX) / (safeSamples - 1);
 
-        final Map<String, String> evalVars = new HashMap<>(baseVariables);
-        evalVars.put("y", BN_ZERO.toString());
+        final Map<String, String> evalVariables = new HashMap<>(variables);
+        evalVariables.put("y", "0");
 
-        final List<GraphFxPoint> polyline = new ArrayList<>(safeSamples);
+        final List<GraphFxPoint> polyline = new ArrayList<>(safeSamples + 16);
+
+        boolean previousValid = false;
+        double previousY = 0.0;
 
         for (int i = 0; i < safeSamples; i++) {
             if (cancellation.isCancelled()) {
@@ -291,22 +298,83 @@ public final class GraphFxCalculator {
             }
 
             final double x = minX + i * step;
-            evalVars.put("x", Double.toString(x));
+            evalVariables.put("x", Double.toString(x));
 
-            final BigNumber yValue = evaluate(normalizedExpression, evalVars);
-            if (yValue == null) {
+            final BigNumber yBig = safeEvaluate(expression, evalVariables);
+            if (yBig == null) {
+                if (previousValid) {
+                    polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
+                    previousValid = false;
+                }
+
                 continue;
             }
 
-            final double y = toDouble(yValue);
-            if (!Double.isFinite(y)) {
+            final double y = safeToDouble(yBig);
+            if (!Double.isFinite(y) || Math.abs(y) > hardAbsThreshold) {
+                if (previousValid) {
+                    polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
+                    previousValid = false;
+                }
+
                 continue;
+            }
+
+            if (previousValid && Math.abs(y - previousY) > jumpThreshold) {
+                polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
             }
 
             polyline.add(new GraphFxPoint(x, y));
+            previousValid = true;
+            previousY = y;
         }
 
         return polyline;
+    }
+
+    /**
+     * Safely evaluates the given expression using the configured {@link CalculatorEngine}.
+     *
+     * <p>
+     * Any {@link RuntimeException} thrown by the engine is considered an invalid evaluation and
+     * is swallowed; the method returns {@code null} in that case. This defensive wrapper allows
+     * higher-level plotting logic to treat failed evaluations (e.g. due to domain errors,
+     * parsing issues, or intermediate numeric problems) as missing points rather than aborting
+     * the entire plotting operation.
+     * </p>
+     *
+     * @param expression non-null expression to evaluate
+     * @param variables  non-null map of variable bindings; this map may be mutated by the caller
+     * @return evaluated {@link BigNumber} result, or {@code null} if evaluation failed
+     */
+    private BigNumber safeEvaluate(@NonNull final String expression, @NonNull final Map<String, String> variables) {
+        try {
+            return calculatorEngine.evaluate(expression, variables);
+        } catch (final RuntimeException runtimeException) {
+            return null;
+        }
+    }
+
+    /**
+     * Converts a {@link BigNumber} to a primitive {@code double} in a safe manner.
+     *
+     * <p>
+     * The conversion uses {@link BigNumber#toString()} followed by {@link Double#parseDouble(String)}.
+     * Any runtime error during conversion (for example unexpected formatting) is caught and
+     * results in {@link Double#NaN} being returned. This method is intended for final geometry
+     * creation where a best-effort double representation is sufficient; numeric evaluation
+     * remains in {@link BigNumber} throughout plotting.
+     * </p>
+     *
+     * @param value non-null {@link BigNumber} to convert
+     * @return the {@code double} representation, or {@link Double#NaN} if conversion fails
+     */
+    private double safeToDouble(@NonNull final BigNumber value) {
+        try {
+            return Double.parseDouble(value.toString());
+        } catch (final RuntimeException runtimeException) {
+            return Double.NaN;
+        }
     }
 
     /**
