@@ -297,19 +297,18 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      * Adds a new expression plot.
      *
      * @param expression expression to plot (must not be {@code null})
-     * @param variables  variables as {@link BigNumber} (must not be {@code null}; keys and values must not be {@code null})
+     * @param variables  variables as {@link String} (must not be {@code null}; keys and values must not be {@code null})
      * @param hexColor   plot color as hex string (must not be {@code null})
      * @return the plot id that can be used for removal
      * @throws NullPointerException     if any argument is {@code null}, or if {@code variables} contains {@code null} key/value
      * @throws IllegalArgumentException if {@code hexColor} is not a valid hex color
      */
-    public long plotExpression(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables, @NonNull final String hexColor) {
+    public long plotExpression(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final String hexColor) {
         final Color strokeColor = parseHexColor(hexColor);
-        final Map<String, String> engineVariables = convertBigNumberVariables(variables);
         final long plotId = plotIdSequence.getAndIncrement();
 
         FxBootstrap.runLater(() -> {
-            expressionPlots.add(new ExpressionPlot(plotId, expression, engineVariables, strokeColor, DEFAULT_PLOT_WIDTH_PX));
+            expressionPlots.add(new ExpressionPlot(plotId, expression, variables, strokeColor, DEFAULT_PLOT_WIDTH_PX));
             schedulePlotUpdateFx(0L);
             scheduleOverlayRedrawFx();
         });
