@@ -349,18 +349,21 @@ or shown as a standalone plotting window.
 ### ️ Screenshots
 
 <p align="center">
-  <i>[GraphFx main window – dark theme]</i><br/>
-  <i>images/GraphFx-Dark.png</i>
+  <img src="images/GraphFx-Dark.png" width="900" alt="GraphFx main window – dark theme">
+  <br/>
+  <em>GraphFx main window – dark theme</em>
 </p>
 
 <p align="center">
-  <i>[Multiple expressions plotted simultaneously]</i><br/>
-  <i>images/GraphFx-Multi-Plot.png</i>
+  <img src="images/GraphFx-Multi-Plot.png" width="900" alt="Multiple expressions plotted simultaneously">
+  <br/>
+  <em>Multiple expressions plotted simultaneously</em>
 </p>
 
 <p align="center">
-  <i>[Zooming & panning interaction]</i><br/>
-  <i>images/GraphFx-Zoom-Pan.png</i>
+  <img src="images/GraphFx-Zoom-Pan.png" width="900" alt="Zooming &amp; panning interaction">
+  <br/>
+  <em>Zooming &amp; panning interaction</em>
 </p>
 
 ---
@@ -413,8 +416,9 @@ public static void main(final String[] args) {
 ```
 
 <p align="center">
-  <i>[Quick start output]</i><br/>
-  <i>images/GraphFx-Quickstart.png</i>
+  <img src="images/GraphFx-Quickstart.png" width="900" alt="Quick start output">
+  <br/>
+  <em>Quick start output</em>
 </p>
 
 ---
@@ -430,8 +434,9 @@ viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
 ```
 
 <p align="center">
-  <i>[Variable-based plot]</i><br/>
-  <i>images/GraphFx-Variables.png</i>
+  <img src="images/GraphFx-Variables.png" width="900" alt="Variable-based plot">
+  <br/>
+  <em>Variable-based plot</em>
 </p>
 
 ---
@@ -454,8 +459,9 @@ viewer.setPolyline(List.of(
 ```
 
 <p align="center">
-  <i>[Overlay example]</i><br/>
-  <i>images/GraphFx-Overlays.png</i>
+  <img src="images/GraphFx-Overlays.png" width="900" alt="Overlay example">
+  <br/>
+  <em>Overlay example</em>
 </p>
 
 ## ⚙️ Maven (Coming Soon)
