@@ -334,16 +334,6 @@ System.out.println(result);
 // 61
 ```
 
-
-
-
-
-
-
-
-
-
-
 ## 📈 GraphFx
 
 ### High-Precision Function Plotting for JustMath
@@ -356,26 +346,26 @@ or shown as a standalone plotting window.
 
 ---
 
-## 🖼️ Screenshots
+### ️ Screenshots
 
 <p align="center">
-  <i>[PLACEHOLDER: GraphFx main window – dark theme]</i><br/>
-  <i>images/graphfx-dark.png</i>
+  <i>[GraphFx main window – dark theme]</i><br/>
+  <i>images/GraphFx-Dark.png</i>
 </p>
 
 <p align="center">
-  <i>[PLACEHOLDER: Multiple expressions plotted simultaneously]</i><br/>
-  <i>images/graphfx-multi-plot.png</i>
+  <i>[Multiple expressions plotted simultaneously]</i><br/>
+  <i>images/GraphFx-Multi-Plot.png</i>
 </p>
 
 <p align="center">
-  <i>[PLACEHOLDER: Zooming & panning interaction]</i><br/>
-  <i>images/graphfx-zoom-pan.png</i>
+  <i>[Zooming & panning interaction]</i><br/>
+  <i>images/GraphFx-Zoom-Pan.png</i>
 </p>
 
 ---
 
-## ✨ Features
+### ✨ Features
 
 * 🧮 **String-based expression plotting**
 * 🔢 **Powered by JustMath’s high-precision engine**
@@ -388,7 +378,7 @@ or shown as a standalone plotting window.
 
 ---
 
-## 📋 GraphFx API Overview
+### 📋 GraphFx API Overview
 
 | Category                | Method                                                                          | Description                                         |
 | ----------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
@@ -410,7 +400,7 @@ or shown as a standalone plotting window.
 
 ---
 
-## 🚀 Quick Start
+### 🚀 Quick Start
 
 ```java
 public static void main(final String[] args) {
@@ -423,13 +413,13 @@ public static void main(final String[] args) {
 ```
 
 <p align="center">
-  <i>[PLACEHOLDER: Quick start output]</i><br/>
-  <i>images/graphfx-quickstart.png</i>
+  <i>[Quick start output]</i><br/>
+  <i>images/GraphFx-Quickstart.png</i>
 </p>
 
 ---
 
-## 🔤 Variables (`Map<String, String>`)
+### 🔤 Variables (`Map<String, String>`)
 
 ```java
 Map<String, String> variables = new HashMap<>();
@@ -440,13 +430,13 @@ viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
 ```
 
 <p align="center">
-  <i>[PLACEHOLDER: Variable-based plot]</i><br/>
-  <i>images/graphfx-variables.png</i>
+  <i>[Variable-based plot]</i><br/>
+  <i>images/GraphFx-Variables.png</i>
 </p>
 
 ---
 
-## 📍 Overlays (Points & Polylines)
+### 📍 Overlays (Points & Polylines)
 
 ```java
 viewer.setPoints(List.of(
@@ -464,21 +454,9 @@ viewer.setPolyline(List.of(
 ```
 
 <p align="center">
-  <i>[PLACEHOLDER: Overlay example]</i><br/>
-  <i>images/graphfx-overlays.png</i>
+  <i>[Overlay example]</i><br/>
+  <i>images/GraphFx-Overlays.png</i>
 </p>
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## ⚙️ Maven (Coming Soon)
 
