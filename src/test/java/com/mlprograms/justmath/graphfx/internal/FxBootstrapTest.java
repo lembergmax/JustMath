@@ -22,31 +22,31 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.internal;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-public class Main {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public static void main(final String[] args) {
+final class FxBootstrapTest {
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+    @Test
+    void ensureStartedIsIdempotent() {
+        FxBootstrap.ensureStarted();
+        FxBootstrap.ensureStarted();
+    }
 
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
+    @Test
+    void runLaterExecutes() throws Exception {
+        FxBootstrap.ensureStarted();
 
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
+        final CountDownLatch latch = new CountDownLatch(1);
+        FxBootstrap.runLater(latch::countDown);
 
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 
 }

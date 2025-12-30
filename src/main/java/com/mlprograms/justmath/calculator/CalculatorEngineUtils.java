@@ -70,7 +70,7 @@ class CalculatorEngineUtils {
      *                                  absolute value signs, since this would result in unbalanced expressions
      *                                  (e.g., {@code |x+3}).
      */
-    public static String replaceAbsSigns(String expression) {
+    static String replaceAbsSigns(String expression) {
         String absValueSign = ExpressionElements.SURRFUNC_ABS_S;
 
         int occurrences = countOccurrences(expression, absValueSign);
@@ -116,7 +116,7 @@ class CalculatorEngineUtils {
      * @return the number of non-overlapping occurrences of {@code search} within {@code text};
      * returns {@code -1} if either {@code text} or {@code search} is empty
      */
-    public static int countOccurrences(@NonNull final String text, @NonNull final String search) {
+    static int countOccurrences(@NonNull final String text, @NonNull final String search) {
         if (text.isEmpty() || search.isEmpty()) {
             return -1;
         }
@@ -139,7 +139,7 @@ class CalculatorEngineUtils {
      * @param variables a map of variable names with their BigNumber values
      * @throws IllegalArgumentException if a variable token does not have a corresponding value in the map
      */
-    public static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
+    static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
         checkVariablesForRecursion(calculatorEngine, variables);
 
         for (int i = 0; i < tokens.size(); i++) {
@@ -151,12 +151,15 @@ class CalculatorEngineUtils {
                     throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
                 }
 
-                tokens.set(i, new Token(Token.Type.NUMBER, calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()));
+                // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
+                // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
+                final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
+                tokens.set(i, new Token(Token.Type.NUMBER, evaluatedVariableValue));
             }
         }
     }
 
-    public static void checkVariablesForRecursion(@NonNull final CalculatorEngine calculatorEngine, @NonNull final Map<String, String> variables) {
+    static void checkVariablesForRecursion(@NonNull final CalculatorEngine calculatorEngine, @NonNull final Map<String, String> variables) {
         Set<String> visitedVariables = new HashSet<>();
         Set<String> currentPath = new HashSet<>();
 

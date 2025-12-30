@@ -62,12 +62,32 @@ import java.util.Locale;
 @Getter
 public class BigNumberCoordinate extends BigNumber {
 
+    /**
+     * Type of this coordinate. Determines how {@code x} and {@code y} are interpreted:
+     * - {@code CARTESIAN}: {@code x} and {@code y} are Cartesian coordinates.
+     * - {@code POLAR}: {@code x} is radius (r) and {@code y} is angle (θ).
+     */
     @NonNull
     private final CoordinateType type;
+
+    /**
+     * Locale used for parsing and formatting the numeric {@link BigNumber} components.
+     * This locale is applied when producing localized string representations.
+     */
     @NonNull
     private final Locale locale;
+
+    /**
+     * First component of the coordinate. In CARTESIAN mode this is the X coordinate;
+     * in POLAR mode this represents the radius (r).
+     */
     @NonNull
     private BigNumber x;
+
+    /**
+     * Second component of the coordinate. In CARTESIAN mode this is the Y coordinate;
+     * in POLAR mode this represents the angle (θ), typically in radians.
+     */
     @NonNull
     private BigNumber y;
 

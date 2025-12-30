@@ -22,31 +22,31 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.config;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class Main {
+final class WindowConfigTest {
 
-    public static void main(final String[] args) {
+    @Test
+    void scaleConstraintsMakeSense() {
+        assertTrue(WindowConfig.MIN_SCALE_PX_PER_UNIT > 0);
+        assertTrue(WindowConfig.MAX_SCALE_PX_PER_UNIT > WindowConfig.MIN_SCALE_PX_PER_UNIT);
+        assertTrue(WindowConfig.INITIAL_SCALE_PX_PER_UNIT >= WindowConfig.MIN_SCALE_PX_PER_UNIT);
+        assertTrue(WindowConfig.INITIAL_SCALE_PX_PER_UNIT <= WindowConfig.MAX_SCALE_PX_PER_UNIT);
+    }
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+    @Test
+    void palettesAreNotNull() {
+        assertNotNull(WindowConfig.LIGHT_THEME);
+        assertNotNull(WindowConfig.DARK_THEME);
 
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
-
+        assertNotNull(WindowConfig.LIGHT_THEME.background());
+        assertNotNull(WindowConfig.LIGHT_THEME.axis());
+        assertNotNull(WindowConfig.DARK_THEME.background());
+        assertNotNull(WindowConfig.DARK_THEME.axis());
     }
 
 }

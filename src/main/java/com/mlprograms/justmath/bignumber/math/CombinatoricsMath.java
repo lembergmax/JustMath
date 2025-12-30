@@ -89,7 +89,7 @@ public class CombinatoricsMath {
 			c = c.multiply(n.subtract(i), locale).divide(i.add(ONE, locale), mathContext);
 		}
 
-		return c.trim();
+		return new BigNumber(c.trim());
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class CombinatoricsMath {
 
 		BigNumber nFactorial = n.factorial(mathContext, locale);
 		BigNumber nMinusKFactorial = n.subtract(k).factorial(mathContext, locale);
-		return nFactorial.divide(nMinusKFactorial, mathContext, locale).trim();
+		return new BigNumber(nFactorial.divide(nMinusKFactorial, mathContext, locale).trim());
 	}
 
 }

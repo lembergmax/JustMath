@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
         <pitest.version>1.15.2</pitest.version>
+        <javafx.version>21.0.9</javafx.version>
     </properties>
 
     <licenses>
@@ -79,6 +80,21 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Mockito -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.12.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Big-Math -->
         <dependency>
             <groupId>ch.obermuhlner</groupId>
@@ -93,6 +109,19 @@
             <version>1.8.3</version>
         </dependency>
 
+        <!-- JavaFX -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>21</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -103,21 +132,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
-            </plugin>
-
-            <!-- PIT Mutation Testing Plugin -->
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>${pitest.version}</version>
-                <configuration>
-                    <targetClasses>
-                        <param>com.mlprograms.*</param>
-                    </targetClasses>
-                    <targetTests>
-                        <param>com.mlprograms.*</param>
-                    </targetTests>
-                </configuration>
             </plugin>
 
             <!-- Attach Sources -->

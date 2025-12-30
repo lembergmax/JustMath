@@ -61,7 +61,7 @@ public class RadicalMath {
 	public static BigNumber squareRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return nthRoot(radicand, TWO, mathContext, locale);
+		return new BigNumber(nthRoot(radicand, TWO, mathContext, locale));
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class RadicalMath {
 	public static BigNumber cubicRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return nthRoot(radicand, THREE, mathContext, locale);
+		return new BigNumber(nthRoot(radicand, THREE, mathContext, locale));
 	}
 
 	/**

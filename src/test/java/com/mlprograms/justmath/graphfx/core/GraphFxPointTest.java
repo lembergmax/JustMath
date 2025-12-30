@@ -22,31 +22,26 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.core;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class Main {
+class GraphFxPointTest {
 
-    public static void main(final String[] args) {
+    @Test
+    void recordBasics() {
+        final GraphFxPoint p1 = new GraphFxPoint(1.25, -3.5);
+        final GraphFxPoint p2 = new GraphFxPoint(1.25, -3.5);
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+        assertEquals(1.25, p1.x());
+        assertEquals(-3.5, p1.y());
 
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
-
+        assertEquals(p1, p2);
+        assertEquals(p1.hashCode(), p2.hashCode());
+        assertTrue(p1.toString().contains("1.25"));
     }
 
 }
+
