@@ -334,6 +334,152 @@ System.out.println(result);
 // 61
 ```
 
+
+
+
+
+
+
+
+
+
+
+## 📈 GraphFx
+
+### High-Precision Function Plotting for JustMath
+
+**GraphFx** is the official **JavaFX plotting and visualization module** for **JustMath**.
+It renders mathematical expressions defined as **strings** and evaluates them using the calculation engine
+with high numerical precision.
+GraphFx is designed as a **developer-oriented library component** and can be embedded into custom JavaFX applications
+or shown as a standalone plotting window.
+
+---
+
+## 🖼️ Screenshots
+
+<p align="center">
+  <i>[PLACEHOLDER: GraphFx main window – dark theme]</i><br/>
+  <i>images/graphfx-dark.png</i>
+</p>
+
+<p align="center">
+  <i>[PLACEHOLDER: Multiple expressions plotted simultaneously]</i><br/>
+  <i>images/graphfx-multi-plot.png</i>
+</p>
+
+<p align="center">
+  <i>[PLACEHOLDER: Zooming & panning interaction]</i><br/>
+  <i>images/graphfx-zoom-pan.png</i>
+</p>
+
+---
+
+## ✨ Features
+
+* 🧮 **String-based expression plotting**
+* 🔢 **Powered by JustMath’s high-precision engine**
+* 🔤 **Variable support via `Map<String, String>`**
+* 🖱️ **Interactive coordinate system**
+* 🎨 **Light & dark themes**
+* 📊 **Multiple expressions per plot**
+* 📍 **Overlay layers (points & polylines)**
+* 🔒 **Thread-safe public API**
+
+---
+
+## 📋 GraphFx API Overview
+
+| Category                | Method                                                                          | Description                                         |
+| ----------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **Window Lifecycle**    | `show()`                                                                        | Shows the plot viewer using default window settings |
+|                         | `show(String title, double width, double height)`                               | Shows the viewer with a custom title and size       |
+|                         | `hide()`                                                                        | Hides the window without disposing it               |
+|                         | `dispose()`                                                                     | Closes the window and releases all resources        |
+| **Embedding**           | `asNode()`                                                                      | Returns an embeddable JavaFX node                   |
+| **Expression Plotting** | `plotExpression(String expression, String color)`                               | Plots an expression without variables               |
+|                         | `plotExpression(String expression, Map<String,String> variables, String color)` | Plots an expression with variables                  |
+|                         | `removeExpressionPlot(long plotId)`                                             | Removes a plotted expression                        |
+|                         | `clearExpressionPlots()`                                                        | Removes all plotted expressions                     |
+| **Viewport Control**    | `centerOrigin()`                                                                | Centers the coordinate system at (0, 0)             |
+| **Themes**              | `setTheme(DisplayTheme theme)`                                                  | Applies a light or dark theme                       |
+| **Overlay – Points**    | `setPoints(List<Point2D> points)`                                               | Draws manual points in world coordinates            |
+|                         | `setPointStyle(Color color, double radiusPx)`                                   | Changes point color and size                        |
+| **Overlay – Polyline**  | `setPolyline(List<Point2D> polyline)`                                           | Draws a manual polyline                             |
+|                         | `setPolylineStyle(Color color, double widthPx)`                                 | Changes polyline color and width                    |
+
+---
+
+## 🚀 Quick Start
+
+```java
+public static void main(final String[] args) {
+    GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+
+    viewer.plotExpression("sin(10x)/x + 0.2x^3 - 2x", "#ff5500");
+    viewer.centerOrigin();
+    viewer.show();
+}
+```
+
+<p align="center">
+  <i>[PLACEHOLDER: Quick start output]</i><br/>
+  <i>images/graphfx-quickstart.png</i>
+</p>
+
+---
+
+## 🔤 Variables (`Map<String, String>`)
+
+```java
+Map<String, String> variables = new HashMap<>();
+variables.put("a", "2.5");
+variables.put("b", "1.2");
+
+viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
+```
+
+<p align="center">
+  <i>[PLACEHOLDER: Variable-based plot]</i><br/>
+  <i>images/graphfx-variables.png</i>
+</p>
+
+---
+
+## 📍 Overlays (Points & Polylines)
+
+```java
+viewer.setPoints(List.of(
+        new Point2D(-2, 1),
+        new Point2D(0, 0),
+        new Point2D(2, -1)
+));
+
+viewer.setPolyline(List.of(
+        new Point2D(-3, -1),
+        new Point2D(-1, 2),
+        new Point2D(1, -2),
+        new Point2D(3, 1)
+));
+```
+
+<p align="center">
+  <i>[PLACEHOLDER: Overlay example]</i><br/>
+  <i>images/graphfx-overlays.png</i>
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## ⚙️ Maven (Coming Soon)
 
 Cannot wait? Just download the latest jar:
