@@ -369,69 +369,80 @@ or shown as a standalone plotting window.
 GraphFx focuses on the features developers typically need when building mathematical tools: the ability to plot
 expressions quickly, understand behavior interactively, and present results in a clean and configurable UI.
 
-* 🧮 String-based expression plotting
-Expressions are provided as plain strings, which makes GraphFx easy to integrate into apps where users type
-mathematical formulas or where expressions come from external sources.
+* 🧮 String-based expression plotting  
+  Expressions are provided as plain strings, which makes GraphFx easy to integrate into apps where users type
+  mathematical formulas or where expressions come from external sources.
 
-* 🔢 Powered by JustMath’s high-precision engine
-The same engine that evaluates expressions in JustMath is used for plotting, ensuring consistency and high precision.
+* 🔢 Powered by JustMath’s high-precision engine  
+  The same engine that evaluates expressions in JustMath is used for plotting, ensuring consistency and high precision.
 
-* 🔤 Variable support via Map<String, String>
-Variables are passed exactly like in the JustMath engine: Map<String, String>. This allows not only numeric values
-but also full sub-expressions as variable values.
+* 🔤 Variable support via Map<String, String>  
+  Variables are passed exactly like in the JustMath engine: Map<String, String>. This allows not only numeric values
+  but also full sub-expressions as variable values.
 
-* 🖱️ Interactive coordinate system
-GraphFx supports smooth exploration. You can zoom in to inspect local behavior (e.g., oscillations) and pan to follow
-the curve across the coordinate system.
+* 🖱️ Interactive coordinate system  
+  GraphFx supports smooth exploration. You can zoom in to inspect local behavior (e.g., oscillations) and pan to follow
+  the curve across the coordinate system.
 
-* 🎨 Light & dark themes
-You can style the plot window to match your application design or user preference.
+* 🎨 Light & dark themes  
+  You can style the plot window to match your application design or user preference.
 
-* 📊 Multiple expressions per plot
-Plot multiple curves at once to compare functions, check identities, or visualize overlays (e.g., approximation vs.
-original function).
+* 📊 Multiple expressions per plot  
+  Plot multiple curves at once to compare functions, check identities, or visualize overlays (e.g., approximation vs.
+  original function).
 
-* 📍 Overlay layers (points & polylines)
-Besides function plots, GraphFx supports manual overlays, which is useful for marking specific points, visualizing
-computed data, or drawing custom paths.
+* 📍 Overlay layers (points & polylines, id-based)  
+  In addition to expression plots, GraphFx supports manual overlays that can be managed individually:
+  each overlay element (point/polyline) returns a stable id that can be removed or re-styled later.
 
-* 🔒 Thread-safe public API
-Most library users do not want to manually manage the JavaFX application thread. GraphFx therefore wraps UI dispatch
-internally and allows calling public methods from any thread safely.
+* 🔒 Thread-safe public API  
+  Public methods can be called from any thread. GraphFx dispatches UI work internally to the JavaFX Application Thread.
 
 ### 📋 GraphFx API Overview
 
-The GraphFxPlotViewer class acts as the main entry point for library users. It can be used as a standalone window or
+The `GraphFxPlotViewer` class is the main entry point for library users. It can be used as a standalone window or
 embedded into other JavaFX layouts. Expression plots are created by calling `plotExpression(...)`, which returns a plot
-id that can later be removed again. Manual overlays (points and polylines) are independent from expression plots and can
-be cleared or replaced at any time.
+id that can later be removed again.
 
-| Category                | Method                                                                          | Description                                         |
-| ----------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **Window Lifecycle**    | `show()`                                                                        | Shows the plot viewer using default window settings |
-|                         | `show(String title, double width, double height)`                               | Shows the viewer with a custom title and size       |
-|                         | `hide()`                                                                        | Hides the window without disposing it               |
-|                         | `dispose()`                                                                     | Closes the window and releases all resources        |
-| **Embedding**           | `asNode()`                                                                      | Returns an embeddable JavaFX node                   |
-| **Expression Plotting** | `plotExpression(String expression, String color)`                               | Plots an expression without variables               |
-|                         | `plotExpression(String expression, Map<String,String> variables, String color)` | Plots an expression with variables                  |
-|                         | `removeExpressionPlot(long plotId)`                                             | Removes a plotted expression                        |
-|                         | `clearExpressionPlots()`                                                        | Removes all plotted expressions                     |
-| **Viewport Control**    | `centerOrigin()`                                                                | Centers the coordinate system at (0, 0)             |
-| **Themes**              | `setTheme(DisplayTheme theme)`                                                  | Applies a light or dark theme                       |
-| **Overlay – Points**    | `setPoints(List<Point2D> points)`                                               | Draws manual points in world coordinates            |
-|                         | `setPointStyle(Color color, double radiusPx)`                                   | Changes point color and size                        |
-| **Overlay – Polyline**  | `setPolyline(List<Point2D> polyline)`                                           | Draws a manual polyline                             |
-|                         | `setPolylineStyle(Color color, double widthPx)`                                 | Changes polyline color and width                    |
+Manual overlays (points and polylines) are independent from expression plots. Overlays are **id-based**, meaning you can
+add, remove and style single overlay elements without re-uploading the full list.
+
+| Category                | Method                                                                          | Description                                                |
+| ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Window Lifecycle**    | `show()`                                                                        | Shows the plot viewer using default window settings        |
+|                         | `show(String title, double width, double height)`                               | Shows the viewer with a custom title and size              |
+|                         | `hide()`                                                                        | Hides the window without disposing it                      |
+|                         | `dispose()`                                                                     | Closes the window and releases all resources               |
+| **Embedding**           | `asNode()`                                                                      | Returns an embeddable JavaFX node                          |
+| **Expression Plotting** | `plotExpression(String expression, String color)`                               | Plots an expression without variables                      |
+|                         | `plotExpression(String expression, Map<String,String> variables, String color)` | Plots an expression with variables                         |
+|                         | `removeExpressionPlot(long plotId)`                                             | Removes a plotted expression by id                         |
+|                         | `clearExpressionPlots()`                                                        | Removes all plotted expressions                            |
+| **Viewport Control**    | `centerOrigin()`                                                                | Centers the coordinate system at (0, 0)                    |
+| **Themes**              | `setTheme(DisplayTheme theme)`                                                  | Applies a light or dark theme                              |
+| **Overlay – Points**    | `addPoint(Point2D point)`                                                       | Adds a point using the default style and returns an id     |
+|                         | `addPoint(Point2D point, Color color, double radiusPx)`                         | Adds a point with individual style and returns an id       |
+|                         | `removePoint(long pointId)`                                                     | Removes a single point by id                               |
+|                         | `setPointStyle(long pointId, Color color, double radiusPx)`                     | Updates the style of an existing point                     |
+|                         | `clearPoints()`                                                                 | Removes all points                                         |
+|                         | `setDefaultPointStyle(Color color, double radiusPx)`                            | Sets the default style for future points                   |
+|                         | `setPoints(List<Point2D> points)`                                               | Replaces all points (uses the current default style)       |
+| **Overlay – Polylines** | `addPolyline(List<Point2D> polyline)`                                           | Adds a polyline using the default style and returns an id  |
+|                         | `addPolyline(List<Point2D> polyline, Color color, double widthPx)`              | Adds a polyline with individual style and returns an id    |
+|                         | `removePolyline(long polylineId)`                                               | Removes a single polyline by id                            |
+|                         | `setPolylineStyle(long polylineId, Color color, double widthPx)`                | Updates the style of an existing polyline                  |
+|                         | `clearPolylines()`                                                              | Removes all polylines                                      |
+|                         | `setDefaultPolylineStyle(Color color, double widthPx)`                          | Sets the default style for future polylines                |
+|                         | `setPolyline(List<Point2D> polyline)`                                           | Replaces all polylines with a single one (default style)   |
 
 ### 🚀 Quick Start
 
 The simplest way to use GraphFx is the standalone window mode. Create a viewer, plot one or more expressions, center
-the origin and call `show()`. This is perfect for debugging expressions or quickly validating a formula visually.
+the origin and call `show()`.
 
 ```java
 public static void main(final String[] args) {
-    GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+    final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
 
     viewer.plotExpression("sin(10x)/x + 0.2x^3 - 2x", "#ff5500");
     viewer.centerOrigin();
