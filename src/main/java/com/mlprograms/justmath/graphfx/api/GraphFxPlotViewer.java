@@ -766,8 +766,8 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         }
 
         for (final ExpressionPlot plot : expressionPlots) {
-            drawPlotSegmentsFx(graphicsContext, plot);
-            drawPlotPolylineFx(graphicsContext, plot);
+            drawPlotSegments(graphicsContext, plot);
+            drawPlotPolyline(graphicsContext, plot);
         }
     }
 
@@ -778,7 +778,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      * @param plot            plot to draw (must not be {@code null})
      * @throws NullPointerException if any argument is {@code null}
      */
-    private void drawPlotSegmentsFx(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
+    private void drawPlotSegments(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
         if (plot.segments.isEmpty()) {
             return;
         }
@@ -787,8 +787,8 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         graphicsContext.setLineWidth(plot.strokeWidthPx);
 
         for (final GraphFxCalculator.LineSegment segment : plot.segments) {
-            final Point2D a = worldToScreenFx(segment.a());
-            final Point2D b = worldToScreenFx(segment.b());
+            final Point2D a = GraphFxUtil.worldToScreen(pane, segment.a());
+            final Point2D b = GraphFxUtil.worldToScreen(pane, segment.b());
             graphicsContext.strokeLine(a.getX(), a.getY(), b.getX(), b.getY());
         }
     }
@@ -800,7 +800,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      * @param plot            plot to draw (must not be {@code null})
      * @throws NullPointerException if any argument is {@code null}
      */
-    private void drawPlotPolylineFx(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
+    private void drawPlotPolyline(@NonNull final GraphicsContext graphicsContext, @NonNull final ExpressionPlot plot) {
         if (plot.polyline.size() < 2) {
             return;
         }
@@ -808,16 +808,34 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         graphicsContext.setStroke(plot.strokeColor);
         graphicsContext.setLineWidth(plot.strokeWidthPx);
 
-        final Point2D first = worldToScreenFx(plot.polyline.get(0));
-        graphicsContext.beginPath();
-        graphicsContext.moveTo(first.getX(), first.getY());
+        boolean pathOpen = false;
 
-        for (int i = 1; i < plot.polyline.size(); i++) {
-            final Point2D p = worldToScreenFx(plot.polyline.get(i));
-            graphicsContext.lineTo(p.getX(), p.getY());
+        for (final GraphFxPoint worldPoint : plot.polyline) {
+            final double x = worldPoint.x();
+            final double y = worldPoint.y();
+
+            if (!Double.isFinite(x) || !Double.isFinite(y)) {
+                if (pathOpen) {
+                    graphicsContext.stroke();
+                    pathOpen = false;
+                }
+                continue;
+            }
+
+            final Point2D screenPoint = GraphFxUtil.worldToScreen(pane, worldPoint);
+
+            if (!pathOpen) {
+                graphicsContext.beginPath();
+                graphicsContext.moveTo(screenPoint.getX(), screenPoint.getY());
+                pathOpen = true;
+            } else {
+                graphicsContext.lineTo(screenPoint.getX(), screenPoint.getY());
+            }
         }
 
-        graphicsContext.stroke();
+        if (pathOpen) {
+            graphicsContext.stroke();
+        }
     }
 
     /**
@@ -834,13 +852,15 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         graphicsContext.setStroke(manualPolylineColor);
         graphicsContext.setLineWidth(manualPolylineWidthPx);
 
-        final Point2D first = worldToScreenFx(manualPolylineWorld.getFirst());
+        Point2D firstPoint2D = manualPolylineWorld.getFirst();
+        final Point2D first = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(firstPoint2D.getX(), firstPoint2D.getY()));
         graphicsContext.beginPath();
         graphicsContext.moveTo(first.getX(), first.getY());
 
         for (int i = 1; i < manualPolylineWorld.size(); i++) {
-            final Point2D p = worldToScreenFx(manualPolylineWorld.get(i));
-            graphicsContext.lineTo(p.getX(), p.getY());
+            Point2D point2dAtI = manualPolylineWorld.get(i);
+            final Point2D point2d = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(point2dAtI.getX(), point2dAtI.getY()));
+            graphicsContext.lineTo(point2d.getX(), point2d.getY());
         }
 
         graphicsContext.stroke();
@@ -860,47 +880,11 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         graphicsContext.setFill(pointColor);
 
         for (final Point2D worldPoint : pointsWorld) {
-            final Point2D screenPoint = worldToScreenFx(worldPoint);
+            final Point2D screenPoint = GraphFxUtil.worldToScreen(pane, new GraphFxPoint(worldPoint.getX(), worldPoint.getY()));
             final double x = screenPoint.getX() - pointRadiusPx;
             final double y = screenPoint.getY() - pointRadiusPx;
             graphicsContext.fillOval(x, y, pointRadiusPx * 2.0, pointRadiusPx * 2.0);
         }
-    }
-
-    /**
-     * Converts a world coordinate point to screen pixels using the current pane transform.
-     *
-     * @param worldPoint world point (must not be {@code null})
-     * @return screen point in pixels
-     * @throws NullPointerException if {@code worldPoint} is {@code null}
-     */
-    private Point2D worldToScreenFx(@NonNull final Point2D worldPoint) {
-        final double scalePixelsPerUnit = pane.getScalePxPerUnit().get();
-        final double originPixelsX = pane.getOriginOffsetX().get();
-        final double originPixelsY = pane.getOriginOffsetY().get();
-
-        final double screenPixelsX = originPixelsX + worldPoint.getX() * scalePixelsPerUnit;
-        final double screenPixelsY = originPixelsY - worldPoint.getY() * scalePixelsPerUnit;
-
-        return new Point2D(screenPixelsX, screenPixelsY);
-    }
-
-    /**
-     * Converts a {@link GraphFxPoint} in world coordinates to a screen pixel position.
-     *
-     * @param worldPoint world point (must not be {@code null})
-     * @return screen point in pixels
-     * @throws NullPointerException if {@code worldPoint} is {@code null}
-     */
-    private Point2D worldToScreenFx(@NonNull final GraphFxPoint worldPoint) {
-        final double scalePxPerUnit = pane.getScalePxPerUnit().get();
-        final double originX = pane.getOriginOffsetX().get();
-        final double originY = pane.getOriginOffsetY().get();
-
-        final double screenX = originX + worldPoint.x() * scalePxPerUnit;
-        final double screenY = originY - worldPoint.y() * scalePxPerUnit;
-
-        return new Point2D(screenX, screenY);
     }
 
 }
