@@ -22,31 +22,20 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.api;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class Main {
+final class DisplayThemeTest {
 
-    public static void main(final String[] args) {
-
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
-
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
-
+    @Test
+    void enumValuesExist() {
+        assertNotNull(DisplayTheme.valueOf("LIGHT"));
+        assertNotNull(DisplayTheme.valueOf("DARK"));
+        assertEquals(2, DisplayTheme.values().length);
     }
 
 }
+

@@ -22,31 +22,21 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.api;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+/**
+ * Simple theme selector for the GraphFx coordinate system.
+ */
+public enum DisplayTheme {
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+    /**
+     * Dark theme palette.
+     */
+    DARK,
 
-public class Main {
-
-    public static void main(final String[] args) {
-
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
-
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
-
-    }
+    /**
+     * Light theme palette.
+     */
+    LIGHT
 
 }

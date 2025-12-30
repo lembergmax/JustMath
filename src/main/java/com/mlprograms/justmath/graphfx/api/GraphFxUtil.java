@@ -22,31 +22,31 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.api;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
+import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.view.GraphFxDisplayPane;
 import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import lombok.NonNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+class GraphFxUtil {
 
-public class Main {
+    /**
+     * Converts a {@link GraphFxPoint} in world coordinates to a screen pixel position.
+     *
+     * @param worldPoint world point (must not be {@code null})
+     * @return screen point in pixels
+     * @throws NullPointerException if {@code worldPoint} is {@code null}
+     */
+    static Point2D worldToScreen(@NonNull final GraphFxDisplayPane pane, @NonNull final GraphFxPoint worldPoint) {
+        final double scalePxPerUnit = pane.getScalePxPerUnit().get();
+        final double originX = pane.getOriginOffsetX().get();
+        final double originY = pane.getOriginOffsetY().get();
 
-    public static void main(final String[] args) {
+        final double screenX = originX + worldPoint.x() * scalePxPerUnit;
+        final double screenY = originY - worldPoint.y() * scalePxPerUnit;
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
-
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
-
+        return new Point2D(screenX, screenY);
     }
 
 }

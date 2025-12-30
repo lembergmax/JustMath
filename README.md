@@ -176,7 +176,7 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 ## 🔤 Variables
 
 JustMath allows you to **define and substitute variables** directly in expressions.  
-Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
+Variables are passed as a `Map<String, String>` when calling `evaluate`.
 
 - Variables can be reused across nested evaluations.
 - An **exception** is thrown if an undefined variable is encountered.
@@ -187,7 +187,7 @@ Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
 CalculatorEngine calculator = new CalculatorEngine();
 
 // Define variables
-Map<String, BigNumber> variables = new HashMap<>();
+Map<String, String> variables = new HashMap<>();
 variables.put("a", "5+3");
 variables.put("b", "3");
 
@@ -196,6 +196,16 @@ BigNumber result = calculator.evaluate("2*a + b^2", variables);
 
 System.out.println(result);
 // 25
+
+// Call other variables in a variable
+variables = new HashMap<>();
+variables.put("a", "root(b)");
+variables.put("b", "3");
+
+result = calculator.evaluate("2*a + b^2", variables);
+
+System.out.println(result);
+// 12.464101615...
 ```
 
 ## 📚 Static Utility Methods
@@ -324,6 +334,182 @@ System.out.println(result);
 // 61
 ```
 
+## 📈 GraphFx
+
+### High-Precision Function Plotting for JustMath
+
+**GraphFx** is the official **JavaFX plotting and visualization module** for **JustMath**.
+It renders mathematical expressions defined as **strings** and evaluates them using the calculation engine
+with high numerical precision.
+GraphFx is designed as a **developer-oriented library component** and can be embedded into custom JavaFX applications
+or shown as a standalone plotting window.
+
+### ️ Screenshots
+
+<p align="center">
+  <img src="images/GraphFx-Dark.png" width="900" alt="GraphFx main window – dark theme">
+  <br/>
+  <em>GraphFx main window – dark theme</em>
+</p>
+
+<p align="center">
+  <img src="images/GraphFx-Multi-Plot.png" width="900" alt="Multiple expressions plotted simultaneously">
+  <br/>
+  <em>Multiple expressions plotted simultaneously</em>
+</p>
+
+<p align="center">
+  <img src="images/GraphFx-Zoom-Pan.png" width="900" alt="Zooming &amp; panning interaction">
+  <br/>
+  <em>Zooming &amp; panning interaction</em>
+</p>
+
+### ✨ Features
+
+GraphFx focuses on the features developers typically need when building mathematical tools: the ability to plot
+expressions quickly, understand behavior interactively, and present results in a clean and configurable UI.
+
+* 🧮 String-based expression plotting  
+  Expressions are provided as plain strings, which makes GraphFx easy to integrate into apps where users type
+  mathematical formulas or where expressions come from external sources.
+
+* 🔢 Powered by JustMath’s high-precision engine  
+  The same engine that evaluates expressions in JustMath is used for plotting, ensuring consistency and high precision.
+
+* 🔤 Variable support via Map<String, String>  
+  Variables are passed exactly like in the JustMath engine: Map<String, String>. This allows not only numeric values
+  but also full sub-expressions as variable values.
+
+* 🖱️ Interactive coordinate system  
+  GraphFx supports smooth exploration. You can zoom in to inspect local behavior (e.g., oscillations) and pan to follow
+  the curve across the coordinate system.
+
+* 🎨 Light & dark themes  
+  You can style the plot window to match your application design or user preference.
+
+* 📊 Multiple expressions per plot  
+  Plot multiple curves at once to compare functions, check identities, or visualize overlays (e.g., approximation vs.
+  original function).
+
+* 📍 Overlay layers (points & polylines, id-based)  
+  In addition to expression plots, GraphFx supports manual overlays that can be managed individually:
+  each overlay element (point/polyline) returns a stable id that can be removed or re-styled later.
+
+* 🔒 Thread-safe public API  
+  Public methods can be called from any thread. GraphFx dispatches UI work internally to the JavaFX Application Thread.
+
+### 📋 GraphFx API Overview
+
+The `GraphFxPlotViewer` class is the main entry point for library users. It can be used as a standalone window or
+embedded into other JavaFX layouts. Expression plots are created by calling `plotExpression(...)`, which returns a plot
+id that can later be removed again.
+
+Manual overlays (points and polylines) are independent from expression plots. Overlays are **id-based**, meaning you can
+add, remove and style single overlay elements without re-uploading the full list.
+
+| Category                | Method                                                                          | Description                                                |
+| ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Window Lifecycle**    | `show()`                                                                        | Shows the plot viewer using default window settings        |
+|                         | `show(String title, double width, double height)`                               | Shows the viewer with a custom title and size              |
+|                         | `hide()`                                                                        | Hides the window without disposing it                      |
+|                         | `dispose()`                                                                     | Closes the window and releases all resources               |
+| **Embedding**           | `asNode()`                                                                      | Returns an embeddable JavaFX node                          |
+| **Expression Plotting** | `plotExpression(String expression, String color)`                               | Plots an expression without variables                      |
+|                         | `plotExpression(String expression, Map<String,String> variables, String color)` | Plots an expression with variables                         |
+|                         | `removeExpressionPlot(long plotId)`                                             | Removes a plotted expression by id                         |
+|                         | `clearExpressionPlots()`                                                        | Removes all plotted expressions                            |
+| **Viewport Control**    | `centerOrigin()`                                                                | Centers the coordinate system at (0, 0)                    |
+| **Themes**              | `setTheme(DisplayTheme theme)`                                                  | Applies a light or dark theme                              |
+| **Overlay – Points**    | `addPoint(Point2D point)`                                                       | Adds a point using the default style and returns an id     |
+|                         | `addPoint(Point2D point, Color color, double radiusPx)`                         | Adds a point with individual style and returns an id       |
+|                         | `removePoint(long pointId)`                                                     | Removes a single point by id                               |
+|                         | `setPointStyle(long pointId, Color color, double radiusPx)`                     | Updates the style of an existing point                     |
+|                         | `clearPoints()`                                                                 | Removes all points                                         |
+|                         | `setDefaultPointStyle(Color color, double radiusPx)`                            | Sets the default style for future points                   |
+|                         | `setPoints(List<Point2D> points)`                                               | Replaces all points (uses the current default style)       |
+| **Overlay – Polylines** | `addPolyline(List<Point2D> polyline)`                                           | Adds a polyline using the default style and returns an id  |
+|                         | `addPolyline(List<Point2D> polyline, Color color, double widthPx)`              | Adds a polyline with individual style and returns an id    |
+|                         | `removePolyline(long polylineId)`                                               | Removes a single polyline by id                            |
+|                         | `setPolylineStyle(long polylineId, Color color, double widthPx)`                | Updates the style of an existing polyline                  |
+|                         | `clearPolylines()`                                                              | Removes all polylines                                      |
+|                         | `setDefaultPolylineStyle(Color color, double widthPx)`                          | Sets the default style for future polylines                |
+|                         | `setPolyline(List<Point2D> polyline)`                                           | Replaces all polylines with a single one (default style)   |
+
+### 🚀 Quick Start
+
+The simplest way to use GraphFx is the standalone window mode. Create a viewer, plot one or more expressions, center
+the origin and call `show()`.
+
+```java
+public static void main(final String[] args) {
+    final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+
+    viewer.plotExpression("sin(10x)/x + 0.2x^3 - 2x", "#ff5500");
+    viewer.centerOrigin();
+    viewer.show();
+}
+```
+
+<p align="center">
+  <img src="images/GraphFx-Quickstart.png" width="900" alt="Quick start output">
+  <br/>
+  <em>Quick start output</em>
+</p>
+
+### 🔤 Variables (`Map<String, String>`)
+
+GraphFx uses the same variable model as the JustMath CalculatorEngine: variables are passed as a
+`Map<String, String>`. This is a deliberate design choice because it enables much more than numeric substitution.
+Variable values can be simple literals like "2.5", but they can also be full expressions like "5+3" or
+`root(b)`. Variable substitution and evaluation are performed by the calculation engine and are therefore consistent
+with the rest of JustMath.
+
+```java
+Map<String, String> variables = new HashMap<>();
+variables.put("a", "2.5");
+variables.put("b", "1.2");
+
+viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
+```
+
+<p align="center">
+  <img src="images/GraphFx-Variables.png" width="900" alt="Variable-based plot">
+  <br/>
+  <em>Variable-based plot</em>
+</p>
+
+### 📍 Overlays (Points & Polylines)
+
+Expression plots are not the only thing you may want to visualize. In many real applications you compute data points
+(e.g., samples, measurements, roots, intersections, or numerical solutions) and want to display them together with a
+function. GraphFx therefore supports manual overlays that are drawn on top of the plot. These overlays use world
+coordinates (the same coordinate system as the function plot) and automatically scale and translate with the viewport.
+
+`setPoints(...)` replaces all overlay points at once, which makes it easy to render scatter plots or highlight special
+points. `setPolyline(...)` draws a custom connected path. Together, these overlays can be used to visualize discrete
+data on top of continuous functions or to show algorithmic results such as approximation curves.
+
+```java
+viewer.setPoints(List.of(
+        new Point2D(-2, 1),
+        new Point2D(0, 0),
+        new Point2D(2, -1)
+));
+
+viewer.setPolyline(List.of(
+        new Point2D(-3, -1),
+        new Point2D(-1, 2),
+        new Point2D(1, -2),
+        new Point2D(3, 1)
+));
+```
+
+<p align="center">
+  <img src="images/GraphFx-Overlays.png" width="900" alt="Overlay example">
+  <br/>
+  <em>Overlay example</em>
+</p>
+
 ## ⚙️ Maven (Coming Soon)
 
 Cannot wait? Just download the latest jar:
@@ -335,8 +521,8 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.2.10</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.10.jar">JustMath v1.2.2.10</a></td>
+    <td>v1.2.3.14</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.3.14.jar">JustMath v1.2.3.14</a></td>
     <td>Preview</td>
   </tr>
   <tr>
@@ -385,6 +571,8 @@ Cannot wait? Just download the latest jar:
     <td>Release</td>
   </tr>
 </table>
+
+Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
 
 ## 📜 License
 
