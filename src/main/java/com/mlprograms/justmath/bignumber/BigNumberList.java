@@ -224,7 +224,7 @@ public class BigNumberList implements List<BigNumber> {
      * @return {@code true} if every element in {@code bigNumbers} is an integer (or the list is empty),
      * {@code false} if at least one element is non-integer
      */
-    private static boolean areAllIntegers(@NonNull final List<BigNumber> bigNumbers) {
+    private boolean areAllIntegers(@NonNull final List<BigNumber> bigNumbers) {
         for (final BigNumber number : bigNumbers) {
             if (!number.isInteger()) {
                 return false;
