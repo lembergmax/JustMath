@@ -191,7 +191,7 @@ public class BigNumberList implements List<BigNumber> {
      * @param bigNumbers list used to determine the algorithm; must not be {@code null}
      * @return selected {@link SortingAlgorithm} implementation class
      */
-    private static Class<? extends SortingAlgorithm> chooseSortingAlgorithmBySize(@NonNull final List<BigNumber> bigNumbers) {
+    private Class<? extends SortingAlgorithm> chooseSortingAlgorithmBySize(@NonNull final List<BigNumber> bigNumbers) {
         final int size = bigNumbers.size();
 
         if (size <= 32) {
