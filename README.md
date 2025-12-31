@@ -272,7 +272,6 @@ You can also sort a `List<BigNumber>` using any of the following algorithms.
 | `BubbleSort` |
 | `MergeSort`  |
 | `QuickSort`  |
-| `QuickSort`  |
 | `RadixSort`  |
 
 ### ✅ Example: Using Algorithms
