@@ -198,15 +198,41 @@ public class BigNumberList implements List<BigNumber> {
             return BubbleSort.class;
         }
 
-        if (size <= 500) {
+        if (size < 1_000) {
             return QuickSort.class;
         }
 
-        if (size < 1_000) {
-            return MergeSort.class;
+        if (areAllIntegers(bigNumbers)) {
+            return RadixSort.class;
         }
 
-        return RadixSort.class; // Fallback to MergeSort if not every number is an integer
+        return MergeSort.class;
+    }
+
+
+    /**
+     * Checks whether every element in the provided list represents an integral value.
+     *
+     * <p>This method iterates the supplied list and invokes {@link BigNumber#isInteger()}
+     * on each element. It returns {@code true} when all elements report they are integers.
+     * An empty list is considered to satisfy the predicate and will therefore return {@code true}.</p>
+     *
+     * <p>Note: The parameter is annotated with {@link lombok.NonNull}; callers must not pass
+     * {@code null}. If {@code null} is passed despite the contract, a {@link NullPointerException}
+     * may be thrown by the caller's environment.</p>
+     *
+     * @param bigNumbers the list of {@link BigNumber} instances to inspect; must not be {@code null}
+     * @return {@code true} if every element in {@code bigNumbers} is an integer (or the list is empty),
+     * {@code false} if at least one element is non-integer
+     */
+    private static boolean areAllIntegers(@NonNull final List<BigNumber> bigNumbers) {
+        for (final BigNumber number : bigNumbers) {
+            if (!number.isInteger()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
