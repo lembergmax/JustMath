@@ -209,7 +209,6 @@ public class BigNumberList implements List<BigNumber> {
         return MergeSort.class;
     }
 
-
     /**
      * Checks whether every element in the provided list represents an integral value.
      *
