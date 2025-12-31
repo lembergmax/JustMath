@@ -38,15 +38,15 @@ BigNumberList is a domain-specific, list-like container for BigNumber instances.
 It implements java.util.List<BigNumber> and adds high-level statistical, transformation, and sorting utilities on top.
 
 ### ✅ Core Capabilities
-| Category                 | Methods                                                                                                         | Description                                              |
-|--------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`             | Create lists from existing values or string representations |
-| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                      | Convert to arrays, immutable views, or string/double lists |
-| **Sorting**              | `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                   | Sort using custom algorithms or natural order            |
-| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean` | High-precision statistical operations                    |
-| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map` | In-place or copy-based transformations on all elements   |
-| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                             | Remove duplicates, concatenate lists, copy subranges     |
-| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way        |
+| Category                 | Methods                                                                                                                                    | Description                                                 |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`                                        | Create lists from existing values or string representations |
+| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                                                  | Convert to arrays, immutable views, or string/double lists  |
+| **Sorting**              | `sort`, `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                                       | Sort using custom algorithms or natural order               |
+| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`               | High-precision statistical operations                       |
+| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map`                | In-place or copy-based transformations on all elements      |
+| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                                                        | Remove duplicates, concatenate lists, copy subranges        |
+| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way           |
 
 All higher-level operations are implemented in terms of BigNumber’s arbitrary precision arithmetic and comparison,
 avoiding issues with primitive types.
@@ -253,6 +253,13 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 | `ONE`                        | BigNumber value of 1                            |
 | `TWO`                        | BigNumber value of 2                            |
 | `THREE`                      | BigNumber value of 3                            |
+| `FOUR`                       | BigNumber value of 4                            |
+| `FIVE`                       | BigNumber value of 5                            |
+| `SIX`                        | BigNumber value of 6                            |
+| `SEVEN`                      | BigNumber value of 7                            |
+| `EIGHT`                      | BigNumber value of 8                            |
+| `NINE`                       | BigNumber value of 9                            |
+| `TEN`                        | BigNumber value of 10                           |
 | `ONE_HUNDRED`                | BigNumber value of 100                          |
 | `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
 
@@ -260,9 +267,13 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 
 You can also sort a `List<BigNumber>` using any of the following algorithms.
 
-| Algorithm                         |
-|-----------------------------------|
-| `QuickSort`                       |
+| Algorithm    |
+|--------------|
+| `BubbleSort` |
+| `MergeSort`  |
+| `QuickSort`  |
+| `QuickSort`  |
+| `RadixSort`  |
 
 ### ✅ Example: Using Algorithms
 
@@ -274,7 +285,7 @@ List<BigNumber> numbers = Arrays.asList(
         new BigNumber("1.73")
 );
 
-numbers = QuickSort.sort(numbers); // [1.41, 1.73, 2.71, 3.14]
+numbers = new QuickSort().sort(numbers); // [1.41, 1.73, 2.71, 3.14]
 ```
 
 ## 🧑‍💻 Practical Examples
