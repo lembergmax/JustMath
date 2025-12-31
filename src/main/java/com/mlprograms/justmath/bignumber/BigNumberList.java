@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.algorithms.SortingAlgorithm;
+import com.mlprograms.justmath.bignumber.algorithms.*;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -148,6 +148,65 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         return new BigNumberList(numbers);
+    }
+
+    /**
+     * Sorts the elements of this list by automatically choosing a suitable {@link SortingAlgorithm}
+     * based on the current list size.
+     *
+     * <p>
+     * The selection is size-driven to minimize overhead for small lists and provide good average
+     * performance for larger lists:
+     * </p>
+     *
+     * <ul>
+     *   <li><b>0..32</b> elements: {@link BubbleSort} (minimal overhead)</li>
+     *   <li><b>33..999</b> elements: {@link QuickSort} (fast average case)</li>
+     *   <li><b>1000+</b> elements: {@link MergeSort} (predictable O(n log n))</li>
+     * </ul>
+     *
+     * <p>
+     * The chosen algorithm is instantiated via its no-argument constructor and executed.
+     * The operation mutates this instance and returns {@code this} for fluent usage.
+     * </p>
+     *
+     * <p>If the algorithm returns {@code null}, an {@link IllegalStateException} is thrown.</p>
+     *
+     * @return this {@code BigNumberList} instance after sorting
+     * @throws IllegalStateException    if the selected sorting algorithm returns {@code null}
+     * @throws IllegalArgumentException if the selected algorithm cannot be instantiated
+     */
+    public BigNumberList sort() {
+        final Class<? extends SortingAlgorithm> algorithmClass = chooseSortingAlgorithmBySize(values);
+        return sort(algorithmClass);
+    }
+
+    /**
+     * Chooses the algorithm class based on the provided list size.
+     *
+     * <p>
+     * The thresholds are intentionally conservative to keep small sorts cheap and large sorts predictable.
+     * </p>
+     *
+     * @param bigNumbers list used to determine the algorithm; must not be {@code null}
+     * @return selected {@link SortingAlgorithm} implementation class
+     */
+    private static Class<? extends SortingAlgorithm> chooseSortingAlgorithmBySize(@NonNull final List<BigNumber> bigNumbers) {
+        final int size = bigNumbers.size();
+
+        if (size <= 32) {
+            return BubbleSort.class;
+        }
+
+        if (size <= 500) {
+            return QuickSort.class;
+        }
+
+        if (size < 1_000) {
+            return MergeSort.class;
+        }
+
+        return RadixSort.class; // Fallback to MergeSort if not every number is an integer
     }
 
     /**
@@ -1030,6 +1089,24 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         return result;
+    }
+
+    /**
+     * Creates and returns a new {@link java.util.List} containing all {@link BigNumber} values of this instance.
+     * <p>
+     * The returned list is a <b>shallow copy</b> of the current values:
+     * structural modifications to the returned list (e.g. {@code add}, {@code remove}, {@code clear})
+     * will <b>not</b> affect the internal storage of this instance, and changes to this instance will not
+     * affect the returned list.
+     * <p>
+     * Note that the elements themselves are <b>not</b> deep-copied. Therefore, both the internal storage
+     * and the returned list reference the same {@link BigNumber} objects. This is typically safe if
+     * {@link BigNumber} is immutable.
+     *
+     * @return a new mutable {@link java.util.ArrayList} containing the current {@link BigNumber} values
+     */
+    public List<BigNumber> toListBigNumber() {
+        return new ArrayList<>(this.getValues());
     }
 
     /**
