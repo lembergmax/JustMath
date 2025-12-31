@@ -45,7 +45,7 @@ public class Main {
         viewer.plotExpression("cos(x)", "#FF5500");
         viewer.plotExpression("tan(x)", "#5500FF");
 
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
+        viewer.show("GraphFx Plot Viewer", 1200, 800);
 
     }
 
