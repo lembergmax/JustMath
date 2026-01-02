@@ -77,7 +77,7 @@ import java.util.Objects;
  * to understand user-defined function names.
  * </p>
  */
-public final class GraphFxCalculator {
+public final class GraphFxCalculatorEngine {
 
     /**
      * Cancellation hook used to abort long-running plot computations when they become obsolete.
@@ -159,10 +159,10 @@ public final class GraphFxCalculator {
      *
      * <p>
      * This constructor is convenient for typical usage. If you want to reuse an engine instance across multiple
-     * calculators (e.g., to share configuration or caches), use {@link #GraphFxCalculator(CalculatorEngine)}.
+     * calculators (e.g., to share configuration or caches), use {@link #GraphFxCalculatorEngine(CalculatorEngine)}.
      * </p>
      */
-    public GraphFxCalculator() {
+    public GraphFxCalculatorEngine() {
         this(new CalculatorEngine(TrigonometricMode.RAD));
     }
 
@@ -177,7 +177,7 @@ public final class GraphFxCalculator {
      * @param calculatorEngine the engine to use; must not be {@code null}
      * @throws NullPointerException if {@code engine} is {@code null}
      */
-    public GraphFxCalculator(@NonNull final CalculatorEngine calculatorEngine) {
+    public GraphFxCalculatorEngine(@NonNull final CalculatorEngine calculatorEngine) {
         this.calculatorEngine = calculatorEngine;
     }
 
