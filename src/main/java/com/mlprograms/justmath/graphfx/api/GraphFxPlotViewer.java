@@ -26,7 +26,7 @@ package com.mlprograms.justmath.graphfx.api;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.config.WindowConfig;
-import com.mlprograms.justmath.graphfx.core.GraphFxCalculator;
+import com.mlprograms.justmath.graphfx.core.GraphFxCalculatorEngine;
 import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
 import com.mlprograms.justmath.graphfx.internal.FxBootstrap;
 import com.mlprograms.justmath.graphfx.view.GraphFxDisplayPane;
@@ -170,7 +170,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
     /**
      * Calculator used to generate plot geometry from expressions.
      */
-    private final GraphFxCalculator graphFxCalculator;
+    private final GraphFxCalculatorEngine graphFxCalculatorEngine;
 
     /**
      * Synchronization lock guarding plot scheduling and cancellation fields.
@@ -268,7 +268,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         this.defaultPolylineColor = DEFAULT_POLYLINE_COLOR;
         this.defaultPolylineWidthPixels = DEFAULT_POLYLINE_WIDTH_PIXELS;
 
-        this.graphFxCalculator = new GraphFxCalculator();
+        this.graphFxCalculatorEngine = new GraphFxCalculatorEngine();
 
         this.plotWorkLock = new Object();
         this.plotGenerationCounter = new AtomicLong(0L);
@@ -858,7 +858,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         /**
          * Computed line segment geometry for implicit contour plots.
          */
-        private List<GraphFxCalculator.LineSegment> segments = List.of();
+        private List<GraphFxCalculatorEngine.LineSegment> segments = List.of();
     }
 
     /**
@@ -889,7 +889,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      * @param id       stable plot identifier
      * @param geometry computed plot geometry
      */
-    private record PlotResult(long id, GraphFxCalculator.PlotGeometry geometry) {
+    private record PlotResult(long id, GraphFxCalculatorEngine.PlotGeometry geometry) {
     }
 
     /**
@@ -1071,7 +1071,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         final int viewportPixelWidth = (int) Math.max(1.0, overlayCanvas.getWidth());
         final int viewportPixelHeight = (int) Math.max(1.0, overlayCanvas.getHeight());
 
-        final GraphFxCalculator.WorldBounds worldBoundsSnapshot = currentViewportWorldBoundsFx();
+        final GraphFxCalculatorEngine.WorldBounds worldBoundsSnapshot = currentViewportWorldBoundsFx();
         final List<PlotSnapshot> plotSnapshots = snapshotPlotsFx();
         if (plotSnapshots.isEmpty()) {
             return;
@@ -1127,7 +1127,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      */
     private void submitPlotComputation(
             @NonNull final List<PlotSnapshot> plotSnapshots,
-            @NonNull final GraphFxCalculator.WorldBounds worldBoundsSnapshot,
+            @NonNull final GraphFxCalculatorEngine.WorldBounds worldBoundsSnapshot,
             final int viewportPixelWidth,
             final int viewportPixelHeight,
             final long generation
@@ -1159,12 +1159,12 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      */
     private void computePlots(
             @NonNull final List<PlotSnapshot> plotSnapshots,
-            @NonNull final GraphFxCalculator.WorldBounds worldBoundsSnapshot,
+            @NonNull final GraphFxCalculatorEngine.WorldBounds worldBoundsSnapshot,
             final int viewportPixelWidth,
             final int viewportPixelHeight,
             final long generation
     ) {
-        final GraphFxCalculator.PlotCancellation plotCancellation =
+        final GraphFxCalculatorEngine.PlotCancellation plotCancellation =
                 () -> Thread.currentThread().isInterrupted() || plotGenerationCounter.get() != generation;
 
         final List<PlotResult> plotResults = new ArrayList<>(plotSnapshots.size());
@@ -1174,7 +1174,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
                 return;
             }
 
-            final GraphFxCalculator.PlotGeometry computedGeometry = graphFxCalculator.plot(
+            final GraphFxCalculatorEngine.PlotGeometry computedGeometry = graphFxCalculatorEngine.plot(
                     plotSnapshot.expression(),
                     plotSnapshot.variables(),
                     worldBoundsSnapshot,
@@ -1269,7 +1269,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
      *
      * @return world bounds representing the visible viewport
      */
-    private GraphFxCalculator.WorldBounds currentViewportWorldBoundsFx() {
+    private GraphFxCalculatorEngine.WorldBounds currentViewportWorldBoundsFx() {
         final double viewportWidthPixels = Math.max(1.0, pane.getWidth());
         final double viewportHeightPixels = Math.max(1.0, pane.getHeight());
 
@@ -1283,7 +1283,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         final double minimumWorldY = (originOffsetYPixels - viewportHeightPixels) / pixelsPerWorldUnit;
         final double maximumWorldY = (originOffsetYPixels - 0.0) / pixelsPerWorldUnit;
 
-        return new GraphFxCalculator.WorldBounds(minimumWorldX, maximumWorldX, minimumWorldY, maximumWorldY);
+        return new GraphFxCalculatorEngine.WorldBounds(minimumWorldX, maximumWorldX, minimumWorldY, maximumWorldY);
     }
 
     /**
@@ -1357,7 +1357,7 @@ public final class GraphFxPlotViewer implements AutoCloseable {
         graphicsContext.setStroke(expressionPlot.strokeColor);
         graphicsContext.setLineWidth(expressionPlot.strokeWidthPixels);
 
-        for (final GraphFxCalculator.LineSegment lineSegment : expressionPlot.segments) {
+        for (final GraphFxCalculatorEngine.LineSegment lineSegment : expressionPlot.segments) {
             final Point2D screenPointA = GraphFxUtil.worldToScreen(pane, lineSegment.a());
             final Point2D screenPointB = GraphFxUtil.worldToScreen(pane, lineSegment.b());
             graphicsContext.strokeLine(screenPointA.getX(), screenPointA.getY(), screenPointB.getX(), screenPointB.getY());

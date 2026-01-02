@@ -31,13 +31,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-final class GraphFxCalculatorTest {
+final class GraphFxCalculatorEngineTest {
 
-    private static final GraphFxCalculator.PlotCancellation NO_CANCEL = () -> false;
+    private static final GraphFxCalculatorEngine.PlotCancellation NO_CANCEL = () -> false;
 
     @Test
     void containsYVariableDetectsStandaloneYOnly() {
-        final GraphFxCalculator calc = new GraphFxCalculator();
+        final GraphFxCalculatorEngine calc = new GraphFxCalculatorEngine();
 
         assertTrue(calc.containsYVariable("x+y"));
         assertTrue(calc.containsYVariable("Y+1"));
@@ -51,10 +51,10 @@ final class GraphFxCalculatorTest {
 
     @Test
     void plotExplicitGeneratesPolyline() {
-        final GraphFxCalculator calc = new GraphFxCalculator();
-        final var bounds = new GraphFxCalculator.WorldBounds(-2, 2, -5, 5);
+        final GraphFxCalculatorEngine calc = new GraphFxCalculatorEngine();
+        final var bounds = new GraphFxCalculatorEngine.WorldBounds(-2, 2, -5, 5);
 
-        final GraphFxCalculator.PlotGeometry g = calc.plot(
+        final GraphFxCalculatorEngine.PlotGeometry g = calc.plot(
                 "x^2",
                 Map.of(),
                 bounds,
@@ -75,10 +75,10 @@ final class GraphFxCalculatorTest {
 
     @Test
     void plotImplicitLinearFastPathCreatesSingleSegment() {
-        final GraphFxCalculator calc = new GraphFxCalculator();
-        final var bounds = new GraphFxCalculator.WorldBounds(-10, 10, -10, 10);
+        final GraphFxCalculatorEngine calc = new GraphFxCalculatorEngine();
+        final var bounds = new GraphFxCalculatorEngine.WorldBounds(-10, 10, -10, 10);
 
-        final GraphFxCalculator.PlotGeometry g = calc.plot(
+        final GraphFxCalculatorEngine.PlotGeometry g = calc.plot(
                 "2x-3y+4,3",
                 Map.of(),
                 bounds,
@@ -99,7 +99,7 @@ final class GraphFxCalculatorTest {
         assertTrue(isOnBorder(bounds, s.a(), 1e-9) || isOnBorder(bounds, s.b(), 1e-9));
     }
 
-    private static boolean isInside(GraphFxCalculator.WorldBounds b, GraphFxPoint p) {
+    private static boolean isInside(GraphFxCalculatorEngine.WorldBounds b, GraphFxPoint p) {
         final double minX = Math.min(b.minX(), b.maxX());
         final double maxX = Math.max(b.minX(), b.maxX());
         final double minY = Math.min(b.minY(), b.maxY());
@@ -107,7 +107,7 @@ final class GraphFxCalculatorTest {
         return p.x() >= minX && p.x() <= maxX && p.y() >= minY && p.y() <= maxY;
     }
 
-    private static boolean isOnBorder(GraphFxCalculator.WorldBounds b, GraphFxPoint p, double eps) {
+    private static boolean isOnBorder(GraphFxCalculatorEngine.WorldBounds b, GraphFxPoint p, double eps) {
         final double minX = Math.min(b.minX(), b.maxX());
         final double maxX = Math.max(b.minX(), b.maxX());
         final double minY = Math.min(b.minY(), b.maxY());
@@ -120,10 +120,10 @@ final class GraphFxCalculatorTest {
 
     @Test
     void marchingSquaresCircleMidpointsNearZero() {
-        final GraphFxCalculator calc = new GraphFxCalculator();
-        final var bounds = new GraphFxCalculator.WorldBounds(-2, 2, -2, 2);
+        final GraphFxCalculatorEngine calc = new GraphFxCalculatorEngine();
+        final var bounds = new GraphFxCalculatorEngine.WorldBounds(-2, 2, -2, 2);
 
-        final List<GraphFxCalculator.LineSegment> segs = calc.createImplicitZeroContourSegments(
+        final List<GraphFxCalculatorEngine.LineSegment> segs = calc.createImplicitZeroContourSegments(
                 "x^2 + y^2 - 1",
                 Map.of(),
                 bounds,
@@ -146,12 +146,12 @@ final class GraphFxCalculatorTest {
 
     @Test
     void cancellationReturnsEmpty() {
-        final GraphFxCalculator calc = new GraphFxCalculator();
-        final var bounds = new GraphFxCalculator.WorldBounds(-50, 50, -50, 50);
+        final GraphFxCalculatorEngine calc = new GraphFxCalculatorEngine();
+        final var bounds = new GraphFxCalculatorEngine.WorldBounds(-50, 50, -50, 50);
 
-        final GraphFxCalculator.PlotCancellation cancelImmediately = () -> true;
+        final GraphFxCalculatorEngine.PlotCancellation cancelImmediately = () -> true;
 
-        final GraphFxCalculator.PlotGeometry g = calc.plot(
+        final GraphFxCalculatorEngine.PlotGeometry g = calc.plot(
                 "x^2",
                 Map.of(),
                 bounds,
