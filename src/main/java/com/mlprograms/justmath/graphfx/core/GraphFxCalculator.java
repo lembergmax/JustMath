@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.graphfx.core;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -139,11 +140,6 @@ public final class GraphFxCalculator {
             return new PlotGeometry(List.of(), List.of());
         }
     }
-
-    private static final BigNumber BN_ZERO = new BigNumber("0");
-    private static final BigNumber BN_ONE = new BigNumber("1");
-    private static final BigNumber BN_TWO = new BigNumber("2");
-    private static final BigNumber BN_NEG_ONE = new BigNumber("-1");
 
     /**
      * Tolerance used when verifying that an expression behaves like an affine function in x/y.
@@ -501,13 +497,13 @@ public final class GraphFxCalculator {
     private LineSegment tryCreateLinearImplicitSegment(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final WorldBounds bounds, @NonNull final PlotCancellation cancellation) {
         final Map<String, String> evalVars = new HashMap<>(variables);
 
-        final BigNumber f00 = evaluateAt(expression, evalVars, BN_ZERO, BN_ZERO);
+        final BigNumber f00 = evaluateAt(expression, evalVars, BigNumbers.ZERO, BigNumbers.ZERO);
         if (f00 == null || cancellation.isCancelled()) {
             return null;
         }
 
-        final BigNumber f10 = evaluateAt(expression, evalVars, BN_ONE, BN_ZERO);
-        final BigNumber f01 = evaluateAt(expression, evalVars, BN_ZERO, BN_ONE);
+        final BigNumber f10 = evaluateAt(expression, evalVars, BigNumbers.ONE, BigNumbers.ZERO);
+        final BigNumber f01 = evaluateAt(expression, evalVars, BigNumbers.ZERO, BigNumbers.ONE);
         if (f10 == null || f01 == null || cancellation.isCancelled()) {
             return null;
         }
@@ -575,16 +571,16 @@ public final class GraphFxCalculator {
      * @return {@code true} if the function matches the affine model within tolerance; {@code false} otherwise
      */
     private boolean isAffineVerified(@NonNull final String expression, @NonNull final Map<String, String> evalVars, @NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final BigNumber c, @NonNull final PlotCancellation cancellation) {
-        final BigNumber f20 = evaluateAt(expression, evalVars, BN_TWO, BN_ZERO);
-        final BigNumber f02 = evaluateAt(expression, evalVars, BN_ZERO, BN_TWO);
-        final BigNumber f11 = evaluateAt(expression, evalVars, BN_ONE, BN_ONE);
+        final BigNumber f20 = evaluateAt(expression, evalVars, BigNumbers.TWO, BigNumbers.ZERO);
+        final BigNumber f02 = evaluateAt(expression, evalVars, BigNumbers.ZERO, BigNumbers.TWO);
+        final BigNumber f11 = evaluateAt(expression, evalVars, BigNumbers.ONE, BigNumbers.ONE);
 
         if (f20 == null || f02 == null || f11 == null || cancellation.isCancelled()) {
             return false;
         }
 
-        final BigNumber expected20 = c.add(a.multiply(BN_TWO));
-        final BigNumber expected02 = c.add(b.multiply(BN_TWO));
+        final BigNumber expected20 = c.add(a.multiply(BigNumbers.TWO));
+        final BigNumber expected02 = c.add(b.multiply(BigNumbers.TWO));
         final BigNumber expected11 = c.add(a).add(b);
 
         return approxEquals(f20, expected20) && approxEquals(f02, expected02) && approxEquals(f11, expected11);
@@ -787,7 +783,7 @@ public final class GraphFxCalculator {
      * @return y value as {@link BigNumber}
      */
     private static BigNumber solveY(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final BigNumber c, @NonNull final BigNumber x) {
-        return a.multiply(x).add(c).multiply(BN_NEG_ONE).divide(b);
+        return a.multiply(x).add(c).multiply(BigNumbers.NEGATIVE_ONE).divide(b);
     }
 
     /**
@@ -800,7 +796,7 @@ public final class GraphFxCalculator {
      * @return x value as {@link BigNumber}
      */
     private static BigNumber solveX(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final BigNumber c, @NonNull final BigNumber y) {
-        return b.multiply(y).add(c).multiply(BN_NEG_ONE).divide(a);
+        return b.multiply(y).add(c).multiply(BigNumbers.NEGATIVE_ONE).divide(a);
     }
 
     /**
