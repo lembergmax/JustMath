@@ -35,6 +35,10 @@ import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotRequest;
 import com.mlprograms.justmath.graphfx.api.plot.GraphFxWorldBounds;
 import lombok.NonNull;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,11 +93,193 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * This constructor is a convenience for typical usage where a dedicated calculator configuration is not
      * required. If you need a customized calculator (precision, locale settings, additional functions, ...),
      * use {@link #GraphFxCalculatorEngine(CalculatorEngine)}.
+     * </p>
+     *
+     * <h2>Trigonometric unit</h2>
+     * <p>
+     * GraphFx treats the world coordinate system as a mathematical plane where {@code x} and {@code y} values are
+     * unit-less. For trigonometric expressions (for example {@code sin(x)}), the de-facto expectation in most Java
+     * math libraries and plotting tools is that angles are interpreted as <strong>radians</strong>.
+     * </p>
+     * <p>
+     * JustMath's {@link CalculatorEngine} supports different trigonometric modes in some versions (for example
+     * degrees vs. radians). To provide stable and predictable plots across applications, this constructor
+     * <em>best-effort</em> configures the default calculator instance to use radians.
+     * </p>
+     * <p>
+     * The configuration is performed via reflection to avoid leaking any trigonometric-mode types through the
+     * GraphFx public API. If the current {@link CalculatorEngine} implementation does not expose such a mode, the
+     * default constructor is used as-is.
      *
      * @throws RuntimeException if the default {@link CalculatorEngine} cannot be constructed
      */
     public GraphFxCalculatorEngine() {
-        this(new CalculatorEngine());
+        this(createDefaultCalculatorEngine());
+    }
+
+    /**
+     * Creates the default calculator engine used by GraphFx and configures it for radians when possible.
+     * <p>
+     * This method performs a best-effort reflection-based configuration to support multiple JustMath
+     * {@link CalculatorEngine} variants without introducing a hard compile-time dependency on an internal
+     * trigonometric-mode enum.
+     * </p>
+     *
+     * @return a non-null calculator engine instance
+     */
+    private static CalculatorEngine createDefaultCalculatorEngine() {
+        final CalculatorEngine calculatorEngine = tryConstructCalculatorEngineInRadians();
+
+        if (tryConfigureCalculatorEngineForRadians(calculatorEngine)) {
+            return calculatorEngine;
+        }
+
+        return calculatorEngine;
+    }
+
+    /**
+     * Tries to create a {@link CalculatorEngine} instance using a constructor that accepts a trigonometric-mode
+     * enum and configures it to radians.
+     *
+     * @return a calculator engine instance (never {@code null})
+     */
+    private static CalculatorEngine tryConstructCalculatorEngineInRadians() {
+        final Object radianMode = tryResolveRadianModeEnumValue();
+        if (radianMode == null) {
+            return new CalculatorEngine();
+        }
+
+        final Class<?> modeClass = radianMode.getClass();
+
+        // Common signatures used across JustMath versions.
+        final Constructor<?>[] candidateConstructors = new Constructor<?>[]{
+                tryGetPublicConstructor(CalculatorEngine.class, modeClass),
+                tryGetPublicConstructor(CalculatorEngine.class, int.class, modeClass),
+                tryGetPublicConstructor(CalculatorEngine.class, int.class, modeClass, Locale.class)
+        };
+
+        for (final Constructor<?> candidateConstructor : candidateConstructors) {
+            if (candidateConstructor == null) {
+                continue;
+            }
+            try {
+                final Object instance;
+                final Class<?>[] parameterTypes = candidateConstructor.getParameterTypes();
+                if (parameterTypes.length == 1) {
+                    instance = candidateConstructor.newInstance(radianMode);
+                } else if (parameterTypes.length == 2) {
+                    instance = candidateConstructor.newInstance(50, radianMode);
+                } else {
+                    instance = candidateConstructor.newInstance(50, radianMode, Locale.getDefault());
+                }
+
+                return (CalculatorEngine) instance;
+            } catch (final ReflectiveOperationException ignored) {
+                // Fallback to other constructors.
+            }
+        }
+
+        return new CalculatorEngine();
+    }
+
+    /**
+     * Attempts to configure the given calculator instance so that trigonometric functions interpret angles as
+     * radians.
+     *
+     * @param calculatorEngine calculator engine instance to configure
+     * @return {@code true} if a matching configuration method was found and invoked successfully
+     */
+    private static boolean tryConfigureCalculatorEngineForRadians(@NonNull final CalculatorEngine calculatorEngine) {
+        final Object radianMode = tryResolveRadianModeEnumValue();
+        if (radianMode == null) {
+            return false;
+        }
+
+        final Class<?> modeClass = radianMode.getClass();
+
+        for (final Method method : CalculatorEngine.class.getMethods()) {
+            if (!Modifier.isPublic(method.getModifiers())) {
+                continue;
+            }
+            if (method.getReturnType() != void.class) {
+                continue;
+            }
+            if (method.getParameterCount() != 1 || !method.getParameterTypes()[0].equals(modeClass)) {
+                continue;
+            }
+
+            final String lowerCaseName = method.getName().toLowerCase(Locale.ROOT);
+            if (!lowerCaseName.contains("trig") && !lowerCaseName.contains("angle") && !lowerCaseName.contains("mode")) {
+                continue;
+            }
+
+            try {
+                method.invoke(calculatorEngine, radianMode);
+                return true;
+            } catch (final ReflectiveOperationException ignored) {
+                // Continue searching.
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolves an enum constant that represents "radians" in the calculator's trigonometric-mode enum.
+     * <p>
+     * This method supports multiple historical enum package locations while avoiding a hard dependency.
+     * </p>
+     *
+     * @return the enum constant instance, or {@code null} if no known enum could be resolved
+     */
+    private static Object tryResolveRadianModeEnumValue() {
+        final Class<?> modeEnumClass = tryLoadFirstAvailableClass(
+                "com.mlprograms.justmath.calculator.TrigonometricMode",
+                "com.mlprograms.justmath.calculator.internal.TrigonometricMode",
+                "com.mlprograms.justmath.calculator.enums.TrigonometricMode"
+        );
+        if (modeEnumClass == null || !modeEnumClass.isEnum()) {
+            return null;
+        }
+
+        final Object rad = tryGetEnumConstant(modeEnumClass, "RAD");
+        if (rad != null) {
+            return rad;
+        }
+        final Object radians = tryGetEnumConstant(modeEnumClass, "RADIANS");
+        if (radians != null) {
+            return radians;
+        }
+
+        return tryGetEnumConstant(modeEnumClass, "RADIAN");
+    }
+
+    private static Class<?> tryLoadFirstAvailableClass(@NonNull final String... classNames) {
+        for (final String className : classNames) {
+            try {
+                return Class.forName(className);
+            } catch (final ClassNotFoundException ignored) {
+                // Try next.
+            }
+        }
+        return null;
+    }
+
+    private static Object tryGetEnumConstant(@NonNull final Class<?> enumClass, @NonNull final String constantName) {
+        for (final Object enumConstant : enumClass.getEnumConstants()) {
+            if (enumConstant instanceof Enum<?> typed && typed.name().equals(constantName)) {
+                return enumConstant;
+            }
+        }
+        return null;
+    }
+
+    private static Constructor<?> tryGetPublicConstructor(@NonNull final Class<?> type, @NonNull final Class<?>... parameterTypes) {
+        try {
+            return type.getConstructor(parameterTypes);
+        } catch (final NoSuchMethodException ignored) {
+            return null;
+        }
     }
 
     /**
