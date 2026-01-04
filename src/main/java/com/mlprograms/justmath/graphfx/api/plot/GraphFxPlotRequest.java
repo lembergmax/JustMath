@@ -59,10 +59,16 @@ import java.util.Objects;
  * @param worldBounds world coordinate bounds
  * @param pixelWidth  width of the target area in pixels (>= 1)
  * @param pixelHeight height of the target area in pixels (>= 1)
+ *
  * @since 1.0
  */
-public record GraphFxPlotRequest(@NonNull String expression, @NonNull Map<String, String> variables,
-                                 @NonNull GraphFxWorldBounds worldBounds, int pixelWidth, int pixelHeight) {
+public record GraphFxPlotRequest(
+        @NonNull String expression,
+        @NonNull Map<String, String> variables,
+        @NonNull GraphFxWorldBounds worldBounds,
+        int pixelWidth,
+        int pixelHeight
+) {
 
     /**
      * Returns the world bounds associated with this request.
@@ -71,6 +77,7 @@ public record GraphFxPlotRequest(@NonNull String expression, @NonNull Map<String
      * {@link #worldBounds()}.
      *
      * @return the requested world bounds
+     *
      * @since 1.0
      */
     public GraphFxWorldBounds bounds() {
