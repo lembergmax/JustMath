@@ -40,7 +40,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CalculatorEngineTest {
+public class GraphFxGraphFxCalculatorEngineTest {
 
     private final CalculatorEngine calculatorEngineRad = new CalculatorEngine(TrigonometricMode.RAD);
     private final CalculatorEngine calculatorEngineDeg = new CalculatorEngine(TrigonometricMode.DEG);
@@ -377,7 +377,7 @@ public class CalculatorEngineTest {
     }
 
     @Nested
-    class CalculatorEngineUtilTest {
+    class GraphFxGraphFxCalculatorEngineUtilTest {
 
         private final CalculatorEngine calculatorEngine = new CalculatorEngine();
 

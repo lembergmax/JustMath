@@ -4,7 +4,7 @@
  * This file is part of JustMath.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the “Software”), to deal
+ * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -13,7 +13,7 @@
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -27,6 +27,13 @@ package com.mlprograms.justmath.graphfx.config;
 import javafx.scene.paint.Color;
 import lombok.experimental.UtilityClass;
 
+/**
+ * Central configuration constants for GraphFx JavaFX rendering.
+ *
+ * <p>This configuration is intentionally kept as a small set of stable knobs. If you add additional
+ * configuration, prefer introducing an explicit configuration object in the public API rather than growing
+ * this class without structure.</p>
+ */
 @UtilityClass
 public class WindowConfig {
 
@@ -67,10 +74,31 @@ public class WindowConfig {
     public static final double DEFAULT_WINDOW_HEIGHT = 700.0;
 
     // --- Theme palettes ---
-    public static final ThemePalette LIGHT_THEME = new ThemePalette(Color.rgb(250, 250, 252), Color.rgb(0, 0, 0, 0.06), Color.rgb(0, 0, 0, 0.12), Color.rgb(0, 0, 0, 0.55), Color.rgb(0, 0, 0, 0.55));
-    public static final ThemePalette DARK_THEME = new ThemePalette(Color.rgb(16, 16, 18), Color.rgb(255, 255, 255, 0.06), Color.rgb(255, 255, 255, 0.12), Color.rgb(255, 255, 255, 0.60), Color.rgb(255, 255, 255, 0.55));
+    public static final ThemePalette LIGHT_THEME = new ThemePalette(
+            Color.rgb(250, 250, 252),
+            Color.rgb(0, 0, 0, 0.06),
+            Color.rgb(0, 0, 0, 0.12),
+            Color.rgb(0, 0, 0, 0.55),
+            Color.rgb(0, 0, 0, 0.55)
+    );
 
+    public static final ThemePalette DARK_THEME = new ThemePalette(
+            Color.rgb(16, 16, 18),
+            Color.rgb(255, 255, 255, 0.06),
+            Color.rgb(255, 255, 255, 0.12),
+            Color.rgb(255, 255, 255, 0.60),
+            Color.rgb(255, 255, 255, 0.55)
+    );
+
+    /**
+     * Small theme palette used by the rendering layer.
+     *
+     * @param background background fill color
+     * @param minorGrid minor grid line color
+     * @param majorGrid major grid line color
+     * @param axis axis line color
+     * @param label tick label color
+     */
     public record ThemePalette(Color background, Color minorGrid, Color majorGrid, Color axis, Color label) {
     }
-
 }
