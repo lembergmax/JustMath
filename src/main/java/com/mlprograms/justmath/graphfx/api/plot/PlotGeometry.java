@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.api.plot;
 
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.core.Point;
 import lombok.NonNull;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Immutable plot output produced by a {@link GraphFxPlotEngine}.
+ * Immutable plot output produced by a {@link PlotEngine}.
  * <p>
  * A plot can be represented either as:
  * <ul>
@@ -50,10 +50,8 @@ import java.util.Objects;
  *
  * @param polyline polyline vertices in world coordinates (may contain non-finite points as discontinuity markers)
  * @param segments explicit line segments in world coordinates (typically for implicit plots)
- *
- * @since 1.0
  */
-public record GraphFxPlotGeometry(@NonNull List<GraphFxPoint> polyline, @NonNull List<GraphFxLineSegment> segments) {
+public record PlotGeometry(@NonNull List<Point> polyline, @NonNull List<LineSegment> segments) {
 
     /**
      * Canonical constructor that validates and defensively copies list inputs.
@@ -61,7 +59,7 @@ public record GraphFxPlotGeometry(@NonNull List<GraphFxPoint> polyline, @NonNull
      * @throws NullPointerException     if any list is {@code null}
      * @throws IllegalArgumentException if any list contains {@code null} elements
      */
-    public GraphFxPlotGeometry {
+    public PlotGeometry {
         Objects.requireNonNull(polyline, "polyline must not be null.");
         Objects.requireNonNull(segments, "segments must not be null.");
 
@@ -86,8 +84,8 @@ public record GraphFxPlotGeometry(@NonNull List<GraphFxPoint> polyline, @NonNull
      *
      * @return an empty geometry (polyline and segments are empty)
      */
-    public static GraphFxPlotGeometry empty() {
-        return new GraphFxPlotGeometry(List.of(), List.of());
+    public static PlotGeometry empty() {
+        return new PlotGeometry(List.of(), List.of());
     }
 
     private static void validateNoNullElements(@NonNull final List<?> values, @NonNull final String parameterName) {
@@ -99,4 +97,5 @@ public record GraphFxPlotGeometry(@NonNull List<GraphFxPoint> polyline, @NonNull
             }
         }
     }
+
 }

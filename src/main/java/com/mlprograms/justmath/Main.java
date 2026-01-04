@@ -24,19 +24,34 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
+import com.mlprograms.justmath.graphfx.api.PlotViewer;
+import com.mlprograms.justmath.graphfx.api.plot.PlotEngine;
+import com.mlprograms.justmath.graphfx.api.plot.PlotEngines;
+import com.mlprograms.justmath.graphfx.api.plot.PlotRequest;
 
 public final class Main {
 
     public static void main(final String[] args) {
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+        final PlotViewer viewer = new PlotViewer(DisplayTheme.DARK);
 
         viewer.plotExpression("sin(x)", "#00B7FF");
         viewer.plotExpression("cos(x)", "#FF5500");
         viewer.plotExpression("tan(x)", "#5500FF");
 
         viewer.show("GraphFx Plot Viewer", 1200, 800);
+
+
+        //
+
+        final PlotRequest plotRequest = new PlotRequest();
+
+        final PlotEngine plotEngine = PlotEngines.defaultEngine();
+        plotEngine.plot();
+
+
+
     }
 
 }

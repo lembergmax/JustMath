@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.api.plot;
 
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.core.Point;
 import lombok.NonNull;
 
 import java.util.Objects;
@@ -49,17 +49,15 @@ import java.util.Objects;
  * @param maxX the maximum x value (inclusive)
  * @param minY the minimum y value (inclusive)
  * @param maxY the maximum y value (inclusive)
- *
- * @since 1.0
  */
-public record GraphFxWorldBounds(double minX, double maxX, double minY, double maxY) {
+public record WorldBounds(double minX, double maxX, double minY, double maxY) {
 
     /**
      * Canonical constructor that validates and normalizes the bounds.
      *
      * @throws IllegalArgumentException if any coordinate is {@code NaN} or infinite
      */
-    public GraphFxWorldBounds {
+    public WorldBounds {
         if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) {
             throw new IllegalArgumentException("World bounds must be finite (no NaN/Infinity).");
         }
@@ -79,40 +77,13 @@ public record GraphFxWorldBounds(double minX, double maxX, double minY, double m
     /**
      * Returns a normalized version of this bounds.
      * <p>
-     * Because {@link GraphFxWorldBounds} normalizes values in the canonical constructor, instances are always
+     * Because {@link WorldBounds} normalizes values in the canonical constructor, instances are always
      * normalized already. This method therefore exists mainly for API compatibility and fluent usage.
      *
      * @return this instance (already normalized)
      */
-    public GraphFxWorldBounds normalized() {
+    public WorldBounds normalized() {
         return this;
-    }
-
-    /**
-     * Returns the width of this bounds ({@code maxX - minX}).
-     *
-     * @return width in world units (can be {@code 0})
-     */
-    public double width() {
-        return maxX - minX;
-    }
-
-    /**
-     * Returns the height of this bounds ({@code maxY - minY}).
-     *
-     * @return height in world units (can be {@code 0})
-     */
-    public double height() {
-        return maxY - minY;
-    }
-
-    /**
-     * Returns the center point of this bounds.
-     *
-     * @return the bounds center (finite)
-     */
-    public GraphFxPoint center() {
-        return new GraphFxPoint((minX + maxX) / 2.0, (minY + maxY) / 2.0);
     }
 
     /**
@@ -122,7 +93,7 @@ public record GraphFxWorldBounds(double minX, double maxX, double minY, double m
      * @return {@code true} if the point is inside; {@code false} otherwise
      * @throws NullPointerException if {@code point} is {@code null}
      */
-    public boolean contains(@NonNull final GraphFxPoint point) {
+    public boolean contains(@NonNull final Point point) {
         Objects.requireNonNull(point, "point must not be null.");
         return point.x() >= minX && point.x() <= maxX && point.y() >= minY && point.y() <= maxY;
     }
@@ -130,4 +101,5 @@ public record GraphFxWorldBounds(double minX, double maxX, double minY, double m
     private static boolean isFinite(final double value) {
         return !Double.isNaN(value) && !Double.isInfinite(value);
     }
+
 }

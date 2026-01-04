@@ -29,44 +29,31 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Factory methods for commonly used {@link GraphFxPlotEngine} implementations.
+ * Factory methods for commonly used {@link PlotEngine} implementations.
  * <p>
  * The built-in engines are designed to work well out of the box, while still allowing advanced users to provide
- * custom engines by implementing {@link GraphFxPlotEngine}.
+ * custom engines by implementing {@link PlotEngine}.
  *
  * <h2>Defaults</h2>
- * {@link #justMath()} uses JustMath's expression engine and supports:
+ * {@link GraphFxCalculatorEngine} uses JustMath's expression engine and supports:
  * <ul>
  *   <li>explicit expressions such as {@code sin(x)} (produces a polyline)</li>
  *   <li>implicit expressions such as {@code x^2 + y^2 - 1} (produces line segments for the zero contour)</li>
  * </ul>
- *
- * @since 1.0
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class GraphFxPlotEngines {
+public final class PlotEngines {
 
     /**
-     * Returns the library default {@link GraphFxPlotEngine}.
+     * Returns the library default {@link PlotEngine}.
      * <p>
      * This method exists primarily for backward compatibility with earlier GraphFx versions
-     * where a dedicated default engine method was exposed. The returned instance is equivalent
-     * to {@link #justMath()}.
+     * where a dedicated default engine method was exposed.
      *
      * @return the default plot engine
      */
-    public static GraphFxPlotEngine defaultEngine() {
-        return justMath();
-    }
-
-    /**
-     * Creates the default plot engine backed by JustMath.
-     * <p>
-     * The returned engine has no UI dependencies and can be used in headless environments.
-     *
-     * @return a new JustMath-backed plot engine instance
-     */
-    public static GraphFxPlotEngine justMath() {
+    public static PlotEngine defaultEngine() {
         return new GraphFxCalculatorEngine();
     }
+
 }

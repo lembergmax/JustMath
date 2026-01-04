@@ -24,8 +24,8 @@
 
 package com.mlprograms.justmath.graphfx.view.internal;
 
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxLineSegment;
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.api.plot.LineSegment;
+import com.mlprograms.justmath.graphfx.core.Point;
 import com.mlprograms.justmath.graphfx.view.GraphFxDisplayPane;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -33,7 +33,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +41,7 @@ import java.util.List;
  * <p>This class is intentionally placed in an {@code internal} package. It is not part of the stable public API and
  * may change without notice.</p>
  */
-public final class GraphFxSeriesOverlay extends Canvas {
+public final class SeriesOverlay extends Canvas {
 
     /**
      * A drawable plot series snapshot.
@@ -52,7 +51,7 @@ public final class GraphFxSeriesOverlay extends Canvas {
      * @param polyline explicit polyline points (may contain NaN breaks)
      * @param segments implicit line segments
      */
-    public record Series(Color color, double strokeWidth, List<GraphFxPoint> polyline, List<GraphFxLineSegment> segments) {
+    public record Series(Color color, double strokeWidth, List<Point> polyline, List<LineSegment> segments) {
 
         /**
          * Canonical constructor that copies lists.
@@ -78,7 +77,7 @@ public final class GraphFxSeriesOverlay extends Canvas {
      * @param displayPane non-null display pane
      * @throws NullPointerException if {@code displayPane} is {@code null}
      */
-    public GraphFxSeriesOverlay(@NonNull final GraphFxDisplayPane displayPane) {
+    public SeriesOverlay(@NonNull final GraphFxDisplayPane displayPane) {
         this.displayPane = displayPane;
         this.series = List.of();
 
@@ -116,44 +115,44 @@ public final class GraphFxSeriesOverlay extends Canvas {
      * Redraws all series to the canvas.
      */
     public void redraw() {
-        final GraphicsContext gc = getGraphicsContext2D();
-        gc.clearRect(0, 0, getWidth(), getHeight());
+        final GraphicsContext graphicsContext = getGraphicsContext2D();
+        graphicsContext.clearRect(0, 0, getWidth(), getHeight());
 
         for (final Series s : series) {
-            drawSegments(gc, s);
-            drawPolyline(gc, s);
+            drawSegments(graphicsContext, s);
+            drawPolyline(graphicsContext, s);
         }
     }
 
-    private void drawSegments(@NonNull final GraphicsContext gc, @NonNull final Series s) {
-        if (s.segments().isEmpty()) {
+    private void drawSegments(@NonNull final GraphicsContext graphicsContext, @NonNull final Series series) {
+        if (series.segments().isEmpty()) {
             return;
         }
 
-        gc.setStroke(s.color());
-        gc.setLineWidth(Math.max(0.5, s.strokeWidth()));
+        graphicsContext.setStroke(series.color());
+        graphicsContext.setLineWidth(Math.max(0.5, series.strokeWidth()));
 
-        for (final GraphFxLineSegment seg : s.segments()) {
+        for (final LineSegment seg : series.segments()) {
             final Point2D a = displayPane.worldToScreen(seg.start());
             final Point2D b = displayPane.worldToScreen(seg.end());
-            gc.strokeLine(a.getX(), a.getY(), b.getX(), b.getY());
+            graphicsContext.strokeLine(a.getX(), a.getY(), b.getX(), b.getY());
         }
     }
 
-    private void drawPolyline(@NonNull final GraphicsContext gc, @NonNull final Series s) {
-        if (s.polyline().size() < 2) {
+    private void drawPolyline(@NonNull final GraphicsContext graphicsContext, @NonNull final Series series) {
+        if (series.polyline().size() < 2) {
             return;
         }
 
-        gc.setStroke(s.color());
-        gc.setLineWidth(Math.max(0.5, s.strokeWidth()));
+        graphicsContext.setStroke(series.color());
+        graphicsContext.setLineWidth(Math.max(0.5, series.strokeWidth()));
 
         boolean pathStarted = false;
 
-        for (final GraphFxPoint p : s.polyline()) {
+        for (final Point p : series.polyline()) {
             if (!isFinite(p)) {
                 if (pathStarted) {
-                    gc.stroke();
+                    graphicsContext.stroke();
                     pathStarted = false;
                 }
                 continue;
@@ -161,20 +160,21 @@ public final class GraphFxSeriesOverlay extends Canvas {
 
             final Point2D screen = displayPane.worldToScreen(p);
             if (!pathStarted) {
-                gc.beginPath();
-                gc.moveTo(screen.getX(), screen.getY());
+                graphicsContext.beginPath();
+                graphicsContext.moveTo(screen.getX(), screen.getY());
                 pathStarted = true;
             } else {
-                gc.lineTo(screen.getX(), screen.getY());
+                graphicsContext.lineTo(screen.getX(), screen.getY());
             }
         }
 
         if (pathStarted) {
-            gc.stroke();
+            graphicsContext.stroke();
         }
     }
 
-    private static boolean isFinite(@NonNull final GraphFxPoint p) {
-        return Double.isFinite(p.x()) && Double.isFinite(p.y());
+    private static boolean isFinite(@NonNull final Point point) {
+        return Double.isFinite(point.x()) && Double.isFinite(point.y());
     }
+
 }

@@ -47,11 +47,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * // Somewhere else:
  * cancelled.set(true);
  * }</pre>
- *
- * @since 1.0
  */
 @FunctionalInterface
-public interface GraphFxPlotCancellation {
+public interface PlotCancellation {
 
     /**
      * Returns whether the current plot operation should be cancelled.
@@ -67,7 +65,7 @@ public interface GraphFxPlotCancellation {
      *
      * @return a cancellation that always returns {@code false}
      */
-    static GraphFxPlotCancellation none() {
+    static PlotCancellation none() {
         return () -> false;
     }
 
@@ -78,8 +76,9 @@ public interface GraphFxPlotCancellation {
      * @return a cancellation instance
      * @throws NullPointerException if {@code cancelledFlag} is {@code null}
      */
-    static GraphFxPlotCancellation from(@NonNull final AtomicBoolean cancelledFlag) {
+    static PlotCancellation from(@NonNull final AtomicBoolean cancelledFlag) {
         Objects.requireNonNull(cancelledFlag, "cancelledFlag must not be null.");
         return cancelledFlag::get;
     }
+
 }

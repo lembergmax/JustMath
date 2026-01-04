@@ -27,12 +27,12 @@ package com.mlprograms.justmath.graphfx.core;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxLineSegment;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotCancellation;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotEngine;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotGeometry;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotRequest;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxWorldBounds;
+import com.mlprograms.justmath.graphfx.api.plot.LineSegment;
+import com.mlprograms.justmath.graphfx.api.plot.PlotCancellation;
+import com.mlprograms.justmath.graphfx.api.plot.PlotEngine;
+import com.mlprograms.justmath.graphfx.api.plot.PlotGeometry;
+import com.mlprograms.justmath.graphfx.api.plot.PlotRequest;
+import com.mlprograms.justmath.graphfx.api.plot.WorldBounds;
 import lombok.NonNull;
 
 import java.lang.reflect.Constructor;
@@ -64,7 +64,7 @@ import java.util.Map;
  * <h2>Thread-safety</h2>
  * <p>This class is thread-safe if the underlying {@link CalculatorEngine} is thread-safe for concurrent evaluations.</p>
  */
-public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
+public final class GraphFxCalculatorEngine implements PlotEngine {
 
     /**
      * Tolerance for verifying affine linearity in implicit equations.
@@ -302,27 +302,27 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @throws IllegalArgumentException if request constraints are violated
      */
     @Override
-    public GraphFxPlotGeometry plot(@NonNull final GraphFxPlotRequest request, @NonNull final GraphFxPlotCancellation cancellation) {
+    public PlotGeometry plot(@NonNull final PlotRequest request, @NonNull final PlotCancellation cancellation) {
         final String normalizedExpression = normalizeExpression(request.expression());
         final Map<String, String> safeVariables = request.variables();
-        final GraphFxWorldBounds bounds = request.bounds();
+        final WorldBounds bounds = request.worldBounds();
 
         if (!containsYVariable(normalizedExpression)) {
             final int samples = clampInt(request.pixelWidth(), EXPLICIT_SAMPLES_MIN, EXPLICIT_SAMPLES_MAX);
-            final List<GraphFxPoint> polyline = createExplicitPolyline(normalizedExpression, safeVariables, bounds, samples, cancellation);
-            return cancellation.isCancelled() ? GraphFxPlotGeometry.empty() : new GraphFxPlotGeometry(polyline, List.of());
+            final List<Point> polyline = createExplicitPolyline(normalizedExpression, safeVariables, bounds, samples, cancellation);
+            return cancellation.isCancelled() ? PlotGeometry.empty() : new PlotGeometry(polyline, List.of());
         }
 
-        final GraphFxLineSegment linearSegment = tryCreateLinearImplicitSegment(normalizedExpression, safeVariables, bounds, cancellation);
+        final LineSegment linearSegment = tryCreateLinearImplicitSegment(normalizedExpression, safeVariables, bounds, cancellation);
         if (linearSegment != null) {
-            return cancellation.isCancelled() ? GraphFxPlotGeometry.empty() : new GraphFxPlotGeometry(List.of(), List.of(linearSegment));
+            return cancellation.isCancelled() ? PlotGeometry.empty() : new PlotGeometry(List.of(), List.of(linearSegment));
         }
 
         final int nx = clampInt(Math.max(8, request.pixelWidth() / IMPLICIT_CELL_SIZE_PX), IMPLICIT_NX_MIN, IMPLICIT_NX_MAX);
         final int ny = clampInt(Math.max(8, request.pixelHeight() / IMPLICIT_CELL_SIZE_PX), IMPLICIT_NY_MIN, IMPLICIT_NY_MAX);
 
-        final List<GraphFxLineSegment> segments = createImplicitZeroContourSegments(normalizedExpression, safeVariables, bounds, nx, ny, cancellation);
-        return cancellation.isCancelled() ? GraphFxPlotGeometry.empty() : new GraphFxPlotGeometry(List.of(), segments);
+        final List<LineSegment> segments = createImplicitZeroContourSegments(normalizedExpression, safeVariables, bounds, nx, ny, cancellation);
+        return cancellation.isCancelled() ? PlotGeometry.empty() : new PlotGeometry(List.of(), segments);
     }
 
     /**
@@ -348,12 +348,12 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param cancellation cancellation hook
      * @return polyline list (may contain NaN breaks)
      */
-    private List<GraphFxPoint> createExplicitPolyline(@NonNull final String expression,
-                                                      @NonNull final Map<String, String> variables,
-                                                      @NonNull final GraphFxWorldBounds bounds,
-                                                      final int samples,
-                                                      @NonNull final GraphFxPlotCancellation cancellation) {
-        final GraphFxWorldBounds normalized = bounds.normalized();
+    private List<Point> createExplicitPolyline(@NonNull final String expression,
+                                               @NonNull final Map<String, String> variables,
+                                               @NonNull final WorldBounds bounds,
+                                               final int samples,
+                                               @NonNull final PlotCancellation cancellation) {
+        final WorldBounds normalized = bounds.normalized();
 
         final double minX = normalized.minX();
         final double maxX = normalized.maxX();
@@ -370,7 +370,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
         final Map<String, String> evalVariables = new HashMap<>(variables);
         evalVariables.put("y", "0");
 
-        final List<GraphFxPoint> polyline = new ArrayList<>(safeSamples + 16);
+        final List<Point> polyline = new ArrayList<>(safeSamples + 16);
 
         boolean previousValid = false;
         double previousY = 0.0;
@@ -386,7 +386,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             final BigNumber yBig = evaluateSafe(expression, evalVariables);
             if (yBig == null) {
                 if (previousValid) {
-                    polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
+                    polyline.add(new Point(Double.NaN, Double.NaN));
                     previousValid = false;
                 }
                 continue;
@@ -395,17 +395,17 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             final double y = safeToDouble(yBig);
             if (!Double.isFinite(y) || Math.abs(y) > hardAbsThreshold) {
                 if (previousValid) {
-                    polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
+                    polyline.add(new Point(Double.NaN, Double.NaN));
                     previousValid = false;
                 }
                 continue;
             }
 
             if (previousValid && Math.abs(y - previousY) > jumpThreshold) {
-                polyline.add(new GraphFxPoint(Double.NaN, Double.NaN));
+                polyline.add(new Point(Double.NaN, Double.NaN));
             }
 
-            polyline.add(new GraphFxPoint(x, y));
+            polyline.add(new Point(x, y));
             previousValid = true;
             previousY = y;
         }
@@ -424,13 +424,13 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param cancellation cancellation hook
      * @return list of line segments
      */
-    private List<GraphFxLineSegment> createImplicitZeroContourSegments(@NonNull final String expression,
-                                                                       @NonNull final Map<String, String> variables,
-                                                                       @NonNull final GraphFxWorldBounds bounds,
-                                                                       final int nx,
-                                                                       final int ny,
-                                                                       @NonNull final GraphFxPlotCancellation cancellation) {
-        final GraphFxWorldBounds normalized = bounds.normalized();
+    private List<LineSegment> createImplicitZeroContourSegments(@NonNull final String expression,
+                                                                @NonNull final Map<String, String> variables,
+                                                                @NonNull final WorldBounds bounds,
+                                                                final int nx,
+                                                                final int ny,
+                                                                @NonNull final PlotCancellation cancellation) {
+        final WorldBounds normalized = bounds.normalized();
 
         final double minX = normalized.minX();
         final double maxX = normalized.maxX();
@@ -463,7 +463,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             }
         }
 
-        final List<GraphFxLineSegment> segments = new ArrayList<>(cellsX * cellsY);
+        final List<LineSegment> segments = new ArrayList<>(cellsX * cellsY);
 
         for (int iy = 0; iy < cellsY; iy++) {
             if (cancellation.isCancelled()) {
@@ -491,10 +491,10 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
                     continue;
                 }
 
-                final GraphFxPoint bottom = interpolateZeroCrossing(x0, y0, f00, x1, y0, f10);
-                final GraphFxPoint right = interpolateZeroCrossing(x1, y0, f10, x1, y1, f11);
-                final GraphFxPoint top = interpolateZeroCrossing(x0, y1, f01, x1, y1, f11);
-                final GraphFxPoint left = interpolateZeroCrossing(x0, y0, f00, x0, y1, f01);
+                final Point bottom = interpolateZeroCrossing(x0, y0, f00, x1, y0, f10);
+                final Point right = interpolateZeroCrossing(x1, y0, f10, x1, y1, f11);
+                final Point top = interpolateZeroCrossing(x0, y1, f01, x1, y1, f11);
+                final Point left = interpolateZeroCrossing(x0, y0, f00, x0, y1, f01);
 
                 appendSegmentsForCase(segments, code, f00, f10, f11, f01, bottom, right, top, left);
             }
@@ -512,10 +512,10 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param cancellation cancellation hook
      * @return segment if affine-linear; otherwise {@code null}
      */
-    private GraphFxLineSegment tryCreateLinearImplicitSegment(@NonNull final String expression,
-                                                              @NonNull final Map<String, String> variables,
-                                                              @NonNull final GraphFxWorldBounds bounds,
-                                                              @NonNull final GraphFxPlotCancellation cancellation) {
+    private LineSegment tryCreateLinearImplicitSegment(@NonNull final String expression,
+                                                       @NonNull final Map<String, String> variables,
+                                                       @NonNull final WorldBounds bounds,
+                                                       @NonNull final PlotCancellation cancellation) {
         final Map<String, String> evalVars = new HashMap<>(variables);
 
         final BigNumber f00 = evaluateAt(expression, evalVars, BigNumbers.ZERO, BigNumbers.ZERO);
@@ -537,14 +537,14 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             return null;
         }
 
-        final GraphFxWorldBounds normalized = bounds.normalized();
+        final WorldBounds normalized = bounds.normalized();
 
         final BigNumber bnMinX = new BigNumber(normalized.minX());
         final BigNumber bnMaxX = new BigNumber(normalized.maxX());
         final BigNumber bnMinY = new BigNumber(normalized.minY());
         final BigNumber bnMaxY = new BigNumber(normalized.maxY());
 
-        final List<GraphFxPoint> intersections = new ArrayList<>(4);
+        final List<Point> intersections = new ArrayList<>(4);
 
         if (!isEffectivelyZero(b)) {
             addIntersectionIfVisible(intersections, bnMinX, solveY(a, b, c, bnMinX), normalized);
@@ -560,8 +560,8 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             return null;
         }
 
-        final GraphFxPoint p0 = intersections.get(0);
-        GraphFxPoint bestP1 = intersections.get(1);
+        final Point p0 = intersections.get(0);
+        Point bestP1 = intersections.get(1);
         double bestDist = distanceSq(p0, bestP1);
 
         for (int i = 0; i < intersections.size(); i++) {
@@ -574,7 +574,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             }
         }
 
-        return new GraphFxLineSegment(p0, bestP1);
+        return new LineSegment(p0, bestP1);
     }
 
     /**
@@ -593,7 +593,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
                                      @NonNull final BigNumber a,
                                      @NonNull final BigNumber b,
                                      @NonNull final BigNumber c,
-                                     @NonNull final GraphFxPlotCancellation cancellation) {
+                                     @NonNull final PlotCancellation cancellation) {
         final BigNumber f20 = evaluateAt(expression, evalVars, BigNumbers.TWO, BigNumbers.ZERO);
         final BigNumber f02 = evaluateAt(expression, evalVars, BigNumbers.ZERO, BigNumbers.TWO);
         final BigNumber f11 = evaluateAt(expression, evalVars, BigNumbers.ONE, BigNumbers.ONE);
@@ -683,16 +683,16 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param f1 second field
      * @return interpolated point
      */
-    private static GraphFxPoint interpolateZeroCrossing(final double x0,
-                                                        final double y0,
-                                                        final double f0,
-                                                        final double x1,
-                                                        final double y1,
-                                                        final double f1) {
+    private static Point interpolateZeroCrossing(final double x0,
+                                                 final double y0,
+                                                 final double f0,
+                                                 final double x1,
+                                                 final double y1,
+                                                 final double f1) {
         final double denom = (f0 - f1);
         final double t = Math.abs(denom) <= CONTOUR_EPSILON ? 0.5 : (f0 / denom);
         final double clamped = Math.max(0.0, Math.min(1.0, t));
-        return new GraphFxPoint(x0 + (x1 - x0) * clamped, y0 + (y1 - y0) * clamped);
+        return new Point(x0 + (x1 - x0) * clamped, y0 + (y1 - y0) * clamped);
     }
 
     /**
@@ -709,42 +709,42 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param top top edge point
      * @param left left edge point
      */
-    private static void appendSegmentsForCase(@NonNull final List<GraphFxLineSegment> out,
+    private static void appendSegmentsForCase(@NonNull final List<LineSegment> out,
                                               final int code,
                                               final double f00,
                                               final double f10,
                                               final double f11,
                                               final double f01,
-                                              final GraphFxPoint bottom,
-                                              final GraphFxPoint right,
-                                              final GraphFxPoint top,
-                                              final GraphFxPoint left) {
+                                              final Point bottom,
+                                              final Point right,
+                                              final Point top,
+                                              final Point left) {
         switch (code) {
-            case 1, 14 -> out.add(new GraphFxLineSegment(left, bottom));
-            case 2, 13 -> out.add(new GraphFxLineSegment(bottom, right));
-            case 3, 12 -> out.add(new GraphFxLineSegment(left, right));
-            case 4, 11 -> out.add(new GraphFxLineSegment(right, top));
-            case 6, 9 -> out.add(new GraphFxLineSegment(bottom, top));
-            case 7, 8 -> out.add(new GraphFxLineSegment(left, top));
+            case 1, 14 -> out.add(new LineSegment(left, bottom));
+            case 2, 13 -> out.add(new LineSegment(bottom, right));
+            case 3, 12 -> out.add(new LineSegment(left, right));
+            case 4, 11 -> out.add(new LineSegment(right, top));
+            case 6, 9 -> out.add(new LineSegment(bottom, top));
+            case 7, 8 -> out.add(new LineSegment(left, top));
             case 5, 10 -> {
                 final double center = (f00 + f10 + f11 + f01) / 4.0;
                 final boolean centerNegative = center < 0;
 
                 if (code == 5) {
                     if (centerNegative) {
-                        out.add(new GraphFxLineSegment(left, bottom));
-                        out.add(new GraphFxLineSegment(right, top));
+                        out.add(new LineSegment(left, bottom));
+                        out.add(new LineSegment(right, top));
                     } else {
-                        out.add(new GraphFxLineSegment(bottom, right));
-                        out.add(new GraphFxLineSegment(left, top));
+                        out.add(new LineSegment(bottom, right));
+                        out.add(new LineSegment(left, top));
                     }
                 } else {
                     if (centerNegative) {
-                        out.add(new GraphFxLineSegment(bottom, right));
-                        out.add(new GraphFxLineSegment(left, top));
+                        out.add(new LineSegment(bottom, right));
+                        out.add(new LineSegment(left, top));
                     } else {
-                        out.add(new GraphFxLineSegment(left, bottom));
-                        out.add(new GraphFxLineSegment(right, top));
+                        out.add(new LineSegment(left, bottom));
+                        out.add(new LineSegment(right, top));
                     }
                 }
             }
@@ -814,10 +814,10 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param y y coordinate
      * @param bounds viewport bounds
      */
-    private static void addIntersectionIfVisible(@NonNull final List<GraphFxPoint> out,
+    private static void addIntersectionIfVisible(@NonNull final List<Point> out,
                                                  @NonNull final BigNumber x,
                                                  @NonNull final BigNumber y,
-                                                 @NonNull final GraphFxWorldBounds bounds) {
+                                                 @NonNull final WorldBounds bounds) {
         final double xd = safeBigNumberToDouble(x);
         final double yd = safeBigNumberToDouble(y);
 
@@ -833,7 +833,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
             return;
         }
 
-        out.add(new GraphFxPoint(xd, yd));
+        out.add(new Point(xd, yd));
     }
 
     /**
@@ -843,7 +843,7 @@ public final class GraphFxCalculatorEngine implements GraphFxPlotEngine {
      * @param b point b
      * @return squared distance
      */
-    private static double distanceSq(@NonNull final GraphFxPoint a, @NonNull final GraphFxPoint b) {
+    private static double distanceSq(@NonNull final Point a, @NonNull final Point b) {
         final double dx = a.x() - b.x();
         final double dy = a.y() - b.y();
         return dx * dx + dy * dy;

@@ -24,17 +24,17 @@
 
 package com.mlprograms.justmath.graphfx.api;
 
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotCancellation;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotEngine;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotEngines;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotGeometry;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxPlotRequest;
-import com.mlprograms.justmath.graphfx.api.plot.GraphFxWorldBounds;
+import com.mlprograms.justmath.graphfx.api.plot.PlotCancellation;
+import com.mlprograms.justmath.graphfx.api.plot.PlotEngine;
+import com.mlprograms.justmath.graphfx.api.plot.PlotEngines;
+import com.mlprograms.justmath.graphfx.api.plot.PlotGeometry;
+import com.mlprograms.justmath.graphfx.api.plot.PlotRequest;
+import com.mlprograms.justmath.graphfx.api.plot.WorldBounds;
 import com.mlprograms.justmath.graphfx.config.WindowConfig;
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.core.Point;
 import com.mlprograms.justmath.graphfx.internal.FxBootstrap;
 import com.mlprograms.justmath.graphfx.view.GraphFxDisplayPane;
-import com.mlprograms.justmath.graphfx.view.internal.GraphFxSeriesOverlay;
+import com.mlprograms.justmath.graphfx.view.internal.SeriesOverlay;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
@@ -65,7 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <h2>Core / UI separation</h2>
  * <p>
- * Expression evaluation and geometry generation are delegated to a {@link GraphFxPlotEngine} (core layer).
+ * Expression evaluation and geometry generation are delegated to a {@link PlotEngine} (core layer).
  * The viewer only performs JavaFX rendering on the JavaFX Application Thread.
  * </p>
  *
@@ -87,15 +87,15 @@ import java.util.concurrent.atomic.AtomicLong;
  * robustly (invalid sample points are skipped rather than crashing the UI).
  * </p>
  */
-public final class GraphFxPlotViewer {
+public final class PlotViewer {
 
     private static final long REDRAW_DEBOUNCE_MILLIS = 40;
 
     private final GraphFxDisplayPane displayPane;
-    private final GraphFxSeriesOverlay overlay;
+    private final SeriesOverlay overlay;
     private final Parent root;
 
-    private final GraphFxPlotEngine plotEngine;
+    private final PlotEngine plotEngine;
 
     private final ScheduledExecutorService computeExecutor;
     private final AtomicLong generation;
@@ -112,7 +112,7 @@ public final class GraphFxPlotViewer {
     /**
      * Creates a new viewer using the default plot engine and {@link DisplayTheme#LIGHT}.
      */
-    public GraphFxPlotViewer() {
+    public PlotViewer() {
         this(DisplayTheme.LIGHT);
     }
 
@@ -121,8 +121,8 @@ public final class GraphFxPlotViewer {
      *
      * @param theme initial theme (nullable -> treated as {@link DisplayTheme#LIGHT})
      */
-    public GraphFxPlotViewer(final DisplayTheme theme) {
-        this(GraphFxPlotEngines.defaultEngine(), theme);
+    public PlotViewer(final DisplayTheme theme) {
+        this(PlotEngines.defaultEngine(), theme);
     }
 
     /**
@@ -132,11 +132,11 @@ public final class GraphFxPlotViewer {
      * @param theme      initial theme (nullable -> treated as {@link DisplayTheme#LIGHT})
      * @throws NullPointerException if {@code plotEngine} is {@code null}
      */
-    public GraphFxPlotViewer(@NonNull final GraphFxPlotEngine plotEngine, final DisplayTheme theme) {
+    public PlotViewer(@NonNull final PlotEngine plotEngine, final DisplayTheme theme) {
         this.plotEngine = plotEngine;
 
         this.displayPane = new GraphFxDisplayPane(theme);
-        this.overlay = new GraphFxSeriesOverlay(displayPane);
+        this.overlay = new SeriesOverlay(displayPane);
 
         this.root = new javafx.scene.layout.StackPane(displayPane, overlay);
 
@@ -222,6 +222,7 @@ public final class GraphFxPlotViewer {
         if (removed) {
             scheduleReplot();
         }
+
         return removed;
     }
 
@@ -357,18 +358,18 @@ public final class GraphFxPlotViewer {
             return;
         }
 
-        final GraphFxWorldBounds bounds = computeBounds(width, height);
+        final WorldBounds bounds = computeBounds(width, height);
 
-        final GraphFxPlotCancellation cancellation = () -> disposed || gen != generation.get() || Thread.currentThread().isInterrupted();
+        final PlotCancellation cancellation = () -> disposed || gen != generation.get() || Thread.currentThread().isInterrupted();
 
-        final List<GraphFxSeriesOverlay.Series> rendered = new ArrayList<>(seriesByExpression.size());
+        final List<SeriesOverlay.Series> rendered = new ArrayList<>(seriesByExpression.size());
 
         for (final SeriesConfig config : seriesByExpression.values()) {
             if (cancellation.isCancelled()) {
                 return;
             }
 
-            final GraphFxPlotRequest request = new GraphFxPlotRequest(
+            final PlotRequest request = new PlotRequest(
                     config.expression(),
                     globalVariables,
                     bounds,
@@ -376,8 +377,8 @@ public final class GraphFxPlotViewer {
                     (int) Math.round(height)
             );
 
-            final GraphFxPlotGeometry geometry = plotEngine.plot(request, cancellation);
-            rendered.add(new GraphFxSeriesOverlay.Series(config.color(), config.strokeWidth(), geometry.polyline(), geometry.segments()));
+            final PlotGeometry geometry = plotEngine.plot(request, cancellation);
+            rendered.add(new SeriesOverlay.Series(config.color(), config.strokeWidth(), geometry.polyline(), geometry.segments()));
         }
 
         Platform.runLater(() -> {
@@ -388,11 +389,11 @@ public final class GraphFxPlotViewer {
         });
     }
 
-    private GraphFxWorldBounds computeBounds(final double width, final double height) {
-        final GraphFxPoint topLeft = displayPane.screenToWorld(new Point2D(0, 0));
-        final GraphFxPoint bottomRight = displayPane.screenToWorld(new Point2D(width, height));
+    private WorldBounds computeBounds(final double width, final double height) {
+        final Point topLeft = displayPane.screenToWorld(new Point2D(0, 0));
+        final Point bottomRight = displayPane.screenToWorld(new Point2D(width, height));
 
-        return new GraphFxWorldBounds(topLeft.x(), bottomRight.x(), bottomRight.y(), topLeft.y()).normalized();
+        return new WorldBounds(topLeft.x(), bottomRight.x(), bottomRight.y(), topLeft.y()).normalized();
     }
 
     private static Map<String, String> validateVariables(@NonNull final Map<String, String> variables) {
@@ -426,4 +427,5 @@ public final class GraphFxPlotViewer {
 
     private record SeriesConfig(String expression, Color color, double strokeWidth) {
     }
+
 }
