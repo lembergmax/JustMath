@@ -189,4 +189,5 @@ public class FxBootstrap {
     public static void showInWindow(@NonNull final String title, @NonNull final Parent content, final double width, final double height) {
         createAndShowStage(title, content, width, height);
     }
+
 }

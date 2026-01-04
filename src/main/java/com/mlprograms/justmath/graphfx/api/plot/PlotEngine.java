@@ -29,13 +29,13 @@ import lombok.NonNull;
 import java.util.Objects;
 
 /**
- * Strategy interface for computing plot geometry from a {@link GraphFxPlotRequest}.
+ * Strategy interface for computing plot geometry from a {@link PlotRequest}.
  * <p>
- * A plot engine takes a request (expression, variables, bounds and pixel size) and returns a {@link GraphFxPlotGeometry}
+ * A plot engine takes a request (expression, variables, bounds and pixel size) and returns a {@link PlotGeometry}
  * that can be rendered by a viewer.
  *
  * <h2>Cancellation</h2>
- * Engines should periodically check {@link GraphFxPlotCancellation#isCancelled()} and stop early if cancellation is
+ * Engines should periodically check {@link PlotCancellation#isCancelled()} and stop early if cancellation is
  * requested.
  *
  * <h2>Thread-safety</h2>
@@ -45,11 +45,9 @@ import java.util.Objects;
  * <h2>Error handling</h2>
  * Public inputs must be validated. Evaluation errors (e.g., division by zero) should be handled gracefully by producing
  * discontinuities instead of throwing, unless throwing is explicitly documented.
- *
- * @since 1.0
  */
 @FunctionalInterface
-public interface GraphFxPlotEngine {
+public interface PlotEngine {
 
     /**
      * Calculates plot geometry for the given request.
@@ -60,7 +58,7 @@ public interface GraphFxPlotEngine {
      * @throws NullPointerException     if {@code request} or {@code cancellation} is {@code null}
      * @throws IllegalArgumentException if {@code request} violates constraints
      */
-    GraphFxPlotGeometry plot(@NonNull GraphFxPlotRequest request, @NonNull GraphFxPlotCancellation cancellation);
+    PlotGeometry plot(@NonNull final PlotRequest request, @NonNull final PlotCancellation cancellation);
 
     /**
      * Calculates plot geometry for the given request without cancellation.
@@ -70,9 +68,9 @@ public interface GraphFxPlotEngine {
      * @throws NullPointerException     if {@code request} is {@code null}
      * @throws IllegalArgumentException if {@code request} violates constraints
      */
-    default GraphFxPlotGeometry plot(@NonNull final GraphFxPlotRequest request) {
+    default PlotGeometry plot(@NonNull final PlotRequest request) {
         Objects.requireNonNull(request, "request must not be null.");
-        return plot(request, GraphFxPlotCancellation.none());
+        return plot(request, PlotCancellation.none());
     }
 
 }

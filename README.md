@@ -344,17 +344,40 @@ System.out.println(result);
 // 61
 ```
 
-## 📈 GraphFx
 
-### High-Precision Function Plotting for JustMath
 
-**GraphFx** is the official **JavaFX plotting and visualization module** for **JustMath**.
-It renders mathematical expressions defined as **strings** and evaluates them using the calculation engine
-with high numerical precision.
-GraphFx is designed as a **developer-oriented library component** and can be embedded into custom JavaFX applications
-or shown as a standalone plotting window.
 
-### ️ Screenshots
+
+
+
+
+
+
+
+
+
+
+
+
+## 📈 GraphFx – High-Precision Function Plotting for JustMath
+
+**GraphFx** is the official **JavaFX plotting and visualization module** for **JustMath**.  
+It renders mathematical expressions defined as **strings** and evaluates them using JustMath’s **CalculatorEngine**.
+GraphFx is designed as a **developer-oriented library component**: you can embed it into your own JavaFX layouts, or you
+can display it as a standalone plotting window.
+
+GraphFx is intentionally split into two layers:
+
+1. **Public API (GraphFxPlotViewer)** – a small, stable surface for library users  
+2. **Plot Engine (GraphFxPlotEngine)** – the computation backend that samples expressions and returns line segments  
+   (GraphFx provides a default engine that uses JustMath’s CalculatorEngine.)
+
+This separation keeps GraphFx extensible: if you ever want to plot from a different source (custom evaluator, external
+service, precomputed data, etc.) you can implement/plug in your own engine while the UI stays the same.
+
+---
+
+### 🖼️ Screenshots
 
 <p align="center">
   <img src="images/GraphFx-Dark.png" width="900" alt="GraphFx main window – dark theme">
@@ -376,46 +399,64 @@ or shown as a standalone plotting window.
 
 ### ✨ Features
 
-GraphFx focuses on the features developers typically need when building mathematical tools: the ability to plot
-expressions quickly, understand behavior interactively, and present results in a clean and configurable UI.
+GraphFx focuses on the features developers typically need when building mathematical tools: plot expressions quickly,
+inspect behavior interactively, and present results in a clean and configurable UI.
 
-* 🧮 String-based expression plotting  
-  Expressions are provided as plain strings, which makes GraphFx easy to integrate into apps where users type
-  mathematical formulas or where expressions come from external sources.
+* 🧮 **String-based expression plotting**  
+  Provide expressions as plain strings. This is ideal for tools where users type formulas or where expressions come from
+  configuration / external sources.
 
-* 🔢 Powered by JustMath’s high-precision engine  
-  The same engine that evaluates expressions in JustMath is used for plotting, ensuring consistency and high precision.
+* 🔢 **Powered by JustMath’s high-precision CalculatorEngine**  
+  GraphFx uses the same evaluation engine as JustMath, so plotted values match your calculations.
 
-* 🔤 Variable support via Map<String, String>  
-  Variables are passed exactly like in the JustMath engine: Map<String, String>. This allows not only numeric values
-  but also full sub-expressions as variable values.
+* 🔤 **Variables via `Map<String, String>`**  
+  Variables work the same way as in CalculatorEngine: variable values can be literals or full sub-expressions.
 
-* 🖱️ Interactive coordinate system  
-  GraphFx supports smooth exploration. You can zoom in to inspect local behavior (e.g., oscillations) and pan to follow
-  the curve across the coordinate system.
+* 🖱️ **Interactive coordinate system**  
+  Smooth zooming and panning. Zoom is cursor-centered, so you can precisely inspect local behavior.
 
-* 🎨 Light & dark themes  
-  You can style the plot window to match your application design or user preference.
+* 🎨 **Light & dark themes**  
+  Choose the look that matches your application.
 
-* 📊 Multiple expressions per plot  
-  Plot multiple curves at once to compare functions, check identities, or visualize overlays (e.g., approximation vs.
-  original function).
+* 📊 **Multiple plots per viewer**  
+  Plot several expressions at once to compare curves.
 
-* 📍 Overlay layers (points & polylines, id-based)  
-  In addition to expression plots, GraphFx supports manual overlays that can be managed individually:
-  each overlay element (point/polyline) returns a stable id that can be removed or re-styled later.
+* 📍 **Overlay layers (points & polylines, id-based)**  
+  Add points and polylines on top of the plot (useful for measured data, roots, intersections, approximations, etc.).
 
-* 🔒 Thread-safe public API  
-  Public methods can be called from any thread. GraphFx dispatches UI work internally to the JavaFX Application Thread.
+* 🔒 **Thread-safe public API**  
+  Public methods can be called from any thread; UI work is dispatched internally to the JavaFX Application Thread.
 
-### 📋 GraphFx API Overview
+## 🧩 Architecture Overview
 
-The `GraphFxPlotViewer` class is the main entry point for library users. It can be used as a standalone window or
-embedded into other JavaFX layouts. Expression plots are created by calling `plotExpression(...)`, which returns a plot
-id that can later be removed again.
+GraphFx uses a clean separation of responsibilities:
 
-Manual overlays (points and polylines) are independent from expression plots. Overlays are **id-based**, meaning you can
-add, remove and style single overlay elements without re-uploading the full list.
+### 1) GraphFxPlotViewer (Public API)
+The `GraphFxPlotViewer` is the main entry point for library users.
+
+It manages:
+- window lifecycle (show/hide/dispose)
+- theme switching
+- plot management (add/remove/clear expression plots)
+- overlays (points/polylines)
+- viewport actions (e.g., center origin)
+
+It intentionally does **not** expose internal UI classes, render nodes or implementation details.
+
+### 2) Plot Engine (Computation)
+The plotting backend is represented by a **plot engine** that can compute drawable plot primitives from a request.
+
+At a high level the engine:
+1. selects a world range (`GraphFxWorldBounds`)
+2. samples x-values across the viewport
+3. evaluates the expression for each x-value using the underlying calculator
+4. creates **line segments** from valid consecutive points
+5. splits segments at discontinuities (e.g., `tan(x)` near `π/2`)
+6. returns a plot result that the UI can render efficiently
+
+GraphFx ships with a default engine that uses **JustMath CalculatorEngine**.
+
+## 📋 GraphFx API Overview
 
 | Category                | Method                                                                          | Description                                                |
 | ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -445,10 +486,9 @@ add, remove and style single overlay elements without re-uploading the full list
 |                         | `setDefaultPolylineStyle(Color color, double widthPx)`                          | Sets the default style for future polylines                |
 |                         | `setPolyline(List<Point2D> polyline)`                                           | Replaces all polylines with a single one (default style)   |
 
-### 🚀 Quick Start
+## 🚀 Quick Start (Standalone Window)
 
-The simplest way to use GraphFx is the standalone window mode. Create a viewer, plot one or more expressions, center
-the origin and call `show()`.
+The simplest way to use GraphFx is the standalone window mode.
 
 ```java
 public static void main(final String[] args) {
@@ -456,23 +496,45 @@ public static void main(final String[] args) {
 
     viewer.plotExpression("sin(10x)/x + 0.2x^3 - 2x", "#ff5500");
     viewer.centerOrigin();
-    viewer.show();
+    viewer.show("GraphFx Plot Viewer", 1200, 800);
 }
 ```
 
 <p align="center">
   <img src="images/GraphFx-Quickstart.png" width="900" alt="Quick start output">
   <br/>
-  <em>Quick start output</em>
+  <em>GraphFx quick start</em>
 </p>
 
-### 🔤 Variables (`Map<String, String>`)
+## 🧱 Embedding GraphFx Into Your JavaFX UI
 
-GraphFx uses the same variable model as the JustMath CalculatorEngine: variables are passed as a
-`Map<String, String>`. This is a deliberate design choice because it enables much more than numeric substitution.
-Variable values can be simple literals like "2.5", but they can also be full expressions like "5+3" or
-`root(b)`. Variable substitution and evaluation are performed by the calculation engine and are therefore consistent
-with the rest of JustMath.
+GraphFx can be embedded into existing JavaFX applications.
+
+```java
+final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.LIGHT);
+
+// Put this node into your own layout (BorderPane, VBox, etc.)
+Parent plotNode = viewer.asNode();
+
+// Example: add to a Scene
+stage.setScene(new Scene(plotNode, 1200, 800));
+stage.show();
+```
+
+**Notes**
+
+* `asNode()` returns the viewer root node. Add it like any other JavaFX control.
+* You can still call `plotExpression(...)`, `setTheme(...)`, overlays, etc.
+
+## 🔤 Variables (`Map<String, String>`)
+
+GraphFx uses the same variable model as JustMath’s `CalculatorEngine`.
+
+* variables are provided as `Map<String, String>`
+* values may be simple literals like `"2.5"`
+* values may also be full expressions like `"5+3"` or `"root(b)"`
+
+This enables powerful “expression composition” while keeping the API simple.
 
 ```java
 Map<String, String> variables = new HashMap<>();
@@ -482,22 +544,45 @@ variables.put("b", "1.2");
 viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
 ```
 
-<p align="center">
-  <img src="images/GraphFx-Variables.png" width="900" alt="Variable-based plot">
-  <br/>
-  <em>Variable-based plot</em>
-</p>
+## 🔁 Trigonometry: Radians vs. Degrees
 
-### 📍 Overlays (Points & Polylines)
+GraphFx interprets trigonometric functions (`sin`, `cos`, `tan`, …) **in radians**.
+This matches the default mathematical convention used in most plotting tools.
 
-Expression plots are not the only thing you may want to visualize. In many real applications you compute data points
-(e.g., samples, measurements, roots, intersections, or numerical solutions) and want to display them together with a
-function. GraphFx therefore supports manual overlays that are drawn on top of the plot. These overlays use world
-coordinates (the same coordinate system as the function plot) and automatically scale and translate with the viewport.
+### ✅ Default behavior (radians)
 
-`setPoints(...)` replaces all overlay points at once, which makes it easy to render scatter plots or highlight special
-points. `setPolyline(...)` draws a custom connected path. Together, these overlays can be used to visualize discrete
-data on top of continuous functions or to show algorithmic results such as approximation curves.
+```java
+viewer.plotExpression("sin(x)", "#00B7FF"); // x is interpreted as radians
+viewer.plotExpression("cos(x)", "#FF5500");
+viewer.plotExpression("tan(x)", "#5500FF");
+```
+
+### 🧭 Plotting degree-based input
+
+If you want to interpret the x-axis as **degrees**, convert degrees → radians in the expression:
+
+```java
+// sin(x°) = sin(x * pi / 180)
+viewer.plotExpression("sin(x*pi/180)", "#00B7FF");
+viewer.plotExpression("cos(x*pi/180)", "#FF5500");
+viewer.plotExpression("tan(x*pi/180)", "#5500FF");
+```
+
+This keeps GraphFx internally consistent (radians), while your plot behaves like degree input.
+
+## 📍 Overlays (Points & Polylines)
+
+Expression plots are not the only thing you may want to visualize.
+In real applications you often compute discrete data points (samples, measurements, roots,
+intersections, numerical solutions) and want to display them together with a function.
+
+GraphFx overlays:
+
+* use the same world coordinate system as plots
+* automatically pan/zoom with the viewport
+* are id-based, meaning you can update/remove individual overlay elements
+
+### Scatter points
 
 ```java
 viewer.setPoints(List.of(
@@ -505,7 +590,11 @@ viewer.setPoints(List.of(
         new Point2D(0, 0),
         new Point2D(2, -1)
 ));
+```
 
+### A connected path
+
+```java
 viewer.setPolyline(List.of(
         new Point2D(-3, -1),
         new Point2D(-1, 2),
@@ -519,6 +608,35 @@ viewer.setPolyline(List.of(
   <br/>
   <em>Overlay example</em>
 </p>
+
+## ✅ Best Practices
+
+### Prefer explicit multiplication where possible
+
+Even if implicit multiplication (`2x`, `3sin(x)`) is supported, it is often safer to write:
+
+* `2*x`
+* `3*sin(x)`
+* `(x+1)*(x-1)`
+
+This avoids ambiguity and improves readability (especially for user-provided expressions).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## ⚙️ Maven (Coming Soon)
 

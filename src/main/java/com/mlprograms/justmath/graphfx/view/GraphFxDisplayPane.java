@@ -25,7 +25,7 @@
 package com.mlprograms.justmath.graphfx.view;
 
 import com.mlprograms.justmath.graphfx.config.WindowConfig;
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.core.Point;
 import com.mlprograms.justmath.graphfx.internal.FxBootstrap;
 import com.mlprograms.justmath.graphfx.api.DisplayTheme;
 import javafx.beans.InvalidationListener;
@@ -43,6 +43,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.text.DecimalFormat;
@@ -76,8 +77,11 @@ public final class GraphFxDisplayPane extends Region {
 
     private final Canvas canvas;
 
+    @Getter
     private final DoubleProperty scalePxPerUnit;
+    @Getter
     private final DoubleProperty originOffsetX;
+    @Getter
     private final DoubleProperty originOffsetY;
 
     private final double minScalePxPerUnit;
@@ -91,45 +95,6 @@ public final class GraphFxDisplayPane extends Region {
     private WindowConfig.ThemePalette activePalette;
 
     private Point2D lastDragPoint;
-
-    /**
-     * Returns the current zoom factor in pixels per world unit.
-     * <p>
-     * This is an observable property so that internal view components (overlays, toolbars, etc.) can keep
-     * themselves aligned with the viewport.
-     * </p>
-     *
-     * @return the zoom factor property (pixels per unit)
-     */
-    public DoubleProperty getScalePxPerUnit() {
-        return scalePxPerUnit;
-    }
-
-    /**
-     * Returns the X offset of the world origin in screen coordinates (pixels).
-     * <p>
-     * The offset is measured from the top-left of the canvas to the screen position representing (0,0)
-     * in world coordinates.
-     * </p>
-     *
-     * @return the origin X offset property in pixels
-     */
-    public DoubleProperty getOriginOffsetX() {
-        return originOffsetX;
-    }
-
-    /**
-     * Returns the Y offset of the world origin in screen coordinates (pixels).
-     * <p>
-     * The offset is measured from the top-left of the canvas to the screen position representing (0,0)
-     * in world coordinates.
-     * </p>
-     *
-     * @return the origin Y offset property in pixels
-     */
-    public DoubleProperty getOriginOffsetY() {
-        return originOffsetY;
-    }
 
     /**
      * Creates a display pane using default scale and theme values from {@link WindowConfig}.
@@ -239,13 +204,13 @@ public final class GraphFxDisplayPane extends Region {
     }
 
     /**
-     * Converts a {@link GraphFxPoint} in world coordinates to a screen pixel position.
+     * Converts a {@link Point} in world coordinates to a screen pixel position.
      *
      * @param worldPoint world point (must not be {@code null})
      * @return screen point in pixels
      * @throws NullPointerException if {@code worldPoint} is {@code null}
      */
-    public Point2D worldToScreen(@NonNull final GraphFxPoint worldPoint) {
+    public Point2D worldToScreen(@NonNull final Point worldPoint) {
         final double scalePxPerUnitValue = scalePxPerUnit.get();
         final double originX = originOffsetX.get();
         final double originY = originOffsetY.get();
@@ -257,13 +222,13 @@ public final class GraphFxDisplayPane extends Region {
     }
 
     /**
-     * Converts a screen pixel position to a {@link GraphFxPoint} in world coordinates.
+     * Converts a screen pixel position to a {@link Point} in world coordinates.
      *
      * @param screenPoint screen point in pixels (must not be {@code null})
      * @return world point in world units
      * @throws NullPointerException if {@code screenPoint} is {@code null}
      */
-    public GraphFxPoint screenToWorld(@NonNull final Point2D screenPoint) {
+    public Point screenToWorld(@NonNull final Point2D screenPoint) {
         final double scalePxPerUnitValue = scalePxPerUnit.get();
         final double originX = originOffsetX.get();
         final double originY = originOffsetY.get();
@@ -271,7 +236,7 @@ public final class GraphFxDisplayPane extends Region {
         final double worldX = (screenPoint.getX() - originX) / scalePxPerUnitValue;
         final double worldY = (originY - screenPoint.getY()) / scalePxPerUnitValue;
 
-        return new GraphFxPoint(worldX, worldY);
+        return new Point(worldX, worldY);
     }
 
     /**
@@ -727,4 +692,5 @@ public final class GraphFxDisplayPane extends Region {
         final double safeMax = Math.max(minScale, maxScale);
         return clamp(initialScale, safeMin, safeMax);
     }
+
 }

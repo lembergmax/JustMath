@@ -36,10 +36,8 @@ package com.mlprograms.justmath.graphfx.core;
  *
  * @param x x-coordinate (world units)
  * @param y y-coordinate (world units)
- *
- * @since 1.0
  */
-public record GraphFxPoint(double x, double y) {
+public record Point(double x, double y) {
 
     /**
      * Returns whether both coordinates are finite (not {@code NaN} and not infinite).
@@ -53,4 +51,5 @@ public record GraphFxPoint(double x, double y) {
     private static boolean isFinite(final double value) {
         return !Double.isNaN(value) && !Double.isInfinite(value);
     }
+
 }

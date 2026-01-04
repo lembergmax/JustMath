@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.api.plot;
 
-import com.mlprograms.justmath.graphfx.core.GraphFxPoint;
+import com.mlprograms.justmath.graphfx.core.Point;
 import lombok.NonNull;
 
 import java.util.Objects;
@@ -40,10 +40,8 @@ import java.util.Objects;
  *
  * @param start the start point in world coordinates
  * @param end   the end point in world coordinates
- *
- * @since 1.0
  */
-public record GraphFxLineSegment(@NonNull GraphFxPoint start, @NonNull GraphFxPoint end) {
+public record LineSegment(@NonNull Point start, @NonNull Point end) {
 
     /**
      * Canonical constructor that validates endpoints.
@@ -51,7 +49,7 @@ public record GraphFxLineSegment(@NonNull GraphFxPoint start, @NonNull GraphFxPo
      * @throws NullPointerException     if any endpoint is {@code null}
      * @throws IllegalArgumentException if any coordinate is {@code NaN} or infinite
      */
-    public GraphFxLineSegment {
+    public LineSegment {
         Objects.requireNonNull(start, "start must not be null.");
         Objects.requireNonNull(end, "end must not be null.");
 
@@ -60,42 +58,4 @@ public record GraphFxLineSegment(@NonNull GraphFxPoint start, @NonNull GraphFxPo
         }
     }
 
-    /**
-     * Returns the squared length of this segment.
-     * <p>
-     * This avoids a {@link Math#sqrt(double)} call and is useful for comparisons.
-     *
-     * @return squared length in world units
-     */
-    public double lengthSquared() {
-        final double dx = end.x() - start.x();
-        final double dy = end.y() - start.y();
-        return dx * dx + dy * dy;
-    }
-
-    /**
-     * Backward compatible alias for {@link #start()}.
-     * <p>
-     * Some earlier revisions of GraphFx represented line segments with endpoints named {@code a} and {@code b}.
-     * The public API uses {@link #start()} and {@link #end()} for clarity, but internal code or older examples may
-     * still call {@code a()}.
-     *
-     * @return the start point of this segment
-     * @deprecated use {@link #start()} instead
-     */
-    @Deprecated(forRemoval = false)
-    public GraphFxPoint a() {
-        return start;
-    }
-
-    /**
-     * Backward compatible alias for {@link #end()}.
-     *
-     * @return the end point of this segment
-     * @deprecated use {@link #end()} instead
-     */
-    @Deprecated(forRemoval = false)
-    public GraphFxPoint b() {
-        return end;
-    }
 }

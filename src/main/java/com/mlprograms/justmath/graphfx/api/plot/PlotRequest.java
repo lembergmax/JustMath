@@ -54,35 +54,14 @@ import java.util.Objects;
  *   <li>{@code pixelWidth} and {@code pixelHeight} must be {@code >= 1}</li>
  * </ul>
  *
- * @param expression  expression to evaluate (syntax depends on the {@link GraphFxPlotEngine} implementation)
+ * @param expression  expression to evaluate (syntax depends on the {@link PlotEngine} implementation)
  * @param variables   variable values as strings (engine-specific parsing; typically decimal numbers)
  * @param worldBounds world coordinate bounds
  * @param pixelWidth  width of the target area in pixels (>= 1)
  * @param pixelHeight height of the target area in pixels (>= 1)
- *
- * @since 1.0
  */
-public record GraphFxPlotRequest(
-        @NonNull String expression,
-        @NonNull Map<String, String> variables,
-        @NonNull GraphFxWorldBounds worldBounds,
-        int pixelWidth,
-        int pixelHeight
-) {
-
-    /**
-     * Returns the world bounds associated with this request.
-     * <p>
-     * This is a compatibility alias for older code that used {@code request.bounds()} instead of
-     * {@link #worldBounds()}.
-     *
-     * @return the requested world bounds
-     *
-     * @since 1.0
-     */
-    public GraphFxWorldBounds bounds() {
-        return worldBounds;
-    }
+public record PlotRequest(@NonNull String expression, @NonNull Map<String, String> variables,
+                          @NonNull WorldBounds worldBounds, int pixelWidth, int pixelHeight) {
 
     /**
      * Canonical constructor that validates and defensively copies inputs.
@@ -90,7 +69,7 @@ public record GraphFxPlotRequest(
      * @throws NullPointerException     if any required argument is {@code null}
      * @throws IllegalArgumentException if constraints are violated
      */
-    public GraphFxPlotRequest {
+    public PlotRequest {
         Objects.requireNonNull(expression, "expression must not be null.");
         Objects.requireNonNull(variables, "variables must not be null.");
         Objects.requireNonNull(worldBounds, "worldBounds must not be null.");
@@ -126,4 +105,5 @@ public record GraphFxPlotRequest(
             }
         }
     }
+
 }
