@@ -649,8 +649,8 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.3.14</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.3.14.jar">JustMath v1.2.3.14</a></td>
+    <td>v1.2.4.2</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.4.2.jar">JustMath v1.2.4.2</a></td>
     <td>Preview</td>
   </tr>
   <tr>
