@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx;
+package com.mlprograms.justmath.graphfx.planar.view;
 
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -53,7 +53,7 @@ import javafx.scene.text.Font;
  * screenY = height/2 - worldY * scale + offsetY
  * </pre>
  */
-public final class GridPane extends Pane {
+final class GridPane extends Pane {
 
     private static final double TARGET_GRID_PIXEL_STEP = 100.0;
     private static final double MIN_SCALE = 10.0;
