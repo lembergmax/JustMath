@@ -222,13 +222,8 @@ public final class GraphFxViewer {
      * @param drawDemoCurve                    reserved for future demo overlays
      * @param exitApplicationOnLastViewerClose whether to exit when the last viewer window is closed
      */
-    public record WindowConfig(
-            String title,
-            int width,
-            int height,
-            boolean drawDemoCurve,
-            boolean exitApplicationOnLastViewerClose
-    ) {
+    public record WindowConfig(String title, int width, int height, boolean drawDemoCurve,
+                               boolean exitApplicationOnLastViewerClose) {
 
         /**
          * Default width used by {@link #defaultConfig()}.
