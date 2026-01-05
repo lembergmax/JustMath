@@ -24,26 +24,14 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.PlotViewer;
-import com.mlprograms.justmath.graphfx.api.plot.LineSegment;
-import com.mlprograms.justmath.graphfx.api.plot.PlotEngine;
-import com.mlprograms.justmath.graphfx.api.plot.PlotEngines;
-import com.mlprograms.justmath.graphfx.api.plot.PlotGeometry;
-import com.mlprograms.justmath.graphfx.api.plot.PlotRequest;
-import com.mlprograms.justmath.graphfx.api.plot.WorldBounds;
-import com.mlprograms.justmath.graphfx.core.Point;
-
-import java.util.List;
-import java.util.Map;
+import com.mlprograms.justmath.graphfx.GraphFxPanZoomViewer;
 
 public final class Main {
 
     public static void main(final String[] args) {
 
-        final PlotViewer plotViewer = new PlotViewer();
-        plotViewer.plotExpression("x^2+y^2-9", "#D4D4D4");
-        plotViewer.show("GraphFx PlotViewer Demo", 1200, 800);
+        GraphFxPanZoomViewer graphFxPanZoomViewer = new GraphFxPanZoomViewer();
+        graphFxPanZoomViewer.show();
 
     }
 
