@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.planar.view;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -433,6 +434,7 @@ final class GridPane extends Pane {
             return String.format("%.4g", normalized);
         }
 
+        // TODO: Fix: Am Ende jeder Zahl  steht ein Komma ","
         final String fixed = String.format("%.6f", normalized);
         return trimTrailingZeros(fixed);
     }
