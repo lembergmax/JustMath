@@ -24,33 +24,26 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.graphfx.api.DisplayTheme;
 import com.mlprograms.justmath.graphfx.api.PlotViewer;
+import com.mlprograms.justmath.graphfx.api.plot.LineSegment;
 import com.mlprograms.justmath.graphfx.api.plot.PlotEngine;
 import com.mlprograms.justmath.graphfx.api.plot.PlotEngines;
+import com.mlprograms.justmath.graphfx.api.plot.PlotGeometry;
 import com.mlprograms.justmath.graphfx.api.plot.PlotRequest;
+import com.mlprograms.justmath.graphfx.api.plot.WorldBounds;
+import com.mlprograms.justmath.graphfx.core.Point;
+
+import java.util.List;
+import java.util.Map;
 
 public final class Main {
 
     public static void main(final String[] args) {
-        final PlotViewer viewer = new PlotViewer(DisplayTheme.DARK);
 
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer", 1200, 800);
-
-
-        //
-
-        final PlotRequest plotRequest = new PlotRequest();
-
-        final PlotEngine plotEngine = PlotEngines.defaultEngine();
-        plotEngine.plot();
-
-
+        final PlotViewer plotViewer = new PlotViewer();
+        plotViewer.plotExpression("x^2+y^2-9", "#D4D4D4");
+        plotViewer.show("GraphFx PlotViewer Demo", 1200, 800);
 
     }
 
