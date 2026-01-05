@@ -452,6 +452,7 @@ final class GridPane extends Pane {
         if (end > 0 && value.charAt(end - 1) == '.') {
             end--;
         }
+
         return value.substring(0, Math.max(1, end));
     }
 
