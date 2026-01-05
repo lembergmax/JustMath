@@ -24,14 +24,14 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.GraphFxPanZoomViewer;
+import com.mlprograms.justmath.graphfx.GraphFxViewer;
 
 public final class Main {
 
     public static void main(final String[] args) {
 
-        GraphFxPanZoomViewer graphFxPanZoomViewer = new GraphFxPanZoomViewer();
-        graphFxPanZoomViewer.show();
+        GraphFxViewer graphFxViewer = new GraphFxViewer();
+        graphFxViewer.show();
 
     }
 
