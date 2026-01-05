@@ -24,11 +24,8 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +34,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1334,6 +1330,72 @@ public class BigNumberTest {
         void isNegativeTest() {
             assertTrue(new BigNumber("-5").isNegative());
             assertFalse(new BigNumber("5").isNegative());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "000, 0",
+                "0, 0",
+                "00012, 12",
+                "00012.34, 12.34",
+                "00123.00045, 123.00045"
+        })
+        void trimLeadingZerosBeforeDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimLeadingZerosBeforeDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "12.00123, 12.123",
+                "0.0007, 0.7",
+                "999.00001, 999.1"
+        })
+        void trimLeadingZerosAfterDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimLeadingZerosAfterDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "1200, 12",
+                "1200.34, 12.34",
+                "1000.0001, 1.0001",
+                "0, 0"
+        })
+        void trimTrailingZerosBeforeDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimTrailingZerosBeforeDecimalPoint();
+
+            if (expected.equals("''")) {
+                assertTrue(result.toString().isEmpty() || result.toString().equals("0"));
+            } else {
+                assertEquals(expected, result.toString());
+            }
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "12.3400, 12.34",
+                "0.1200, 0.12",
+                "999.00001, 999.00001"
+        })
+        void trimTrailingZerosAfterDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimTrailingZerosAfterDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @Test
+        void trimmingMethods_returnSameInstance_forChaining() {
+            BigNumber number = new BigNumber("00012.3400");
+
+            assertSame(number, number.trimLeadingZerosBeforeDecimalPoint());
+            assertSame(number, number.trimTrailingZerosAfterDecimalPoint());
+
+            assertEquals("12.34", number.toString());
         }
 
     }
