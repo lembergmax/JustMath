@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx;
+package com.mlprograms.justmath.graphfx.planar.view;
 
+import com.mlprograms.justmath.graphfx.JavaFxRuntime;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;

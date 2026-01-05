@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * the toolkit. If the last tracked viewer window is closed, this helper schedules a deferred
  * {@link Platform#exit()} to terminate JavaFX cleanly.</p>
  */
-final class JavaFxRuntime {
+public final class JavaFxRuntime {
 
     private static final Object START_LOCK = new Object();
     private static volatile boolean started;
@@ -55,7 +55,7 @@ final class JavaFxRuntime {
      * <p>This method is thread-safe and blocks until the JavaFX toolkit is ready to accept
      * {@link Platform#runLater(Runnable)} calls.</p>
      */
-    static void ensureStarted() {
+    public static void ensureStarted() {
         if (started) {
             return;
         }
@@ -86,7 +86,7 @@ final class JavaFxRuntime {
      *
      * @param runnable the work to run (must not be {@code null})
      */
-    static void runOnFxThread(final Runnable runnable) {
+    public static void runOnFxThread(final Runnable runnable) {
         Objects.requireNonNull(runnable, "runnable must not be null");
 
         if (Platform.isFxApplicationThread()) {
@@ -105,7 +105,7 @@ final class JavaFxRuntime {
      *
      * @param runnable the work to enqueue (must not be {@code null})
      */
-    static void enqueueOnFxThread(final Runnable runnable) {
+    public static void enqueueOnFxThread(final Runnable runnable) {
         Objects.requireNonNull(runnable, "runnable must not be null");
         Platform.runLater(runnable);
     }
@@ -115,7 +115,7 @@ final class JavaFxRuntime {
      *
      * @return the current number of tracked open windows
      */
-    static int registerTrackedViewerOpened() {
+    public static int registerTrackedViewerOpened() {
         return OPEN_TRACKED_WINDOWS.incrementAndGet();
     }
 
@@ -128,7 +128,7 @@ final class JavaFxRuntime {
      *
      * @return the remaining number of tracked open windows
      */
-    static int registerTrackedViewerClosedAndExitIfLast() {
+    public static int registerTrackedViewerClosedAndExitIfLast() {
         final int remaining = OPEN_TRACKED_WINDOWS.decrementAndGet();
 
         if (remaining <= 0) {

@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.GraphFxViewer;
+import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
 
 public final class Main {
 
