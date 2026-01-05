@@ -25,19 +25,20 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
@@ -271,12 +272,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     /**
      * Builder constructor for BigNumber.
      *
-     * @param locale             the locale to use for parsing and formatting
+     * @param locale                  the locale to use for parsing and formatting
      * @param valueBeforeDecimalPoint the integer part of the number
      * @param valueAfterDecimalPoint  the decimal part of the number
-     * @param isNegative         whether the number is negative
-     * @param mathContext        the math context to use for precision and rounding
-     * @param trigonometricMode  the trigonometric mode to use
+     * @param isNegative              whether the number is negative
+     * @param mathContext             the math context to use for precision and rounding
+     * @param trigonometricMode       the trigonometric mode to use
      */
     @Builder
     public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimalPoint, @NonNull final String valueAfterDecimalPoint, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
@@ -2847,6 +2848,33 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Removes leading zeros from the integer (before-decimal) part of this BigNumber.
+     *
+     * <p>This method updates the internal {@code valueBeforeDecimalPoint} in-place by delegating to
+     * {@link #trimLeadingZeros(String)} and returns this instance to allow method chaining.</p>
+     *
+     * @return this {@code BigNumber} with the integer part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes leading zeros from the fractional (after-decimal) part of this BigNumber.
+     *
+     * <p>Normalizes fractional representations by delegating to
+     * {@link #trimLeadingZeros(String)}. The method modifies {@code valueAfterDecimalPoint} in-place
+     * and returns this instance for chaining.</p>
+     *
+     * @return this {@code BigNumber} with the fractional part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimLeadingZeros(valueAfterDecimalPoint);
+        return this;
+    }
+
+    /**
      * Removes leading zeros from a numeric string. If the string only contains zeros,
      * returns a single "0".
      *
@@ -2867,6 +2895,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
         String trimmed = cleaned.substring(index);
         return trimmed.isEmpty() ? "0" : trimmed;
+    }
+
+    /**
+     * Removes trailing zeros from the integer (before-decimal) part of this number.
+     * The operation modifies the internal `valueBeforeDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed before the decimal point
+     */
+    public BigNumber trimTrailingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimTrailingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes trailing zeros from the fractional (after-decimal) part of this number.
+     * The operation modifies the internal `valueAfterDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed after the decimal point
+     */
+    public BigNumber trimTrailingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        return this;
     }
 
     /**
