@@ -24,8 +24,13 @@
 
 package com.mlprograms.justmath.graphfx.planar.model;
 
-public class PlotResult {
+import java.util.ArrayList;
+import java.util.List;
 
-// TODO
+public record PlotResult(List<PlotLine> plotLines) {
+
+    public PlotResult() {
+        this(new ArrayList<>());
+    }
 
 }
