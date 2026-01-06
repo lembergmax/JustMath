@@ -26,13 +26,15 @@ package com.mlprograms.justmath.graphfx.planar.calculator;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.graphfx.planar.model.PlotRequest;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import lombok.NonNull;
 
 public class GraphFxCalculatorEngine {
 
     private final CalculatorEngine CALCULATOR_ENGINE = new CalculatorEngine(TrigonometricMode.RAD);
 
-    public PlotResult plotExpression() {
+    public PlotResult evaluate(@NonNull final PlotRequest plotRequest) {
         // TODO
         return new PlotResult();
     }
