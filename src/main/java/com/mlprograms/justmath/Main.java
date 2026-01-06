@@ -24,14 +24,21 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotRequest;
 
 public final class Main {
 
     public static void main(final String[] args) {
 
-        GraphFxViewer graphFxViewer = new GraphFxViewer();
-        graphFxViewer.show();
+        // GraphFxViewer graphFxViewer = new GraphFxViewer();
+        // graphFxViewer.show();
+
+        final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
+        final PlotRequest plotRequest = new PlotRequest("x^2+y^2-9", null, new BigNumber("100000"), new BigNumber("100000"));
+
+        graphFxCalculatorEngine.evaluate(plotRequest);
 
     }
 
