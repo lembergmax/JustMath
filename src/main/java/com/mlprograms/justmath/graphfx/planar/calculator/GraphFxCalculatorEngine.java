@@ -24,19 +24,86 @@
 
 package com.mlprograms.justmath.graphfx.planar.calculator;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.graphfx.ReservedVariables;
 import com.mlprograms.justmath.graphfx.planar.model.PlotRequest;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import lombok.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class GraphFxCalculatorEngine {
 
     private final CalculatorEngine CALCULATOR_ENGINE = new CalculatorEngine(TrigonometricMode.RAD);
 
-    public PlotResult evaluate(@NonNull final PlotRequest plotRequest) {
-        // TODO
+    private BigNumber x;
+    private BigNumber y;
+
+    private PlotResult evaluate(@NonNull final PlotRequest plotRequest) {
+        if (!isPlotRequestDataValid(plotRequest)) {
+            return new PlotResult();
+        }
+
+        final Map<String, String> combinedVariables = new HashMap<>(plotRequest.getVariables());
+        combinedVariables.put(ReservedVariables.X.getValue(), x.toString());
+        combinedVariables.put(ReservedVariables.Y.getValue(), y.toString());
+
+        final BigNumber result = CALCULATOR_ENGINE.evaluate(plotRequest.getExpression(), combinedVariables);
         return new PlotResult();
+    }
+
+    private boolean isPlotRequestDataValid(final PlotRequest plotRequest) {
+        if (plotRequest == null) {
+            return false;
+        }
+
+        if (plotRequest.getExpression().isBlank()) {
+            return false;
+        }
+
+        if (plotRequest.getCellSize().isLessThanOrEqualTo(BigNumbers.ZERO)) {
+            return false;
+        }
+
+        if (!isMinMaxValid(plotRequest.getMinX(), plotRequest.getMaxX(), plotRequest.getMinY(), plotRequest.getMaxY())) {
+            return false;
+        }
+
+        if (variablesContainReservedVariable(plotRequest.getVariables().keySet())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean variablesContainReservedVariable(final Set<String> variablesKeySet) {
+        for (final String key : variablesKeySet) {
+            if (key.equals(ReservedVariables.X.getValue())) {
+                return true;
+            }
+            if (key.equals(ReservedVariables.Y.getValue())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isMinMaxValid(final BigNumber minX, final BigNumber maxX, final BigNumber minY, final BigNumber maxY) {
+        if (minX.isGreaterThanOrEqualTo(maxX)) {
+            return false;
+        }
+
+        if (minY.isGreaterThanOrEqualTo(maxY)) {
+            return false;
+        }
+
+        return true;
     }
 
 }
