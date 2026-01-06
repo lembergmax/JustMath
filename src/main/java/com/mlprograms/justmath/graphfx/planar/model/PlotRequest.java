@@ -24,16 +24,16 @@
 
 package com.mlprograms.justmath.graphfx.planar.model;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class PlotRequest {
 
     @NonNull
@@ -42,6 +42,17 @@ public class PlotRequest {
     @NonNull
     private Map<String, String> variables;
 
-    // TODO
+    @NonNull
+    private BigNumber startX;
+
+    @NonNull
+    private BigNumber startY;
+
+    public PlotRequest(@NonNull final String expression, final Map<String, String> variables, @NonNull final BigNumber startX, @NonNull final BigNumber startY) {
+        this.expression = expression;
+        this.variables = variables == null ? new HashMap<>() : variables;
+        this.startX = startX;
+        this.startY = startY;
+    }
 
 }
