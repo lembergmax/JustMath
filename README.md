@@ -267,12 +267,16 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 
 You can also sort a `List<BigNumber>` using any of the following algorithms.
 
-| Algorithm    |
-|--------------|
-| `BubbleSort` |
-| `MergeSort`  |
-| `QuickSort`  |
-| `RadixSort`  |
+| Algorithm       |
+|-----------------|
+| `BubbleSort`    |
+| `GnomeSort`     |
+| `InsertionSort` |
+| `MergeSort`     |
+| `QuickSort`     |
+| `RadixSort`     |
+| `SelectionSort` |
+| `TimSort`       |
 
 ### ✅ Example: Using Algorithms
 
