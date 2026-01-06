@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,20 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.algorithms;
+package com.mlprograms.justmath.bignumber.algorithms;
 
-import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
-
-public class QuickSortTest extends AbstractSortAlgorithmTest {
+public class BubbleSortTest extends AbstractSortAlgorithmTest {
 
     @Override
     protected BigNumberSortAlgorithm createAlgorithm() {
-        return new QuickSort()::sort;
+        return new BubbleSort()::sort;
     }
 
     @Override
     protected Class<?> algorithmType() {
-        return QuickSort.class;
+        return BubbleSort.class;
     }
 
 }
