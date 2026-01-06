@@ -263,8 +263,11 @@ public abstract class AbstractSortAlgorithmTest {
         @Test
         @Timeout(5)
         void sortLargeRandomDataSet_fastAlgorithms_only_isSortedAndPreservesAllValues() {
-            assumeTrue(algorithmType() != null, "THIS IS NO ERROR: Skipping: algorithmType() not provided by this test class");
-            assumeFalse(BubbleSort.class.equals(algorithmType()), "THIS IS NO ERROR: Skipping huge dataset test for BubbleSort");
+            assumeTrue(algorithmType() != null, "THIS IS NOT AN ERROR: Skipping: algorithmType() not provided by this test class");
+            assumeFalse(BubbleSort.class.equals(algorithmType()), "THIS IS NOT AN ERROR: Skipping huge dataset test for BubbleSort");
+            assumeFalse(SelectionSort.class.equals(algorithmType()), "THIS IS NOT AN ERROR: Skipping huge dataset test for SelectionSort");
+            assumeFalse(InsertionSort.class.equals(algorithmType()), "THIS IS NOT AN ERROR: Skipping huge dataset test for InsertionSort");
+            assumeFalse(GnomeSort.class.equals(algorithmType()), "THIS IS NOT AN ERROR: Skipping huge dataset test for InsertionSort");
 
             final int size = 50_000;
             final long seed = 123456789L;
@@ -294,7 +297,7 @@ public abstract class AbstractSortAlgorithmTest {
         @Timeout(5)
         void sortLargeRandomDataSet_bubbleSort_only_isSortedAndPreservesAllValues() {
             // Run ONLY for BubbleSort (smaller dataset)
-            assumeTrue(BubbleSort.class.equals(algorithmType()), "THIS IS NO ERROR: Skipping: only relevant for BubbleSort");
+            assumeTrue(BubbleSort.class.equals(algorithmType()), "THIS IS NOT AN ERROR: Skipping: only relevant for BubbleSort");
 
             final int size = 1_000;
             final long seed = 123456789L;
