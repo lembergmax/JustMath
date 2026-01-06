@@ -43,16 +43,28 @@ public class PlotRequest {
     private Map<String, String> variables;
 
     @NonNull
-    private BigNumber startX;
+    private BigNumber minX;
 
     @NonNull
-    private BigNumber startY;
+    private BigNumber minY;
 
-    public PlotRequest(@NonNull final String expression, final Map<String, String> variables, @NonNull final BigNumber startX, @NonNull final BigNumber startY) {
+    @NonNull
+    private BigNumber maxX;
+
+    @NonNull
+    private BigNumber maxY;
+
+    @NonNull
+    private BigNumber cellSize;
+
+    public PlotRequest(@NonNull final String expression, final Map<String, String> variables, @NonNull final BigNumber minX, @NonNull final BigNumber minY, @NonNull final BigNumber maxX, @NonNull final BigNumber maxY, @NonNull final BigNumber cellSize) {
         this.expression = expression;
         this.variables = variables == null ? new HashMap<>() : variables;
-        this.startX = startX;
-        this.startY = startY;
+        this.minX = minX;
+        this.minY = minY;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.cellSize = cellSize;
     }
 
 }
