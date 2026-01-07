@@ -2941,6 +2941,23 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Returns the signum function of this {@code BigDecimal}.
+     *
+     * @return -1, 0, or 1 as the value of this {@code BigDecimal}
+     *         is negative, zero, or positive.
+     */
+    public int signum() {
+        if(isLessThan(BigNumbers.ZERO)) {
+            return -1;
+        }
+        if(isGreaterThan(BigNumbers.ZERO)) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
      * Returns the value of this {@code BigNumber} as an {@code int}.
      * <p>
      * If the integer part exceeds 10 digits, only the first 10 digits are used.
