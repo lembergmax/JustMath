@@ -26,6 +26,8 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
 
 import java.util.Map;
@@ -34,15 +36,21 @@ public final class Main {
 
     public static void main(final String[] args) {
 
-        // GraphFxViewer graphFxViewer = new GraphFxViewer();
-        // graphFxViewer.show();
-
         final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
-        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(new BigNumber("-100"), new BigNumber("100"), new BigNumber("-100"), new BigNumber("100"), new BigNumber("1"));
-        System.out.println(graphFxCalculatorEngine.evaluate("x", Map.of(), viewportSnapshot));
-        // final PlotRequest plotRequest = new PlotRequest();
+        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(
+                new BigNumber("-5"),
+                new BigNumber("5"),
+                new BigNumber("-5"),
+                new BigNumber("5"),
+                new BigNumber("0.05")
+        );
 
-        // graphFxCalculatorEngine.evaluate(plotRequest);
+        final PlotResult result = graphFxCalculatorEngine.evaluate("x", viewportSnapshot);
+
+        System.out.println("lines = " + result.plotLines().size());
+        for (final PlotLine line : result.plotLines()) {
+            System.out.println(line.toString());
+        }
 
     }
 
