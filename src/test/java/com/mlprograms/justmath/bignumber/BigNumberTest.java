@@ -1398,6 +1398,17 @@ public class BigNumberTest {
             assertEquals("12.34", number.toString());
         }
 
+        @Test
+        void signumTest() {
+            assertEquals(0, new BigNumber("0").signum());
+            assertEquals(1, new BigNumber("1").signum());
+            assertEquals(1, new BigNumber("0.123").signum());
+            assertEquals(1, new BigNumber("1.123").signum());
+            assertEquals(-1, new BigNumber("-0.123").signum());
+            assertEquals(-1, new BigNumber("-1").signum());
+            assertEquals(-1, new BigNumber("-1..123").signum());
+        }
+
     }
 
 }
