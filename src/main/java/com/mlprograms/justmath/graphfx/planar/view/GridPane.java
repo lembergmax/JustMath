@@ -24,6 +24,11 @@
 
 package com.mlprograms.justmath.graphfx.planar.view;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.graphfx.VisibleWorldBounds;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -32,8 +37,12 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import lombok.NonNull;
 
+import java.util.Objects;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * A self-contained JavaFX pane that renders a 2D coordinate grid on a {@link Canvas} and supports:
@@ -57,16 +66,19 @@ import java.util.Locale;
  */
 final class GridPane extends Pane {
 
-    private static final double TARGET_GRID_PIXEL_STEP = 100.0;
-    private static final double MIN_SCALE = 10.0;
-    private static final double MAX_SCALE = 5000.0;
+    private final double PLOT_PIXEL_STEP = 4.0;     // Sampling-Auflösung fürs Plotten
+    private final double TARGET_GRID_PIXEL_STEP = 100.0;
+    private final double MIN_SCALE = 10.0;
+    private final double MAX_SCALE = 5000.0;
 
-    private static final double LABEL_MIN_PIXEL_SPACING = 60.0;
-    private static final double LABEL_PADDING = 6.0;
-    private static final double LABEL_BASELINE_OFFSET = 14.0;
+    private final double LABEL_MIN_PIXEL_SPACING = 60.0;
+    private final double LABEL_PADDING = 6.0;
+    private final double LABEL_BASELINE_OFFSET = 14.0;
 
-    private static final Font LABEL_FONT = Font.font("Consolas", 12);
-    private static final Font HUD_FONT = Font.font("Consolas", 13);
+    private final Font LABEL_FONT = Font.font("Consolas", 12);
+    private final Font HUD_FONT = Font.font("Consolas", 13);
+
+    private PlotResult plotResult = new PlotResult();
 
     private final Canvas canvas = new Canvas();
 
@@ -156,7 +168,7 @@ final class GridPane extends Pane {
      * @param deltaY the scroll delta
      * @return a zoom factor greater than 0
      */
-    private static double computeZoomFactor(final double deltaY) {
+    private double computeZoomFactor(final double deltaY) {
         return Math.pow(1.0015, deltaY);
     }
 
@@ -200,6 +212,8 @@ final class GridPane extends Pane {
         drawAxes(graphics, width, height);
         drawAxisLabels(graphics, width, height, bounds, gridStep);
 
+        drawPlot(graphics, width, height);
+
         drawHud(graphics, gridStep);
     }
 
@@ -210,7 +224,7 @@ final class GridPane extends Pane {
      * @param width    the canvas width
      * @param height   the canvas height
      */
-    private static void clearBackground(final GraphicsContext graphics, final double width, final double height) {
+    private void clearBackground(final GraphicsContext graphics, final double width, final double height) {
         graphics.setFill(Color.WHITE);
         graphics.fillRect(0, 0, width, height);
     }
@@ -230,6 +244,54 @@ final class GridPane extends Pane {
         final double minWorldY = screenToWorldY(height, scale, offsetY);
 
         return new VisibleWorldBounds(minWorldX, maxWorldX, minWorldY, maxWorldY);
+    }
+
+    private void drawPlot(final GraphicsContext graphics, final double width, final double height) {
+        final List<PlotLine> lines = plotResult.plotLines();
+        if (lines.isEmpty()) {
+            return;
+        }
+
+        graphics.setLineWidth(2.0);
+
+        for (final PlotLine line : lines) {
+            final List<PlotPoint> points = line.plotPoints();
+            if (points.size() < 2) {
+                continue;
+            }
+
+            graphics.setStroke(Color.rgb(30, 30, 200)); // später: Farbe aus PlotLine nehmen
+
+            drawPolyline(graphics, width, height, points);
+        }
+    }
+
+    private void drawPolyline(final GraphicsContext graphics, final double width, final double height, final List<PlotPoint> points) {
+        final double[] xPixels = new double[points.size()];
+        final double[] yPixels = new double[points.size()];
+
+        int count = 0;
+
+        for (final PlotPoint point : points) {
+            final double worldX = point.x().doubleValue();
+            final double worldY = point.y().doubleValue();
+
+            if (!isFinite(worldX) || !isFinite(worldY)) {
+                continue;
+            }
+
+            xPixels[count] = worldToScreenX(worldX, scale, offsetX, width);
+            yPixels[count] = worldToScreenY(worldY, scale, offsetY, height);
+            count++;
+        }
+
+        if (count >= 2) {
+            graphics.strokePolyline(xPixels, yPixels, count);
+        }
+    }
+
+    private static boolean isFinite(final double value) {
+        return !Double.isNaN(value) && !Double.isInfinite(value);
     }
 
     /**
@@ -427,7 +489,7 @@ final class GridPane extends Pane {
      * @param value the value to format
      * @return formatted label
      */
-    private static String formatAxisNumber(final double value) {
+    private String formatAxisNumber(final double value) {
         final double normalized = isNearZero(value) ? 0.0 : value;
 
         final double abs = Math.abs(normalized);
@@ -445,7 +507,7 @@ final class GridPane extends Pane {
      * @param value fixed-point number as string
      * @return trimmed string
      */
-    private static String trimTrailingZeros(final String value) {
+    private String trimTrailingZeros(final String value) {
         int end = value.length();
 
         while (end > 0 && value.charAt(end - 1) == '0') {
@@ -467,7 +529,7 @@ final class GridPane extends Pane {
      * @param value the value to check
      * @return {@code true} if the value is near zero
      */
-    private static boolean isNearZero(final double value) {
+    private boolean isNearZero(final double value) {
         return Math.abs(value) < 1e-12;
     }
 
@@ -479,7 +541,7 @@ final class GridPane extends Pane {
      * @param max   inclusive maximum
      * @return {@code true} if inside the range
      */
-    private static boolean isInsideInclusive(final double value, final double min, final double max) {
+    private boolean isInsideInclusive(final double value, final double min, final double max) {
         return value >= min && value <= max;
     }
 
@@ -553,7 +615,7 @@ final class GridPane extends Pane {
      * @param rawStep requested step in world units
      * @return a "nice" step size
      */
-    private static double chooseNiceStep(final double rawStep) {
+    private double chooseNiceStep(final double rawStep) {
         if (rawStep <= 0.0 || Double.isNaN(rawStep) || Double.isInfinite(rawStep)) {
             return 1.0;
         }
@@ -582,7 +644,7 @@ final class GridPane extends Pane {
      * @param step  step size
      * @return floored value
      */
-    private static double floorToStep(final double value, final double step) {
+    private double floorToStep(final double value, final double step) {
         return Math.floor(value / step) * step;
     }
 
@@ -594,19 +656,34 @@ final class GridPane extends Pane {
      * @param max   maximum allowed value
      * @return clamped value
      */
-    private static double clamp(final double value, final double min, final double max) {
+    private double clamp(final double value, final double min, final double max) {
         return Math.max(min, Math.min(max, value));
     }
 
-    /**
-     * Immutable container describing the currently visible world coordinate range.
-     *
-     * @param minX minimum visible world x
-     * @param maxX maximum visible world x
-     * @param minY minimum visible world y
-     * @param maxY maximum visible world y
-     */
-    private record VisibleWorldBounds(double minX, double maxX, double minY, double maxY) {
+    Optional<ViewportSnapshot> tryCreateViewportSnapshot() {
+        final double width = canvas.getWidth();
+        final double height = canvas.getHeight();
+
+        if (width <= 0.0 || height <= 0.0) {
+            return Optional.empty();
+        }
+
+        final VisibleWorldBounds bounds = computeVisibleWorldBounds(width, height);
+        final double cellSizeWorld = Math.max(1e-6, PLOT_PIXEL_STEP / scale);
+
+        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(new BigNumber(bounds.minX()), new BigNumber(bounds.maxX()), new BigNumber(bounds.minY()), new BigNumber(bounds.maxY()), new BigNumber(cellSizeWorld));
+
+        return Optional.of(viewportSnapshot);
+    }
+
+    public void setPlotResult(@NonNull final PlotResult plotResult) {
+        this.plotResult = Objects.requireNonNull(plotResult, "plotResult must not be null");
+        redraw();
+    }
+
+    public void clearPlot() {
+        this.plotResult = new PlotResult();
+        redraw();
     }
 
 }
