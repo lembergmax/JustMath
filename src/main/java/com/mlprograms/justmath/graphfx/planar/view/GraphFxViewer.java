@@ -52,9 +52,8 @@ public final class GraphFxViewer {
 
     @Getter
     private final WindowConfig windowConfig;
-    @Getter
-    private final GridPane content;
 
+    private final GridPane gridPane;
     private Stage stage;
 
     private boolean closeWasRequested;
@@ -83,7 +82,7 @@ public final class GraphFxViewer {
      */
     public GraphFxViewer(final WindowConfig windowConfig) {
         this.windowConfig = Objects.requireNonNull(windowConfig, "windowConfig must not be null");
-        this.content = new GridPane();
+        this.gridPane = new GridPane();
     }
 
     /**
@@ -165,7 +164,7 @@ public final class GraphFxViewer {
         final Stage newStage = new Stage();
         newStage.setTitle(windowConfig.title());
 
-        final BorderPane root = new BorderPane(content);
+        final BorderPane root = new BorderPane(gridPane);
         final Scene scene = new Scene(root, windowConfig.width(), windowConfig.height());
         newStage.setScene(scene);
 
