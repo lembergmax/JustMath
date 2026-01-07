@@ -26,11 +26,8 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
-import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
-
-import java.util.Map;
 
 public final class Main {
 
@@ -45,12 +42,20 @@ public final class Main {
                 new BigNumber("0.05")
         );
 
-        final PlotResult result = graphFxCalculatorEngine.evaluate("x", viewportSnapshot);
-
+        PlotResult result = graphFxCalculatorEngine.evaluate("sin(3*x)*cos(4*y) + sin(5*x + 2*y) - 0.15", viewportSnapshot);
         System.out.println("lines = " + result.plotLines().size());
-        for (final PlotLine line : result.plotLines()) {
-            System.out.println(line.toString());
-        }
+
+        result = graphFxCalculatorEngine.evaluate("sin(x^2 + y^2) + 0.35*sin(3*x) - 0.35*cos(3*y)", viewportSnapshot);
+        System.out.println("lines = " + result.plotLines().size());
+
+        result = graphFxCalculatorEngine.evaluate("sin(6*sqrt(x^2+y^2)) + 0.4*sin(4*x)*sin(4*y) - 0.2", viewportSnapshot);
+        System.out.println("lines = " + result.plotLines().size());
+
+        result = graphFxCalculatorEngine.evaluate("(x^2 - y^2)^2 - (x^2 + y^2) + 0.2*sin(8*x)*cos(8*y)", viewportSnapshot);
+        System.out.println("lines = " + result.plotLines().size());
+
+        result = graphFxCalculatorEngine.evaluate("sin(5*x) + sin(5*y) + 0.5*sin(3*x + 4*y) + 0.25*sin(7*x - 2*y) - 0.1", viewportSnapshot);
+        System.out.println("lines = " + result.plotLines().size());
 
     }
 
