@@ -27,6 +27,6 @@ package com.mlprograms.justmath.graphfx.planar.model;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.NonNull;
 
-public record PlotPoint(@NonNull BigNumber a, @NonNull BigNumber b) {
+public record PlotPoint(@NonNull BigNumber x, @NonNull BigNumber y) {
 
 }
