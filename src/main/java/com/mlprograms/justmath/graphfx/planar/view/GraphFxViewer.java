@@ -25,11 +25,16 @@
 package com.mlprograms.justmath.graphfx.planar.view;
 
 import com.mlprograms.justmath.graphfx.JavaFxRuntime;
+import com.mlprograms.justmath.graphfx.WindowConfig;
+import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lombok.Getter;
+import lombok.NonNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -212,55 +217,22 @@ public final class GraphFxViewer {
         });
     }
 
-    /**
-     * Immutable configuration for {@link GraphFxViewer}.
-     *
-     * @param title                            window title (must not be {@code null} or blank)
-     * @param width                            initial width in pixels (must be {@code > 0})
-     * @param height                           initial height in pixels (must be {@code > 0})
-     * @param drawDemoCurve                    reserved for future demo overlays
-     * @param exitApplicationOnLastViewerClose whether to exit when the last viewer window is closed
-     */
-    public record WindowConfig(String title, int width, int height, boolean drawDemoCurve,
-                               boolean exitApplicationOnLastViewerClose) {
+    public void plot(@NonNull final String expression) {
+        plot(expression, Map.of());
+    }
 
-        /**
-         * Default width used by {@link #defaultConfig()}.
-         */
-        public static final int DEFAULT_WIDTH = 1200;
+    public void plot(@NonNull final String expression, @NonNull final Map<String, String> variables) {
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> plotOnFxThread(expression, variables));
+    }
 
-        /**
-         * Default height used by {@link #defaultConfig()}.
-         */
-        public static final int DEFAULT_HEIGHT = 800;
+    private void plotOnFxThread(@NonNull final String expression, @NonNull final Map<String, String> variables) {
+        final ViewportSnapshot viewportSnapshot = gridPane.tryCreateViewportSnapshot()
+                .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
 
-        /**
-         * Validates and creates a configuration instance.
-         */
-        public WindowConfig {
-            Objects.requireNonNull(title, "title must not be null");
-
-            if (title.isBlank()) {
-                throw new IllegalArgumentException("title must not be blank");
-            }
-            if (width <= 0) {
-                throw new IllegalArgumentException("width must be > 0");
-            }
-            if (height <= 0) {
-                throw new IllegalArgumentException("height must be > 0");
-            }
-        }
-
-        /**
-         * Returns a default configuration.
-         *
-         * <p>By default, the application exits when the last viewer window is closed.</p>
-         *
-         * @return default configuration (never {@code null})
-         */
-        public static WindowConfig defaultConfig() {
-            return new WindowConfig("GraphFx – Pan & Zoom", DEFAULT_WIDTH, DEFAULT_HEIGHT, true, true);
-        }
+        final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
+        final PlotResult plotResult = graphFxCalculatorEngine.evaluate(expression, variables, viewportSnapshot);
+        gridPane.setPlotResult(plotResult);
     }
 
 }
