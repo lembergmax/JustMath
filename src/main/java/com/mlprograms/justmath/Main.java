@@ -24,7 +24,11 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
+
+import java.util.Map;
 
 public final class Main {
 
@@ -34,6 +38,8 @@ public final class Main {
         // graphFxViewer.show();
 
         final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
+        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(new BigNumber("-100"), new BigNumber("100"), new BigNumber("-100"), new BigNumber("100"), new BigNumber("1"));
+        System.out.println(graphFxCalculatorEngine.evaluate("x", Map.of(), viewportSnapshot));
         // final PlotRequest plotRequest = new PlotRequest();
 
         // graphFxCalculatorEngine.evaluate(plotRequest);
