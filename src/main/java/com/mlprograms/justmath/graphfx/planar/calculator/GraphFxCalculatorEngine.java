@@ -25,11 +25,12 @@
 package com.mlprograms.justmath.graphfx.planar.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.graphfx.ReservedVariables;
-import com.mlprograms.justmath.graphfx.planar.model.*;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
 import lombok.NonNull;
 
@@ -40,9 +41,11 @@ import java.util.*;
 import static com.mlprograms.justmath.bignumber.BigNumbers.TWO;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
-public class GraphFxCalculatorEngine {
+public final class GraphFxCalculatorEngine {
 
-    private final CalculatorEngine CALCULATOR_ENGINE = new CalculatorEngine(new MathContext(10, RoundingMode.HALF_UP), TrigonometricMode.RAD);
+    private static final int MAXIMUM_GRID_POINT_COUNT = 2_000_000;
+
+    private final CalculatorEngine calculatorEngine = new CalculatorEngine(new MathContext(10, RoundingMode.HALF_UP), TrigonometricMode.RAD);
 
     public PlotResult evaluate(@NonNull final String expression, @NonNull final ViewportSnapshot viewportSnapshot) {
         return evaluate(expression, Map.of(), viewportSnapshot);
@@ -53,200 +56,288 @@ public class GraphFxCalculatorEngine {
             return new PlotResult();
         }
 
-        final BigNumber minX = viewportSnapshot.minX();
-        final BigNumber maxX = viewportSnapshot.maxX();
-        final BigNumber minY = viewportSnapshot.minY();
-        final BigNumber maxY = viewportSnapshot.maxY();
-        final BigNumber step = viewportSnapshot.cellSize();
+        final BigNumber minimumXValue = viewportSnapshot.minX();
+        final BigNumber maximumXValue = viewportSnapshot.maxX();
+        final BigNumber minimumYValue = viewportSnapshot.minY();
+        final BigNumber maximumYValue = viewportSnapshot.maxY();
+        final BigNumber cellSize = viewportSnapshot.cellSize();
 
-        final List<PlotLine> plotLines = new ArrayList<>();
-        for (BigNumber y = minY; y.isLessThan(maxY); y = y.add(step)) {
-            final BigNumber yAfterStep = y.add(step);
-            if (yAfterStep.isGreaterThan(maxY)) {
-                break;
-            }
+        final BigNumber[] xAxisValues = createGridAxisValues(minimumXValue, maximumXValue, cellSize);
+        final BigNumber[] yAxisValues = createGridAxisValues(minimumYValue, maximumYValue, cellSize);
 
-            for (BigNumber x = minX; x.isLessThan(maxX); x = x.add(step)) {
-                final BigNumber xAfterStep = x.add(step);
-                if (xAfterStep.isGreaterThan(maxX)) {
-                    break;
-                }
+        if (xAxisValues.length < 2 || yAxisValues.length < 2) {
+            return new PlotResult();
+        }
 
-                final MarchingSquaresCell cell = evaluateMarchingSquaresCell(expression, variables, x, y, xAfterStep, yAfterStep);
-                if (cell == null) {
+        final long gridPointCount = (long) xAxisValues.length * (long) yAxisValues.length;
+        if (gridPointCount > MAXIMUM_GRID_POINT_COUNT) {
+            return new PlotResult();
+        }
+
+        final String[] xAxisValueStrings = convertBigNumbersToStrings(xAxisValues);
+        final String[] yAxisValueStrings = convertBigNumbersToStrings(yAxisValues);
+
+        final Map<String, String> combinedVariables = new HashMap<>(variables);
+
+        BigNumber[] lowerGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[0]);
+        BigNumber[] upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[1]);
+
+        final int xAxisCellCount = xAxisValues.length - 1;
+        final int yAxisCellCount = yAxisValues.length - 1;
+
+        final int initialPlotLineCapacity = Math.min(16_384, xAxisCellCount * 4);
+        final List<PlotLine> plotLines = new ArrayList<>(initialPlotLineCapacity);
+
+        for (int yAxisCellIndex = 0; yAxisCellIndex < yAxisCellCount; yAxisCellIndex++) {
+            final BigNumber lowerYValue = yAxisValues[yAxisCellIndex];
+            final BigNumber upperYValue = yAxisValues[yAxisCellIndex + 1];
+
+            for (int xAxisCellIndex = 0; xAxisCellIndex < xAxisCellCount; xAxisCellIndex++) {
+                final BigNumber leftXValue = xAxisValues[xAxisCellIndex];
+                final BigNumber rightXValue = xAxisValues[xAxisCellIndex + 1];
+
+                final BigNumber bottomLeftCornerValue = lowerGridRowValues[xAxisCellIndex];
+                final BigNumber bottomRightCornerValue = lowerGridRowValues[xAxisCellIndex + 1];
+                final BigNumber topRightCornerValue = upperGridRowValues[xAxisCellIndex + 1];
+                final BigNumber topLeftCornerValue = upperGridRowValues[xAxisCellIndex];
+
+                if (bottomLeftCornerValue == null || bottomRightCornerValue == null || topRightCornerValue == null || topLeftCornerValue == null) {
                     continue;
                 }
 
-                plotLines.addAll(createSegmentsForCell(cell));
+                if (canSkipCellBecauseNoContourCanExist(bottomLeftCornerValue, bottomRightCornerValue, topRightCornerValue, topLeftCornerValue)) {
+                    continue;
+                }
+
+                appendPlotLinesForCell(plotLines, expression, combinedVariables, leftXValue, lowerYValue, rightXValue, upperYValue, bottomLeftCornerValue, bottomRightCornerValue, topRightCornerValue, topLeftCornerValue);
+            }
+
+            final int nextUpperRowIndex = yAxisCellIndex + 2;
+            if (nextUpperRowIndex < yAxisValueStrings.length) {
+                lowerGridRowValues = upperGridRowValues;
+                upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[nextUpperRowIndex]);
             }
         }
 
         return new PlotResult(new ArrayList<>(), plotLines);
     }
 
-    private MarchingSquaresCell evaluateMarchingSquaresCell(final String expression, final Map<String, String> evaluationVariables, final BigNumber x1, final BigNumber y1, final BigNumber x2, final BigNumber y2) {
-        final BigNumber bottomLeft = evaluate(expression, evaluationVariables, x1, y1);
-        final BigNumber bottomRight = evaluate(expression, evaluationVariables, x2, y1);
-        final BigNumber topRight = evaluate(expression, evaluationVariables, x2, y2);
-        final BigNumber topLeft = evaluate(expression, evaluationVariables, x1, y2);
+    private static BigNumber[] createGridAxisValues(final BigNumber minimumValue, final BigNumber maximumValue, final BigNumber stepSize) {
+        final List<BigNumber> axisValues = new ArrayList<>();
 
-        if (bottomLeft == null || bottomRight == null || topRight == null || topLeft == null) {
-            return null;
+        for (BigNumber currentValue = minimumValue; !currentValue.isGreaterThan(maximumValue); currentValue = currentValue.add(stepSize)) {
+            axisValues.add(currentValue);
         }
 
-        final BigNumber cx = x1.add(x2).divide(TWO);
-        final BigNumber cy = y1.add(y2).divide(TWO);
-        final BigNumber center = evaluate(expression, evaluationVariables, cx, cy);
-        return new MarchingSquaresCell(x1, y1, x2, y2, bottomLeft, bottomRight, topRight, topLeft, center);
+        return axisValues.toArray(new BigNumber[0]);
     }
 
-    private List<PlotLine> createSegmentsForCell(final MarchingSquaresCell cell) {
-        final PlotPoint pointBottom = intersectionIfCrosses(cell.x1(), cell.y1(), cell.valueBottomLeft(), cell.x2(), cell.y1(), cell.valueBottomRight());
-        final PlotPoint pointRight = intersectionIfCrosses(cell.x2(), cell.y1(), cell.valueBottomRight(), cell.x2(), cell.y2(), cell.valueTopRight());
-        final PlotPoint pointTop = intersectionIfCrosses(cell.x2(), cell.y2(), cell.valueTopRight(), cell.x1(), cell.y2(), cell.valueTopLeft());
-        final PlotPoint pointLeft = intersectionIfCrosses(cell.x1(), cell.y2(), cell.valueTopLeft(), cell.x1(), cell.y1(), cell.valueBottomLeft());
-
-        final List<PlotPoint> intersections = new ArrayList<>(4);
-        final List<Edge> edges = new ArrayList<>(4);
-
-        addIfNotNull(intersections, edges, pointBottom, Edge.BOTTOM);
-        addIfNotNull(intersections, edges, pointRight, Edge.RIGHT);
-        addIfNotNull(intersections, edges, pointTop, Edge.TOP);
-        addIfNotNull(intersections, edges, pointLeft, Edge.LEFT);
-
-        final int count = intersections.size();
-        if (count == 0) {
-            return List.of();
+    private static String[] convertBigNumbersToStrings(final BigNumber[] values) {
+        final String[] stringValues = new String[values.length];
+        for (int index = 0; index < values.length; index++) {
+            stringValues[index] = values[index].toString();
         }
-        if (count == 2) {
-            return List.of(new PlotLine(List.of(intersections.get(0), intersections.get(1))));
-        }
-        if (count == 4) {
-            // Ambiger Fall (Case 5/10) -> Center entscheidet
-            final boolean centerPositive = cell.centerValue() != null && cell.centerValue().isGreaterThan(ZERO);
-
-            // Standard-Asymptotic-Decider-Style Pairing:
-            // - Wenn Center positiv: “negative corners” werden getrennt, sonst “positive corners”
-            // Wir brauchen dafür die tatsächliche Bit-Konstellation:
-            final int mask = marchingMask(cell.valueBottomLeft(), cell.valueBottomRight(), cell.valueTopRight(), cell.valueTopLeft());
-            return resolveAmbiguous(mask, centerPositive, pointBottom, pointRight, pointTop, pointLeft);
-        }
-
-        // count==1 oder 3 passiert bei exakten Nullen; kann man ignorieren oder extra behandeln
-        return List.of();
+        return stringValues;
     }
 
-    private BigNumber evaluate(final String expression, final Map<String, String> variables, final BigNumber x, final BigNumber y) {
+    private BigNumber[] evaluateGridRow(final String expression, final Map<String, String> combinedVariables, final String[] xAxisValueStrings, final String yAxisValueString) {
+        final BigNumber[] rowValues = new BigNumber[xAxisValueStrings.length];
+
+        combinedVariables.put(ReservedVariables.Y.getValue(), yAxisValueString);
+
+        for (int xAxisIndex = 0; xAxisIndex < xAxisValueStrings.length; xAxisIndex++) {
+            combinedVariables.put(ReservedVariables.X.getValue(), xAxisValueStrings[xAxisIndex]);
+
+            try {
+                rowValues[xAxisIndex] = calculatorEngine.evaluate(expression, combinedVariables);
+            } catch (final Exception ignored) {
+                rowValues[xAxisIndex] = null;
+            }
+        }
+
+        return rowValues;
+    }
+
+    private static boolean canSkipCellBecauseNoContourCanExist(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
+        final int bottomLeftSign = bottomLeftCornerValue.signum();
+        final int bottomRightSign = bottomRightCornerValue.signum();
+        final int topRightSign = topRightCornerValue.signum();
+        final int topLeftSign = topLeftCornerValue.signum();
+
+        final boolean cellContainsExactZero = bottomLeftSign == 0 || bottomRightSign == 0 || topRightSign == 0 || topLeftSign == 0;
+
+        if (cellContainsExactZero) {
+            return false;
+        }
+
+        final boolean allCornerValuesArePositive = bottomLeftSign > 0 && bottomRightSign > 0 && topRightSign > 0 && topLeftSign > 0;
+
+        final boolean allCornerValuesAreNegative = bottomLeftSign < 0 && bottomRightSign < 0 && topRightSign < 0 && topLeftSign < 0;
+
+        return allCornerValuesArePositive || allCornerValuesAreNegative;
+    }
+
+    private void appendPlotLinesForCell(final List<PlotLine> plotLines, final String expression, final Map<String, String> combinedVariables, final BigNumber leftXValue, final BigNumber lowerYValue, final BigNumber rightXValue, final BigNumber upperYValue, final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
+
+        final PlotPoint bottomIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(leftXValue, lowerYValue, bottomLeftCornerValue, rightXValue, lowerYValue, bottomRightCornerValue);
+
+        final PlotPoint rightIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(rightXValue, lowerYValue, bottomRightCornerValue, rightXValue, upperYValue, topRightCornerValue);
+
+        final PlotPoint topIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(rightXValue, upperYValue, topRightCornerValue, leftXValue, upperYValue, topLeftCornerValue);
+
+        final PlotPoint leftIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(leftXValue, upperYValue, topLeftCornerValue, leftXValue, lowerYValue, bottomLeftCornerValue);
+
+        final PlotPoint[] uniqueIntersectionPoints = new PlotPoint[4];
+        int uniqueIntersectionPointCount = 0;
+
+        uniqueIntersectionPointCount = addUniquePlotPoint(uniqueIntersectionPoints, uniqueIntersectionPointCount, bottomIntersectionPoint);
+        uniqueIntersectionPointCount = addUniquePlotPoint(uniqueIntersectionPoints, uniqueIntersectionPointCount, rightIntersectionPoint);
+        uniqueIntersectionPointCount = addUniquePlotPoint(uniqueIntersectionPoints, uniqueIntersectionPointCount, topIntersectionPoint);
+        uniqueIntersectionPointCount = addUniquePlotPoint(uniqueIntersectionPoints, uniqueIntersectionPointCount, leftIntersectionPoint);
+
+        if (uniqueIntersectionPointCount == 0) {
+            return;
+        }
+
+        if (uniqueIntersectionPointCount == 2) {
+            plotLines.add(new PlotLine(List.of(uniqueIntersectionPoints[0], uniqueIntersectionPoints[1])));
+            return;
+        }
+
+        if (uniqueIntersectionPointCount != 4) {
+            return;
+        }
+
+        final int marchingSquaresMask = computeMarchingSquaresMask(bottomLeftCornerValue, bottomRightCornerValue, topRightCornerValue, topLeftCornerValue);
+
+        if (marchingSquaresMask == 5 || marchingSquaresMask == 10) {
+            final BigNumber centerXValue = leftXValue.add(rightXValue).divide(TWO);
+            final BigNumber centerYValue = lowerYValue.add(upperYValue).divide(TWO);
+
+            final BigNumber centerValue = tryEvaluateAt(expression, combinedVariables, centerXValue, centerYValue);
+            final boolean centerValueIsPositive = centerValue != null && centerValue.isGreaterThan(ZERO);
+
+            if (marchingSquaresMask == 5) {
+                if (centerValueIsPositive) {
+                    plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, rightIntersectionPoint)));
+                    plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
+                } else {
+                    plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, leftIntersectionPoint)));
+                    plotLines.add(new PlotLine(List.of(topIntersectionPoint, rightIntersectionPoint)));
+                }
+                return;
+            }
+
+            if (centerValueIsPositive) {
+                plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, leftIntersectionPoint)));
+                plotLines.add(new PlotLine(List.of(rightIntersectionPoint, topIntersectionPoint)));
+            } else {
+                plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, rightIntersectionPoint)));
+                plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
+            }
+            return;
+        }
+
+        plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, rightIntersectionPoint)));
+        plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
+    }
+
+    private BigNumber tryEvaluateAt(final String expression, final Map<String, String> combinedVariables, final BigNumber xValue, final BigNumber yValue) {
         try {
-            final Map<String, String> combinedVariables = new HashMap<>(variables);
-            combinedVariables.put(ReservedVariables.X.getValue(), x.toString());
-            combinedVariables.put(ReservedVariables.Y.getValue(), y.toString());
-
-            return CALCULATOR_ENGINE.evaluate(expression, combinedVariables);
-        } catch (final Exception exception) {
+            combinedVariables.put(ReservedVariables.X.getValue(), xValue.toString());
+            combinedVariables.put(ReservedVariables.Y.getValue(), yValue.toString());
+            return calculatorEngine.evaluate(expression, combinedVariables);
+        } catch (final Exception ignored) {
             return null;
         }
     }
 
-    private static int marchingMask(final BigNumber bl, final BigNumber br, final BigNumber tr, final BigNumber tl) {
+    private static int addUniquePlotPoint(final PlotPoint[] plotPoints, final int currentCount, final PlotPoint candidate) {
+        if (candidate == null) {
+            return currentCount;
+        }
+
+        for (int index = 0; index < currentCount; index++) {
+            if (plotPoints[index].equals(candidate)) {
+                return currentCount;
+            }
+        }
+
+        plotPoints[currentCount] = candidate;
+        return currentCount + 1;
+    }
+
+    private static int computeMarchingSquaresMask(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
         int mask = 0;
-        if (bl.isGreaterThan(ZERO)) {
-            mask |= 1; // bit0
+
+        if (bottomLeftCornerValue.isGreaterThan(ZERO)) {
+            mask |= 1;
         }
-        if (br.isGreaterThan(ZERO)) {
-            mask |= 2; // bit1
+        if (bottomRightCornerValue.isGreaterThan(ZERO)) {
+            mask |= 2;
         }
-        if (tr.isGreaterThan(ZERO)) {
-            mask |= 4; // bit2
+        if (topRightCornerValue.isGreaterThan(ZERO)) {
+            mask |= 4;
         }
-        if (tl.isGreaterThan(ZERO)) {
-            mask |= 8; // bit3
+        if (topLeftCornerValue.isGreaterThan(ZERO)) {
+            mask |= 8;
         }
 
         return mask;
     }
 
-    private static List<PlotLine> resolveAmbiguous(final int mask, final boolean centerPositive, final PlotPoint bottom, final PlotPoint right, final PlotPoint top, final PlotPoint left) {
-        // Ambige Masks: 5 (0101) und 10 (1010)
-        if (mask == 5) {
-            if (centerPositive) {
-                return List.of(new PlotLine(List.of(bottom, right)), new PlotLine(List.of(top, left)));
-            }
-            return List.of(new PlotLine(List.of(bottom, left)), new PlotLine(List.of(top, right)));
-        }
-
-        if (mask == 10) {
-            if (centerPositive) {
-                return List.of(new PlotLine(List.of(bottom, left)), new PlotLine(List.of(right, top)));
-            }
-            return List.of(new PlotLine(List.of(bottom, right)), new PlotLine(List.of(top, left)));
-        }
-
-        // Falls du mal bei count==4 landest obwohl nicht 5/10:
-        return List.of(new PlotLine(List.of(bottom, right)), new PlotLine(List.of(top, left)));
-    }
-
-    private PlotPoint intersectionIfCrosses(final BigNumber x1, final BigNumber y1, final BigNumber v1, final BigNumber x2, final BigNumber y2, final BigNumber v2) {
-        if (!hasOppositeSigns(v1, v2)) {
+    private PlotPoint computeIntersectionPointIfContourCrossesEdge(final BigNumber firstXValue, final BigNumber firstYValue, final BigNumber firstFunctionValue, final BigNumber secondXValue, final BigNumber secondYValue, final BigNumber secondFunctionValue) {
+        if (firstFunctionValue.isEqualTo(ZERO) && secondFunctionValue.isEqualTo(ZERO)) {
             return null;
         }
 
-        if (v1.isEqualTo(BigNumbers.ZERO)) {
-            return new PlotPoint(x1, y1);
+        if (firstFunctionValue.isEqualTo(ZERO)) {
+            return new PlotPoint(firstXValue, firstYValue);
         }
-        if (v2.isEqualTo(BigNumbers.ZERO)) {
-            return new PlotPoint(x2, y2);
+        if (secondFunctionValue.isEqualTo(ZERO)) {
+            return new PlotPoint(secondXValue, secondYValue);
         }
 
-        final BigNumber denominator = v1.subtract(v2);
+        final int firstSign = firstFunctionValue.signum();
+        final int secondSign = secondFunctionValue.signum();
+
+        if (firstSign == 0 || secondSign == 0 || firstSign == secondSign) {
+            return null;
+        }
+
+        final BigNumber denominator = firstFunctionValue.subtract(secondFunctionValue);
         if (denominator.isEqualTo(ZERO)) {
             return null;
         }
 
-        final BigNumber t = v1.divide(denominator);
+        final BigNumber interpolationFactor = firstFunctionValue.divide(denominator);
 
-        final BigNumber ix = x1.add(x2.subtract(x1).multiply(t));
-        final BigNumber iy = y1.add(y2.subtract(y1).multiply(t));
+        final BigNumber interpolatedXValue = firstXValue.add(secondXValue.subtract(firstXValue).multiply(interpolationFactor));
+        final BigNumber interpolatedYValue = firstYValue.add(secondYValue.subtract(firstYValue).multiply(interpolationFactor));
 
-        return new PlotPoint(ix, iy);
-    }
-
-    private static boolean hasOppositeSigns(final BigNumber a, final BigNumber b) {
-        final boolean aPos = a.isGreaterThan(ZERO);
-        final boolean bPos = b.isGreaterThan(ZERO);
-        final boolean aNeg = a.isLessThan(ZERO);
-        final boolean bNeg = b.isLessThan(ZERO);
-
-        return (aPos && bNeg) || (aNeg && bPos);
-    }
-
-    private static void addIfNotNull(final List<PlotPoint> points, final List<Edge> edges, final PlotPoint point, final Edge edge) {
-        if (point == null) {
-            return;
-        }
-
-        points.add(point);
-        edges.add(edge);
+        return new PlotPoint(interpolatedXValue, interpolatedYValue);
     }
 
     private boolean isRequestValid(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
-        if (expression.isBlank()) {
+        if (expression == null || expression.isBlank()) {
             return false;
         }
-
+        if (viewportSnapshot == null) {
+            return false;
+        }
+        if (viewportSnapshot.cellSize().isLessThanOrEqualTo(ZERO)) {
+            return false;
+        }
         if (variablesContainReservedVariables(variables.keySet())) {
             return false;
         }
 
-        if (viewportSnapshot == null) {
-            return false;
-        }
+        final BigNumber minimumXValue = viewportSnapshot.minX();
+        final BigNumber maximumXValue = viewportSnapshot.maxX();
+        final BigNumber minimumYValue = viewportSnapshot.minY();
+        final BigNumber maximumYValue = viewportSnapshot.maxY();
 
-        if (viewportSnapshot.cellSize().isLessThanOrEqualTo(ZERO)) {
-            return false;
-        }
-
-        return areMinMaxValid(viewportSnapshot.minX(), viewportSnapshot.maxX(), viewportSnapshot.minY(), viewportSnapshot.maxY());
+        return minimumXValue.isLessThan(maximumXValue) && minimumYValue.isLessThan(maximumYValue);
     }
 
     private boolean variablesContainReservedVariables(final Set<String> variableNames) {
@@ -261,17 +352,6 @@ public class GraphFxCalculatorEngine {
         }
 
         return false;
-    }
-
-    private boolean areMinMaxValid(final BigNumber minX, final BigNumber maxX, final BigNumber minY, final BigNumber maxY) {
-        if (minX.isGreaterThanOrEqualTo(maxX)) {
-            return false;
-        }
-        if (minY.isGreaterThanOrEqualTo(maxY)) {
-            return false;
-        }
-
-        return true;
     }
 
 }
