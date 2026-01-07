@@ -29,11 +29,10 @@ import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.graphfx.ReservedVariables;
-import com.mlprograms.justmath.graphfx.planar.model.PlotRequest;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
 import lombok.NonNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,49 +43,44 @@ public class GraphFxCalculatorEngine {
     private BigNumber x;
     private BigNumber y;
 
-    private PlotResult evaluate(@NonNull final PlotRequest plotRequest) {
-        if (!isPlotRequestDataValid(plotRequest)) {
+    public PlotResult evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final ViewportSnapshot viewportSnapshot) {
+        if (!isRequestValid(expression, variables, viewportSnapshot)) {
             return new PlotResult();
         }
 
-        final Map<String, String> combinedVariables = new HashMap<>(plotRequest.getVariables());
-        combinedVariables.put(ReservedVariables.X.getValue(), x.toString());
-        combinedVariables.put(ReservedVariables.Y.getValue(), y.toString());
+        // TODO: implement the actual plotting algorithm (sampling + discontinuity detection + line splitting).
+        // For now we only validate and provide the view-derived boundaries.
 
-        final BigNumber result = CALCULATOR_ENGINE.evaluate(plotRequest.getExpression(), combinedVariables);
         return new PlotResult();
     }
 
-    private boolean isPlotRequestDataValid(final PlotRequest plotRequest) {
-        if (plotRequest == null) {
+    private boolean isRequestValid(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
+        if (expression.isBlank()) {
             return false;
         }
 
-        if (plotRequest.getExpression().isBlank()) {
+        if (variablesContainReservedVariables(variables.keySet())) {
             return false;
         }
 
-        if (plotRequest.getCellSize().isLessThanOrEqualTo(BigNumbers.ZERO)) {
+        if (viewportSnapshot == null) {
             return false;
         }
 
-        if (!isMinMaxValid(plotRequest.getMinX(), plotRequest.getMaxX(), plotRequest.getMinY(), plotRequest.getMaxY())) {
+        if (viewportSnapshot.cellSize().isLessThanOrEqualTo(BigNumbers.ZERO)) {
             return false;
         }
 
-        if (variablesContainReservedVariable(plotRequest.getVariables().keySet())) {
-            return false;
-        }
-
-        return true;
+        return areMinMaxValid(viewportSnapshot.minX(), viewportSnapshot.maxX(), viewportSnapshot.minY(), viewportSnapshot.maxY());
     }
 
-    private boolean variablesContainReservedVariable(final Set<String> variablesKeySet) {
-        for (final String key : variablesKeySet) {
-            if (key.equals(ReservedVariables.X.getValue())) {
-                return true;
+    private boolean variablesContainReservedVariables(final Set<String> variableNames) {
+        for (final String variableName : variableNames) {
+            if (variableName == null) {
+                continue;
             }
-            if (key.equals(ReservedVariables.Y.getValue())) {
+
+            if (variableName.equals(ReservedVariables.X.getValue()) || variableName.equals(ReservedVariables.Y.getValue())) {
                 return true;
             }
         }
@@ -94,11 +88,10 @@ public class GraphFxCalculatorEngine {
         return false;
     }
 
-    private boolean isMinMaxValid(final BigNumber minX, final BigNumber maxX, final BigNumber minY, final BigNumber maxY) {
+    private boolean areMinMaxValid(final BigNumber minX, final BigNumber maxX, final BigNumber minY, final BigNumber maxY) {
         if (minX.isGreaterThanOrEqualTo(maxX)) {
             return false;
         }
-
         if (minY.isGreaterThanOrEqualTo(maxY)) {
             return false;
         }
