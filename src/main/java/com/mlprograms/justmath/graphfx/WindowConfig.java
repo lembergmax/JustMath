@@ -24,24 +24,38 @@
 
 package com.mlprograms.justmath.graphfx;
 
-import java.util.Objects;
-
 public record WindowConfig(String title, int width, int height, boolean exitApplicationOnLastViewerClose) {
 
+    public static final String DEFAULT_TITLE = "GraphFxViewer";
     public static final int DEFAULT_WIDTH = 1200;
     public static final int DEFAULT_HEIGHT = 800;
 
-    public WindowConfig {
-        Objects.requireNonNull(title, "title must not be null");
-        if (title.isBlank()) {
-            throw new IllegalArgumentException("title must not be blank");
-        }
-        if (width <= 0) {
-            throw new IllegalArgumentException("width must be > 0");
-        }
-        if (height <= 0) {
-            throw new IllegalArgumentException("height must be > 0");
-        }
+    public WindowConfig() {
+        this(DEFAULT_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
+    }
+
+    public WindowConfig(final String title) {
+        this(title, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
+    }
+
+    public WindowConfig(final int width, final int height) {
+        this(DEFAULT_TITLE, width, height, true);
+    }
+
+    public WindowConfig(final boolean exitApplicationOnLastViewerClose) {
+        this(DEFAULT_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT, exitApplicationOnLastViewerClose);
+    }
+
+    public WindowConfig(final String title, final boolean exitApplicationOnLastViewerClose) {
+        this(title, DEFAULT_WIDTH, DEFAULT_HEIGHT, exitApplicationOnLastViewerClose);
+    }
+
+    public WindowConfig(final int width, final int height, final boolean exitApplicationOnLastViewerClose) {
+        this(DEFAULT_TITLE, width, height, exitApplicationOnLastViewerClose);
+    }
+
+    public WindowConfig(final String title, final int width, final int height) {
+        this(title, width, height, true);
     }
 
     public static WindowConfig defaultConfig() {
