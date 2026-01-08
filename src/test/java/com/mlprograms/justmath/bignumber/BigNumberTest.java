@@ -1261,12 +1261,12 @@ public class BigNumberTest {
 
         @Test
         void floatValueTest() {
-            assertEquals(123.0f, new BigNumber("123.45").floatValue());
+            assertEquals(123.45f, new BigNumber("123.45").floatValue());
         }
 
         @Test
         void doubleValueTest() {
-            assertEquals(123.0, new BigNumber("123.45").doubleValue());
+            assertEquals(123.45, new BigNumber("123.45").doubleValue());
         }
 
         @Test
