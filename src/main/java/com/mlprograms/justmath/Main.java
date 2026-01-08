@@ -24,11 +24,8 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
-import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphfx.WindowConfig;
 import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
-import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
 
 public final class Main {
 
@@ -58,10 +55,11 @@ public final class Main {
 //        result = graphFxCalculatorEngine.evaluate("sin(5*x) + sin(5*y) + 0.5*sin(3*x + 4*y) + 0.25*sin(7*x - 2*y) - 0.1", viewportSnapshot);
 //        System.out.println("lines = " + result.plotLines().size());
 
-        final GraphFxViewer graphFxViewer = new GraphFxViewer();
+        final WindowConfig windowConfig = new WindowConfig();
+        final GraphFxViewer graphFxViewer = new GraphFxViewer(windowConfig);
         graphFxViewer.show();
-        // graphFxViewer.plotExpression("sin(x)");
-        graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
+        graphFxViewer.plotExpression("|y|^x=|x+2|");
+        //graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
 
     }
 
