@@ -60,7 +60,8 @@ public final class Main {
 
         final GraphFxViewer graphFxViewer = new GraphFxViewer();
         graphFxViewer.show();
-        graphFxViewer.plot("sin(x)-y");
+        // graphFxViewer.plotExpression("sin(x)");
+        graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
 
     }
 
