@@ -60,6 +60,7 @@ public final class GraphFxCalculatorEngine {
 
     public PlotResult evaluate(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
         validateRequest(expression, variables, viewportSnapshot);
+        final String normalizedExpression = GraphFxCalculatorEngineUtils.normalizeExpression(expression);
 
         final BigNumber minimumXValue = viewportSnapshot.minX();
         final BigNumber maximumXValue = viewportSnapshot.maxX();
@@ -81,8 +82,8 @@ public final class GraphFxCalculatorEngine {
 
         final Map<String, String> combinedVariables = new HashMap<>(variables);
 
-        BigNumber[] lowerGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[0]);
-        BigNumber[] upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[1]);
+        BigNumber[] lowerGridRowValues = evaluateGridRow(normalizedExpression, combinedVariables, xAxisValues, yAxisValues[0]);
+        BigNumber[] upperGridRowValues = evaluateGridRow(normalizedExpression, combinedVariables, xAxisValues, yAxisValues[1]);
 
         final int xAxisCellCount = xAxisValues.length - 1;
         final int yAxisCellCount = yAxisValues.length - 1;
@@ -111,13 +112,13 @@ public final class GraphFxCalculatorEngine {
                     continue;
                 }
 
-                appendPlotLinesForCell(plotLines, expression, combinedVariables, leftXValue, lowerYValue, rightXValue, upperYValue, bottomLeftCornerValue, bottomRightCornerValue, topRightCornerValue, topLeftCornerValue);
+                appendPlotLinesForCell(plotLines, normalizedExpression, combinedVariables, leftXValue, lowerYValue, rightXValue, upperYValue, bottomLeftCornerValue, bottomRightCornerValue, topRightCornerValue, topLeftCornerValue);
             }
 
             final int nextUpperRowIndex = yAxisCellIndex + 2;
             if (nextUpperRowIndex < yAxisValues.length) {
                 lowerGridRowValues = upperGridRowValues;
-                upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[nextUpperRowIndex]);
+                upperGridRowValues = evaluateGridRow(normalizedExpression, combinedVariables, xAxisValues, yAxisValues[nextUpperRowIndex]);
             }
         }
 
