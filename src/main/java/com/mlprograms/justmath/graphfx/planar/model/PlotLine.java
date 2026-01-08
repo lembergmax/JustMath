@@ -8,5 +8,5 @@ public record PlotLine(List<PlotPoint> plotPoints) {
     public PlotLine {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
     }
-    
+
 }
