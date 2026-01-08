@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 2026 Max Lemberg
- *
- * This file is part of JustMath.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the “Software”), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package com.mlprograms.justmath.graphfx.planar.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -32,7 +8,6 @@ import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
 import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -43,18 +18,24 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 
 public final class GraphFxCalculatorEngine {
 
-    private static final int MAXIMUM_GRID_POINT_COUNT = 2_000_000;
+    private final int MAXIMUM_GRID_POINT_COUNT = 2_000_000;
 
-    private final CalculatorEngine calculatorEngine = new CalculatorEngine(new MathContext(10, RoundingMode.HALF_UP), TrigonometricMode.RAD);
+    private final CalculatorEngine calculatorEngine;
 
-    public PlotResult evaluate(@NonNull final String expression, @NonNull final ViewportSnapshot viewportSnapshot) {
+    public GraphFxCalculatorEngine() {
+        this(new CalculatorEngine(new MathContext(32, RoundingMode.HALF_UP), TrigonometricMode.RAD));
+    }
+
+    public GraphFxCalculatorEngine(final CalculatorEngine calculatorEngine) {
+        this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "calculatorEngine must not be null");
+    }
+
+    public PlotResult evaluate(final String expression, final ViewportSnapshot viewportSnapshot) {
         return evaluate(expression, Map.of(), viewportSnapshot);
     }
 
-    public PlotResult evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables, @NonNull final ViewportSnapshot viewportSnapshot) {
-        if (!isRequestValid(expression, variables, viewportSnapshot)) {
-            return new PlotResult();
-        }
+    public PlotResult evaluate(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
+        validateRequest(expression, variables, viewportSnapshot);
 
         final BigNumber minimumXValue = viewportSnapshot.minX();
         final BigNumber maximumXValue = viewportSnapshot.maxX();
@@ -71,16 +52,13 @@ public final class GraphFxCalculatorEngine {
 
         final long gridPointCount = (long) xAxisValues.length * (long) yAxisValues.length;
         if (gridPointCount > MAXIMUM_GRID_POINT_COUNT) {
-            return new PlotResult();
+            throw new IllegalArgumentException("Viewport grid is too large: " + gridPointCount + " points (max " + MAXIMUM_GRID_POINT_COUNT + ")");
         }
-
-        final String[] xAxisValueStrings = convertBigNumbersToStrings(xAxisValues);
-        final String[] yAxisValueStrings = convertBigNumbersToStrings(yAxisValues);
 
         final Map<String, String> combinedVariables = new HashMap<>(variables);
 
-        BigNumber[] lowerGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[0]);
-        BigNumber[] upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[1]);
+        BigNumber[] lowerGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[0]);
+        BigNumber[] upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[1]);
 
         final int xAxisCellCount = xAxisValues.length - 1;
         final int yAxisCellCount = yAxisValues.length - 1;
@@ -113,16 +91,16 @@ public final class GraphFxCalculatorEngine {
             }
 
             final int nextUpperRowIndex = yAxisCellIndex + 2;
-            if (nextUpperRowIndex < yAxisValueStrings.length) {
+            if (nextUpperRowIndex < yAxisValues.length) {
                 lowerGridRowValues = upperGridRowValues;
-                upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValueStrings, yAxisValueStrings[nextUpperRowIndex]);
+                upperGridRowValues = evaluateGridRow(expression, combinedVariables, xAxisValues, yAxisValues[nextUpperRowIndex]);
             }
         }
 
         return new PlotResult(new ArrayList<>(), plotLines);
     }
 
-    private static BigNumber[] createGridAxisValues(final BigNumber minimumValue, final BigNumber maximumValue, final BigNumber stepSize) {
+    private BigNumber[] createGridAxisValues(final BigNumber minimumValue, final BigNumber maximumValue, final BigNumber stepSize) {
         final List<BigNumber> axisValues = new ArrayList<>();
 
         for (BigNumber currentValue = minimumValue; !currentValue.isGreaterThan(maximumValue); currentValue = currentValue.add(stepSize)) {
@@ -132,25 +110,17 @@ public final class GraphFxCalculatorEngine {
         return axisValues.toArray(new BigNumber[0]);
     }
 
-    private static String[] convertBigNumbersToStrings(final BigNumber[] values) {
-        final String[] stringValues = new String[values.length];
-        for (int index = 0; index < values.length; index++) {
-            stringValues[index] = values[index].toString();
-        }
-        return stringValues;
-    }
+    private BigNumber[] evaluateGridRow(final String expression, final Map<String, String> combinedVariables, final BigNumber[] xAxisValues, final BigNumber yAxisValue) {
+        final BigNumber[] rowValues = new BigNumber[xAxisValues.length];
 
-    private BigNumber[] evaluateGridRow(final String expression, final Map<String, String> combinedVariables, final String[] xAxisValueStrings, final String yAxisValueString) {
-        final BigNumber[] rowValues = new BigNumber[xAxisValueStrings.length];
+        combinedVariables.put(ReservedVariables.Y.getValue(), yAxisValue.toString());
 
-        combinedVariables.put(ReservedVariables.Y.getValue(), yAxisValueString);
-
-        for (int xAxisIndex = 0; xAxisIndex < xAxisValueStrings.length; xAxisIndex++) {
-            combinedVariables.put(ReservedVariables.X.getValue(), xAxisValueStrings[xAxisIndex]);
+        for (int xAxisIndex = 0; xAxisIndex < xAxisValues.length; xAxisIndex++) {
+            combinedVariables.put(ReservedVariables.X.getValue(), xAxisValues[xAxisIndex].toString());
 
             try {
                 rowValues[xAxisIndex] = calculatorEngine.evaluate(expression, combinedVariables);
-            } catch (final Exception ignored) {
+            } catch (final RuntimeException ignored) {
                 rowValues[xAxisIndex] = null;
             }
         }
@@ -158,33 +128,27 @@ public final class GraphFxCalculatorEngine {
         return rowValues;
     }
 
-    private static boolean canSkipCellBecauseNoContourCanExist(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
+    private boolean canSkipCellBecauseNoContourCanExist(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
         final int bottomLeftSign = bottomLeftCornerValue.signum();
         final int bottomRightSign = bottomRightCornerValue.signum();
         final int topRightSign = topRightCornerValue.signum();
         final int topLeftSign = topLeftCornerValue.signum();
 
         final boolean cellContainsExactZero = bottomLeftSign == 0 || bottomRightSign == 0 || topRightSign == 0 || topLeftSign == 0;
-
         if (cellContainsExactZero) {
             return false;
         }
 
         final boolean allCornerValuesArePositive = bottomLeftSign > 0 && bottomRightSign > 0 && topRightSign > 0 && topLeftSign > 0;
-
         final boolean allCornerValuesAreNegative = bottomLeftSign < 0 && bottomRightSign < 0 && topRightSign < 0 && topLeftSign < 0;
 
         return allCornerValuesArePositive || allCornerValuesAreNegative;
     }
 
     private void appendPlotLinesForCell(final List<PlotLine> plotLines, final String expression, final Map<String, String> combinedVariables, final BigNumber leftXValue, final BigNumber lowerYValue, final BigNumber rightXValue, final BigNumber upperYValue, final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
-
         final PlotPoint bottomIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(leftXValue, lowerYValue, bottomLeftCornerValue, rightXValue, lowerYValue, bottomRightCornerValue);
-
         final PlotPoint rightIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(rightXValue, lowerYValue, bottomRightCornerValue, rightXValue, upperYValue, topRightCornerValue);
-
         final PlotPoint topIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(rightXValue, upperYValue, topRightCornerValue, leftXValue, upperYValue, topLeftCornerValue);
-
         final PlotPoint leftIntersectionPoint = computeIntersectionPointIfContourCrossesEdge(leftXValue, upperYValue, topLeftCornerValue, leftXValue, lowerYValue, bottomLeftCornerValue);
 
         final PlotPoint[] uniqueIntersectionPoints = new PlotPoint[4];
@@ -218,23 +182,11 @@ public final class GraphFxCalculatorEngine {
             final boolean centerValueIsPositive = centerValue != null && centerValue.isGreaterThan(ZERO);
 
             if (marchingSquaresMask == 5) {
-                if (centerValueIsPositive) {
-                    plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, rightIntersectionPoint)));
-                    plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
-                } else {
-                    plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, leftIntersectionPoint)));
-                    plotLines.add(new PlotLine(List.of(topIntersectionPoint, rightIntersectionPoint)));
-                }
+                addPlotLines(plotLines, bottomIntersectionPoint, topIntersectionPoint, leftIntersectionPoint, rightIntersectionPoint, centerValueIsPositive, List.of(bottomIntersectionPoint, leftIntersectionPoint), List.of(topIntersectionPoint, rightIntersectionPoint));
                 return;
             }
 
-            if (centerValueIsPositive) {
-                plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, leftIntersectionPoint)));
-                plotLines.add(new PlotLine(List.of(rightIntersectionPoint, topIntersectionPoint)));
-            } else {
-                plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, rightIntersectionPoint)));
-                plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
-            }
+            addPlotLines(plotLines, bottomIntersectionPoint, rightIntersectionPoint, topIntersectionPoint, leftIntersectionPoint, centerValueIsPositive, List.of(bottomIntersectionPoint, rightIntersectionPoint), List.of(topIntersectionPoint, leftIntersectionPoint));
             return;
         }
 
@@ -242,17 +194,27 @@ public final class GraphFxCalculatorEngine {
         plotLines.add(new PlotLine(List.of(topIntersectionPoint, leftIntersectionPoint)));
     }
 
+    private void addPlotLines(List<PlotLine> plotLines, PlotPoint bottomIntersectionPoint, PlotPoint rightIntersectionPoint, PlotPoint topIntersectionPoint, PlotPoint leftIntersectionPoint, boolean centerValueIsPositive, List<PlotPoint> bottomIntersectionPoint2, List<PlotPoint> topIntersectionPoint2) {
+        if (centerValueIsPositive) {
+            plotLines.add(new PlotLine(List.of(bottomIntersectionPoint, leftIntersectionPoint)));
+            plotLines.add(new PlotLine(List.of(rightIntersectionPoint, topIntersectionPoint)));
+        } else {
+            plotLines.add(new PlotLine(bottomIntersectionPoint2));
+            plotLines.add(new PlotLine(topIntersectionPoint2));
+        }
+    }
+
     private BigNumber tryEvaluateAt(final String expression, final Map<String, String> combinedVariables, final BigNumber xValue, final BigNumber yValue) {
         try {
             combinedVariables.put(ReservedVariables.X.getValue(), xValue.toString());
             combinedVariables.put(ReservedVariables.Y.getValue(), yValue.toString());
             return calculatorEngine.evaluate(expression, combinedVariables);
-        } catch (final Exception ignored) {
+        } catch (final RuntimeException ignored) {
             return null;
         }
     }
 
-    private static int addUniquePlotPoint(final PlotPoint[] plotPoints, final int currentCount, final PlotPoint candidate) {
+    private int addUniquePlotPoint(final PlotPoint[] plotPoints, final int currentCount, final PlotPoint candidate) {
         if (candidate == null) {
             return currentCount;
         }
@@ -267,7 +229,7 @@ public final class GraphFxCalculatorEngine {
         return currentCount + 1;
     }
 
-    private static int computeMarchingSquaresMask(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
+    private int computeMarchingSquaresMask(final BigNumber bottomLeftCornerValue, final BigNumber bottomRightCornerValue, final BigNumber topRightCornerValue, final BigNumber topLeftCornerValue) {
         int mask = 0;
 
         if (bottomLeftCornerValue.isGreaterThan(ZERO)) {
@@ -318,18 +280,18 @@ public final class GraphFxCalculatorEngine {
         return new PlotPoint(interpolatedXValue, interpolatedYValue);
     }
 
-    private boolean isRequestValid(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
+    private void validateRequest(final String expression, final Map<String, String> variables, final ViewportSnapshot viewportSnapshot) {
         if (expression == null || expression.isBlank()) {
-            return false;
+            throw new IllegalArgumentException("expression must not be null/blank");
         }
-        if (viewportSnapshot == null) {
-            return false;
-        }
+        Objects.requireNonNull(variables, "variables must not be null");
+        Objects.requireNonNull(viewportSnapshot, "viewportSnapshot must not be null");
+
         if (viewportSnapshot.cellSize().isLessThanOrEqualTo(ZERO)) {
-            return false;
+            throw new IllegalArgumentException("cellSize must be > 0");
         }
         if (variablesContainReservedVariables(variables.keySet())) {
-            return false;
+            throw new IllegalArgumentException("variables must not contain reserved names 'x' or 'y'");
         }
 
         final BigNumber minimumXValue = viewportSnapshot.minX();
@@ -337,7 +299,12 @@ public final class GraphFxCalculatorEngine {
         final BigNumber minimumYValue = viewportSnapshot.minY();
         final BigNumber maximumYValue = viewportSnapshot.maxY();
 
-        return minimumXValue.isLessThan(maximumXValue) && minimumYValue.isLessThan(maximumYValue);
+        if (!minimumXValue.isLessThan(maximumXValue)) {
+            throw new IllegalArgumentException("minX must be < maxX");
+        }
+        if (!minimumYValue.isLessThan(maximumYValue)) {
+            throw new IllegalArgumentException("minY must be < maxY");
+        }
     }
 
     private boolean variablesContainReservedVariables(final Set<String> variableNames) {
@@ -345,12 +312,10 @@ public final class GraphFxCalculatorEngine {
             if (variableName == null) {
                 continue;
             }
-
             if (variableName.equals(ReservedVariables.X.getValue()) || variableName.equals(ReservedVariables.Y.getValue())) {
                 return true;
             }
         }
-
         return false;
     }
 
