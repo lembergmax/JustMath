@@ -78,11 +78,11 @@ public final class GraphFxViewer {
         JavaFxRuntime.runOnFxThread(this::closeOnFxThread);
     }
 
-    public void plot(final String expression) {
-        plot(expression, Map.of());
+    public void plotExpression(final String expression) {
+        plotExpression(expression, Map.of());
     }
 
-    public void plot(final String expression, final Map<String, String> variables) {
+    public void plotExpression(final String expression, final Map<String, String> variables) {
         Objects.requireNonNull(expression, "expression must not be null");
         Objects.requireNonNull(variables, "variables must not be null");
 
@@ -167,7 +167,7 @@ public final class GraphFxViewer {
             final ViewportSnapshot viewportSnapshot = gridPane.tryCreateViewportSnapshot()
                     .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
 
-            final PlotResult plotResult = plotEngine.evaluate("(" + expression + ")-y", variables, viewportSnapshot);
+            final PlotResult plotResult = plotEngine.evaluate(expression, variables, viewportSnapshot);
             gridPane.setPlotResult(plotResult);
         } catch (final RuntimeException ex) {
             gridPane.clearPlot();
