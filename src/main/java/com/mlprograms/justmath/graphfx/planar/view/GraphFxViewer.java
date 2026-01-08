@@ -1,27 +1,3 @@
-/*
- * Copyright (c) 2025-2026 Max Lemberg
- *
- * This file is part of JustMath.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the “Software”), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package com.mlprograms.justmath.graphfx.planar.view;
 
 import com.mlprograms.justmath.graphfx.JavaFxRuntime;
@@ -32,98 +8,64 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * A minimal JavaFX viewer window that can be used like a library component:
- *
- * <pre>{@code
- * GraphFxPanZoomViewer viewer = new GraphFxPanZoomViewer();
- * viewer.show();
- * }</pre>
- *
- * <h2>Multiple windows</h2>
- * <p>Each instance manages its own {@link Stage} and its own {@link GridPane}. Pan/zoom state is independent.
- * All windows share the same JavaFX toolkit (JVM-global), which is started lazily.</p>
- *
- * <h2>Program exit</h2>
- * <p>By default, the program exits when the <i>last</i> viewer window is closed (via {@code X} button or
- * {@link #close()}). The exit is executed deferred to avoid re-entrancy issues during JavaFX close processing.</p>
- */
 public final class GraphFxViewer {
 
     @Getter
     private final WindowConfig windowConfig;
 
     private final GridPane gridPane;
+    private final GraphFxCalculatorEngine plotEngine;
+
     private Stage stage;
 
     private boolean closeWasRequested;
     private boolean trackedByExitPolicy;
 
-    /**
-     * Creates a viewer with a default configuration.
-     */
     public GraphFxViewer() {
         this(WindowConfig.defaultConfig());
     }
 
-    /**
-     * Creates a viewer with a custom title and default size.
-     *
-     * @param title the window title (must not be {@code null} or blank)
-     */
     public GraphFxViewer(final String title) {
-        this(new WindowConfig(title, WindowConfig.DEFAULT_WIDTH, WindowConfig.DEFAULT_HEIGHT, true, true));
+        this(new WindowConfig(title, WindowConfig.DEFAULT_WIDTH, WindowConfig.DEFAULT_HEIGHT, true));
     }
 
-    /**
-     * Creates a viewer with a given configuration.
-     *
-     * @param windowConfig the immutable window configuration (must not be {@code null})
-     */
     public GraphFxViewer(final WindowConfig windowConfig) {
         this.windowConfig = Objects.requireNonNull(windowConfig, "windowConfig must not be null");
         this.gridPane = new GridPane();
+        this.plotEngine = new GraphFxCalculatorEngine();
     }
 
-    /**
-     * Shows this viewer window.
-     *
-     * <p>The JavaFX runtime is started lazily on the first call. If the window does not exist yet,
-     * it is created and shown.</p>
-     */
     public void show() {
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(this::showOnFxThread);
     }
 
-    /**
-     * Hides this viewer window if it exists.
-     *
-     * <p>Hiding does not count as "closed" for the exit policy, so the program will not exit.</p>
-     */
     public void hide() {
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(this::hideOnFxThread);
     }
 
-    /**
-     * Closes this viewer window if it exists.
-     *
-     * <p>If this is the last tracked viewer window and the exit policy is enabled, the program exits.</p>
-     */
     public void close() {
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(this::closeOnFxThread);
     }
 
-    /**
-     * Shows the stage on the JavaFX Application Thread.
-     */
+    public void plot(final String expression) {
+        plot(expression, Map.of());
+    }
+
+    public void plot(final String expression, final Map<String, String> variables) {
+        Objects.requireNonNull(expression, "expression must not be null");
+        Objects.requireNonNull(variables, "variables must not be null");
+
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> plotOnFxThread(expression, variables));
+    }
+
     private void showOnFxThread() {
         if (stage == null) {
             stage = createStage();
@@ -137,34 +79,21 @@ public final class GraphFxViewer {
         stage.requestFocus();
     }
 
-    /**
-     * Hides the stage on the JavaFX Application Thread.
-     */
     private void hideOnFxThread() {
         if (stage == null) {
             return;
         }
-
         stage.hide();
     }
 
-    /**
-     * Closes the stage on the JavaFX Application Thread.
-     */
     private void closeOnFxThread() {
         if (stage == null) {
             return;
         }
-
         closeWasRequested = true;
         stage.close();
     }
 
-    /**
-     * Creates and configures the stage for this viewer instance.
-     *
-     * @return a fully configured stage (never {@code null})
-     */
     private Stage createStage() {
         final Stage newStage = new Stage();
         newStage.setTitle(windowConfig.title());
@@ -178,14 +107,6 @@ public final class GraphFxViewer {
         return newStage;
     }
 
-    /**
-     * Installs hooks that implement the "exit application on last viewer close" behavior.
-     *
-     * <p>Important: The actual {@code Platform.exit()} call is performed deferred (queued) by {@link JavaFxRuntime}
-     * to avoid re-entrancy during JavaFX close/hide processing.</p>
-     *
-     * @param stage the stage to configure (must not be {@code null})
-     */
     private void installExitPolicyHooksIfEnabled(final Stage stage) {
         Objects.requireNonNull(stage, "stage must not be null");
 
@@ -205,7 +126,7 @@ public final class GraphFxViewer {
             closeWasRequested = false;
 
             if (!treatAsClose) {
-                return; // hidden via hide() -> do not exit
+                return;
             }
 
             this.stage = null;
@@ -217,22 +138,16 @@ public final class GraphFxViewer {
         });
     }
 
-    public void plot(@NonNull final String expression) {
-        plot(expression, Map.of());
-    }
+    private void plotOnFxThread(final String expression, final Map<String, String> variables) {
+        try {
+            final ViewportSnapshot viewportSnapshot = gridPane.tryCreateViewportSnapshot()
+                    .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
 
-    public void plot(@NonNull final String expression, @NonNull final Map<String, String> variables) {
-        JavaFxRuntime.ensureStarted();
-        JavaFxRuntime.runOnFxThread(() -> plotOnFxThread(expression, variables));
-    }
-
-    private void plotOnFxThread(@NonNull final String expression, @NonNull final Map<String, String> variables) {
-        final ViewportSnapshot viewportSnapshot = gridPane.tryCreateViewportSnapshot()
-                .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
-
-        final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
-        final PlotResult plotResult = graphFxCalculatorEngine.evaluate(expression, variables, viewportSnapshot);
-        gridPane.setPlotResult(plotResult);
+            final PlotResult plotResult = plotEngine.evaluate(expression, variables, viewportSnapshot);
+            gridPane.setPlotResult(plotResult);
+        } catch (final RuntimeException ex) {
+            gridPane.clearPlot();
+        }
     }
 
 }
