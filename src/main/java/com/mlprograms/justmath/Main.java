@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -61,6 +61,8 @@ public final class Main {
         graphFxViewer.plotExpression("|y|^x=|x+2|");
         //graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
 
+
+        // System.out.println(new CalculatorEngine().evaluate("(10^10)^100000"));
     }
 
 }
