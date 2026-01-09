@@ -81,17 +81,6 @@ public final class BasicMath {
     private static final int EXP_MAX_ITERATIONS_HARD_LIMIT = 2000;
 
     /**
-     * Prevents instantiation of this utility class.
-     */
-    private BasicMath() {
-        throw new UnsupportedOperationException("Utility class");
-    }
-
-    // =================================================================================================================
-    // Public API
-    // =================================================================================================================
-
-    /**
      * Adds two {@link BigNumber} values using fast string-based decimal arithmetic.
      *
      * <p>Algorithm overview:
