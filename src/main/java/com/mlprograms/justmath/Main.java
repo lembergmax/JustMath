@@ -58,8 +58,11 @@ public final class Main {
         final WindowConfig windowConfig = new WindowConfig();
         final GraphFxViewer graphFxViewer = new GraphFxViewer(windowConfig);
         graphFxViewer.show();
-        graphFxViewer.plotExpression("|y|^x=|x+2|");
-        //graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
+        graphFxViewer.plotExpression("sin(x)");
+        graphFxViewer.plotExpression("cos(x)");
+        graphFxViewer.plotExpression("tan(x)");
+        // graphFxViewer.plotExpression("|y|^x=|x+2|");
+        // graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
 
 
         // System.out.println(new CalculatorEngine().evaluate("(10^10)^100000"));
