@@ -211,10 +211,6 @@ public final class HyperbolicTrigonometricMath {
         return rewrapWithRequestedMathContext(result, locale, mathContext);
     }
 
-    // =================================================================================================================
-    // Internal helpers
-    // =================================================================================================================
-
     /**
      * Holds {@code e^x} and {@code e^{-x}} for a given input {@code x}.
      *
