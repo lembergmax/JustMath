@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,29 +24,48 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
+import com.mlprograms.justmath.graphfx.WindowConfig;
+import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class Main {
+public final class Main {
 
     public static void main(final String[] args) {
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+//        final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
+//        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(
+//                new BigNumber("-5"),
+//                new BigNumber("5"),
+//                new BigNumber("-5"),
+//                new BigNumber("5"),
+//                new BigNumber("0.05")
+//        );
+//
+//        PlotResult result = graphFxCalculatorEngine.evaluate("sin(3*x)*cos(4*y) + sin(5*x + 2*y) - 0.15", viewportSnapshot);
+//        System.out.println("lines = " + result.plotLines().size());
+//
+//        result = graphFxCalculatorEngine.evaluate("sin(x^2 + y^2) + 0.35*sin(3*x) - 0.35*cos(3*y)", viewportSnapshot);
+//        System.out.println("lines = " + result.plotLines().size());
+//
+//        result = graphFxCalculatorEngine.evaluate("sin(6*sqrt(x^2+y^2)) + 0.4*sin(4*x)*sin(4*y) - 0.2", viewportSnapshot);
+//        System.out.println("lines = " + result.plotLines().size());
+//
+//        result = graphFxCalculatorEngine.evaluate("(x^2 - y^2)^2 - (x^2 + y^2) + 0.2*sin(8*x)*cos(8*y)", viewportSnapshot);
+//        System.out.println("lines = " + result.plotLines().size());
+//
+//        result = graphFxCalculatorEngine.evaluate("sin(5*x) + sin(5*y) + 0.5*sin(3*x + 4*y) + 0.25*sin(7*x - 2*y) - 0.1", viewportSnapshot);
+//        System.out.println("lines = " + result.plotLines().size());
 
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
+        final WindowConfig windowConfig = new WindowConfig();
+        final GraphFxViewer graphFxViewer = new GraphFxViewer(windowConfig);
+        graphFxViewer.show();
+        graphFxViewer.plotExpression("sin(x)");
+        graphFxViewer.plotExpression("cos(x)");
+        graphFxViewer.plotExpression("tan(x)");
+        // graphFxViewer.plotExpression("|y|^x=|x+2|");
+        // graphFxViewer.plotExpression("sin(5x) + sin(5y) + 0.5*sin(3x + 4y) + 0.25*sin(7x - 2y) - 0.1");
 
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
 
+        // System.out.println(new CalculatorEngine().evaluate("(10^10)^100000"));
     }
 
 }
