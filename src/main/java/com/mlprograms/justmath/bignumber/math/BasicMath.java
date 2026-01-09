@@ -81,6 +81,16 @@ public final class BasicMath {
     private static final int EXP_MAX_ITERATIONS_HARD_LIMIT = 2000;
 
     /**
+     * The number zero as a string
+     */
+    private static final String ZERO_AS_STRING = "0";
+
+    /**
+     * The number zero as a char
+     */
+    private static final char ZERO_AS_CHAR = '0';
+
+    /**
      * Adds two {@link BigNumber} values using fast string-based decimal arithmetic.
      *
      * <p>Algorithm overview:
@@ -768,7 +778,6 @@ public final class BasicMath {
         final UnsignedDivisionResult integerDivision = divideUnsigned(divisionSetup.dividendDigits(), divisionSetup.divisorDigits());
 
         final QuotientDigits quotientDigits = generateQuotientDigits(integerDivision.quotient(), integerDivision.remainder(), divisionSetup.divisorDigits(), precision);
-
         final ParsedDecimalNumber unrounded = new ParsedDecimalNumber(divisionSetup.quotientSign(), quotientDigits.digits(), quotientDigits.scale());
 
         return normalize(roundToMathContext(unrounded, mathContext));
@@ -1332,108 +1341,598 @@ public final class BasicMath {
     }
 
     /**
-     * Performs unsigned long division {@code dividend / divisor} and returns quotient and remainder.
+     * Performs an unsigned long division {@code dividend / divisor} in base 10 and returns both quotient and remainder.
      *
-     * @param dividendUnsignedDigits dividend digits (unsigned)
-     * @param divisorUnsignedDigits  divisor digits (unsigned, not "0")
-     * @return quotient and remainder
+     * <p>This implementation operates on digit-only strings (ASCII {@code '0'..'9'}) and uses the classic
+     * grade-school long division algorithm. It is optimized for performance by avoiding intermediate
+     * {@link String} allocations inside the main loop:
+     *
+     * <ul>
+     *   <li>The current remainder is maintained as a <em>view</em> ({@code offset + length}) into a reusable {@code char[]}.</li>
+     *   <li>Single-digit products {@code divisor * d} are computed into a reusable product buffer.</li>
+     *   <li>Subtraction is performed in-place on the remainder buffer.</li>
+     * </ul>
+     *
+     * <h2>Canonical form</h2>
+     * <p>Both inputs are normalized with {@link #stripLeadingZeros(String)}. After normalization, the algorithm assumes
+     * the canonical representation:
+     * <ul>
+     *   <li>Zero is represented only as {@code "0"}.</li>
+     *   <li>Non-zero numbers have no leading zeros.</li>
+     * </ul>
+     *
+     * <h2>Result contract</h2>
+     * <p>The returned {@link UnsignedDivisionResult} satisfies:
+     * <ul>
+     *   <li>{@code dividend = quotient * divisor + remainder}</li>
+     *   <li>{@code 0 <= remainder < divisor}</li>
+     *   <li>{@code quotient} and {@code remainder} are canonical (no leading zeros unless the value is zero)</li>
+     * </ul>
+     *
+     * <h2>Complexity</h2>
+     * <p>Let {@code n} be the number of digits in the normalized dividend and {@code m} the number of digits in the
+     * normalized divisor. The running time is {@code O(n*m)} and the additional memory usage is {@code O(m)}.</p>
+     *
+     * @param dividendUnsignedDigits the unsigned dividend as a digit-only string
+     * @param divisorUnsignedDigits  the unsigned divisor as a digit-only string (must not represent zero)
+     * @return an {@link UnsignedDivisionResult} containing canonical quotient and remainder
+     * @throws ArithmeticException if {@code divisorUnsignedDigits} represents zero
      */
     private static UnsignedDivisionResult divideUnsigned(final String dividendUnsignedDigits, final String divisorUnsignedDigits) {
         final String dividend = stripLeadingZeros(dividendUnsignedDigits);
         final String divisor = stripLeadingZeros(divisorUnsignedDigits);
 
-        if (divisor.equals("0")) {
-            throw new ArithmeticException("Division by zero");
+        validateNonZeroDivisor(divisor);
+
+        if (isZeroString(dividend)) {
+            return new UnsignedDivisionResult(ZERO_AS_STRING, ZERO_AS_STRING);
         }
-        if (dividend.equals("0")) {
-            return new UnsignedDivisionResult("0", "0");
+
+        final int dividendToDivisorComparison = compareUnsigned(dividend, divisor);
+        if (dividendToDivisorComparison < 0) {
+            return new UnsignedDivisionResult(ZERO_AS_STRING, dividend);
         }
-        if (compareUnsigned(dividend, divisor) < 0) {
-            return new UnsignedDivisionResult("0", dividend);
-        }
+
         if (divisor.equals("1")) {
-            return new UnsignedDivisionResult(dividend, "0");
+            return new UnsignedDivisionResult(dividend, ZERO_AS_STRING);
         }
 
-        final StringBuilder quotientBuilder = new StringBuilder(dividend.length());
-        String remainder = "0";
+        final int dividendLength = dividend.length();
+        final int divisorLength = divisor.length();
 
-        for (int i = 0; i < dividend.length(); i++) {
-            remainder = remainder.equals("0") ? String.valueOf(dividend.charAt(i)) : (remainder + dividend.charAt(i));
-            remainder = stripLeadingZeros(remainder);
+        final char[] quotientDigits = new char[dividendLength];
+        final char[] remainderBuffer = new char[divisorLength + 1];
+        final char[] productBuffer = new char[divisorLength + 1];
 
-            final int quotientDigit = estimateQuotientDigit(remainder, divisor);
-            quotientBuilder.append((char) ('0' + quotientDigit));
+        final MutableDigitView remainderView = initializeZeroRemainder(remainderBuffer);
+
+        for (int dividendIndex = 0; dividendIndex < dividendLength; dividendIndex++) {
+            appendDigitToRemainder(remainderBuffer, remainderView, dividend.charAt(dividendIndex));
+            trimLeadingZeros(remainderBuffer, remainderView);
+
+            final int quotientDigit = estimateQuotientDigit(remainderBuffer, remainderView.offset(), remainderView.length(), divisor, productBuffer);
+
+            quotientDigits[dividendIndex] = (char) (ZERO_AS_CHAR + quotientDigit);
 
             if (quotientDigit != 0) {
-                final String product = multiplyBySingleDigit(divisor, quotientDigit);
-                remainder = subtractUnsigned(remainder, product);
+                final int productStartIndex = multiplyBySingleDigitToBuffer(divisor, quotientDigit, productBuffer);
+                subtractProductFromRemainder(remainderBuffer, remainderView, productBuffer, productStartIndex);
+                trimLeadingZeros(remainderBuffer, remainderView);
             }
-
-            remainder = stripLeadingZeros(remainder);
         }
 
-        return new UnsignedDivisionResult(stripLeadingZeros(quotientBuilder.toString()), stripLeadingZeros(remainder));
+        final String quotient = toCanonicalQuotientString(quotientDigits);
+        final String remainder = new String(remainderBuffer, remainderView.offset(), remainderView.length());
+
+        return new UnsignedDivisionResult(quotient, remainder);
     }
 
     /**
-     * Estimates a single quotient digit in the range 0..9 for long division using binary search.
+     * Estimates a single quotient digit in the range {@code 0..9} for base-10 long division.
      *
-     * @param remainderUnsignedDigits current remainder
-     * @param divisorUnsignedDigits   divisor
-     * @return maximal digit {@code d} such that {@code divisor * d <= remainder}
+     * <p>The method returns the maximum digit {@code d} such that {@code divisor * d <= remainder}.
+     * It performs a binary search over the digit range {@code 0..9}. During the search, products
+     * are not materialized as strings; instead, {@code divisor * d} is computed into {@code productBuffer}
+     * and compared directly against the remainder view.</p>
+     *
+     * <h2>Remainder representation</h2>
+     * <p>The remainder is provided as a view into {@code remainderDigits}:</p>
+     * <ul>
+     *   <li>Start index: {@code remainderOffset}</li>
+     *   <li>Length: {@code remainderLength}</li>
+     *   <li>Digits: {@code remainderDigits[remainderOffset .. remainderOffset+remainderLength)}</li>
+     * </ul>
+     *
+     * <h2>Preconditions</h2>
+     * <ul>
+     *   <li>{@code divisorUnsignedDigits} is canonical and not {@code "0"}.</li>
+     *   <li>The remainder view is canonical (no leading zeros unless the value is exactly zero).</li>
+     *   <li>{@code productBuffer.length >= divisorUnsignedDigits.length() + 1}.</li>
+     * </ul>
+     *
+     * @param remainderDigits       digit buffer containing the remainder
+     * @param remainderOffset       start offset of the remainder view
+     * @param remainderLength       length of the remainder view
+     * @param divisorUnsignedDigits canonical divisor digits (not {@code "0"})
+     * @param productBuffer         reusable buffer for {@code divisor * digit} (right-aligned)
+     * @return the largest digit {@code d} in {@code 0..9} with {@code divisor * d <= remainder}
      */
-    private static int estimateQuotientDigit(final String remainderUnsignedDigits, final String divisorUnsignedDigits) {
-        int low = 0;
-        int high = 9;
-        int best = 0;
+    private static int estimateQuotientDigit(final char[] remainderDigits, final int remainderOffset, final int remainderLength, final String divisorUnsignedDigits, final char[] productBuffer) {
+        int lowDigit = 0;
+        int highDigit = 9;
+        int bestDigit = 0;
 
-        while (low <= high) {
-            final int mid = (low + high) >>> 1;
-            final String product = multiplyBySingleDigit(divisorUnsignedDigits, mid);
-            final int comparison = compareUnsigned(product, remainderUnsignedDigits);
+        while (lowDigit <= highDigit) {
+            final int midDigit = (lowDigit + highDigit) >>> 1;
+
+            final int comparison = compareDivisorTimesDigitToRemainder(divisorUnsignedDigits, midDigit, remainderDigits, remainderOffset, remainderLength, productBuffer);
 
             if (comparison <= 0) {
-                best = mid;
-                low = mid + 1;
+                bestDigit = midDigit;
+                lowDigit = midDigit + 1;
             } else {
-                high = mid - 1;
+                highDigit = midDigit - 1;
             }
         }
 
-        return best;
+        return bestDigit;
     }
 
     /**
-     * Multiplies an unsigned digit string by a single digit in 0..9.
+     * Compares {@code divisorUnsignedDigits * digitValue} with the provided remainder view.
      *
-     * @param unsignedDigits digits to multiply
-     * @param digitValue     digit multiplier
-     * @return product digits
+     * <p>This method avoids allocating an intermediate product string. The product is computed into
+     * {@code productBuffer} (right-aligned), and the comparison is performed using:</p>
+     * <ol>
+     *   <li>Digit count (length comparison)</li>
+     *   <li>Lexicographical digit comparison (most-significant digit first)</li>
+     * </ol>
+     *
+     * <h2>Return value</h2>
+     * <ul>
+     *   <li>Negative if {@code divisor * digitValue < remainder}</li>
+     *   <li>Zero if {@code divisor * digitValue == remainder}</li>
+     *   <li>Positive if {@code divisor * digitValue > remainder}</li>
+     * </ul>
+     *
+     * <h2>Special cases</h2>
+     * <ul>
+     *   <li>{@code digitValue == 0}: the product is zero and can be compared without computing a product.</li>
+     *   <li>{@code digitValue == 1}: the divisor is compared directly to the remainder view.</li>
+     * </ul>
+     *
+     * <h2>Preconditions</h2>
+     * <ul>
+     *   <li>{@code digitValue} is in {@code 0..9}.</li>
+     *   <li>{@code divisorUnsignedDigits} is canonical and not {@code "0"}.</li>
+     *   <li>The remainder view is canonical (no leading zeros unless exactly zero).</li>
+     *   <li>{@code productBuffer.length >= divisorUnsignedDigits.length() + 1}.</li>
+     * </ul>
+     *
+     * @param divisorUnsignedDigits canonical divisor digits
+     * @param digitValue            single decimal digit multiplier in {@code 0..9}
+     * @param remainderDigits       digit buffer containing the remainder
+     * @param remainderOffset       start offset of the remainder view
+     * @param remainderLength       length of the remainder view
+     * @param productBuffer         reusable buffer for the computed product (right-aligned)
+     * @return negative if product &lt; remainder, zero if equal, positive if product &gt; remainder
+     * @throws IllegalArgumentException if {@code digitValue} is outside {@code 0..9}
      */
-    private static String multiplyBySingleDigit(final String unsignedDigits, final int digitValue) {
+    private static int compareDivisorTimesDigitToRemainder(final String divisorUnsignedDigits, final int digitValue, final char[] remainderDigits, final int remainderOffset, final int remainderLength, final char[] productBuffer) {
+        validateDigitMultiplier(digitValue);
+
         if (digitValue == 0) {
-            return "0";
+            return isZeroView(remainderDigits, remainderOffset, remainderLength) ? 0 : -1;
         }
+
         if (digitValue == 1) {
-            return stripLeadingZeros(unsignedDigits);
+            return compareDivisorToRemainderView(divisorUnsignedDigits, remainderDigits, remainderOffset, remainderLength);
         }
+
+        final int productStartIndex = multiplyBySingleDigitToBuffer(divisorUnsignedDigits, digitValue, productBuffer);
+        final int productLength = productBuffer.length - productStartIndex;
+
+        if (productLength != remainderLength) {
+            return Integer.compare(productLength, remainderLength);
+        }
+
+        for (int i = 0; i < productLength; i++) {
+            final char productDigit = productBuffer[productStartIndex + i];
+            final char remainderDigit = remainderDigits[remainderOffset + i];
+
+            if (productDigit != remainderDigit) {
+                return productDigit < remainderDigit ? -1 : 1;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Lookup table for single-digit decimal multiplication.
+     *
+     * <p>Index: {@code digitValue * 10 + digit}. Both are in {@code 0..9}.</p>
+     * <p>Value: {@code digitValue * digit}.</p>
+     */
+    private static final int[] SINGLE_DIGIT_MUL_TABLE = buildSingleDigitMulTable();
+
+    /**
+     * Builds a lookup table for single-digit decimal multiplication.
+     *
+     * <p>The table uses a compact indexing scheme: index = multiplier * 10 + digit,
+     * where both multiplier and digit are in the range 0..9. The value stored at
+     * each index is simply (multiplier * digit). This allows fast O(1) retrieval
+     * of single-digit products in performance-critical code (avoids repeated
+     * small multiplications).</p>
+     *
+     * @return an int[100] table mapping (multiplier*10 + digit) -> product
+     */
+    private static int[] buildSingleDigitMulTable() {
+        final int[] table = new int[100];
+        for (int multiplier = 0; multiplier <= 9; multiplier++) {
+            final int baseIndex = multiplier * 10;
+            for (int digit = 0; digit <= 9; digit++) {
+                table[baseIndex + digit] = multiplier * digit;
+            }
+        }
+        
+        return table;
+    }
+
+    /**
+     * Multiplies an unsigned decimal digit string by a single digit {@code 0..9} and writes the product into {@code buffer}.
+     *
+     * <p>This is the <b>checked</b> variant. It validates inputs and then delegates to the
+     * {@link #multiplyBySingleDigitToBufferUnchecked(String, int, char[])} fast-path.</p>
+     *
+     * <p>For performance-critical loops where the preconditions are guaranteed (e.g. long division),
+     * call the unchecked variant directly to avoid repeated validation overhead.</p>
+     *
+     * <h2>Buffer contract</h2>
+     * <ul>
+     *   <li>The product is written right-aligned into {@code buffer}.</li>
+     *   <li>The return value is the start index of the product view.</li>
+     *   <li>The product length is {@code buffer.length - startIndex}.</li>
+     * </ul>
+     *
+     * @param unsignedDigits canonical unsigned digits (digit-only, no leading zeros unless "0")
+     * @param digitValue     single digit multiplier in {@code 0..9}
+     * @param buffer         destination buffer (must be at least {@code unsignedDigits.length() + 1})
+     * @return start index of the product within {@code buffer}
+     * @throws IllegalArgumentException if {@code digitValue} is outside {@code 0..9} or the buffer is too small
+     */
+    private static int multiplyBySingleDigitToBuffer(final String unsignedDigits, final int digitValue, final char[] buffer) {
+        validateDigitMultiplier(digitValue);
+        validateProductBufferCapacity(unsignedDigits, buffer);
+        return multiplyBySingleDigitToBufferUnchecked(unsignedDigits, digitValue, buffer);
+    }
+
+    /**
+     * Multiplies {@code unsignedDigits} by {@code digitValue} and writes the product right-aligned into {@code buffer}.
+     *
+     * <p><b>Fast-path:</b> This method performs no validation and is intended for hot loops where
+     * the preconditions are already guaranteed by the caller.</p>
+     *
+     * <h2>Preconditions</h2>
+     * <ul>
+     *   <li>{@code digitValue} is in {@code 0..9}.</li>
+     *   <li>{@code buffer.length >= unsignedDigits.length() + 1}.</li>
+     *   <li>{@code unsignedDigits} contains only {@code '0'..'9'} (canonical form recommended).</li>
+     * </ul>
+     *
+     * @param unsignedDigits digit-only string (unsigned)
+     * @param digitValue     multiplier digit (0..9)
+     * @param buffer         destination buffer (right-aligned)
+     * @return start index of the product within {@code buffer}
+     */
+    private static int multiplyBySingleDigitToBufferUnchecked(final String unsignedDigits, final int digitValue, final char[] buffer) {
+        if (digitValue == 0) {
+            buffer[buffer.length - 1] = ZERO_AS_CHAR;
+            return buffer.length - 1;
+        }
+
+        final int digitsLength = unsignedDigits.length();
+
+        if (digitValue == 1) {
+            final int startIndex = buffer.length - digitsLength;
+            unsignedDigits.getChars(0, digitsLength, buffer, startIndex);
+            return startIndex;
+        }
+
+        final int baseIndex = digitValue * 10;
 
         int carry = 0;
-        final StringBuilder product = new StringBuilder(unsignedDigits.length() + 1);
+        int writeIndex = buffer.length - 1;
 
-        for (int i = unsignedDigits.length() - 1; i >= 0; i--) {
-            final int value = (unsignedDigits.charAt(i) - '0') * digitValue + carry;
-            product.append((char) ('0' + (value % 10)));
-            carry = value / 10;
+        for (int readIndex = digitsLength - 1; readIndex >= 0; readIndex--, writeIndex--) {
+            final int digit = unsignedDigits.charAt(readIndex) - ZERO_AS_CHAR;
+
+            final int value = SINGLE_DIGIT_MUL_TABLE[baseIndex + digit] + carry;
+            final int quotient = value / 10;
+            buffer[writeIndex] = (char) (ZERO_AS_CHAR + (value - quotient * 10));
+            carry = quotient;
         }
 
-        while (carry != 0) {
-            product.append((char) ('0' + (carry % 10)));
-            carry /= 10;
+        if (carry != 0) {
+            buffer[writeIndex] = (char) (ZERO_AS_CHAR + carry);
+            return writeIndex;
         }
 
-        return stripLeadingZeros(product.reverse().toString());
+        return writeIndex + 1;
+    }
+
+    /**
+     * Appends one decimal digit to the remainder represented as a view into {@code remainderBuffer}.
+     *
+     * <p>This operation is equivalent to {@code remainder = remainder * 10 + nextDigit}. The remainder
+     * is stored in-place and the view (offset/length) is updated accordingly.</p>
+     *
+     * <h2>Behavior</h2>
+     * <ul>
+     *   <li>If the remainder is exactly zero, it becomes the single digit {@code nextDigit}.</li>
+     *   <li>Otherwise, {@code nextDigit} is appended at the end of the remainder view.</li>
+     *   <li>If the current view is not at the beginning of the buffer and no more space is available at the end,
+     *       the digits are shifted to index {@code 0} to make room.</li>
+     * </ul>
+     *
+     * @param remainderBuffer digit buffer that stores the remainder
+     * @param remainderView   view (offset/length) into {@code remainderBuffer}
+     * @param nextDigit       digit to append ({@code '0'..'9'})
+     */
+    private static void appendDigitToRemainder(final char[] remainderBuffer, final MutableDigitView remainderView, final char nextDigit) {
+        if (remainderView.length() == 1 && remainderBuffer[remainderView.offset()] == ZERO_AS_CHAR) {
+            remainderBuffer[remainderView.offset()] = nextDigit;
+            return;
+        }
+
+        if (needsShiftToFront(remainderBuffer, remainderView)) {
+            System.arraycopy(remainderBuffer, remainderView.offset(), remainderBuffer, 0, remainderView.length());
+            remainderView.set(0, remainderView.length());
+        }
+
+        remainderBuffer[remainderView.offset() + remainderView.length()] = nextDigit;
+        remainderView.set(remainderView.offset(), remainderView.length() + 1);
+    }
+
+    /**
+     * Removes leading zeros from a digit view in-place by advancing the view offset and reducing the length.
+     *
+     * <p>This method never changes the underlying buffer contents. It only updates the view boundaries.
+     * If the value is zero, the canonical representation is preserved as a single digit {@code '0'}.</p>
+     *
+     * @param digits digit buffer containing the view
+     * @param view   mutable view to be normalized (canonicalized)
+     */
+    private static void trimLeadingZeros(final char[] digits, final MutableDigitView view) {
+        int offset = view.offset();
+        int length = view.length();
+
+        while (length > 1 && digits[offset] == ZERO_AS_CHAR) {
+            offset++;
+            length--;
+        }
+
+        view.set(offset, length);
+    }
+
+    /**
+     * Subtracts a right-aligned product view from the remainder view in-place.
+     *
+     * <p>This method assumes {@code remainder >= product}. The subtraction is performed from
+     * least significant digit to most significant digit with borrow propagation, writing the result
+     * back into {@code remainderDigits} within the remainder view.</p>
+     *
+     * <h2>Preconditions</h2>
+     * <ul>
+     *   <li>The product view is {@code productBuffer[productStartIndex .. productBuffer.length)}.</li>
+     *   <li>The product is less than or equal to the remainder value.</li>
+     * </ul>
+     *
+     * @param remainderDigits   digit buffer holding the remainder
+     * @param remainderView     view into {@code remainderDigits} representing the current remainder
+     * @param productBuffer     buffer containing the product digits (right-aligned)
+     * @param productStartIndex start index of the product within {@code productBuffer}
+     */
+    private static void subtractProductFromRemainder(final char[] remainderDigits, final MutableDigitView remainderView, final char[] productBuffer, final int productStartIndex) {
+        int borrow = 0;
+
+        int remainderIndex = remainderView.offset() + remainderView.length() - 1;
+        int productIndex = productBuffer.length - 1;
+
+        while (remainderIndex >= remainderView.offset()) {
+            final int remainderValue = remainderDigits[remainderIndex] - ZERO_AS_CHAR;
+            final int productValue = productIndex >= productStartIndex ? (productBuffer[productIndex] - ZERO_AS_CHAR) : 0;
+
+            int difference = remainderValue - productValue - borrow;
+            if (difference < 0) {
+                difference += 10;
+                borrow = 1;
+            } else {
+                borrow = 0;
+            }
+
+            remainderDigits[remainderIndex] = (char) (ZERO_AS_CHAR + difference);
+
+            remainderIndex--;
+            productIndex--;
+        }
+    }
+
+    /**
+     * Converts a quotient digit buffer to a canonical quotient {@link String} by removing leading zeros.
+     *
+     * <p>The resulting string is canonical: it contains no leading zeros unless the quotient is exactly zero.</p>
+     *
+     * @param quotientDigits the raw quotient digits produced by long division
+     * @return canonical quotient string
+     */
+    private static String toCanonicalQuotientString(final char[] quotientDigits) {
+        int startIndex = 0;
+        while (startIndex < quotientDigits.length - 1 && quotientDigits[startIndex] == ZERO_AS_CHAR) {
+            startIndex++;
+        }
+        return new String(quotientDigits, startIndex, quotientDigits.length - startIndex);
+    }
+
+    /**
+     * Compares a canonical divisor string to a remainder view without allocating intermediate strings.
+     *
+     * <p>The comparison is performed by length first and then lexicographically.</p>
+     *
+     * @param divisorUnsignedDigits canonical divisor digits
+     * @param remainderDigits       digit buffer containing the remainder
+     * @param remainderOffset       start offset of the remainder view
+     * @param remainderLength       length of the remainder view
+     * @return negative if divisor &lt; remainder, zero if equal, positive if divisor &gt; remainder
+     */
+    private static int compareDivisorToRemainderView(final String divisorUnsignedDigits, final char[] remainderDigits, final int remainderOffset, final int remainderLength) {
+        final int divisorLength = divisorUnsignedDigits.length();
+
+        if (divisorLength != remainderLength) {
+            return Integer.compare(divisorLength, remainderLength);
+        }
+
+        for (int i = 0; i < divisorLength; i++) {
+            final char divisorDigit = divisorUnsignedDigits.charAt(i);
+            final char remainderDigit = remainderDigits[remainderOffset + i];
+
+            if (divisorDigit != remainderDigit) {
+                return divisorDigit < remainderDigit ? -1 : 1;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Validates that the divisor does not represent zero.
+     *
+     * @param canonicalDivisor canonical divisor digits (after leading-zero stripping)
+     * @throws ArithmeticException if the divisor is {@code "0"}
+     */
+    private static void validateNonZeroDivisor(final String canonicalDivisor) {
+        if (isZeroString(canonicalDivisor)) {
+            throw new ArithmeticException("Division by zero");
+        }
+    }
+
+    /**
+     * Validates that a digit multiplier is within the allowed range {@code 0..9}.
+     *
+     * @param digitValue digit multiplier
+     * @throws IllegalArgumentException if the multiplier is outside {@code 0..9}
+     */
+    private static void validateDigitMultiplier(final int digitValue) {
+        if (digitValue < 0 || digitValue > 9) {
+            throw new IllegalArgumentException("digitValue must be in range 0..9");
+        }
+    }
+
+    /**
+     * Validates that the product buffer is large enough to store {@code unsignedDigits * digitValue}.
+     *
+     * <p>For base-10 multiplication by a single digit, the result length is at most {@code unsignedDigits.length() + 1}.</p>
+     *
+     * @param unsignedDigits multiplicand digits (canonical)
+     * @param buffer         destination buffer
+     * @throws IllegalArgumentException if the buffer is too small
+     */
+    private static void validateProductBufferCapacity(final String unsignedDigits, final char[] buffer) {
+        final int requiredLength = unsignedDigits.length() + 1;
+        if (buffer.length < requiredLength) {
+            throw new IllegalArgumentException("buffer is too small: required at least " + requiredLength);
+        }
+    }
+
+    /**
+     * Determines whether the current remainder view must be shifted to the front of the buffer to append one more digit.
+     *
+     * @param buffer digit buffer storing the remainder
+     * @param view   current remainder view
+     * @return {@code true} if shifting to the front is required to make room
+     */
+    private static boolean needsShiftToFront(final char[] buffer, final MutableDigitView view) {
+        return view.offset() != 0 && view.offset() + view.length() == buffer.length;
+    }
+
+    /**
+     * Checks whether a string is the canonical zero representation.
+     *
+     * @param digits canonical digit string
+     * @return {@code true} if the string equals {@code "0"}, otherwise {@code false}
+     */
+    private static boolean isZeroString(final String digits) {
+        return ZERO_AS_STRING.equals(digits);
+    }
+
+    /**
+     * Checks whether a digit view represents the numeric value zero.
+     *
+     * @param digits digit buffer
+     * @param offset start offset of the view
+     * @param length length of the view
+     * @return {@code true} if the view is exactly one digit equal to {@code '0'}
+     */
+    private static boolean isZeroView(final char[] digits, final int offset, final int length) {
+        return length == 1 && digits[offset] == ZERO_AS_CHAR;
+    }
+
+    /**
+     * Initializes a remainder buffer to represent the canonical zero value {@code "0"}.
+     *
+     * @param remainderBuffer buffer that will hold the remainder digits
+     * @return a mutable view representing the initialized remainder (offset=0, length=1)
+     */
+    private static MutableDigitView initializeZeroRemainder(final char[] remainderBuffer) {
+        remainderBuffer[0] = ZERO_AS_CHAR;
+        return new MutableDigitView(0, 1);
+    }
+
+    /**
+     * Mutable view into a digit buffer defined by {@code offset} and {@code length}.
+     *
+     * <p>This small helper avoids repeatedly creating temporary strings or objects to represent
+     * the remainder slice during long division. The underlying digit buffer is owned by the
+     * caller and may be mutated independently of the view.</p>
+     */
+    private static final class MutableDigitView {
+
+        private int offset;
+        private int length;
+
+        private MutableDigitView(final int offset, final int length) {
+            this.offset = offset;
+            this.length = length;
+        }
+
+        /**
+         * Returns the start offset of the view.
+         *
+         * @return the offset into the digit buffer
+         */
+        private int offset() {
+            return offset;
+        }
+
+        /**
+         * Returns the length of the view.
+         *
+         * @return the number of digits in the view
+         */
+        private int length() {
+            return length;
+        }
+
+        /**
+         * Updates the view boundaries.
+         *
+         * @param offset the new start offset
+         * @param length the new length
+         */
+        private void set(final int offset, final int length) {
+            this.offset = offset;
+            this.length = length;
+        }
     }
 
     /**
