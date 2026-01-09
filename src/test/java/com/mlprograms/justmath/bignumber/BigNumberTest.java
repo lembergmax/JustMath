@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -148,7 +148,7 @@ public class BigNumberTest {
                 "25,7,4",
                 "100,10,0",
                 "123456789,10000,6789",
-                "-15,4,3",
+                "-15,4,1",
                 "5,2,1"
         })
         void moduloTest(String inputNum1, String inputNum2, String inputExpectedResult) {
@@ -1161,7 +1161,7 @@ public class BigNumberTest {
         @ParameterizedTest
         @CsvSource({
                 "180, 3.141592653589793",
-                "90, 1.570796326794896"
+                "90, 1.570796326794897"
         })
         void toRadiansTest(String deg, String expectedRad) {
             BigNumber degrees = new BigNumber(deg);
