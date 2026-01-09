@@ -158,6 +158,27 @@ public class BigNumberTest {
             assertEquals(inputExpectedResult, result.toString());
         }
 
+        @ParameterizedTest
+        @CsvSource({
+                "10,3,1",
+                "25,7,4",
+                "100,10,0",
+                "123456789,10000,6789",
+                "-15,4,-3",
+                "5,2,1",
+                "-5,2,-1",
+                "5,-2,1",
+                "-5,-2,-1"
+        })
+        void remainderTest(final String inputNum1, final String inputNum2, final String inputExpectedResult) {
+            final BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+            final BigNumber num2 = new BigNumber(inputNum2, Locale.US);
+
+            final BigNumber result = num1.remainder(num2);
+
+            assertEquals(inputExpectedResult, result.toString());
+        }
+
     }
 
     @Nested
