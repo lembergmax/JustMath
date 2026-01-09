@@ -39,6 +39,9 @@ public class MergeSort extends SortingAlgorithm {
      * The original list is not modified. If the input list is {@code null}, empty,
      * or contains fewer than two elements, the original list is returned.
      *
+     * <p>This implementation uses an iterative (bottom-up) merge sort to avoid recursion.
+     * It is stable and runs in {@code O(n log n)} time with {@code O(n)} additional space.</p>
+     *
      * @param bigNumbers the list of {@link BigNumber} values to sort
      * @return a new sorted list of {@link BigNumber} values in ascending order
      */
@@ -48,78 +51,82 @@ public class MergeSort extends SortingAlgorithm {
             return bigNumbers;
         }
 
-        final List<BigNumber> sortedList = cloneList(bigNumbers);
-        final List<BigNumber> buffer = cloneList(sortedList);
-        mergeSort(sortedList, buffer, 0, sortedList.size());
-        return sortedList;
-    }
+        final List<BigNumber> working = cloneList(bigNumbers);
+        final List<BigNumber> buffer = cloneList(working);
 
-    /**
-     * Recursively sorts the half-open range {@code [fromInclusive, toExclusive)} using MergeSort.
-     *
-     * <p>This implementation uses a single reusable buffer list to avoid repeated allocations.
-     * It sorts in-place in {@code target} while using {@code buffer} as temporary storage.</p>
-     *
-     * @param target        list to sort in-place
-     * @param buffer        temporary storage (must be at least {@code target.size()})
-     * @param fromInclusive inclusive start index
-     * @param toExclusive   exclusive end index
-     */
-    private void mergeSort(@NonNull final List<BigNumber> target, @NonNull final List<BigNumber> buffer, final int fromInclusive, final int toExclusive) {
-        final int length = toExclusive - fromInclusive;
-        if (length < 2) {
-            return;
+        final int size = working.size();
+
+        List<BigNumber> source = working;
+        List<BigNumber> destination = buffer;
+
+        for (int runSize = 1; runSize > 0 && runSize < size; runSize <<= 1) {
+            final int blockSize = (int) Math.min((long) size, (long) runSize * 2L);
+
+            for (int leftFrom = 0; leftFrom < size; leftFrom += blockSize) {
+                final int leftTo = Math.min(leftFrom + runSize, size);
+                final int rightTo = Math.min(leftFrom + blockSize, size);
+
+                if (leftTo >= rightTo) {
+                    copyRange(source, destination, leftFrom, rightTo);
+                } else {
+                    merge(source, destination, leftFrom, leftTo, rightTo);
+                }
+            }
+
+            final List<BigNumber> temp = source;
+            source = destination;
+            destination = temp;
         }
 
-        final int middle = fromInclusive + (length / 2);
-
-        mergeSort(target, buffer, fromInclusive, middle);
-        mergeSort(target, buffer, middle, toExclusive);
-
-        merge(target, buffer, fromInclusive, middle, toExclusive);
+        return source;
     }
 
     /**
-     * Merges two sorted ranges from {@code target} into a single sorted range:
+     * Merges two sorted ranges from {@code source} into {@code destination}:
      * {@code [leftFrom, leftTo)} and {@code [leftTo, rightTo)}.
      *
-     * <p>The merged result is written back into {@code target[leftFrom..rightTo)}.
+     * <p>The merged result is written into {@code destination[leftFrom..rightTo)}.
      * The operation is stable: equal elements keep their original relative order.</p>
      *
-     * @param target   source and destination list
-     * @param buffer   temporary buffer (same size as target)
-     * @param leftFrom start of left range (inclusive)
-     * @param leftTo   end of left range / start of right range (exclusive)
-     * @param rightTo  end of right range (exclusive)
+     * @param source      source list (read-only for this operation)
+     * @param destination destination list (write target)
+     * @param leftFrom    start of left range (inclusive)
+     * @param leftTo      end of left range / start of right range (exclusive)
+     * @param rightTo     end of right range (exclusive)
      */
-    private void merge(@NonNull final List<BigNumber> target, @NonNull final List<BigNumber> buffer, final int leftFrom, final int leftTo, final int rightTo) {
-        for (int index = leftFrom; index < rightTo; index++) {
-            buffer.set(index, target.get(index));
-        }
-
+    private void merge(@NonNull final List<BigNumber> source, @NonNull final List<BigNumber> destination, final int leftFrom, final int leftTo, final int rightTo) {
         int leftIndex = leftFrom;
         int rightIndex = leftTo;
         int writeIndex = leftFrom;
 
         while (leftIndex < leftTo && rightIndex < rightTo) {
-            final BigNumber leftValue = buffer.get(leftIndex);
-            final BigNumber rightValue = buffer.get(rightIndex);
+            final BigNumber leftValue = source.get(leftIndex);
+            final BigNumber rightValue = source.get(rightIndex);
 
             if (leftValue.isLessThanOrEqualTo(rightValue)) {
-                target.set(writeIndex++, leftValue);
+                destination.set(writeIndex++, leftValue);
                 leftIndex++;
             } else {
-                target.set(writeIndex++, rightValue);
+                destination.set(writeIndex++, rightValue);
                 rightIndex++;
             }
         }
 
         while (leftIndex < leftTo) {
-            target.set(writeIndex++, buffer.get(leftIndex++));
+            destination.set(writeIndex++, source.get(leftIndex++));
         }
 
         while (rightIndex < rightTo) {
-            target.set(writeIndex++, buffer.get(rightIndex++));
+            destination.set(writeIndex++, source.get(rightIndex++));
+        }
+    }
+
+    /**
+     * Copies {@code source[fromInclusive..toExclusive)} into {@code destination[fromInclusive..toExclusive)}.
+     */
+    private void copyRange(@NonNull final List<BigNumber> source, @NonNull final List<BigNumber> destination, final int fromInclusive, final int toExclusive) {
+        for (int index = fromInclusive; index < toExclusive; index++) {
+            destination.set(index, source.get(index));
         }
     }
 
