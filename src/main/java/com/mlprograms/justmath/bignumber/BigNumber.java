@@ -489,6 +489,40 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}
+     * using the current locale.
+     *
+     * <p>This is a convenience method that delegates to {@link #remainder(BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor) {
+        return remainder(divisor, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}.
+     *
+     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @param locale  the locale used to construct the returned {@link BigNumber}
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
+        return BasicMath.remainder(this, divisor, locale);
+    }
+
+    /**
      * Raises this {@code BigNumber} to the specified exponent using the default
      * {@link MathContext} and {@link Locale} configured in this instance.
      *
