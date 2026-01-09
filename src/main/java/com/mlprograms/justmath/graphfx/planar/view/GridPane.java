@@ -37,10 +37,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 final class GridPane extends Pane {
 
@@ -56,7 +53,7 @@ final class GridPane extends Pane {
     private final Font LABEL_FONT = Font.font("Consolas", 12);
     private final Font HUD_FONT = Font.font("Consolas", 13);
 
-    private PlotResult plotResult = new PlotResult();
+    private List<PlotResult> plotResults = new ArrayList<>();
 
     private final Canvas canvas = new Canvas();
 
@@ -179,13 +176,19 @@ final class GridPane extends Pane {
         return new VisibleWorldBounds(minWorldX, maxWorldX, minWorldY, maxWorldY);
     }
 
-    private void drawPlot(final GraphicsContext graphics, final double width, final double height) {
+    private void drawPlot(final GraphicsContext graphicsContext, final double width, final double height) {
+        for (final PlotResult plotResult : plotResults) {
+            drawPlotResult(graphicsContext, width, height, plotResult);
+        }
+    }
+
+    private void drawPlotResult(final GraphicsContext graphicsContext, final double width, final double height, final PlotResult plotResult) {
         final List<PlotLine> lines = plotResult.plotLines();
         if (lines.isEmpty()) {
             return;
         }
 
-        graphics.setLineWidth(2.0);
+        graphicsContext.setLineWidth(2.0);
 
         for (final PlotLine line : lines) {
             final List<PlotPoint> points = line.plotPoints();
@@ -193,8 +196,8 @@ final class GridPane extends Pane {
                 continue;
             }
 
-            graphics.setStroke(Color.rgb(30, 30, 200));
-            drawPolyline(graphics, width, height, points);
+            graphicsContext.setStroke(Color.rgb(30, 30, 200));
+            drawPolyline(graphicsContext, width, height, points);
         }
     }
 
@@ -447,13 +450,13 @@ final class GridPane extends Pane {
         return Optional.of(viewportSnapshot);
     }
 
-    void setPlotResult(final PlotResult plotResult) {
-        this.plotResult = Objects.requireNonNull(plotResult, "plotResult must not be null");
+    void addPlotResult(final PlotResult plotResult) {
+        this.plotResults.add(Objects.requireNonNull(plotResult, "plotResult must not be null"));
         redraw();
     }
 
     void clearPlot() {
-        this.plotResult = new PlotResult();
+        this.plotResults = new ArrayList<>();
         redraw();
     }
 }
