@@ -168,7 +168,7 @@ public final class GraphFxViewer {
                     .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
 
             final PlotResult plotResult = plotEngine.evaluate(expression, variables, viewportSnapshot);
-            gridPane.setPlotResult(plotResult);
+            gridPane.addPlotResult(plotResult);
         } catch (final RuntimeException ex) {
             gridPane.clearPlot();
         }
