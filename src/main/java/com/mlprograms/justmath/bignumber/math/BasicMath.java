@@ -1575,7 +1575,7 @@ public final class BasicMath {
                 table[baseIndex + digit] = multiplier * digit;
             }
         }
-        
+
         return table;
     }
 
@@ -1659,6 +1659,137 @@ public final class BasicMath {
         }
 
         return writeIndex + 1;
+    }
+
+    /**
+     * Computes the truncating remainder (Java {@code %} semantics) of {@code dividend} divided by {@code divisor}.
+     *
+     * <p><b>Important:</b> This is intentionally different from {@link #modulo(BigNumber, BigNumber, Locale)}.</p>
+     * <ul>
+     *   <li>{@code remainder}: sign follows the dividend (like Java {@code %}).</li>
+     *   <li>{@code modulo}: returns a non-negative result for negative dividends (your existing behavior).</li>
+     * </ul>
+     *
+     * <h2>Algorithm overview</h2>
+     * <ol>
+     *   <li>Parse both operands into (sign, digits, scale) and normalize.</li>
+     *   <li>Scale both operands to a common integer scale by appending zeros.</li>
+     *   <li>Compute the integer remainder using an optimized long-division remainder-only routine.</li>
+     *   <li>Apply the sign of the dividend (if remainder != 0).</li>
+     * </ol>
+     *
+     * @param dividend the dividend; must not be {@code null}
+     * @param divisor  the divisor; must not be {@code null} and not zero
+     * @param locale   locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @return {@code dividend % divisor} as a new {@link BigNumber}
+     * @throws NullPointerException     if any argument is {@code null}
+     * @throws IllegalArgumentException if {@code divisor} is zero or an operand is invalid
+     */
+    public static BigNumber remainder(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
+        final ParsedDecimalNumber dividendParts = normalize(parseToParts(dividend.toString(), locale));
+        final ParsedDecimalNumber divisorParts = normalize(parseToParts(divisor.toString(), locale));
+
+        if (isZero(divisorParts)) {
+            throw new IllegalArgumentException("Cannot perform remainder operation with divisor zero.");
+        }
+
+        if (isZero(dividendParts)) {
+            return toBigNumber(zeroParts(), locale);
+        }
+
+        final ParsedDecimalNumber remainderParts = computeRemainder(dividendParts, divisorParts);
+        return toBigNumber(remainderParts, locale);
+    }
+
+    /**
+     * Computes the truncating remainder (Java {@code %}) using scale-to-integer and unsigned remainder.
+     *
+     * <p>The returned remainder has the sign of the dividend (unless the remainder is zero).</p>
+     *
+     * @param dividendParts parsed dividend
+     * @param divisorParts  parsed divisor (must not be zero)
+     * @return remainder parts (normalized)
+     */
+    private static ParsedDecimalNumber computeRemainder(final ParsedDecimalNumber dividendParts, final ParsedDecimalNumber divisorParts) {
+        final ParsedDecimalNumber dividendAbsolute = absoluteValue(dividendParts);
+        final ParsedDecimalNumber divisorAbsolute = absoluteValue(divisorParts);
+
+        final int commonScale = Math.max(dividendAbsolute.scale(), divisorAbsolute.scale());
+        final String dividendScaledDigits = appendZerosRight(dividendAbsolute.digits(), commonScale - dividendAbsolute.scale());
+        final String divisorScaledDigits = appendZerosRight(divisorAbsolute.digits(), commonScale - divisorAbsolute.scale());
+
+        final String remainderDigits = remainderUnsigned(dividendScaledDigits, divisorScaledDigits);
+
+        ParsedDecimalNumber remainder = normalize(new ParsedDecimalNumber(+1, remainderDigits, commonScale));
+
+        if (dividendParts.sign() < 0 && !isZero(remainder)) {
+            remainder = normalize(negate(remainder));
+        }
+
+        return remainder;
+    }
+
+    /**
+     * Computes the unsigned remainder of {@code dividend / divisor} without materializing the quotient.
+     *
+     * <p>This is a specialized, performance-oriented variant of {@link #divideUnsigned(String, String)}.
+     * It performs the same long-division steps but does not store quotient digits, significantly reducing
+     * memory allocations for large inputs.</p>
+     *
+     * <p>Both inputs are normalized with {@link #stripLeadingZeros(String)} and must be digit-only strings.</p>
+     *
+     * @param dividendUnsignedDigits unsigned dividend digits
+     * @param divisorUnsignedDigits  unsigned divisor digits (must not represent zero)
+     * @return canonical remainder digits (no leading zeros unless the value is zero)
+     * @throws ArithmeticException if {@code divisorUnsignedDigits} represents zero
+     */
+    private static String remainderUnsigned(final String dividendUnsignedDigits, final String divisorUnsignedDigits) {
+        final String dividend = stripLeadingZeros(dividendUnsignedDigits);
+        final String divisor = stripLeadingZeros(divisorUnsignedDigits);
+
+        validateNonZeroDivisor(divisor);
+
+        if (isZeroString(dividend)) {
+            return ZERO_AS_STRING;
+        }
+
+        final int dividendToDivisorComparison = compareUnsigned(dividend, divisor);
+        if (dividendToDivisorComparison < 0) {
+            return dividend;
+        }
+
+        if (divisor.equals("1")) {
+            return ZERO_AS_STRING;
+        }
+
+        final int dividendLength = dividend.length();
+        final int divisorLength = divisor.length();
+
+        final char[] remainderBuffer = new char[divisorLength + 1];
+        final char[] productBuffer = new char[divisorLength + 1];
+
+        final MutableDigitView remainderView = initializeZeroRemainder(remainderBuffer);
+
+        for (int dividendIndex = 0; dividendIndex < dividendLength; dividendIndex++) {
+            appendDigitToRemainder(remainderBuffer, remainderView, dividend.charAt(dividendIndex));
+            trimLeadingZeros(remainderBuffer, remainderView);
+
+            final int quotientDigit = estimateQuotientDigit(
+                    remainderBuffer,
+                    remainderView.offset(),
+                    remainderView.length(),
+                    divisor,
+                    productBuffer
+            );
+
+            if (quotientDigit != 0) {
+                final int productStartIndex = multiplyBySingleDigitToBufferUnchecked(divisor, quotientDigit, productBuffer);
+                subtractProductFromRemainder(remainderBuffer, remainderView, productBuffer, productStartIndex);
+                trimLeadingZeros(remainderBuffer, remainderView);
+            }
+        }
+
+        return new String(remainderBuffer, remainderView.offset(), remainderView.length());
     }
 
     /**
