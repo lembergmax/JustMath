@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -47,9 +47,7 @@ public class MergeSort extends SortingAlgorithm {
      */
     @Override
     public List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
-        if (!isListValid(bigNumbers)) {
-            return bigNumbers;
-        }
+        isListValid(bigNumbers);
 
         final List<BigNumber> working = cloneList(bigNumbers);
         final List<BigNumber> buffer = cloneList(working);
@@ -60,7 +58,7 @@ public class MergeSort extends SortingAlgorithm {
         List<BigNumber> destination = buffer;
 
         for (int runSize = 1; runSize > 0 && runSize < size; runSize <<= 1) {
-            final int blockSize = (int) Math.min((long) size, (long) runSize * 2L);
+            final int blockSize = (int) Math.min(size, (long) runSize * 2L);
 
             for (int leftFrom = 0; leftFrom < size; leftFrom += blockSize) {
                 final int leftTo = Math.min(leftFrom + runSize, size);

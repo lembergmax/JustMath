@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -63,20 +63,18 @@ public abstract class SortingAlgorithm {
      * @param bigNumbers the list to validate
      * @return {@code true} if the list meets the validity rules, {@code false} otherwise
      */
-    protected static boolean isListValid(final List<BigNumber> bigNumbers) {
+    protected static void isListValid(final List<BigNumber> bigNumbers) {
         if (bigNumbers == null) {
-            return false;
+            throw new IllegalArgumentException("list must not be null");
         }
 
         if (bigNumbers.isEmpty()) {
-            return false;
+            throw new IllegalArgumentException("list must not be empty");
         }
 
         if (bigNumbers.size() == 1) {
-            return false;
+            throw new IllegalArgumentException("list must contain more than one element");
         }
-
-        return true;
     }
 
 }

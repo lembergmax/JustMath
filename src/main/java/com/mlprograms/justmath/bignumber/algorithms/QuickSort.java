@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -87,9 +87,7 @@ public class QuickSort extends SortingAlgorithm {
      */
     @Override
     public List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
-        if (!isListValid(bigNumbers)) {
-            return bigNumbers;
-        }
+        isListValid(bigNumbers);
 
         final List<BigNumber> sortedList = cloneList(bigNumbers);
         sortInPlace(sortedList);
