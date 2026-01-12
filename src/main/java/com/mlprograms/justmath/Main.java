@@ -24,11 +24,37 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+
+import java.math.BigDecimal;
+
 public final class Main {
 
     public static void main(final String[] args) {
 
-        
+        long startTime = System.nanoTime();
+
+        BigNumber n = BigNumbers.ZERO;
+        for (int i = 0; i < 1_000_000; i++) {
+            n.add(BigNumbers.ONE);
+        }
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1000000;
+        System.out.println("Time taken: " + duration + " ms");
+
+        startTime = System.nanoTime();
+
+        BigDecimal nDec = BigDecimal.ZERO;
+        for (int i = 0; i < 1_000_000; i++) {
+            nDec.add(BigDecimal.ONE);
+        }
+
+        endTime = System.nanoTime();
+        duration = (endTime - startTime) / 1000000;
+        System.out.println("Time taken: " + duration + " ms");
+
 
 //        final GraphFxCalculatorEngine graphFxCalculatorEngine = new GraphFxCalculatorEngine();
 //        final ViewportSnapshot viewportSnapshot = new ViewportSnapshot(
