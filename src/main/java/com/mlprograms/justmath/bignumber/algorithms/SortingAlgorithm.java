@@ -63,18 +63,16 @@ public abstract class SortingAlgorithm {
      * @param bigNumbers the list to validate
      * @return {@code true} if the list meets the validity rules, {@code false} otherwise
      */
-    protected static void isListValid(final List<BigNumber> bigNumbers) {
+    protected static boolean isListValid(final List<BigNumber> bigNumbers) {
         if (bigNumbers == null) {
-            throw new IllegalArgumentException("list must not be null");
+            return false;
         }
 
         if (bigNumbers.isEmpty()) {
-            throw new IllegalArgumentException("list must not be empty");
+            return false;
         }
 
-        if (bigNumbers.size() == 1) {
-            throw new IllegalArgumentException("list must contain more than one element");
-        }
+        return bigNumbers.size() != 1;
     }
 
 }

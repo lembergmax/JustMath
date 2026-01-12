@@ -46,7 +46,9 @@ public class InsertionSort extends SortingAlgorithm {
      */
     @Override
     public List<BigNumber> sort(@NonNull final List<BigNumber> bigNumbers) {
-        isListValid(bigNumbers);
+        if (!isListValid(bigNumbers)) {
+            return bigNumbers;
+        }
 
         final List<BigNumber> sortedList = cloneList(bigNumbers);
 
