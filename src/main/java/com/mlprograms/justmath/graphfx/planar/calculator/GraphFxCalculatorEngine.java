@@ -43,20 +43,27 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 /**
  * Evaluates plot expressions for GraphFx and converts them into drawable primitives.
  * <p>
- * This engine implements a classic "implicit contour" plotter (Marching Squares):
- * it samples a scalar field {@code f(x,y)} on a grid and draws the contour line where {@code f(x,y)=0}.
+ * This engine implements an "implicit contour" plotter based on Marching Squares:
+ * it samples a scalar field {@code f(x,y)} on a grid and extracts the contour line(s)
+ * where {@code f(x,y)=0}.
  * <p>
- * Two important quality/performance improvements are implemented here:
- * <ol>
- *     <li><b>Correct ambiguous Marching Squares cases (mask 5 and 10)</b> using a center sample to disambiguate.</li>
- *     <li><b>Segment stitching</b>: all per-cell line segments are merged into longer polylines. This produces visually
- *     continuous curves and drastically reduces draw calls in the JavaFX view.</li>
- * </ol>
+ * Performance-relevant implementation notes:
+ * <ul>
+ *     <li><b>Row-wise sampling</b>: values are evaluated row-by-row, reusing the previously computed row.</li>
+ *     <li><b>Early cell skipping</b>: cells whose corner signs are strictly equal are skipped.</li>
+ *     <li><b>Ambiguity resolution</b> (masks 5 and 10): uses a center sample to disambiguate saddle cases.</li>
+ *     <li><b>Segment stitching</b>: per-cell segments are merged into longer polylines to reduce draw calls.</li>
+ *     <li><b>Reduced hot-path allocations</b>: the stitching stage avoids boxing (primitive adjacency lists)
+ *     and avoids iterator creation for "previous point" tracking.</li>
+ * </ul>
  */
 public final class GraphFxCalculatorEngine {
 
     /**
      * Hard limit for grid points to prevent UI freezes with extremely small cell sizes.
+     * <p>
+     * Note: this limit is based on the number of sampled points (axis length product),
+     * not on the number of cells or generated segments.
      */
     private static final int MAXIMUM_GRID_POINT_COUNT = 2_000_000;
 
@@ -64,24 +71,47 @@ public final class GraphFxCalculatorEngine {
      * Factor that defines the stitching tolerance relative to the grid cell size.
      * <p>
      * Endpoints that are closer than {@code cellSize * STITCH_TOLERANCE_FACTOR} are considered identical
-     * and will be connected into the same polyline.
+     * for the purpose of stitching segments into polylines.
      */
     private static final double STITCH_TOLERANCE_FACTOR = 1e-2;
 
     /**
-     * Absolute minimum tolerance for stitching in world units to avoid division-by-zero / ultra-small tolerance.
+     * Absolute minimum tolerance for stitching in world units.
+     * <p>
+     * This prevents degenerate quantization or division-by-zero if the viewport cell size
+     * is extremely small.
      */
     private static final double MINIMUM_STITCH_TOLERANCE = 1e-12;
+
+    /**
+     * Cached reserved variable name for {@code x}.
+     * <p>
+     * This avoids repeated enum access and string retrieval in hot loops.
+     */
+    private static final String X_VARIABLE_NAME = ReservedVariables.X.getValue();
+
+    /**
+     * Cached reserved variable name for {@code y}.
+     * <p>
+     * This avoids repeated enum access and string retrieval in hot loops.
+     */
+    private static final String Y_VARIABLE_NAME = ReservedVariables.Y.getValue();
 
     /**
      * Underlying evaluator for mathematical expressions.
      * <p>
      * It must support variables {@code x} and {@code y} via the provided variable map.
+     * <p>
+     * Important: the dominant runtime cost of plotting is typically inside this engine,
+     * because it is invoked for each sampled grid point.
      */
     private final CalculatorEngine calculatorEngine;
 
     /**
      * Creates a plot engine with a default {@link CalculatorEngine} configuration.
+     * <p>
+     * The defaults are intentionally conservative and deterministic:
+     * {@link MathContext} precision 32 with {@link RoundingMode#HALF_UP} and radians mode.
      */
     public GraphFxCalculatorEngine() {
         this(new CalculatorEngine(new MathContext(32, RoundingMode.HALF_UP), TrigonometricMode.RAD));
@@ -148,7 +178,15 @@ public final class GraphFxCalculatorEngine {
         final int xCellCount = xAxis.values.length - 1;
         final int yCellCount = yAxis.values.length - 1;
 
-        final List<Segment> rawSegments = new ArrayList<>(Math.min(65_536, xCellCount * 8));
+        /**
+         * Heuristic initial capacity:
+         * - Include both dimensions (x and y) because the number of processed cells scales with their product.
+         * - Cap aggressively to avoid excessive upfront memory usage.
+         */
+        final long cellCount = (long) xCellCount * (long) yCellCount;
+        final int initialSegmentCapacity = (int) Math.min(1_000_000L, Math.max(65_536L, cellCount / 2L));
+
+        final List<Segment> rawSegments = new ArrayList<>(initialSegmentCapacity);
 
         for (int yCellIndex = 0; yCellIndex < yCellCount; yCellIndex++) {
             final BigNumber lowerY = yAxis.values[yCellIndex];
@@ -191,6 +229,8 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Creates a uniformly spaced axis between {@code minimumValue} and {@code maximumValue} (inclusive) with the given step.
+     * <p>
+     * This method also caches {@link BigNumber#toString()} results to reduce repeated conversions while sampling.
      *
      * @param minimumValue inclusive minimum
      * @param maximumValue inclusive maximum
@@ -211,21 +251,22 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Evaluates a full grid row for a fixed y value.
+     * <p>
+     * The provided {@code combinedVars} map is mutated in-place to avoid per-sample allocations.
      *
      * @param expression      normalized expression
      * @param combinedVars    mutable variable map used for evaluation
      * @param xAxisStrings    cached x-axis values as strings (same order as x-axis values)
      * @param yAxisValueAsStr cached y value as string
-     * @return evaluated row values (same length as x-axis)
+     * @return evaluated row values (same length as x-axis); entries can be null if evaluation fails
      */
     private BigNumber[] evaluateGridRow(final String expression, final Map<String, String> combinedVars, final String[] xAxisStrings, final String yAxisValueAsStr) {
-
         final BigNumber[] rowValues = new BigNumber[xAxisStrings.length];
 
-        combinedVars.put(ReservedVariables.Y.getValue(), yAxisValueAsStr);
+        combinedVars.put(Y_VARIABLE_NAME, yAxisValueAsStr);
 
         for (int xIndex = 0; xIndex < xAxisStrings.length; xIndex++) {
-            combinedVars.put(ReservedVariables.X.getValue(), xAxisStrings[xIndex]);
+            combinedVars.put(X_VARIABLE_NAME, xAxisStrings[xIndex]);
 
             try {
                 rowValues[xIndex] = calculatorEngine.evaluate(expression, combinedVars);
@@ -247,7 +288,6 @@ public final class GraphFxCalculatorEngine {
      * @return {@code true} if there cannot be a zero crossing inside the cell
      */
     private boolean canSkipCellBecauseNoContourCanExist(final BigNumber bottomLeft, final BigNumber bottomRight, final BigNumber topRight, final BigNumber topLeft) {
-
         final int s0 = bottomLeft.signum();
         final int s1 = bottomRight.signum();
         final int s2 = topRight.signum();
@@ -282,7 +322,6 @@ public final class GraphFxCalculatorEngine {
      * @param topLeft     f(left,top)
      */
     private void appendSegmentsForCell(final List<Segment> segments, final String expression, final Map<String, String> variables, final BigNumber leftX, final BigNumber lowerY, final BigNumber rightX, final BigNumber upperY, final BigNumber bottomLeft, final BigNumber bottomRight, final BigNumber topRight, final BigNumber topLeft) {
-
         final PlotPoint bottom = computeIntersectionPointIfContourCrossesEdge(leftX, lowerY, bottomLeft, rightX, lowerY, bottomRight);
         final PlotPoint right = computeIntersectionPointIfContourCrossesEdge(rightX, lowerY, bottomRight, rightX, upperY, topRight);
         final PlotPoint top = computeIntersectionPointIfContourCrossesEdge(rightX, upperY, topRight, leftX, upperY, topLeft);
@@ -306,14 +345,14 @@ public final class GraphFxCalculatorEngine {
             PlotPoint first = null;
             PlotPoint second = null;
 
-            for (final PlotPoint p : points) {
-                if (p == null) {
+            for (final PlotPoint point : points) {
+                if (point == null) {
                     continue;
                 }
                 if (first == null) {
-                    first = p;
+                    first = point;
                 } else {
-                    second = p;
+                    second = point;
                     break;
                 }
             }
@@ -336,42 +375,13 @@ public final class GraphFxCalculatorEngine {
                 final BigNumber centerValue = tryEvaluateAt(expression, variables, centerX, centerY);
                 final boolean centerPositive = centerValue != null && centerValue.isGreaterThan(ZERO);
 
-                // Naming:
-                // bottom = intersection on bottom edge
-                // right  = intersection on right edge
-                // top    = intersection on top edge
-                // left   = intersection on left edge
-                //
-                // Disambiguation rule:
-                // - If center is positive, connect segments around negative corners.
-                // - If center is negative, connect segments around positive corners.
-                //
-                // Mask 5: bl(+), br(-), tr(+), tl(-)
-                //   center positive => (bottom-right) + (top-left)
-                //   center negative => (bottom-left) + (top-right)
-                //
-                // Mask 10: bl(-), br(+), tr(-), tl(+)
-                //   center positive => (bottom-left) + (right-top)
-                //   center negative => (bottom-right) + (top-left)
                 if (mask == 5) {
-                    if (centerPositive) {
-                        segments.add(new Segment(bottom, right));
-                        segments.add(new Segment(top, left));
-                    } else {
-                        segments.add(new Segment(bottom, left));
-                        segments.add(new Segment(top, right));
-                    }
+                    addSegmentsForAmbiguousCell(segments, centerPositive, bottom, right, top, left);
                     return;
                 }
 
                 // mask == 10
-                if (centerPositive) {
-                    segments.add(new Segment(bottom, left));
-                    segments.add(new Segment(right, top));
-                } else {
-                    segments.add(new Segment(bottom, right));
-                    segments.add(new Segment(top, left));
-                }
+                addSegmentsForAmbiguousCell(segments, centerPositive, bottom, left, right, top);
                 return;
             }
 
@@ -379,13 +389,38 @@ public final class GraphFxCalculatorEngine {
             segments.add(new Segment(bottom, right));
             segments.add(new Segment(top, left));
         }
+    }
 
-        // If we get 1 or 3 intersections, we skip the cell.
-        // This usually indicates an exact-zero corner degeneracy, which is rare and unstable in practice.
+    /**
+     * Adds the two segments for an ambiguous (saddle) Marching Squares cell.
+     * <p>
+     * The chosen connectivity depends on the sign of the center sample:
+     * <ul>
+     *     <li>If the center is positive, connect one diagonal pairing.</li>
+     *     <li>If the center is negative, connect the opposite diagonal pairing.</li>
+     * </ul>
+     *
+     * @param segments       output segment list
+     * @param centerPositive whether the center sample is positive
+     * @param bottom         bottom edge intersection
+     * @param right          right edge intersection
+     * @param top            top edge intersection
+     * @param left           left edge intersection
+     */
+    private void addSegmentsForAmbiguousCell(final List<Segment> segments, final boolean centerPositive, final PlotPoint bottom, final PlotPoint right, final PlotPoint top, final PlotPoint left) {
+        if (centerPositive) {
+            segments.add(new Segment(bottom, right));
+            segments.add(new Segment(top, left));
+        } else {
+            segments.add(new Segment(bottom, left));
+            segments.add(new Segment(top, right));
+        }
     }
 
     /**
      * Attempts to evaluate the expression at a given point.
+     * <p>
+     * This method mutates the provided variable map to bind {@code x} and {@code y}.
      *
      * @param expression normalized expression
      * @param variables  mutable variable map
@@ -395,8 +430,8 @@ public final class GraphFxCalculatorEngine {
      */
     private BigNumber tryEvaluateAt(final String expression, final Map<String, String> variables, final BigNumber xValue, final BigNumber yValue) {
         try {
-            variables.put(ReservedVariables.X.getValue(), xValue.toString());
-            variables.put(ReservedVariables.Y.getValue(), yValue.toString());
+            variables.put(X_VARIABLE_NAME, xValue.toString());
+            variables.put(Y_VARIABLE_NAME, yValue.toString());
             return calculatorEngine.evaluate(expression, variables);
         } catch (final RuntimeException ignored) {
             return null;
@@ -413,6 +448,9 @@ public final class GraphFxCalculatorEngine {
      *     <li>bit 2: top-right</li>
      *     <li>bit 3: top-left</li>
      * </ul>
+     * <p>
+     * Performance note: uses {@link BigNumber#signum()} instead of repeated comparisons,
+     * which tends to be cheaper for most BigNumber implementations.
      *
      * @param bottomLeft  bottom-left value
      * @param bottomRight bottom-right value
@@ -423,16 +461,16 @@ public final class GraphFxCalculatorEngine {
     private int computeMarchingSquaresMask(final BigNumber bottomLeft, final BigNumber bottomRight, final BigNumber topRight, final BigNumber topLeft) {
         int mask = 0;
 
-        if (bottomLeft.isGreaterThan(ZERO)) {
+        if (bottomLeft.signum() > 0) {
             mask |= 1;
         }
-        if (bottomRight.isGreaterThan(ZERO)) {
+        if (bottomRight.signum() > 0) {
             mask |= 2;
         }
-        if (topRight.isGreaterThan(ZERO)) {
+        if (topRight.signum() > 0) {
             mask |= 4;
         }
-        if (topLeft.isGreaterThan(ZERO)) {
+        if (topLeft.signum() > 0) {
             mask |= 8;
         }
 
@@ -441,6 +479,14 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Computes an edge intersection point by linear interpolation if the contour crosses the edge.
+     * <p>
+     * This function checks signs first and only performs the interpolation math if the edge is crossed.
+     * <p>
+     * Interpolation uses:
+     * <pre>
+     * t = f1 / (f1 - f2)
+     * p = p1 + (p2 - p1) * t
+     * </pre>
      *
      * @param x1 first point x
      * @param y1 first point y
@@ -448,29 +494,32 @@ public final class GraphFxCalculatorEngine {
      * @param x2 second point x
      * @param y2 second point y
      * @param f2 second point value
-     * @return intersection point or {@code null}
+     * @return intersection point or {@code null} if no crossing exists on this edge
      */
     private PlotPoint computeIntersectionPointIfContourCrossesEdge(final BigNumber x1, final BigNumber y1, final BigNumber f1, final BigNumber x2, final BigNumber y2, final BigNumber f2) {
-        if (f1.isEqualTo(ZERO) && f2.isEqualTo(ZERO)) {
-            return null;
-        }
-
-        if (f1.isEqualTo(ZERO)) {
-            return new PlotPoint(x1, y1);
-        }
-        if (f2.isEqualTo(ZERO)) {
-            return new PlotPoint(x2, y2);
-        }
-
         final int s1 = f1.signum();
         final int s2 = f2.signum();
 
-        if (s1 == 0 || s2 == 0 || s1 == s2) {
+        // Both exactly zero -> infinite solutions along the edge; skip to avoid degenerate segments.
+        if (s1 == 0 && s2 == 0) {
+            return null;
+        }
+
+        // Exact hit on a vertex -> use that vertex.
+        if (s1 == 0) {
+            return new PlotPoint(x1, y1);
+        }
+        if (s2 == 0) {
+            return new PlotPoint(x2, y2);
+        }
+
+        // Same sign -> no crossing.
+        if (s1 == s2) {
             return null;
         }
 
         final BigNumber denominator = f1.subtract(f2);
-        if (denominator.isEqualTo(ZERO)) {
+        if (denominator.signum() == 0) {
             return null;
         }
 
@@ -485,6 +534,13 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Stitches raw segments into longer polylines by connecting endpoints within a tolerance.
+     * <p>
+     * Performance improvements compared to a naive implementation:
+     * <ul>
+     *     <li>Precomputes quantized endpoint keys for each segment once (no repeated quantization in the hot loop).</li>
+     *     <li>Uses a primitive int adjacency container to avoid boxing {@code Integer} for segment indices.</li>
+     *     <li>Tracks the previous endpoint key without creating iterators on each extension step.</li>
+     * </ul>
      *
      * @param segments  raw segments
      * @param tolerance world-unit tolerance for endpoint matching
@@ -495,37 +551,50 @@ public final class GraphFxCalculatorEngine {
             return new ArrayList<>();
         }
 
-        final Map<PointKey, List<Integer>> adjacency = new HashMap<>(segments.size() * 2);
-        for (int index = 0; index < segments.size(); index++) {
+        final int segmentCount = segments.size();
+
+        final PointKey[] startKeys = new PointKey[segmentCount];
+        final PointKey[] endKeys = new PointKey[segmentCount];
+
+        final int expectedAdjacencySize = (int) Math.min(Integer.MAX_VALUE, (long) segmentCount * 2L);
+        final Map<PointKey, IntBag> adjacency = new HashMap<>((int) (expectedAdjacencySize / 0.75f) + 1);
+
+        for (int index = 0; index < segmentCount; index++) {
             final Segment segment = segments.get(index);
 
             final PointKey a = PointKey.from(segment.start, tolerance);
             final PointKey b = PointKey.from(segment.end, tolerance);
 
-            adjacency.computeIfAbsent(a, ignored -> new ArrayList<>()).add(index);
-            adjacency.computeIfAbsent(b, ignored -> new ArrayList<>()).add(index);
+            startKeys[index] = a;
+            endKeys[index] = b;
+
+            adjacency.computeIfAbsent(a, ignored -> new IntBag(2)).add(index);
+            adjacency.computeIfAbsent(b, ignored -> new IntBag(2)).add(index);
         }
 
-        final boolean[] used = new boolean[segments.size()];
+        final boolean[] used = new boolean[segmentCount];
         final List<PlotLine> polylines = new ArrayList<>();
 
-        for (int startIndex = 0; startIndex < segments.size(); startIndex++) {
-            if (used[startIndex]) {
+        for (int seedIndex = 0; seedIndex < segmentCount; seedIndex++) {
+            if (used[seedIndex]) {
                 continue;
             }
 
-            final Segment seed = segments.get(startIndex);
-            used[startIndex] = true;
+            final Segment seed = segments.get(seedIndex);
+            used[seedIndex] = true;
 
             final Deque<PlotPoint> points = new ArrayDeque<>();
             points.addLast(seed.start);
             points.addLast(seed.end);
 
-            // Extend forward from the end.
-            extendPolyline(points, segments, adjacency, used, tolerance, true);
+            final PointKey seedHeadKey = startKeys[seedIndex];
+            final PointKey seedTailKey = endKeys[seedIndex];
 
-            // Extend backward from the start.
-            extendPolyline(points, segments, adjacency, used, tolerance, false);
+            // Extend forward from the tail (end).
+            extendPolyline(points, segments, adjacency, used, startKeys, endKeys, seedHeadKey, seedTailKey, true);
+
+            // Extend backward from the head (start). The "previous" key here is the second point's key.
+            extendPolyline(points, segments, adjacency, used, startKeys, endKeys, seedTailKey, seedHeadKey, false);
 
             if (points.size() >= 2) {
                 polylines.add(new PlotLine(new ArrayList<>(points)));
@@ -537,44 +606,40 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Extends a polyline by greedily consuming connected unused segments.
+     * <p>
+     * The method uses quantized endpoint keys (precomputed) to identify connectivity and to avoid
+     * immediate backtracking when possible.
      *
-     * @param points    current polyline points (deque)
-     * @param segments  all segments
-     * @param adjacency endpoint-to-segment adjacency map
-     * @param used      used flags
-     * @param tolerance matching tolerance
-     * @param forward   if {@code true}, extend at tail; otherwise extend at head
+     * @param points      current polyline points (deque)
+     * @param segments    all segments
+     * @param adjacency   endpoint-to-segment adjacency map (primitive index bags)
+     * @param used        used flags
+     * @param startKeys   precomputed quantized keys for segment start endpoints
+     * @param endKeys     precomputed quantized keys for segment end endpoints
+     * @param previousKey quantized key of the previous point (used to avoid immediate backtracking)
+     * @param currentKey  quantized key of the current endpoint to extend from
+     * @param forward     if {@code true}, extend at tail; otherwise extend at head
      */
-    private void extendPolyline(final Deque<PlotPoint> points, final List<Segment> segments, final Map<PointKey, List<Integer>> adjacency, final boolean[] used, final double tolerance, final boolean forward) {
-
+    private void extendPolyline(final Deque<PlotPoint> points, final List<Segment> segments, final Map<PointKey, IntBag> adjacency, final boolean[] used, final PointKey[] startKeys, final PointKey[] endKeys, PointKey previousKey, PointKey currentKey, final boolean forward) {
         while (true) {
-            final PlotPoint current = forward ? points.peekLast() : points.peekFirst();
-            final PlotPoint previous = forward ? getSecondLast(points) : getSecondFirst(points);
-
-            if (current == null) {
-                return;
-            }
-
-            final PointKey currentKey = PointKey.from(current, tolerance);
-            final PointKey previousKey = previous == null ? null : PointKey.from(previous, tolerance);
-
-            final List<Integer> candidates = adjacency.get(currentKey);
+            final IntBag candidates = adjacency.get(currentKey);
             if (candidates == null || candidates.isEmpty()) {
                 return;
             }
 
-            Integer nextSegmentIndex = null;
+            int nextSegmentIndex = -1;
             PlotPoint nextPoint = null;
+            PointKey nextKey = null;
 
-            for (final Integer index : candidates) {
-                if (used[index]) {
+            // First pass: avoid immediate backtracking if possible.
+            for (int i = 0; i < candidates.size(); i++) {
+                final int candidateIndex = candidates.get(i);
+                if (used[candidateIndex]) {
                     continue;
                 }
 
-                final Segment segment = segments.get(index);
-
-                final PointKey a = PointKey.from(segment.start, tolerance);
-                final PointKey b = PointKey.from(segment.end, tolerance);
+                final PointKey a = startKeys[candidateIndex];
+                final PointKey b = endKeys[candidateIndex];
 
                 final boolean matchesA = a.equals(currentKey);
                 final boolean matchesB = b.equals(currentKey);
@@ -583,29 +648,28 @@ public final class GraphFxCalculatorEngine {
                     continue;
                 }
 
-                final PlotPoint candidateNext = matchesA ? segment.end : segment.start;
                 final PointKey candidateNextKey = matchesA ? b : a;
-
-                // Avoid immediate backtracking if possible.
                 if (candidateNextKey.equals(previousKey)) {
                     continue;
                 }
 
-                nextSegmentIndex = index;
-                nextPoint = candidateNext;
+                final Segment segment = segments.get(candidateIndex);
+                nextPoint = matchesA ? segment.end : segment.start;
+                nextKey = candidateNextKey;
+                nextSegmentIndex = candidateIndex;
                 break;
             }
 
-            // If we only found a backtracking option, allow it as a last resort.
-            if (nextSegmentIndex == null) {
-                for (final Integer index : candidates) {
-                    if (used[index]) {
+            // Second pass: allow backtracking as a last resort.
+            if (nextSegmentIndex < 0) {
+                for (int i = 0; i < candidates.size(); i++) {
+                    final int candidateIndex = candidates.get(i);
+                    if (used[candidateIndex]) {
                         continue;
                     }
 
-                    final Segment segment = segments.get(index);
-                    final PointKey a = PointKey.from(segment.start, tolerance);
-                    final PointKey b = PointKey.from(segment.end, tolerance);
+                    final PointKey a = startKeys[candidateIndex];
+                    final PointKey b = endKeys[candidateIndex];
 
                     final boolean matchesA = a.equals(currentKey);
                     final boolean matchesB = b.equals(currentKey);
@@ -614,88 +678,34 @@ public final class GraphFxCalculatorEngine {
                         continue;
                     }
 
-                    nextSegmentIndex = index;
+                    final Segment segment = segments.get(candidateIndex);
                     nextPoint = matchesA ? segment.end : segment.start;
+                    nextKey = matchesA ? b : a;
+                    nextSegmentIndex = candidateIndex;
                     break;
                 }
             }
 
-            if (nextSegmentIndex == null || nextPoint == null) {
+            if (nextSegmentIndex < 0 || nextPoint == null || nextKey == null) {
+                return;
+            }
+
+            // Degenerate after quantization: extending would not move.
+            if (nextKey.equals(currentKey)) {
                 return;
             }
 
             used[nextSegmentIndex] = true;
 
             if (forward) {
-                if (!samePoint(points.peekLast(), nextPoint, tolerance)) {
-                    points.addLast(nextPoint);
-                } else {
-                    return;
-                }
+                points.addLast(nextPoint);
             } else {
-                if (!samePoint(points.peekFirst(), nextPoint, tolerance)) {
-                    points.addFirst(nextPoint);
-                } else {
-                    return;
-                }
+                points.addFirst(nextPoint);
             }
+
+            previousKey = currentKey;
+            currentKey = nextKey;
         }
-    }
-
-    /**
-     * Gets the second last point in a deque, or {@code null} if not available.
-     *
-     * @param points deque of points
-     * @return second last point or null
-     */
-    private PlotPoint getSecondLast(final Deque<PlotPoint> points) {
-        if (points.size() < 2) {
-            return null;
-        }
-
-        final Iterator<PlotPoint> iterator = points.descendingIterator();
-        iterator.next(); // last
-        return iterator.next(); // second last
-    }
-
-    /**
-     * Gets the second first point in a deque, or {@code null} if not available.
-     *
-     * @param points deque of points
-     * @return second first point or null
-     */
-    private PlotPoint getSecondFirst(final Deque<PlotPoint> points) {
-        if (points.size() < 2) {
-            return null;
-        }
-
-        final Iterator<PlotPoint> iterator = points.iterator();
-        iterator.next(); // first
-        return iterator.next(); // second
-    }
-
-    /**
-     * Compares two plot points with tolerance in world units.
-     *
-     * @param a         first point
-     * @param b         second point
-     * @param tolerance tolerance in world units
-     * @return {@code true} if points are sufficiently equal
-     */
-    private boolean samePoint(final PlotPoint a, final PlotPoint b, final double tolerance) {
-        if (a == null || b == null) {
-            return false;
-        }
-
-        final double ax = a.x().doubleValue();
-        final double ay = a.y().doubleValue();
-        final double bx = b.x().doubleValue();
-        final double by = b.y().doubleValue();
-
-        final double dx = ax - bx;
-        final double dy = ay - by;
-
-        return (dx * dx + dy * dy) <= (tolerance * tolerance);
     }
 
     /**
@@ -743,7 +753,7 @@ public final class GraphFxCalculatorEngine {
             if (variableName == null) {
                 continue;
             }
-            if (variableName.equals(ReservedVariables.X.getValue()) || variableName.equals(ReservedVariables.Y.getValue())) {
+            if (variableName.equals(X_VARIABLE_NAME) || variableName.equals(Y_VARIABLE_NAME)) {
                 return true;
             }
         }
@@ -758,10 +768,10 @@ public final class GraphFxCalculatorEngine {
      */
     private record Axis(BigNumber[] values, String[] strings) {
         /**
-         * Creates an axis.
+         * Creates an axis container.
          *
-         * @param values  axis values
-         * @param strings cached string values
+         * @param values  axis values (non-null)
+         * @param strings cached string values (non-null, same order as {@code values})
          */
         private Axis {
             Objects.requireNonNull(values, "values must not be null");
@@ -790,6 +800,9 @@ public final class GraphFxCalculatorEngine {
 
     /**
      * Quantized point key used for stitching segments reliably despite minor numeric differences.
+     * <p>
+     * The key is computed by dividing by a tolerance and rounding to the nearest long.
+     * Points that fall into the same quantized bucket are considered identical for stitching.
      *
      * @param qx quantized x coordinate
      * @param qy quantized y coordinate
@@ -798,9 +811,12 @@ public final class GraphFxCalculatorEngine {
 
         /**
          * Creates a point key from a {@link PlotPoint} using the given tolerance.
+         * <p>
+         * The tolerance must be positive. The caller ensures this by clamping tolerance
+         * to at least {@link #MINIMUM_STITCH_TOLERANCE}.
          *
-         * @param point     plot point
-         * @param tolerance matching tolerance
+         * @param point     plot point (non-null)
+         * @param tolerance matching tolerance (must be > 0)
          * @return quantized key
          */
         static PointKey from(final PlotPoint point, final double tolerance) {
@@ -813,4 +829,100 @@ public final class GraphFxCalculatorEngine {
             return new PointKey(qx, qy);
         }
     }
+
+    /**
+     * A minimal primitive int collection specialized for adjacency lists.
+     * <p>
+     * Why this exists:
+     * <ul>
+     *     <li>{@code List<Integer>} would allocate and box an {@code Integer} for every stored index.</li>
+     *     <li>Stitching can touch many indices, so boxing/GC overhead becomes measurable.</li>
+     * </ul>
+     * <p>
+     * This type provides:
+     * <ul>
+     *     <li>Amortized O(1) {@link #add(int)}</li>
+     *     <li>O(1) {@link #get(int)}</li>
+     *     <li>Fast indexed iteration without allocations</li>
+     * </ul>
+     */
+    private static final class IntBag {
+
+        /**
+         * Backing array holding the stored indices.
+         * <p>
+         * Only the first {@link #size} entries are valid.
+         */
+        private int[] elements;
+
+        /**
+         * Number of valid stored indices.
+         */
+        private int size;
+
+        /**
+         * Creates an {@link IntBag} with a given initial capacity.
+         *
+         * @param initialCapacity initial backing array size (values <= 0 are treated as a small default)
+         */
+        private IntBag(final int initialCapacity) {
+            final int safeCapacity = Math.max(4, initialCapacity);
+            this.elements = new int[safeCapacity];
+            this.size = 0;
+        }
+
+        /**
+         * Adds a value to the bag.
+         *
+         * @param value the integer value to store
+         */
+        private void add(final int value) {
+            if (size == elements.length) {
+                grow();
+            }
+            elements[size++] = value;
+        }
+
+        /**
+         * Returns the number of stored values.
+         *
+         * @return current size
+         */
+        private int size() {
+            return size;
+        }
+
+        /**
+         * Returns whether the bag contains no values.
+         *
+         * @return {@code true} if empty
+         */
+        private boolean isEmpty() {
+            return size == 0;
+        }
+
+        /**
+         * Returns the value at the given index.
+         *
+         * @param index index in range {@code [0..size-1]}
+         * @return stored value
+         * @throws ArrayIndexOutOfBoundsException if index is out of bounds
+         */
+        private int get(final int index) {
+            return elements[index];
+        }
+
+        /**
+         * Grows the internal array to accommodate more elements.
+         * <p>
+         * Uses a 1.5x growth factor to balance memory usage and reallocation frequency.
+         */
+        private void grow() {
+            final int newCapacity = elements.length + (elements.length >> 1) + 1;
+            final int[] newArray = new int[newCapacity];
+            System.arraycopy(elements, 0, newArray, 0, elements.length);
+            elements = newArray;
+        }
+    }
+
 }
