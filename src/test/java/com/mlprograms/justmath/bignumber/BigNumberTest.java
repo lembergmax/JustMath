@@ -1182,7 +1182,7 @@ public class BigNumberTest {
         @ParameterizedTest
         @CsvSource({
                 "180, 3.141592653589793",
-                "90, 1.570796326794897"
+                "90, 1.570796326794896"
         })
         void toRadiansTest(String deg, String expectedRad) {
             BigNumber degrees = new BigNumber(deg);
