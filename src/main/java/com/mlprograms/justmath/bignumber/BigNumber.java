@@ -2746,17 +2746,16 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Returns the absolute value of this {@code BigNumber}.
+     * Returns a new {@code BigNumber} object with absolute value of this.
      * <p>
      * If the number is negative, sets the sign to positive and returns this instance.
      *
-     * @return this {@code BigNumber} as a non-negative value
+     * @return new {@code BigNumber} Object as a non-negative value
      */
     public BigNumber abs() {
-        if (isNegative) {
-            isNegative = false;
-        }
-        return this;
+        final BigNumber abs = this.clone();
+        abs.isNegative = false;
+        return abs;
     }
 
     /**
