@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -508,7 +508,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     /**
      * Computes the truncating remainder of this number divided by the specified {@link BigNumber}.
      *
-     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, Locale)}.</p>
+     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, MathContext, Locale)}.</p>
      *
      * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
      * the sign of the result follows the dividend (this number).</p>
@@ -519,7 +519,24 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @throws ArithmeticException if {@code divisor} is zero
      */
     public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
-        return BasicMath.remainder(this, divisor, locale);
+        return remainder(divisor, mathContext, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}.
+     *
+     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, MathContext, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @param locale  the locale used to construct the returned {@link BigNumber}
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        return BasicMath.remainder(this, divisor, mathContext, locale);
     }
 
     /**
