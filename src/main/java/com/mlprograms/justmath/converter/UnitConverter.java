@@ -22,21 +22,27 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.unit.length;
+package com.mlprograms.justmath.converter;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.unit.Unit;
-import lombok.experimental.UtilityClass;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.math.MathContext;
 
-/**
- * Dedicated catalog for all length unit metadata.
- */
-@UtilityClass
-public class LengthUnitCatalog {
+@RequiredArgsConstructor
+public class UnitConverter {
 
-    public static List<Unit> definitions() {
-        return Unit.LENGTH.all();
+    @NonNull
+    private final MathContext mathContext;
+
+    public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
+        if (fromUnit.getCategory() != toUnit.getCategory()) {
+            throw new IllegalArgumentException("Units must share the same category");
+        }
+
+        return value.multiply(fromUnit.getFactorToBase()).divide(toUnit.getFactorToBase(), mathContext);
     }
 
 }

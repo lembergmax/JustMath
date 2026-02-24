@@ -24,12 +24,23 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.unit.Unit;
+
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 public class Main {
 
     public static void main(final String[] args) {
+        MathContext mathContext = new MathContext(34, RoundingMode.HALF_UP);
+        UnitConverter unitConverter = new UnitConverter(mathContext);
 
+        BigNumber value = new BigNumber("3");
+        BigNumber converted = unitConverter.convert(value, Unit.LENGTH.METER, Unit.LENGTH.FEET);
 
-
+        System.out.println("3 m in ft = " + converted);
     }
 
 }
