@@ -22,42 +22,25 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.units;
+package com.mlprograms.justmath.converter;
 
-import com.mlprograms.justmath.converter.UnitCategory;
+import com.mlprograms.justmath.converter.units.Length;
+import lombok.experimental.UtilityClass;
 
-public enum Length implements UnitType {
+import java.util.List;
 
-    KILOMETER,
-    HECTOMETER,
-    METER,
-    DECIMETER,
-    CENTIMETER,
-    MILLIMETER,
-    MICROMETER,
-    NANOMETER,
-    ANGSTROM,
-    PICOMETER,
-    FEMTOMETER,
-    INCH,
-    FEET,
-    YARD,
-    MILE,
-    NAUTICAL_MILE,
-    LIGHT_YEAR,
-    PARSEC,
-    PIXEL,
-    POINT,
-    PICA,
-    EM;
+/**
+ * Facade for discoverable access to unit enums and their definitions.
+ */
+@UtilityClass
+public class Unit {
 
-    @Override
-    public String key() {
-        return name();
+    public static List<Length> lengthTypes() {
+        return List.of(Length.values());
     }
 
-    @Override
-    public UnitCategory category() {
-        return UnitCategory.LENGTH;
+    public static List<UnitDefinition> lengthDefinitions() {
+        return LengthUnitCatalog.definitions();
     }
+
 }

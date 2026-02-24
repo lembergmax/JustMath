@@ -26,38 +26,10 @@ package com.mlprograms.justmath.converter.units;
 
 import com.mlprograms.justmath.converter.UnitCategory;
 
-public enum Length implements UnitType {
+public interface UnitType {
 
-    KILOMETER,
-    HECTOMETER,
-    METER,
-    DECIMETER,
-    CENTIMETER,
-    MILLIMETER,
-    MICROMETER,
-    NANOMETER,
-    ANGSTROM,
-    PICOMETER,
-    FEMTOMETER,
-    INCH,
-    FEET,
-    YARD,
-    MILE,
-    NAUTICAL_MILE,
-    LIGHT_YEAR,
-    PARSEC,
-    PIXEL,
-    POINT,
-    PICA,
-    EM;
+    String key();
 
-    @Override
-    public String key() {
-        return name();
-    }
+    UnitCategory category();
 
-    @Override
-    public UnitCategory category() {
-        return UnitCategory.LENGTH;
-    }
 }
