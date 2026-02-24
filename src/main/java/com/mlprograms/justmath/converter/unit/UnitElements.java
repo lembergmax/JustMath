@@ -24,33 +24,43 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import lombok.Getter;
+import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+@UtilityClass
 public class UnitElements {
 
     @Getter
-    private static final Map<String, ExpressionElement> registry = new HashMap<>();
+    private static final Map<String, Unit> registry = new HashMap<>();
 
     static {
-        List<Unit> units = List.of(
-        );
+        List<Unit> units = Unit.LENGTH.all();
 
         for (Unit unit : units) {
             register(unit);
         }
     }
 
+    /**
+     * Finds a {@link Unit} by its symbol.
+     *
+     * @param symbol the symbol to look up
+     * @return an {@link Optional} containing the found {@code Unit}, or empty if not found
+     */
+    public static Optional<Unit> findBySymbol(String symbol) {
+        return Optional.ofNullable(registry.get(symbol));
+    }
 
     /**
      * Registers an {@link Unit} in the registry.
      * The unit is mapped by its symbol for a later lookup.
      *
-     * @param unit the {@code ExpressionElement} to register
+     * @param unit the {@code Unit} to register
      */
     public static void register(Unit unit) {
         registry.put(unit.getSymbol(), unit);
