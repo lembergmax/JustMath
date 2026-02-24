@@ -24,10 +24,7 @@
 
 package com.mlprograms.justmath.converter.unit.length;
 
-import com.mlprograms.justmath.converter.unit.UnitCategory;
-import com.mlprograms.justmath.converter.unit.UnitType;
-
-public enum Length implements UnitType {
+public enum Length {
 
     KILOMETER,
     HECTOMETER,
@@ -51,15 +48,5 @@ public enum Length implements UnitType {
     POINT,
     PICA,
     EM;
-
-    @Override
-    public String key() {
-        return name();
-    }
-
-    @Override
-    public UnitCategory category() {
-        return UnitCategory.LENGTH;
-    }
 
 }

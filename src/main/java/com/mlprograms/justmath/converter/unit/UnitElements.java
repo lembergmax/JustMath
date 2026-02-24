@@ -22,29 +22,38 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.unit.UnitType;
-import lombok.NonNull;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import lombok.Getter;
 
-/**
- * Public calculator entry point for unit conversions.
- */
-public class UnitCalculator {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    private final UnitConverter unitConverter;
+public class UnitElements {
 
-    public UnitCalculator() {
-        this(new UnitConverter());
+    @Getter
+    private static final Map<String, ExpressionElement> registry = new HashMap<>();
+
+    static {
+        List<Unit> units = List.of(
+        );
+
+        for (Unit unit : units) {
+            register(unit);
+        }
     }
 
-    UnitCalculator(@NonNull final UnitConverter unitConverter) {
-        this.unitConverter = unitConverter;
-    }
 
-    public BigNumber convert(@NonNull final BigNumber amount, @NonNull final UnitType fromUnit, @NonNull final UnitType toUnit) {
-        return unitConverter.convert(amount, fromUnit, toUnit);
+    /**
+     * Registers an {@link Unit} in the registry.
+     * The unit is mapped by its symbol for a later lookup.
+     *
+     * @param unit the {@code ExpressionElement} to register
+     */
+    public static void register(Unit unit) {
+        registry.put(unit.getSymbol(), unit);
     }
 
 }
