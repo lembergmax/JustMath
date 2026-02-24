@@ -73,6 +73,15 @@ class UnitConverterTest {
     }
 
     @Test
+    void unitCalculatorShouldConvertUsingCoreLogic() {
+        UnitCalculator calculator = new UnitCalculator();
+
+        BigNumber result = calculator.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
+
+        assertEquals("3.28083989501312335958005249343832", result.toString());
+    }
+
+    @Test
     void unitFacadeShouldDelegateToConverter() {
         BigNumber result = Unit.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
 
@@ -125,16 +134,30 @@ class UnitConverterTest {
 
 
     @Test
-    void lengthDefinitionsShouldBeGeneratedFromLengthEnum() {
-        assertEquals(Unit.lengthTypes().size(), Unit.lengthDefinitions().size());
-        assertTrue(Unit.lengthTypes().stream().allMatch(type ->
-                Unit.lengthDefinitions().stream().anyMatch(definition -> definition.getType() == type)));
+    void unitElementsShouldResolveByTypeAndToken() {
+        UnitDefinition byType = UnitElements.getByType(Length.CENTIMETER).orElseThrow();
+        UnitDefinition byToken = UnitElements.getByToken("cm").orElseThrow();
+
+        assertEquals(Length.CENTIMETER, byType.getType());
+        assertEquals(Length.CENTIMETER, byToken.getType());
     }
 
     @Test
-    void lengthDefinitionsShouldContainCentimeterAndFeet() {
-        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> definition.getType() == Length.CENTIMETER).findFirst().orElse(null));
-        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> definition.getType() == Length.FEET).findFirst().orElse(null));
+    void unitElementsShouldExposeMaxTokenLength() {
+        assertTrue(UnitElements.getMaxTokenLength() > 0);
+    }
+
+    @Test
+    void definitionsShouldBeGeneratedFromLengthEnum() {
+        assertEquals(Unit.lengthTypes().size(), Unit.definitions().size());
+        assertTrue(Unit.lengthTypes().stream().allMatch(type ->
+                Unit.definitions().stream().anyMatch(definition -> definition.getType() == type)));
+    }
+
+    @Test
+    void definitionsShouldContainCentimeterAndFeet() {
+        assertNotNull(Unit.definitions().stream().filter(definition -> definition.getType() == Length.CENTIMETER).findFirst().orElse(null));
+        assertNotNull(Unit.definitions().stream().filter(definition -> definition.getType() == Length.FEET).findFirst().orElse(null));
     }
 
 }

@@ -28,43 +28,17 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.units.UnitType;
 import lombok.experimental.UtilityClass;
 
-import java.util.List;
-import java.util.Objects;
-
 /**
- * Provides precision-safe conversion between registered unit definitions.
+ * Backward-compatible facade for static unit conversion calls.
+ * Internally delegates to {@link UnitCalculator}.
  */
 @UtilityClass
 public class UnitConverter {
 
+    private static final UnitCalculator DEFAULT_CALCULATOR = new UnitCalculator();
+
     public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
-        Objects.requireNonNull(amount, "Amount must not be null.");
-        Objects.requireNonNull(fromUnit, "From unit must not be null.");
-        Objects.requireNonNull(toUnit, "To unit must not be null.");
-
-        UnitDefinition fromDefinition = resolveUnit(fromUnit);
-        UnitDefinition toDefinition = resolveUnit(toUnit);
-
-        if (fromDefinition.getType().category() != toDefinition.getType().category()) {
-            throw new IllegalArgumentException("Cannot convert between different categories: "
-                    + fromDefinition.getType().category() + " -> " + toDefinition.getType().category());
-        }
-
-        BigNumber fromFactor = new BigNumber(fromDefinition.getFactorToBase(), amount.getLocale(), amount.getMathContext(), amount.getTrigonometricMode());
-        BigNumber toFactor = new BigNumber(toDefinition.getFactorToBase(), amount.getLocale(), amount.getMathContext(), amount.getTrigonometricMode());
-
-        return amount.multiply(fromFactor).divide(toFactor, amount.getMathContext(), amount.getLocale());
-    }
-
-    private static UnitDefinition resolveUnit(final UnitType unitType) {
-        List<UnitDefinition> categoryDefinitions = switch (unitType.category()) {
-            case LENGTH -> Unit.lengthDefinitions();
-        };
-
-        return categoryDefinitions.stream()
-                .filter(definition -> definition.getType() == unitType)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown unit enum: " + unitType));
+        return DEFAULT_CALCULATOR.convert(amount, fromUnit, toUnit);
     }
 
 }
