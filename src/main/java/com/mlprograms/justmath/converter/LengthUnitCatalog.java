@@ -28,38 +28,52 @@ import com.mlprograms.justmath.converter.units.Length;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * Dedicated data catalog for all length unit definitions.
+ * Dedicated catalog for all length unit metadata.
  */
 @UtilityClass
 public class LengthUnitCatalog {
 
+    private static final Map<Length, UnitDefinition> DEFINITIONS_BY_TYPE = Map.ofEntries(
+            Map.entry(Length.KILOMETER, definition(Length.KILOMETER, "Kilometer", "km", "1000")),
+            Map.entry(Length.HECTOMETER, definition(Length.HECTOMETER, "Hectometer", "hm", "100")),
+            Map.entry(Length.METER, definition(Length.METER, "Meter", "m", "1")),
+            Map.entry(Length.DECIMETER, definition(Length.DECIMETER, "Decimeter", "dm", "0.1")),
+            Map.entry(Length.CENTIMETER, definition(Length.CENTIMETER, "Centimeter", "cm", "0.01")),
+            Map.entry(Length.MILLIMETER, definition(Length.MILLIMETER, "Millimeter", "mm", "0.001")),
+            Map.entry(Length.MICROMETER, definition(Length.MICROMETER, "Micrometer", "µm", "0.000001")),
+            Map.entry(Length.NANOMETER, definition(Length.NANOMETER, "Nanometer", "nm", "0.000000001")),
+            Map.entry(Length.ANGSTROM, definition(Length.ANGSTROM, "Angstrom", "Å", "0.0000000001")),
+            Map.entry(Length.PICOMETER, definition(Length.PICOMETER, "Picometer", "pm", "0.000000000001")),
+            Map.entry(Length.FEMTOMETER, definition(Length.FEMTOMETER, "Femtometer", "fm", "0.000000000000001")),
+            Map.entry(Length.INCH, definition(Length.INCH, "Inch", "in", "0.0254")),
+            Map.entry(Length.FEET, definition(Length.FEET, "Foot", "ft", "0.3048")),
+            Map.entry(Length.YARD, definition(Length.YARD, "Yard", "yd", "0.9144")),
+            Map.entry(Length.MILE, definition(Length.MILE, "Mile", "mi", "1609.344")),
+            Map.entry(Length.NAUTICAL_MILE, definition(Length.NAUTICAL_MILE, "Nautical Mile", "nmi", "1852")),
+            Map.entry(Length.LIGHT_YEAR, definition(Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580800")),
+            Map.entry(Length.PARSEC, definition(Length.PARSEC, "Parsec", "pc", "30856775814913673")),
+            Map.entry(Length.PIXEL, definition(Length.PIXEL, "Pixel", "px", "0.0002645833333333")),
+            Map.entry(Length.POINT, definition(Length.POINT, "Point", "pt", "0.0003527777777778")),
+            Map.entry(Length.PICA, definition(Length.PICA, "Pica", "pc_typ", "0.0042333333333333")),
+            Map.entry(Length.EM, definition(Length.EM, "Em", "em", "0.0042333333333333"))
+    );
+
     public static List<UnitDefinition> definitions() {
-        return List.of(
-                UnitDefinition.builder().type(Length.KILOMETER)     .displayName("Kilometer")       .symbol("km")       .factorToBase("1000")                   .alias("kilometer")     .alias("kilometre")                         .build(),
-                UnitDefinition.builder().type(Length.HECTOMETER)    .displayName("Hektometer")      .symbol("hm")       .factorToBase("100")                    .alias("hectometer")    .alias("hectometre")                        .build(),
-                UnitDefinition.builder().type(Length.METER)         .displayName("Meter")           .symbol("m")        .factorToBase("1")                      .alias("meter")         .alias("metre")                             .build(),
-                UnitDefinition.builder().type(Length.DECIMETER)     .displayName("Dezimeter")       .symbol("dm")       .factorToBase("0.1")                    .alias("decimeter")     .alias("decimetre")                         .build(),
-                UnitDefinition.builder().type(Length.CENTIMETER)    .displayName("Zentimeter")      .symbol("cm")       .factorToBase("0.01")                   .alias("centimeter")    .alias("centimetre")                        .build(),
-                UnitDefinition.builder().type(Length.MILLIMETER)    .displayName("Millimeter")      .symbol("mm")       .factorToBase("0.001")                  .alias("millimeter")    .alias("millimetre")                        .build(),
-                UnitDefinition.builder().type(Length.MICROMETER)    .displayName("Mikrometer")      .symbol("µm")       .factorToBase("0.000001")               .alias("micrometer")    .alias("micrometre")    .alias("um")        .build(),
-                UnitDefinition.builder().type(Length.NANOMETER)     .displayName("Nanometer")       .symbol("nm")       .factorToBase("0.000000001")            .alias("nanometer")     .alias("nanometre")                         .build(),
-                UnitDefinition.builder().type(Length.ANGSTROM)      .displayName("Ångström")        .symbol("Å")        .factorToBase("0.0000000001")           .alias("angstrom")                                                  .build(),
-                UnitDefinition.builder().type(Length.PICOMETER)     .displayName("Pikometer")       .symbol("pm")       .factorToBase("0.000000000001")         .alias("picometer")     .alias("picometre")                         .build(),
-                UnitDefinition.builder().type(Length.FEMTOMETER)    .displayName("Femtometer")      .symbol("fm")       .factorToBase("0.000000000000001")      .alias("femtometer")    .alias("femtometre")                        .build(),
-                UnitDefinition.builder().type(Length.INCH)          .displayName("Inch")            .symbol("in")       .factorToBase("0.0254")                 .alias("inch")          .alias("inches")        .alias("zoll")      .build(),
-                UnitDefinition.builder().type(Length.FEET)          .displayName("Foot")            .symbol("ft")       .factorToBase("0.3048")                 .alias("foot")          .alias("feet")                              .build(),
-                UnitDefinition.builder().type(Length.YARD)          .displayName("Yard")            .symbol("yd")       .factorToBase("0.9144")                 .alias("yard")                                                      .build(),
-                UnitDefinition.builder().type(Length.MILE)          .displayName("Mile")            .symbol("mi")       .factorToBase("1609.344")               .alias("mile")                                                      .build(),
-                UnitDefinition.builder().type(Length.NAUTICAL_MILE) .displayName("Nautical Mile")   .symbol("nmi")      .factorToBase("1852")                   .alias("nauticalmile")  .alias("seemeile")                          .build(),
-                UnitDefinition.builder().type(Length.LIGHT_YEAR)    .displayName("Lichtjahr")       .symbol("ly")       .factorToBase("9460730472580800")       .alias("lightyear")                                                 .build(),
-                UnitDefinition.builder().type(Length.PARSEC)        .displayName("Parsec")          .symbol("pc")       .factorToBase("30856775814913673")      .alias("parsec")                                                    .build(),
-                UnitDefinition.builder().type(Length.PIXEL)         .displayName("Pixel")           .symbol("px")       .factorToBase("0.0002645833333333")     .alias("pixel")                                                     .build(),
-                UnitDefinition.builder().type(Length.POINT)         .displayName("Point")           .symbol("pt")       .factorToBase("0.0003527777777778")     .alias("point")                                                     .build(),
-                UnitDefinition.builder().type(Length.PICA)          .displayName("Pica")            .symbol("pc_typ")   .factorToBase("0.0042333333333333")     .alias("pica")                                                      .build(),
-                UnitDefinition.builder().type(Length.EM)            .displayName("Em")              .symbol("em")       .factorToBase("0.0042333333333333")     .alias("em")                                                        .build()
-        );
+        return List.of(Length.values()).stream()
+                .map(type -> DEFINITIONS_BY_TYPE.get(type))
+                .toList();
+    }
+
+    private static UnitDefinition definition(final Length type, final String displayName, final String symbol, final String factorToBase) {
+        return UnitDefinition.builder()
+                .type(type)
+                .displayName(displayName)
+                .symbol(symbol)
+                .factorToBase(factorToBase)
+                .build();
     }
 
 }
