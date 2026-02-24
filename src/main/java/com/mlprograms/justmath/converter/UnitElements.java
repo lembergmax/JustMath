@@ -42,9 +42,6 @@ public class UnitElements {
     @Getter
     private static final Map<String, UnitDefinition> registry = new HashMap<>();
 
-    @Getter
-    private static int maxTokenLength = -1;
-
     static {
         List<UnitDefinition> unitDefinitions = Unit.lengthDefinitions();
 
@@ -70,7 +67,6 @@ public class UnitElements {
     private static void put(final String token, final UnitDefinition unitDefinition) {
         String normalized = token.toLowerCase(Locale.ROOT);
         registry.put(normalized, unitDefinition);
-        maxTokenLength = Math.max(maxTokenLength, normalized.length());
     }
 
 }
