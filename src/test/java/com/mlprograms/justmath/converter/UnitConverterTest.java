@@ -1,8 +1,10 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.units.Length;
-import com.mlprograms.justmath.converter.units.UnitType;
+import com.mlprograms.justmath.converter.unit.Unit;
+import com.mlprograms.justmath.converter.unit.UnitCategory;
+import com.mlprograms.justmath.converter.unit.length.Length;
+import com.mlprograms.justmath.converter.unit.UnitType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

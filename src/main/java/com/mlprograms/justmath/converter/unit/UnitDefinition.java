@@ -22,14 +22,27 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.units;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.converter.UnitCategory;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
-public interface UnitType {
+import java.util.Set;
 
-    String key();
+/**
+ * Immutable, normalized storage model for one unit.
+ */
+@Value
+@Builder
+public class UnitDefinition {
 
-    UnitCategory category();
+    UnitType type;
+    String displayName;
+    String symbol;
+    String factorToBase;
+
+    @Singular("alias")
+    Set<String> aliases;
 
 }
