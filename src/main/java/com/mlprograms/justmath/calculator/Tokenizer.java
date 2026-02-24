@@ -38,7 +38,6 @@ import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -68,7 +67,7 @@ import java.util.stream.Collectors;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-class Tokenizer {
+public class Tokenizer {
 
     /**
      * Candidate descriptor for registered three-argument functions used by the tokenizer.
@@ -172,7 +171,7 @@ class Tokenizer {
      * @throws IllegalArgumentException if the input contains invalid characters or malformed expressions
      * @throws NullPointerException     if the input string is null
      */
-    public List<Token> tokenize(String input) {
+    public List<Token> tokenize(@NonNull final String input) {
         List<Token> tokens = new ArrayList<>();
         String expression = removeWhitespace(input);
         int index = 0;

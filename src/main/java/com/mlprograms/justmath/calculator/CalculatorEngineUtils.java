@@ -33,7 +33,7 @@ import lombok.NonNull;
 
 import java.util.*;
 
-class CalculatorEngineUtils {
+public class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
@@ -70,7 +70,7 @@ class CalculatorEngineUtils {
      *                                  absolute value signs, since this would result in unbalanced expressions
      *                                  (e.g., {@code |x+3}).
      */
-    static String replaceAbsSigns(String expression) {
+    public static String replaceAbsSigns(String expression) {
         String absValueSign = ExpressionElements.SURRFUNC_ABS_S;
 
         int occurrences = countOccurrences(expression, absValueSign);
