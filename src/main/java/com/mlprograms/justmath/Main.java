@@ -25,15 +25,14 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.units.Length;
+import com.mlprograms.justmath.converter.unit.Unit;
+import com.mlprograms.justmath.converter.unit.length.Length;
 
 public class Main {
 
     public static void main(final String[] args) {
 
-        BigNumber result = Unit.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
-        System.out.println("100 cm = " + result + " ft");
+
 
     }
 

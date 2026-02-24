@@ -22,37 +22,44 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit.length;
 
-import com.mlprograms.justmath.converter.units.UnitType;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import com.mlprograms.justmath.converter.unit.UnitCategory;
+import com.mlprograms.justmath.converter.unit.UnitType;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+public enum Length implements UnitType {
 
-/**
- * Immutable, normalized storage model for one unit.
- */
-@Value
-@Builder
-public class UnitDefinition {
+    KILOMETER,
+    HECTOMETER,
+    METER,
+    DECIMETER,
+    CENTIMETER,
+    MILLIMETER,
+    MICROMETER,
+    NANOMETER,
+    ANGSTROM,
+    PICOMETER,
+    FEMTOMETER,
+    INCH,
+    FEET,
+    YARD,
+    MILE,
+    NAUTICAL_MILE,
+    LIGHT_YEAR,
+    PARSEC,
+    PIXEL,
+    POINT,
+    PICA,
+    EM;
 
-    UnitType type;
-    String displayName;
-    String symbol;
-    String factorToBase;
+    @Override
+    public String key() {
+        return name();
+    }
 
-    @Singular("alias")
-    Set<String> aliases;
-
-    public Set<String> tokens() {
-        Set<String> tokens = new LinkedHashSet<>();
-        tokens.add(type.key());
-        tokens.add(symbol);
-        tokens.addAll(aliases);
-        return tokens;
+    @Override
+    public UnitCategory category() {
+        return UnitCategory.LENGTH;
     }
 
 }

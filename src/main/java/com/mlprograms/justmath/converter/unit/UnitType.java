@@ -22,47 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import lombok.Getter;
-import lombok.experimental.UtilityClass;
+public interface UnitType {
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+    String key();
 
-/**
- * Central unit registry for normalized token lookup.
- */
-@UtilityClass
-public class UnitElements {
-
-    @Getter
-    private static final Map<String, UnitDefinition> registry = new HashMap<>();
-
-    static {
-        List<List<UnitDefinition>> unitDefinitionList = List.of(
-                Unit.lengthDefinitions()
-        );
-
-        for (List<UnitDefinition> unitDefinitions : unitDefinitionList) {
-            for (UnitDefinition unitDefinition : unitDefinitions) {
-                register(unitDefinition);
-            }
-        }
-    }
-
-    private static void register(final UnitDefinition unitDefinition) {
-        for (String token : unitDefinition.tokens()) {
-            put(token, unitDefinition);
-        }
-    }
-
-    private static void put(final String token, final UnitDefinition unitDefinition) {
-        String normalized = token.toLowerCase(Locale.ROOT);
-        registry.put(normalized, unitDefinition);
-    }
+    UnitCategory category();
 
 }

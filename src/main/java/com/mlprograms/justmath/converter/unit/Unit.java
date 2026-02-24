@@ -22,11 +22,10 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.units.Length;
-import com.mlprograms.justmath.converter.units.UnitType;
+import com.mlprograms.justmath.converter.unit.length.Length;
+import com.mlprograms.justmath.converter.unit.length.LengthUnitCatalog;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -37,18 +36,12 @@ import java.util.List;
 @UtilityClass
 public class Unit {
 
-    private static final UnitCalculator unitCalculator = new UnitCalculator();
-
     public static List<Length> lengthTypes() {
         return List.of(Length.values());
     }
 
     public static List<UnitDefinition> lengthDefinitions() {
         return LengthUnitCatalog.definitions();
-    }
-
-    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
-        return unitCalculator.convert(amount, fromUnit, toUnit);
     }
 
 }
