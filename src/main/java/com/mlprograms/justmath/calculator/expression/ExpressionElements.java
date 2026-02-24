@@ -52,7 +52,8 @@ import java.util.Optional;
  */
 public class ExpressionElements {
 
-    public static final Map<String, ExpressionElement> registry = new HashMap<>();
+    @Getter
+    private static final Map<String, ExpressionElement> registry = new HashMap<>();
 
     @Getter
     private static int maxTokenLength = -1;
