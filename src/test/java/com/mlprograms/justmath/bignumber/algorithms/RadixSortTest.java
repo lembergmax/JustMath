@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,19 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.bignumber.algorithms;
 
-import java.util.List;
+public class RadixSortTest extends AbstractSortAlgorithmTest {
 
-/**
- * @deprecated Replaced by enum-based unit definitions in {@link Unit.Type.Length}.
- */
-@Deprecated(since = "1.0.5")
-public record UnitDefinition(
-        String key,
-        String displaySymbol,
-        List<String> aliases,
-        UnitCategory category,
-        String factorToCategoryBase
-) {
+    @Override
+    protected BigNumberSortAlgorithm createAlgorithm() {
+        return new RadixSort()::sort;
+    }
+
+    @Override
+    protected Class<?> algorithmType() {
+        return RadixSort.class;
+    }
+
 }

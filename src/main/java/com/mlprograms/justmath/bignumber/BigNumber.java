@@ -25,19 +25,20 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
@@ -271,12 +272,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     /**
      * Builder constructor for BigNumber.
      *
-     * @param locale             the locale to use for parsing and formatting
+     * @param locale                  the locale to use for parsing and formatting
      * @param valueBeforeDecimalPoint the integer part of the number
      * @param valueAfterDecimalPoint  the decimal part of the number
-     * @param isNegative         whether the number is negative
-     * @param mathContext        the math context to use for precision and rounding
-     * @param trigonometricMode  the trigonometric mode to use
+     * @param isNegative              whether the number is negative
+     * @param mathContext             the math context to use for precision and rounding
+     * @param trigonometricMode       the trigonometric mode to use
      */
     @Builder
     public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimalPoint, @NonNull final String valueAfterDecimalPoint, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
@@ -485,6 +486,40 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber modulo(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
         return BasicMath.modulo(this, divisor, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}
+     * using the current locale.
+     *
+     * <p>This is a convenience method that delegates to {@link #remainder(BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor) {
+        return remainder(divisor, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}.
+     *
+     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @param locale  the locale used to construct the returned {@link BigNumber}
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
+        return BasicMath.remainder(this, divisor, locale);
     }
 
     /**
@@ -2847,6 +2882,33 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Removes leading zeros from the integer (before-decimal) part of this BigNumber.
+     *
+     * <p>This method updates the internal {@code valueBeforeDecimalPoint} in-place by delegating to
+     * {@link #trimLeadingZeros(String)} and returns this instance to allow method chaining.</p>
+     *
+     * @return this {@code BigNumber} with the integer part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes leading zeros from the fractional (after-decimal) part of this BigNumber.
+     *
+     * <p>Normalizes fractional representations by delegating to
+     * {@link #trimLeadingZeros(String)}. The method modifies {@code valueAfterDecimalPoint} in-place
+     * and returns this instance for chaining.</p>
+     *
+     * @return this {@code BigNumber} with the fractional part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimLeadingZeros(valueAfterDecimalPoint);
+        return this;
+    }
+
+    /**
      * Removes leading zeros from a numeric string. If the string only contains zeros,
      * returns a single "0".
      *
@@ -2867,6 +2929,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
         String trimmed = cleaned.substring(index);
         return trimmed.isEmpty() ? "0" : trimmed;
+    }
+
+    /**
+     * Removes trailing zeros from the integer (before-decimal) part of this number.
+     * The operation modifies the internal `valueBeforeDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed before the decimal point
+     */
+    public BigNumber trimTrailingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimTrailingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes trailing zeros from the fractional (after-decimal) part of this number.
+     * The operation modifies the internal `valueAfterDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed after the decimal point
+     */
+    public BigNumber trimTrailingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        return this;
     }
 
     /**
@@ -2891,79 +2975,60 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Returns the signum function of this {@code BigDecimal}.
+     *
+     * @return -1, 0, or 1 as the value of this {@code BigDecimal}
+     * is negative, zero, or positive.
+     */
+    public int signum() {
+        if (isLessThan(BigNumbers.ZERO)) {
+            return -1;
+        }
+        if (isGreaterThan(BigNumbers.ZERO)) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
      * Returns the value of this {@code BigNumber} as an {@code int}.
-     * <p>
-     * If the integer part exceeds 10 digits, only the first 10 digits are used.
-     * If parsing fails, {@code Integer.MAX_VALUE} is returned (with sign).
      *
      * @return the integer value represented by this object, or {@code Integer.MAX_VALUE} on error
      */
     @Override
     public int intValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimalPoint.length() > 10 ? valueBeforeDecimalPoint.substring(0, 10) : valueBeforeDecimalPoint;
-        int result;
-        try {
-            result = Integer.parseInt(valueBeforeDecimalAsString);
-        } catch (NumberFormatException e) {
-            result = Integer.MAX_VALUE;
-        }
-        return isNegative ? -result : result;
+        return Integer.parseInt((isNegative ? "-" : "") + valueBeforeDecimalPoint);
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code long}.
-     * <p>
-     * If the integer part exceeds 19 digits, only the first 19 digits are used.
-     * If parsing fails, {@code Long.MAX_VALUE} is returned (with sign).
      *
      * @return the long value represented by this object, or {@code Long.MAX_VALUE} on error
      */
     @Override
     public long longValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimalPoint.length() > 19 ? valueBeforeDecimalPoint.substring(0, 19) : valueBeforeDecimalPoint;
-        long result;
-        try {
-            result = Long.parseLong(valueBeforeDecimalAsString);
-        } catch (NumberFormatException e) {
-            result = Long.MAX_VALUE;
-        }
-        return isNegative ? -result : result;
+        return Long.parseLong(toString());
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code float}.
-     * <p>
-     * Only the integer part is used for conversion. If parsing fails,
-     * returns {@code Float.POSITIVE_INFINITY} or {@code Float.NEGATIVE_INFINITY} depending on sign.
      *
      * @return the float value represented by this object, or infinity on error
      */
     @Override
     public float floatValue() {
-        try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimalPoint);
-            return bigDecimal.floatValue();
-        } catch (NumberFormatException e) {
-            return isNegative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
-        }
+        return Float.parseFloat(toString());
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code double}.
-     * <p>
-     * Only the integer part is used for conversion. If parsing fails,
-     * returns {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} depending on sign.
      *
      * @return the double value represented by this object, or infinity on error
      */
     @Override
     public double doubleValue() {
-        try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimalPoint);
-            return bigDecimal.doubleValue();
-        } catch (NumberFormatException e) {
-            return isNegative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-        }
+        return Double.parseDouble(toString());
     }
 
     /**
