@@ -31,8 +31,8 @@ public class Main {
 
     public static void main(final String[] args) {
 
-        BigNumber result = Unit.convert(new BigNumber("100"), "cm", "feet");
-        System.out.println("100 cm = " + result + " ft");
+        BigNumber result = Unit.convert("3125", "cm", "feet");
+        System.out.println("3.125 cm = " + result + " ft");
 
     }
 
