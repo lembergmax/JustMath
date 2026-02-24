@@ -123,6 +123,14 @@ class UnitConverterTest {
         assertTrue(exception.getMessage().contains("Unknown unit enum"));
     }
 
+
+    @Test
+    void lengthDefinitionsShouldBeGeneratedFromLengthEnum() {
+        assertEquals(Unit.lengthTypes().size(), Unit.lengthDefinitions().size());
+        assertTrue(Unit.lengthTypes().stream().allMatch(type ->
+                Unit.lengthDefinitions().stream().anyMatch(definition -> definition.getType() == type)));
+    }
+
     @Test
     void lengthDefinitionsShouldContainCentimeterAndFeet() {
         assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> definition.getType() == Length.CENTIMETER).findFirst().orElse(null));
