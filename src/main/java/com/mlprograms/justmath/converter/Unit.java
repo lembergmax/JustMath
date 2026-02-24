@@ -24,7 +24,9 @@
 
 package com.mlprograms.justmath.converter;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.units.Length;
+import com.mlprograms.justmath.converter.units.UnitType;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -41,6 +43,10 @@ public class Unit {
 
     public static List<UnitDefinition> lengthDefinitions() {
         return LengthUnitCatalog.definitions();
+    }
+
+    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
+        return UnitConverter.convert(amount, fromUnit, toUnit);
     }
 
 }
