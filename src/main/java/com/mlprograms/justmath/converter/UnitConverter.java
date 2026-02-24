@@ -26,18 +26,16 @@ package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.units.UnitType;
-import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Provides precision-safe conversion between registered unit definitions.
+ * Core conversion logic for precision-safe unit conversions.
  */
-@UtilityClass
-public class UnitConverter {
+class UnitConverter {
 
-    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
+    BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
         Objects.requireNonNull(amount, "Amount must not be null.");
         Objects.requireNonNull(fromUnit, "From unit must not be null.");
         Objects.requireNonNull(toUnit, "To unit must not be null.");
@@ -56,7 +54,7 @@ public class UnitConverter {
         return amount.multiply(fromFactor).divide(toFactor, amount.getMathContext(), amount.getLocale());
     }
 
-    private static UnitDefinition resolveUnit(final UnitType unitType) {
+    private UnitDefinition resolveUnit(final UnitType unitType) {
         List<UnitDefinition> categoryDefinitions = switch (unitType.category()) {
             case LENGTH -> Unit.lengthDefinitions();
         };
