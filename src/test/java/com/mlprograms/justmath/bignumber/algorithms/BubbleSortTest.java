@@ -22,12 +22,18 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.bignumber.algorithms;
 
-public class Main {
+public class BubbleSortTest extends AbstractSortAlgorithmTest {
 
-    public static void main(final String[] args) {
+    @Override
+    protected BigNumberSortAlgorithm createAlgorithm() {
+        return new BubbleSort()::sort;
+    }
 
+    @Override
+    protected Class<?> algorithmType() {
+        return BubbleSort.class;
     }
 
 }

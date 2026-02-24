@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -377,7 +377,7 @@ public class CalculatorEngineTest {
     }
 
     @Nested
-    class CalculatorEngineUtilTest {
+    class GraphFxGraphFxCalculatorEngineUtilTest {
 
         private final CalculatorEngine calculatorEngine = new CalculatorEngine();
 
