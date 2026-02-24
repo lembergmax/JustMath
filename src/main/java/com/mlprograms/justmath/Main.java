@@ -24,15 +24,16 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.calculator.expression.ExpressionElements;
-import com.mlprograms.justmath.converter.UnitElements;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.units.Length;
 
 public class Main {
 
     public static void main(final String[] args) {
 
-        System.out.println(UnitElements.getRegistry());
-        // System.out.println(ExpressionElements.getRegistry());
+        BigNumber result = Unit.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
+        System.out.println("100 cm = " + result + " ft");
 
     }
 
