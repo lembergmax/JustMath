@@ -43,19 +43,15 @@ public class UnitElements {
     private static final Map<String, UnitDefinition> registry = new HashMap<>();
 
     static {
-        List<UnitDefinition> unitDefinitions = Unit.lengthDefinitions();
+        List<List<UnitDefinition>> unitDefinitionList = List.of(
+                Unit.lengthDefinitions()
+        );
 
-        for (UnitDefinition unitDefinition : unitDefinitions) {
-            register(unitDefinition);
+        for (List<UnitDefinition> unitDefinitions : unitDefinitionList) {
+            for (UnitDefinition unitDefinition : unitDefinitions) {
+                register(unitDefinition);
+            }
         }
-    }
-
-    public static Optional<UnitDefinition> find(final String token) {
-        if (token == null || token.isBlank()) {
-            return Optional.empty();
-        }
-
-        return Optional.ofNullable(registry.get(token.toLowerCase(Locale.ROOT)));
     }
 
     private static void register(final UnitDefinition unitDefinition) {
