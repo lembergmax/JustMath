@@ -22,33 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.units.Length;
-import com.mlprograms.justmath.converter.units.UnitType;
-import lombok.experimental.UtilityClass;
+public interface UnitType {
 
-import java.util.List;
+    String key();
 
-/**
- * Facade for discoverable access to unit enums and conversion APIs.
- */
-@UtilityClass
-public class Unit {
-
-    private static final UnitCalculator unitCalculator = new UnitCalculator();
-
-    public static List<Length> lengthTypes() {
-        return List.of(Length.values());
-    }
-
-    public static List<UnitDefinition> definitions() {
-        return UnitElements.getDefinitions();
-    }
-
-    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
-        return unitCalculator.convert(amount, fromUnit, toUnit);
-    }
+    UnitCategory category();
 
 }

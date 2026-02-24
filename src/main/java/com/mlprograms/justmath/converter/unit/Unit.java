@@ -22,10 +22,26 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-public enum UnitCategory {
+import com.mlprograms.justmath.converter.unit.length.Length;
+import com.mlprograms.justmath.converter.unit.length.LengthUnitCatalog;
+import lombok.experimental.UtilityClass;
 
-    LENGTH
+import java.util.List;
+
+/**
+ * Facade for discoverable access to unit enums and conversion APIs.
+ */
+@UtilityClass
+public class Unit {
+
+    public static List<Length> lengthTypes() {
+        return List.of(Length.values());
+    }
+
+    public static List<UnitDefinition> definitions() {
+        return UnitElements.getDefinitions();
+    }
 
 }

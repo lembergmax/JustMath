@@ -22,14 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.converter.units.UnitType;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -46,13 +44,5 @@ public class UnitDefinition {
 
     @Singular("alias")
     Set<String> aliases;
-
-    public Set<String> tokens() {
-        Set<String> tokens = new LinkedHashSet<>();
-        tokens.add(type.key());
-        tokens.add(symbol);
-        tokens.addAll(aliases);
-        return tokens;
-    }
 
 }

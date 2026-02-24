@@ -22,14 +22,10 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.units;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.converter.UnitCategory;
+public enum UnitCategory {
 
-public interface UnitType {
-
-    String key();
-
-    UnitCategory category();
+    LENGTH
 
 }

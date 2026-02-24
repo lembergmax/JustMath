@@ -22,13 +22,14 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit.length;
 
-import com.mlprograms.justmath.converter.units.Length;
+import com.mlprograms.justmath.converter.unit.UnitDefinition;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Dedicated catalog for all length unit metadata.
@@ -62,8 +63,8 @@ public class LengthUnitCatalog {
     );
 
     public static List<UnitDefinition> definitions() {
-        return List.of(Length.values()).stream()
-                .map(type -> DEFINITIONS_BY_TYPE.get(type))
+        return Stream.of(Length.values())
+                .map(DEFINITIONS_BY_TYPE::get)
                 .toList();
     }
 

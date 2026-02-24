@@ -25,7 +25,7 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.units.UnitType;
+import com.mlprograms.justmath.converter.unit.UnitType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
