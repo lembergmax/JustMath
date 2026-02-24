@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath.converter.unit.length;
 
-import com.mlprograms.justmath.converter.unit.UnitDefinition;
+import com.mlprograms.justmath.converter.unit.Unit;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 @UtilityClass
 public class LengthUnitCatalog {
 
-    private static final Map<Length, UnitDefinition> DEFINITIONS_BY_TYPE = Map.ofEntries(
+    private static final Map<Length, Unit> DEFINITIONS_BY_TYPE = Map.ofEntries(
             Map.entry(Length.KILOMETER, definition(Length.KILOMETER, "Kilometer", "km", "1000")),
             Map.entry(Length.HECTOMETER, definition(Length.HECTOMETER, "Hectometer", "hm", "100")),
             Map.entry(Length.METER, definition(Length.METER, "Meter", "m", "1")),

@@ -24,24 +24,17 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.converter.unit.length.Length;
-import com.mlprograms.justmath.converter.unit.length.LengthUnitCatalog;
-import lombok.experimental.UtilityClass;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.Builder;
+import lombok.Value;
 
-import java.util.List;
-
-/**
- * Facade for discoverable access to unit enums and their definitions.
- */
-@UtilityClass
+@Value
+@Builder
 public class Unit {
 
-    public static List<Length> lengthTypes() {
-        return List.of(Length.values());
-    }
-
-    public static List<UnitDefinition> lengthDefinitions() {
-        return LengthUnitCatalog.definitions();
-    }
+    UnitCategory category;
+    String displayName;
+    String symbol;
+    BigNumber factorToBase;
 
 }
