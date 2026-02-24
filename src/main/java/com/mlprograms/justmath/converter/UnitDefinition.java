@@ -24,17 +24,35 @@
 
 package com.mlprograms.justmath.converter;
 
-import java.util.List;
+import com.mlprograms.justmath.converter.units.UnitType;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
- * @deprecated Replaced by enum-based unit definitions in {@link Unit.Type.Length}.
+ * Immutable, normalized storage model for one unit.
  */
-@Deprecated(since = "1.0.5")
-public record UnitDefinition(
-        String key,
-        String displaySymbol,
-        List<String> aliases,
-        UnitCategory category,
-        String factorToCategoryBase
-) {
+@Value
+@Builder
+public class UnitDefinition {
+
+    UnitType type;
+    String displayName;
+    String symbol;
+    String factorToBase;
+
+    @Singular("alias")
+    Set<String> aliases;
+
+    public Set<String> tokens() {
+        Set<String> tokens = new LinkedHashSet<>();
+        tokens.add(type.key());
+        tokens.add(symbol);
+        tokens.addAll(aliases);
+        return tokens;
+    }
+
 }
