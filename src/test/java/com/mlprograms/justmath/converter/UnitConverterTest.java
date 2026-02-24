@@ -1,17 +1,13 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.converter.units.Length;
 import com.mlprograms.justmath.converter.units.UnitType;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,29 +17,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UnitConverterTest {
 
-    private final List<String> temporaryRegistryKeys = new ArrayList<>();
-
-    @AfterEach
-    void cleanupRegistry() {
-        temporaryRegistryKeys.forEach(UnitElements.getRegistry()::remove);
-        temporaryRegistryKeys.clear();
-    }
-
     @Test
-    void shouldConvertCentimeterToFeetUsingSymbols() {
-        BigNumber result = UnitConverter.convert(new BigNumber("100"), "cm", "ft");
+    void shouldConvertCentimeterToFeet() {
+        BigNumber result = UnitConverter.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
 
         assertEquals("3.28083989501312335958005249343832", result.toString());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "250, CENTIMETER, Feet, 8.202099737532808398950131233595801",
-            "100, centimetre, foot, 3.28083989501312335958005249343832",
-            "1, zoll, cm, 2.54",
-            "1, seemeile, m, 1852"
+            "250, CENTIMETER, FEET, 8.202099737532808398950131233595801",
+            "1, INCH, CENTIMETER, 2.54",
+            "1, NAUTICAL_MILE, METER, 1852",
+            "12, FEET, INCH, 144",
+            "1000, MILLIMETER, METER, 1"
     })
-    void shouldResolveAliasesAndCaseInsensitiveTokens(final String amount, final String from, final String to, final String expected) {
+    void shouldConvertDifferentLengthEnums(final String amount, final Length from, final Length to, final String expected) {
         BigNumber result = UnitConverter.convert(new BigNumber(amount), from, to);
 
         assertEquals(expected, result.toString());
@@ -53,21 +42,21 @@ class UnitConverterTest {
     void shouldReturnSameNumberWhenConvertingToSameUnit() {
         BigNumber amount = new BigNumber("1234.56789");
 
-        BigNumber result = UnitConverter.convert(amount, "cm", "centimeter");
+        BigNumber result = UnitConverter.convert(amount, Length.CENTIMETER, Length.CENTIMETER);
 
         assertEquals("1234.56789", result.toString());
     }
 
     @Test
     void shouldKeepSignForNegativeValues() {
-        BigNumber result = UnitConverter.convert(new BigNumber("-10"), "m", "cm");
+        BigNumber result = UnitConverter.convert(new BigNumber("-10"), Length.METER, Length.CENTIMETER);
 
         assertEquals("-1000", result.toString());
     }
 
     @Test
     void shouldConvertZeroToZero() {
-        BigNumber result = UnitConverter.convert(new BigNumber("0"), "cm", "ft");
+        BigNumber result = UnitConverter.convert(new BigNumber("0"), Length.CENTIMETER, Length.FEET);
 
         assertEquals("0", result.toString());
     }
@@ -76,7 +65,7 @@ class UnitConverterTest {
     void shouldPreserveLocaleAndMathContextFromAmount() {
         BigNumber amount = new BigNumber("1", Locale.GERMANY, new MathContext(10));
 
-        BigNumber result = UnitConverter.convert(amount, "m", "cm");
+        BigNumber result = UnitConverter.convert(amount, Length.METER, Length.CENTIMETER);
 
         assertEquals(Locale.GERMANY, result.getLocale());
         assertEquals(new MathContext(10), result.getMathContext());
@@ -85,84 +74,59 @@ class UnitConverterTest {
 
     @Test
     void unitFacadeShouldDelegateToConverter() {
-        BigNumber result = Unit.convert(new BigNumber("100"), "cm", "ft");
+        BigNumber result = Unit.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
 
         assertEquals("3.28083989501312335958005249343832", result.toString());
     }
 
     @Test
-    void shouldFailForUnknownSourceUnit() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), "banana", "cm"));
-
-        assertTrue(exception.getMessage().contains("Unknown unit"));
-    }
-
-    @Test
-    void shouldFailForUnknownTargetUnit() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), "cm", "banana"));
-
-        assertTrue(exception.getMessage().contains("Unknown unit"));
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t", "\n"})
-    void shouldFailForInvalidSourceToken(final String sourceToken) {
-        assertThrows(IllegalArgumentException.class, () -> UnitConverter.convert(new BigNumber("1"), sourceToken, "cm"));
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"   ", "\t", "\n"})
-    void shouldFailForInvalidTargetToken(final String targetToken) {
-        assertThrows(IllegalArgumentException.class, () -> UnitConverter.convert(new BigNumber("1"), "cm", targetToken));
-    }
-
-    @Test
     void shouldFailForNullAmount() {
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> UnitConverter.convert(null, "cm", "ft"));
+                () -> UnitConverter.convert(null, Length.CENTIMETER, Length.FEET));
 
         assertEquals("Amount must not be null.", exception.getMessage());
     }
 
     @Test
-    void shouldFailWhenUnitCategoriesDiffer() {
-        UnitType syntheticType = new UnitType() {
+    void shouldFailForNullFromUnit() {
+        NullPointerException exception = assertThrows(NullPointerException.class,
+                () -> UnitConverter.convert(new BigNumber("1"), null, Length.CENTIMETER));
+
+        assertEquals("From unit must not be null.", exception.getMessage());
+    }
+
+    @Test
+    void shouldFailForNullToUnit() {
+        NullPointerException exception = assertThrows(NullPointerException.class,
+                () -> UnitConverter.convert(new BigNumber("1"), Length.CENTIMETER, null));
+
+        assertEquals("To unit must not be null.", exception.getMessage());
+    }
+
+    @Test
+    void shouldFailForUnknownEnumImplementation() {
+        UnitType unknownLengthType = new UnitType() {
             @Override
             public String key() {
-                return "synthetic";
+                return "UNKNOWN_LENGTH";
             }
 
             @Override
             public UnitCategory category() {
-                return null;
+                return UnitCategory.LENGTH;
             }
         };
 
-        UnitDefinition syntheticDefinition = UnitDefinition.builder()
-                .type(syntheticType)
-                .displayName("Synthetic")
-                .symbol("syn")
-                .factorToBase("1")
-                .alias("synthetic")
-                .build();
-
-        UnitElements.getRegistry().put("synthetic", syntheticDefinition);
-        temporaryRegistryKeys.add("synthetic");
-
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), "cm", "synthetic"));
+                () -> UnitConverter.convert(new BigNumber("1"), Length.CENTIMETER, unknownLengthType));
 
-        assertTrue(exception.getMessage().contains("Cannot convert between different categories"));
+        assertTrue(exception.getMessage().contains("Unknown unit enum"));
     }
 
     @Test
     void lengthDefinitionsShouldContainCentimeterAndFeet() {
-        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> "cm".equals(definition.getSymbol())).findFirst().orElse(null));
-        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> "ft".equals(definition.getSymbol())).findFirst().orElse(null));
+        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> definition.getType() == Length.CENTIMETER).findFirst().orElse(null));
+        assertNotNull(Unit.lengthDefinitions().stream().filter(definition -> definition.getType() == Length.FEET).findFirst().orElse(null));
     }
 
 }
