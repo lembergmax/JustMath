@@ -22,29 +22,11 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.unit.Unit;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+public enum UnitCategory {
 
-import java.math.MathContext;
-
-@RequiredArgsConstructor
-public class UnitConverter {
-
-    @Getter
-    @NonNull
-    private final MathContext mathContext;
-
-    public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
-        if (fromUnit.getCategory() != toUnit.getCategory()) {
-            throw new IllegalArgumentException("Units must share the same category");
-        }
-
-        return value.multiply(fromUnit.getFactorToBase()).divide(toUnit.getFactorToBase(), mathContext);
-    }
+    LENGTH
 
 }
+
