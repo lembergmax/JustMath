@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.converter;
 
-public class Main {
+/**
+ * Defines supported converter categories.
+ * <p>
+ * Additional categories can be introduced incrementally (e.g. MASS, AREA, TEMPERATURE)
+ * without changing existing unit storage structures.
+ */
+public enum UnitCategory {
 
-    public static void main(final String[] args) {
-
-    }
+    LENGTH
 
 }

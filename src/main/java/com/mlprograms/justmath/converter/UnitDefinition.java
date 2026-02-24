@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,12 +22,26 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.converter;
 
-public class Main {
+import java.util.List;
 
-    public static void main(final String[] args) {
-
-    }
-
+/**
+ * Immutable storage object for one unit and its conversion metadata.
+ *
+ * @param key                    unique internal id (e.g. "KILOMETER")
+ * @param displaySymbol          canonical user-facing symbol (e.g. "km")
+ * @param aliases                accepted aliases (e.g. "kilometer", "kilometre")
+ * @param category               conversion category this unit belongs to
+ * @param factorToCategoryBase   multiplicative factor to the category base unit, as decimal string
+ * @param source                 reference used for this factor
+ */
+public record UnitDefinition(
+        String key,
+        String displaySymbol,
+        List<String> aliases,
+        UnitCategory category,
+        String factorToCategoryBase,
+        String source
+) {
 }
