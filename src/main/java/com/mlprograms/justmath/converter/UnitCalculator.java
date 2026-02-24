@@ -25,30 +25,26 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.units.Length;
 import com.mlprograms.justmath.converter.units.UnitType;
-import lombok.experimental.UtilityClass;
-
-import java.util.List;
+import lombok.NonNull;
 
 /**
- * Facade for discoverable access to unit enums and their definitions.
+ * Public calculator entry point for unit conversions.
  */
-@UtilityClass
-public class Unit {
+public class UnitCalculator {
 
-    private static final UnitCalculator unitCalculator = new UnitCalculator();
+    private final UnitConverter unitConverter;
 
-    public static List<Length> lengthTypes() {
-        return List.of(Length.values());
+    public UnitCalculator() {
+        this(new UnitConverter());
     }
 
-    public static List<UnitDefinition> lengthDefinitions() {
-        return LengthUnitCatalog.definitions();
+    UnitCalculator(@NonNull final UnitConverter unitConverter) {
+        this.unitConverter = unitConverter;
     }
 
-    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
-        return unitCalculator.convert(amount, fromUnit, toUnit);
+    public BigNumber convert(@NonNull final BigNumber amount, @NonNull final UnitType fromUnit, @NonNull final UnitType toUnit) {
+        return unitConverter.convert(amount, fromUnit, toUnit);
     }
 
 }
