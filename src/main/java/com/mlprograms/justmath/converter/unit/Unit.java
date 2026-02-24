@@ -24,17 +24,34 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.Builder;
-import lombok.Value;
 
-@Value
-@Builder
 public class Unit {
 
-    UnitCategory category;
-    String displayName;
-    String symbol;
-    BigNumber factorToBase;
+    public enum Length {
+
+        KILOMETER,
+        HECTOMETER,
+        METER,
+        DECIMETER,
+        CENTIMETER,
+        MILLIMETER,
+        MICROMETER,
+        NANOMETER,
+        ANGSTROM,
+        PICOMETER,
+        FEMTOMETER,
+        INCH,
+        FEET,
+        YARD,
+        MILE,
+        NAUTICAL_MILE,
+        LIGHT_YEAR,
+        PARSEC,
+        PIXEL,
+        POINT,
+        PICA,
+        EM;
+
+    }
 
 }

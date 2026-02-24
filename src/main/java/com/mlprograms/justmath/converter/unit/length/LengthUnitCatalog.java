@@ -62,19 +62,4 @@ public class LengthUnitCatalog {
             Map.entry(Length.EM, definition(Length.EM, "Em", "em", "0.0042333333333333"))
     );
 
-    public static List<UnitDefinition> definitions() {
-        return Stream.of(Length.values())
-                .map(DEFINITIONS_BY_TYPE::get)
-                .toList();
-    }
-
-    private static UnitDefinition definition(final Length type, final String displayName, final String symbol, final String factorToBase) {
-        return UnitDefinition.builder()
-                .type(type)
-                .displayName(displayName)
-                .symbol(symbol)
-                .factorToBase(factorToBase)
-                .build();
-    }
-
 }
