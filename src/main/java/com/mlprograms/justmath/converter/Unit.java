@@ -37,6 +37,8 @@ import java.util.List;
 @UtilityClass
 public class Unit {
 
+    private static final UnitCalculator unitCalculator = new UnitCalculator();
+
     public static List<Length> lengthTypes() {
         return List.of(Length.values());
     }
@@ -46,7 +48,7 @@ public class Unit {
     }
 
     public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
-        return UnitConverter.convert(amount, fromUnit, toUnit);
+        return unitCalculator.convert(amount, fromUnit, toUnit);
     }
 
 }

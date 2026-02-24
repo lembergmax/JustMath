@@ -17,9 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UnitConverterTest {
 
+    private final UnitCalculator unitCalculator = new UnitCalculator();
+
     @Test
     void shouldConvertCentimeterToFeet() {
-        BigNumber result = UnitConverter.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
+        BigNumber result = unitCalculator.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
 
         assertEquals("3.28083989501312335958005249343832", result.toString());
     }
@@ -33,7 +35,7 @@ class UnitConverterTest {
             "1000, MILLIMETER, METER, 1"
     })
     void shouldConvertDifferentLengthEnums(final String amount, final Length from, final Length to, final String expected) {
-        BigNumber result = UnitConverter.convert(new BigNumber(amount), from, to);
+        BigNumber result = unitCalculator.convert(new BigNumber(amount), from, to);
 
         assertEquals(expected, result.toString());
     }
@@ -42,21 +44,21 @@ class UnitConverterTest {
     void shouldReturnSameNumberWhenConvertingToSameUnit() {
         BigNumber amount = new BigNumber("1234.56789");
 
-        BigNumber result = UnitConverter.convert(amount, Length.CENTIMETER, Length.CENTIMETER);
+        BigNumber result = unitCalculator.convert(amount, Length.CENTIMETER, Length.CENTIMETER);
 
         assertEquals("1234.56789", result.toString());
     }
 
     @Test
     void shouldKeepSignForNegativeValues() {
-        BigNumber result = UnitConverter.convert(new BigNumber("-10"), Length.METER, Length.CENTIMETER);
+        BigNumber result = unitCalculator.convert(new BigNumber("-10"), Length.METER, Length.CENTIMETER);
 
         assertEquals("-1000", result.toString());
     }
 
     @Test
     void shouldConvertZeroToZero() {
-        BigNumber result = UnitConverter.convert(new BigNumber("0"), Length.CENTIMETER, Length.FEET);
+        BigNumber result = unitCalculator.convert(new BigNumber("0"), Length.CENTIMETER, Length.FEET);
 
         assertEquals("0", result.toString());
     }
@@ -65,7 +67,7 @@ class UnitConverterTest {
     void shouldPreserveLocaleAndMathContextFromAmount() {
         BigNumber amount = new BigNumber("1", Locale.GERMANY, new MathContext(10));
 
-        BigNumber result = UnitConverter.convert(amount, Length.METER, Length.CENTIMETER);
+        BigNumber result = unitCalculator.convert(amount, Length.METER, Length.CENTIMETER);
 
         assertEquals(Locale.GERMANY, result.getLocale());
         assertEquals(new MathContext(10), result.getMathContext());
@@ -91,7 +93,7 @@ class UnitConverterTest {
     @Test
     void shouldFailForNullAmount() {
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> UnitConverter.convert(null, Length.CENTIMETER, Length.FEET));
+                () -> unitCalculator.convert(null, Length.CENTIMETER, Length.FEET));
 
         assertEquals("Amount must not be null.", exception.getMessage());
     }
@@ -99,7 +101,7 @@ class UnitConverterTest {
     @Test
     void shouldFailForNullFromUnit() {
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), null, Length.CENTIMETER));
+                () -> unitCalculator.convert(new BigNumber("1"), null, Length.CENTIMETER));
 
         assertEquals("From unit must not be null.", exception.getMessage());
     }
@@ -107,7 +109,7 @@ class UnitConverterTest {
     @Test
     void shouldFailForNullToUnit() {
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), Length.CENTIMETER, null));
+                () -> unitCalculator.convert(new BigNumber("1"), Length.CENTIMETER, null));
 
         assertEquals("To unit must not be null.", exception.getMessage());
     }
@@ -127,7 +129,7 @@ class UnitConverterTest {
         };
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> UnitConverter.convert(new BigNumber("1"), Length.CENTIMETER, unknownLengthType));
+                () -> unitCalculator.convert(new BigNumber("1"), Length.CENTIMETER, unknownLengthType));
 
         assertTrue(exception.getMessage().contains("Unknown unit enum"));
     }
