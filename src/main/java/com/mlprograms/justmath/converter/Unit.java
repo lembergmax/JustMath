@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.converter;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.units.Length;
 import lombok.experimental.UtilityClass;
 
@@ -41,6 +42,10 @@ public class Unit {
 
     public static List<UnitDefinition> lengthDefinitions() {
         return LengthUnitCatalog.definitions();
+    }
+
+    public static BigNumber convert(final BigNumber amount, final String fromUnit, final String toUnit) {
+        return UnitConverter.convert(amount, fromUnit, toUnit);
     }
 
 }
