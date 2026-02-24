@@ -28,6 +28,7 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.experimental.UtilityClass;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Provides precision-safe conversion between registered unit definitions.
@@ -36,6 +37,8 @@ import java.util.Locale;
 public class UnitConverter {
 
     public static BigNumber convert(final BigNumber amount, final String fromUnit, final String toUnit) {
+        Objects.requireNonNull(amount, "Amount must not be null.");
+
         UnitDefinition fromDefinition = resolveUnit(fromUnit);
         UnitDefinition toDefinition = resolveUnit(toUnit);
 
