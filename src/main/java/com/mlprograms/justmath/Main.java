@@ -26,13 +26,14 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.units.Length;
 
 public class Main {
 
     public static void main(final String[] args) {
 
-        BigNumber result = Unit.convert("3125", "cm", "feet");
-        System.out.println("3.125 cm = " + result + " ft");
+        BigNumber result = Unit.convert(new BigNumber("100"), Length.CENTIMETER, Length.FEET);
+        System.out.println("100 cm = " + result + " ft");
 
     }
 

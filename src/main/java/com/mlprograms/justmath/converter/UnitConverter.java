@@ -25,9 +25,10 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.converter.units.UnitType;
 import lombok.experimental.UtilityClass;
 
-import java.util.Locale;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -36,8 +37,10 @@ import java.util.Objects;
 @UtilityClass
 public class UnitConverter {
 
-    public static BigNumber convert(final BigNumber amount, final String fromUnit, final String toUnit) {
+    public static BigNumber convert(final BigNumber amount, final UnitType fromUnit, final UnitType toUnit) {
         Objects.requireNonNull(amount, "Amount must not be null.");
+        Objects.requireNonNull(fromUnit, "From unit must not be null.");
+        Objects.requireNonNull(toUnit, "To unit must not be null.");
 
         UnitDefinition fromDefinition = resolveUnit(fromUnit);
         UnitDefinition toDefinition = resolveUnit(toUnit);
@@ -53,17 +56,15 @@ public class UnitConverter {
         return amount.multiply(fromFactor).divide(toFactor, amount.getMathContext(), amount.getLocale());
     }
 
-    private static UnitDefinition resolveUnit(final String token) {
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Unit token must not be empty.");
-        }
+    private static UnitDefinition resolveUnit(final UnitType unitType) {
+        List<UnitDefinition> categoryDefinitions = switch (unitType.category()) {
+            case LENGTH -> Unit.lengthDefinitions();
+        };
 
-        UnitDefinition definition = UnitElements.getRegistry().get(token.toLowerCase(Locale.ROOT));
-        if (definition == null) {
-            throw new IllegalArgumentException("Unknown unit: " + token);
-        }
-
-        return definition;
+        return categoryDefinitions.stream()
+                .filter(definition -> definition.getType() == unitType)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown unit enum: " + unitType));
     }
 
 }
