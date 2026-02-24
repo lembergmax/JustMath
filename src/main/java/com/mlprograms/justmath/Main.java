@@ -24,9 +24,15 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.converter.UnitElements;
+
 public class Main {
 
     public static void main(final String[] args) {
+
+        System.out.println(UnitElements.getRegistry());
+        // System.out.println(ExpressionElements.getRegistry());
 
     }
 
