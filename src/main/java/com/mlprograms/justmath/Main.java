@@ -34,6 +34,8 @@ import java.math.RoundingMode;
 public class Main {
 
     public static void main(final String[] args) {
+        // TODO: in jeder unit converter klasse das copyright checken
+
         MathContext mathContext = new MathContext(34, RoundingMode.HALF_UP);
         UnitConverter unitConverter = new UnitConverter(mathContext);
 
