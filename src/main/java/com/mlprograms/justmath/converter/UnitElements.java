@@ -25,32 +25,35 @@
 package com.mlprograms.justmath.converter;
 
 import lombok.Getter;
+import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Registry for token-to-unit mapping (data storage only).
+ * Central unit registry for normalized token lookup.
  */
-public final class UnitElements {
+@UtilityClass
+public class UnitElements {
 
-    public static final Map<String, Unit.UnitType> registry = new HashMap<>();
+    @Getter
+    private static final Map<String, UnitDefinition> registry = new HashMap<>();
 
     @Getter
     private static int maxTokenLength = -1;
 
     static {
-        for (Unit.Type.Length lengthUnit : Unit.Type.Length.values()) {
-            register(lengthUnit);
+        List<UnitDefinition> unitDefinitions = Unit.lengthDefinitions();
+
+        for (UnitDefinition unitDefinition : unitDefinitions) {
+            register(unitDefinition);
         }
     }
 
-    private UnitElements() {
-    }
-
-    public static Optional<Unit.UnitType> find(final String token) {
+    public static Optional<UnitDefinition> find(final String token) {
         if (token == null || token.isBlank()) {
             return Optional.empty();
         }
@@ -58,18 +61,15 @@ public final class UnitElements {
         return Optional.ofNullable(registry.get(token.toLowerCase(Locale.ROOT)));
     }
 
-    private static void register(final Unit.UnitType unitType) {
-        put(unitType.symbol(), unitType);
-        put(unitType.toString(), unitType);
-
-        for (String alias : unitType.aliases()) {
-            put(alias, unitType);
+    private static void register(final UnitDefinition unitDefinition) {
+        for (String token : unitDefinition.tokens()) {
+            put(token, unitDefinition);
         }
     }
 
-    private static void put(final String token, final Unit.UnitType unitType) {
+    private static void put(final String token, final UnitDefinition unitDefinition) {
         String normalized = token.toLowerCase(Locale.ROOT);
-        registry.put(normalized, unitType);
+        registry.put(normalized, unitDefinition);
         maxTokenLength = Math.max(maxTokenLength, normalized.length());
     }
 
