@@ -27,21 +27,14 @@ package com.mlprograms.justmath.converter;
 import java.util.List;
 
 /**
- * Immutable storage object for one unit and its conversion metadata.
- *
- * @param key                    unique internal id (e.g. "KILOMETER")
- * @param displaySymbol          canonical user-facing symbol (e.g. "km")
- * @param aliases                accepted aliases (e.g. "kilometer", "kilometre")
- * @param category               conversion category this unit belongs to
- * @param factorToCategoryBase   multiplicative factor to the category base unit, as decimal string
- * @param source                 reference used for this factor
+ * @deprecated Replaced by enum-based unit definitions in {@link Unit.Type.Length}.
  */
+@Deprecated(since = "1.0.5")
 public record UnitDefinition(
         String key,
         String displaySymbol,
         List<String> aliases,
         UnitCategory category,
-        String factorToCategoryBase,
-        String source
+        String factorToCategoryBase
 ) {
 }

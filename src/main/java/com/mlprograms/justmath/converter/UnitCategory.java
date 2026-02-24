@@ -25,13 +25,11 @@
 package com.mlprograms.justmath.converter;
 
 /**
- * Defines supported converter categories.
- * <p>
- * Additional categories can be introduced incrementally (e.g. MASS, AREA, TEMPERATURE)
- * without changing existing unit storage structures.
+ * @deprecated Replaced by enum-based unit typing via {@link Unit.Type}.
  */
+@Deprecated(since = "1.0.5")
 public enum UnitCategory {
-
+  
     LENGTH
-
+      
 }
