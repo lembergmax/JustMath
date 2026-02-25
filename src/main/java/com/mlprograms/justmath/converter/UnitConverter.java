@@ -96,6 +96,27 @@ public final class UnitConverter {
      * @return converted value; never {@code null}
      * @throws UnitConversionException if the units belong to different groups
      */
+    public BigNumber convert(@NonNull final String value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
+        return convert(new BigNumber(value), fromUnit, toUnit);
+    }
+
+    /**
+     * Converts {@code value} from {@code fromUnit} to {@code toUnit}.
+     *
+     * <p>
+     * Conversions are only valid within the same unit group. The group is encoded by the unit's runtime type:
+     * </p>
+     * <ul>
+     *   <li>{@link Unit.Length} units can convert to other {@link Unit.Length} units</li>
+     *   ...
+     * </ul>
+     *
+     * @param value input value; must not be {@code null}
+     * @param fromUnit source unit; must not be {@code null}
+     * @param toUnit target unit; must not be {@code null}
+     * @return converted value; never {@code null}
+     * @throws UnitConversionException if the units belong to different groups
+     */
     public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
         if (!UnitElements.areCompatible(fromUnit, toUnit)) {
             throw new UnitConversionException(
