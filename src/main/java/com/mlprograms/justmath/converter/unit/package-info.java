@@ -1,8 +1,8 @@
 /**
- * Zentrales Converter-Modul für Einheiten.
- * <p>
- * Neue Einheiten werden genau an einer Stelle ergänzt: {@link com.mlprograms.justmath.converter.unit.UnitDefinitions}.
- * Dort werden Kategorie, Symbol und Umrechnungsformel (linear oder affine) gepflegt.
- * </p>
+ * Öffentliche Enums ({@link com.mlprograms.justmath.converter.unit.UnitCategory},
+ * {@link com.mlprograms.justmath.converter.unit.Unit}) bleiben datenfrei.
+ *
+ * <p>Alle Konvertierungsregeln sind zentral in der internen Registry hinterlegt,
+ * sodass neue Einheiten und Regeln an genau einer Stelle ergänzt werden.</p>
  */
 package com.mlprograms.justmath.converter.unit;
