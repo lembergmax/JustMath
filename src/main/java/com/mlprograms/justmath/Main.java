@@ -25,8 +25,8 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.UnitConverter;
 import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitConverter;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -34,7 +34,6 @@ import java.math.RoundingMode;
 public class Main {
 
     public static void main(final String[] args) {
-        // TODO: in jeder unit converter klasse das copyright checken
 
         MathContext mathContext = new MathContext(34, RoundingMode.HALF_UP);
         UnitConverter unitConverter = new UnitConverter(mathContext);
