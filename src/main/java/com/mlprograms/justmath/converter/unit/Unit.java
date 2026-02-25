@@ -33,12 +33,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
 
+import java.math.MathContext;
 import java.util.List;
 
 @Getter
 @EqualsAndHashCode
 @ToString
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public final class Unit {
 
     @NonNull
@@ -47,67 +48,76 @@ public final class Unit {
     private final String displayName;
     @NonNull
     private final String symbol;
+    /**
+     * Rückwärtskompatibilität für bestehende API (lineare Einheiten).
+     */
     @NonNull
     private final BigNumber factorToBase;
+    @NonNull
+    private final ConversionFormula conversionFormula;
 
-    private static Unit create(final UnitCategory category,
-                               final String displayName,
-                               final String symbol,
-                               final String factorToBase) {
-        return new Unit(category, displayName, symbol, new BigNumber(factorToBase));
+    public BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
+        return conversionFormula.toBase(value, mathContext);
+    }
+
+    public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
+        return conversionFormula.fromBase(baseValue, mathContext);
     }
 
     @UtilityClass
     public static class LENGTH {
 
-        public static final Unit KILOMETER = create(UnitCategory.LENGTH, "Kilometer", "km", "1000");
-        public static final Unit HECTOMETER = create(UnitCategory.LENGTH, "Hectometer", "hm", "100");
-        public static final Unit METER = create(UnitCategory.LENGTH, "Meter", "m", "1");
-        public static final Unit DECIMETER = create(UnitCategory.LENGTH, "Decimeter", "dm", "0.1");
-        public static final Unit CENTIMETER = create(UnitCategory.LENGTH, "Centimeter", "cm", "0.01");
-        public static final Unit MILLIMETER = create(UnitCategory.LENGTH, "Millimeter", "mm", "0.001");
-        public static final Unit MICROMETER = create(UnitCategory.LENGTH, "Micrometer", "um", "0.000001");
-        public static final Unit NANOMETER = create(UnitCategory.LENGTH, "Nanometer", "nm", "0.000000001");
-        public static final Unit ANGSTROM = create(UnitCategory.LENGTH, "Angstrom", "A", "0.0000000001");
-        public static final Unit PICOMETER = create(UnitCategory.LENGTH, "Picometer", "pm", "0.000000000001");
-        public static final Unit FEMTOMETER = create(UnitCategory.LENGTH, "Femtometer", "fm", "0.000000000000001");
-        public static final Unit INCH = create(UnitCategory.LENGTH, "Inch", "in", "0.0254");
-        public static final Unit FEET = create(UnitCategory.LENGTH, "Foot", "ft", "0.3048");
-        public static final Unit YARD = create(UnitCategory.LENGTH, "Yard", "yd", "0.9144");
-        public static final Unit MILE = create(UnitCategory.LENGTH, "Mile", "mi", "1609.344");
-        public static final Unit NAUTICAL_MILE = create(UnitCategory.LENGTH, "Nautical Mile", "nmi", "1852");
-        public static final Unit LIGHT_YEAR = create(UnitCategory.LENGTH, "Light Year", "ly", "9460730472580800");
-        public static final Unit PARSEC = create(UnitCategory.LENGTH, "Parsec", "pc", "30856775814913673");
-        public static final Unit PIXEL = create(UnitCategory.LENGTH, "Pixel", "px", "0.0002645833333333");
-        public static final Unit POINT = create(UnitCategory.LENGTH, "Point", "pt", "0.0003527777777778");
-        public static final Unit PICA = create(UnitCategory.LENGTH, "Pica", "pc_typ", "0.0042333333333333");
-        public static final Unit EM = create(UnitCategory.LENGTH, "Em", "em", "0.0042333333333333");
+        public static final Unit KILOMETER = UnitElements.requireBySymbol("km");
+        public static final Unit HECTOMETER = UnitElements.requireBySymbol("hm");
+        public static final Unit METER = UnitElements.requireBySymbol("m");
+        public static final Unit DECIMETER = UnitElements.requireBySymbol("dm");
+        public static final Unit CENTIMETER = UnitElements.requireBySymbol("cm");
+        public static final Unit MILLIMETER = UnitElements.requireBySymbol("mm");
+        public static final Unit MICROMETER = UnitElements.requireBySymbol("um");
+        public static final Unit NANOMETER = UnitElements.requireBySymbol("nm");
+        public static final Unit ANGSTROM = UnitElements.requireBySymbol("A");
+        public static final Unit PICOMETER = UnitElements.requireBySymbol("pm");
+        public static final Unit FEMTOMETER = UnitElements.requireBySymbol("fm");
+        public static final Unit INCH = UnitElements.requireBySymbol("in");
+        public static final Unit FEET = UnitElements.requireBySymbol("ft");
+        public static final Unit YARD = UnitElements.requireBySymbol("yd");
+        public static final Unit MILE = UnitElements.requireBySymbol("mi");
+        public static final Unit NAUTICAL_MILE = UnitElements.requireBySymbol("nmi");
+        public static final Unit LIGHT_YEAR = UnitElements.requireBySymbol("ly");
+        public static final Unit PARSEC = UnitElements.requireBySymbol("pc");
+        public static final Unit PIXEL = UnitElements.requireBySymbol("px");
+        public static final Unit POINT = UnitElements.requireBySymbol("pt");
+        public static final Unit PICA = UnitElements.requireBySymbol("pc_typ");
+        public static final Unit EM = UnitElements.requireBySymbol("em");
 
         public static List<Unit> all() {
-            return List.of(
-                    KILOMETER,
-                    HECTOMETER,
-                    METER,
-                    DECIMETER,
-                    CENTIMETER,
-                    MILLIMETER,
-                    MICROMETER,
-                    NANOMETER,
-                    ANGSTROM,
-                    PICOMETER,
-                    FEMTOMETER,
-                    INCH,
-                    FEET,
-                    YARD,
-                    MILE,
-                    NAUTICAL_MILE,
-                    LIGHT_YEAR,
-                    PARSEC,
-                    PIXEL,
-                    POINT,
-                    PICA,
-                    EM
-            );
+            return UnitElements.unitsByCategory(UnitCategory.LENGTH);
+        }
+    }
+
+    @UtilityClass
+    public static class MASS {
+
+        public static final Unit KILOGRAM = UnitElements.requireBySymbol("kg");
+        public static final Unit GRAM = UnitElements.requireBySymbol("g");
+        public static final Unit MILLIGRAM = UnitElements.requireBySymbol("mg");
+        public static final Unit TONNE = UnitElements.requireBySymbol("t");
+        public static final Unit POUND = UnitElements.requireBySymbol("lb");
+
+        public static List<Unit> all() {
+            return UnitElements.unitsByCategory(UnitCategory.MASS);
+        }
+    }
+
+    @UtilityClass
+    public static class TEMPERATURE {
+
+        public static final Unit KELVIN = UnitElements.requireBySymbol("K");
+        public static final Unit CELSIUS = UnitElements.requireBySymbol("°C");
+        public static final Unit FAHRENHEIT = UnitElements.requireBySymbol("°F");
+
+        public static List<Unit> all() {
+            return UnitElements.unitsByCategory(UnitCategory.TEMPERATURE);
         }
     }
 

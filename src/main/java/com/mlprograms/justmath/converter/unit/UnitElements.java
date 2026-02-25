@@ -25,45 +25,54 @@
 package com.mlprograms.justmath.converter.unit;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class UnitElements {
 
     @Getter
-    private static final Map<String, Unit> registry = new HashMap<>();
+    private static final Map<String, Unit> registry = new ConcurrentHashMap<>();
 
     static {
-        List<Unit> units = Unit.LENGTH.all();
-
-        for (Unit unit : units) {
-            register(unit);
-        }
+        UnitDefinitions.defaults().forEach(UnitElements::register);
     }
 
-    /**
-     * Finds a {@link Unit} by its symbol.
-     *
-     * @param symbol the symbol to look up
-     * @return an {@link Optional} containing the found {@code Unit}, or empty if not found
-     */
-    public static Optional<Unit> findBySymbol(String symbol) {
+    public static Optional<Unit> findBySymbol(@NonNull final String symbol) {
         return Optional.ofNullable(registry.get(symbol));
     }
 
-    /**
-     * Registers an {@link Unit} in the registry.
-     * The unit is mapped by its symbol for a later lookup.
-     *
-     * @param unit the {@code Unit} to register
-     */
-    public static void register(Unit unit) {
-        registry.put(unit.getSymbol(), unit);
+    public static Unit requireBySymbol(@NonNull final String symbol) {
+        return findBySymbol(symbol)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown unit symbol: " + symbol));
+    }
+
+    public static List<Unit> unitsByCategory(@NonNull final UnitCategory category) {
+        return registry.values().stream()
+                .filter(unit -> unit.getCategory() == category)
+                .toList();
+    }
+
+    public static Map<UnitCategory, List<Unit>> allByCategory() {
+        final Map<UnitCategory, List<Unit>> grouped = registry.values().stream()
+                .collect(Collectors.groupingBy(Unit::getCategory, () -> new EnumMap<>(UnitCategory.class), Collectors.toList()));
+
+        return Map.copyOf(grouped);
+    }
+
+    public static void register(@NonNull final Unit unit) {
+        final Unit existing = registry.putIfAbsent(unit.getSymbol(), unit);
+
+        if (existing != null && !existing.equals(unit)) {
+            throw new IllegalArgumentException("Unit symbol already registered: " + unit.getSymbol());
+        }
     }
 
 }

@@ -40,11 +40,21 @@ public class UnitConverter {
     private final MathContext mathContext;
 
     public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
-        if (fromUnit.getCategory() != toUnit.getCategory()) {
-            throw new IllegalArgumentException("Units must share the same category");
-        }
+        validateCategory(fromUnit, toUnit);
 
-        return value.multiply(fromUnit.getFactorToBase()).divide(toUnit.getFactorToBase(), mathContext);
+        final BigNumber baseValue = fromUnit.toBase(value, mathContext);
+        return toUnit.fromBase(baseValue, mathContext);
+    }
+
+    private static void validateCategory(final Unit fromUnit, final Unit toUnit) {
+        if (fromUnit.getCategory() != toUnit.getCategory()) {
+            throw new UnitConversionException(
+                    "Units must share the same category: "
+                            + fromUnit.getCategory()
+                            + " -> "
+                            + toUnit.getCategory()
+            );
+        }
     }
 
 }
