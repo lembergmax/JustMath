@@ -25,39 +25,35 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.converter.unit.Unit;
 import com.mlprograms.justmath.converter.unit.UnitElements;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import java.math.MathContext;
-import java.util.Objects;
 
-@RequiredArgsConstructor
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+
+@AllArgsConstructor
 public class UnitConverter {
 
     @Getter
     @NonNull
     private final MathContext mathContext;
 
-    public BigNumber convert(final BigNumber value, final Unit fromUnit, final Unit toUnit) {
-        validateInput(value, fromUnit, toUnit);
-
-        BigNumber valueInBaseUnit = UnitElements.toBase(fromUnit, value, mathContext);
-        return UnitElements.fromBase(toUnit, valueInBaseUnit, mathContext);
+    public UnitConverter() {
+        this(DEFAULT_DIVISION_PRECISION);
     }
 
-    private static void validateInput(final BigNumber value, final Unit fromUnit, final Unit toUnit) {
-        if (Objects.isNull(value)) {
-            throw new ConversionException("Value must not be null");
-        }
-        if (Objects.isNull(fromUnit) || Objects.isNull(toUnit)) {
-            throw new ConversionException("Units must not be null");
-        }
-        if (UnitElements.getCategory(fromUnit) != UnitElements.getCategory(toUnit)) {
-            throw new ConversionException("Units must share the same category");
-        }
+    public UnitConverter(final int divisionPrecision) {
+        this(CalculatorEngineUtils.getDefaultMathContext(divisionPrecision));
+    }
+
+    public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
+        final BigNumber valueInBaseUnit = UnitElements.toBase(fromUnit, value, mathContext);
+        return UnitElements.fromBase(toUnit, valueInBaseUnit, mathContext);
     }
 
 }
