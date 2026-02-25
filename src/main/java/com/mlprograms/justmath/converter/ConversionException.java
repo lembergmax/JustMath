@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,27 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.converter;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.unit.Unit;
+/**
+ * Einheitliche Runtime-Exception für Konvertierungsfehler.
+ */
+public class ConversionException extends IllegalArgumentException {
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-
-public class Main {
-
-    public static void main(final String[] args) {
-        // TODO: in jeder unit converter klasse das copyright checken
-
-        MathContext mathContext = new MathContext(34, RoundingMode.HALF_UP);
-        UnitConverter unitConverter = new UnitConverter(mathContext);
-
-        BigNumber value = new BigNumber("3");
-        BigNumber converted = unitConverter.convert(value, Unit.METER, Unit.FEET);
-
-        System.out.println("3 m in ft = " + converted);
+    public ConversionException(final String message) {
+        super(message);
     }
 
 }

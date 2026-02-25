@@ -24,55 +24,73 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-import lombok.Getter;
-import lombok.NonNull;
+import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.experimental.UtilityClass;
 
-import java.util.EnumMap;
+import java.math.MathContext;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * Öffentliche Lookup-API für Einheiten.
+ */
 @UtilityClass
 public class UnitElements {
 
-    @Getter
-    private static final Map<String, Unit> registry = new ConcurrentHashMap<>();
-
-    static {
-        UnitDefinitions.defaults().forEach(UnitElements::register);
+    public static Optional<Unit> findBySymbol(final String symbol) {
+        return UnitDefinitionRegistry.findBySymbol(symbol);
     }
 
-    public static Optional<Unit> findBySymbol(@NonNull final String symbol) {
-        return Optional.ofNullable(registry.get(symbol));
+    public static UnitCategory getCategory(final Unit unit) {
+        return UnitDefinitionRegistry.category(unit);
     }
 
-    public static Unit requireBySymbol(@NonNull final String symbol) {
-        return findBySymbol(symbol)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown unit symbol: " + symbol));
+    public static String getDisplayName(final Unit unit) {
+        return UnitDefinitionRegistry.displayName(unit);
     }
 
-    public static List<Unit> unitsByCategory(@NonNull final UnitCategory category) {
-        return registry.values().stream()
-                .filter(unit -> unit.getCategory() == category)
-                .toList();
+    public static String getSymbol(final Unit unit) {
+        return UnitDefinitionRegistry.symbol(unit);
     }
 
-    public static Map<UnitCategory, List<Unit>> allByCategory() {
-        final Map<UnitCategory, List<Unit>> grouped = registry.values().stream()
-                .collect(Collectors.groupingBy(Unit::getCategory, () -> new EnumMap<>(UnitCategory.class), Collectors.toList()));
-
-        return Map.copyOf(grouped);
+    public static List<Unit> byCategory(final UnitCategory category) {
+        return UnitDefinitionRegistry.byCategory(category);
     }
 
-    public static void register(@NonNull final Unit unit) {
-        final Unit existing = registry.putIfAbsent(unit.getSymbol(), unit);
+    public static List<Unit> all() {
+        return UnitDefinitionRegistry.allUnits();
+    }
 
-        if (existing != null && !existing.equals(unit)) {
-            throw new IllegalArgumentException("Unit symbol already registered: " + unit.getSymbol());
+    public static BigNumber toBase(final Unit unit,
+                                   final BigNumber value,
+                                   final MathContext mathContext) {
+        return UnitDefinitionRegistry.requireDefinition(unit).toBase(value, mathContext);
+    }
+
+    public static BigNumber fromBase(final Unit unit,
+                                     final BigNumber value,
+                                     final MathContext mathContext) {
+        return UnitDefinitionRegistry.requireDefinition(unit).fromBase(value, mathContext);
+    }
+
+    /**
+     * @deprecated Units sind statisch hinterlegt; Registrierung zur Laufzeit wird nicht unterstützt.
+     */
+    @Deprecated(forRemoval = true)
+    public static void register(final Unit unit) {
+        throw new UnsupportedOperationException("Runtime registration is not supported. Add the unit to UnitDefinitionRegistry.");
+    }
+
+    public static Map<String, Unit> getRegistry() {
+        Map<String, Unit> registry = new LinkedHashMap<>();
+        for (Unit unit : UnitDefinitionRegistry.allUnits()) {
+            registry.put(UnitDefinitionRegistry.symbol(unit), unit);
         }
+        return Map.copyOf(registry);
     }
 
 }
