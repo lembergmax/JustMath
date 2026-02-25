@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.unit;
-
-import com.mlprograms.justmath.bignumber.BigNumber;
-
-import java.math.MathContext;
+package com.mlprograms.justmath.converter;
 
 /**
- * Definiert die Umrechnung einer Einheit in die Base-Unit einer Kategorie und zurück.
+ * Domain categories for unit conversions.
+ * <p>
+ * Conversions are only valid within the same category.
+ * </p>
  */
-public interface ConversionFormula {
+public enum UnitCategory {
 
-    BigNumber toBase(BigNumber value, MathContext mathContext);
-
-    BigNumber fromBase(BigNumber baseValue, MathContext mathContext);
+    /**
+     * Length units (base: meter).
+     */
+    LENGTH
 
 }

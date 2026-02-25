@@ -22,44 +22,105 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.unit;
+package com.mlprograms.justmath.converter;
 
 /**
- * Technische Einheitstypen ohne Konvertierungsdaten.
+ * Technical unit identifiers used by the converter module.
+ * <p>
+ * This enum intentionally contains <strong>no metadata</strong> and <strong>no conversion values</strong>.
+ * All unit details (display name, symbol, category, conversion behavior) are defined externally
+ * and retrieved via {@link UnitElements}.
+ * </p>
  */
 public enum Unit {
 
+    /**
+     * Kilometer.
+     */
     KILOMETER,
+    /**
+     * Hectometer.
+     */
     HECTOMETER,
+    /**
+     * Meter (base unit of {@link UnitCategory#LENGTH}).
+     */
     METER,
+    /**
+     * Decimeter.
+     */
     DECIMETER,
+    /**
+     * Centimeter.
+     */
     CENTIMETER,
+    /**
+     * Millimeter.
+     */
     MILLIMETER,
+    /**
+     * Micrometer (ASCII symbol "um").
+     */
     MICROMETER,
+    /**
+     * Nanometer.
+     */
     NANOMETER,
+    /**
+     * Ångström (ASCII symbol "A").
+     */
     ANGSTROM,
+    /**
+     * Picometer.
+     */
     PICOMETER,
+    /**
+     * Femtometer.
+     */
     FEMTOMETER,
+    /**
+     * Inch.
+     */
     INCH,
+    /**
+     * Foot.
+     */
     FEET,
+    /**
+     * Yard.
+     */
     YARD,
+    /**
+     * Mile.
+     */
     MILE,
+    /**
+     * Nautical mile.
+     */
     NAUTICAL_MILE,
+    /**
+     * Light year.
+     */
     LIGHT_YEAR,
+    /**
+     * Parsec.
+     */
     PARSEC,
+    /**
+     * CSS pixel.
+     */
     PIXEL,
+    /**
+     * Typographic point.
+     */
     POINT,
+    /**
+     * Typographic pica.
+     */
     PICA,
+    /**
+     * EM unit (mapped to a fixed physical length in the built-in catalog).
+     */
     EM,
-
-    KILOGRAM,
-    GRAM,
-    MILLIGRAM,
-    POUND,
-    OUNCE,
-
-    KELVIN,
-    CELSIUS,
-    FAHRENHEIT
 
 }

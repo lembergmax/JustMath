@@ -22,15 +22,34 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.unit;
+package com.mlprograms.justmath.converter.exception;
 
 /**
- * Fachliche Kategorien für Umrechnungseinheiten.
+ * Base runtime exception for conversion-related failures.
+ * <p>
+ * This exception is used for invalid input, unsupported operations, or any failure that prevents
+ * a conversion from being completed successfully.
+ * </p>
  */
-public enum UnitCategory {
+public class ConversionException extends IllegalArgumentException {
 
-    LENGTH,
-    MASS,
-    TEMPERATURE
+    /**
+     * Creates a new exception with the given message.
+     *
+     * @param message human-readable error message; may be {@code null}
+     */
+    public ConversionException(final String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new exception with the given message and cause.
+     *
+     * @param message human-readable error message; may be {@code null}
+     * @param cause   root cause; may be {@code null}
+     */
+    public ConversionException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 
 }

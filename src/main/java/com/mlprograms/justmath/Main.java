@@ -26,7 +26,7 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.unit.Unit;
+import com.mlprograms.justmath.converter.Unit;
 
 import java.math.MathContext;
 import java.math.RoundingMode;

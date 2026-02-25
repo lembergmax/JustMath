@@ -1,34 +1,8 @@
-/*
- * Copyright (c) 2026 Max Lemberg
- *
- * This file is part of JustMath.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the “Software”), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
-import com.mlprograms.justmath.converter.unit.Unit;
-import com.mlprograms.justmath.converter.unit.UnitElements;
-import lombok.AllArgsConstructor;
+import com.mlprograms.justmath.converter.exception.UnitConversionException;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -36,24 +10,71 @@ import java.math.MathContext;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
-@AllArgsConstructor
-public class UnitConverter {
+/**
+ * Converts numeric values between units of the same category.
+ * <p>
+ * Instances are immutable and thread-safe.
+ * </p>
+ */
+public final class UnitConverter {
 
+    /**
+     * Math context used to control precision and rounding.
+     */
     @Getter
-    @NonNull
     private final MathContext mathContext;
 
+    /**
+     * Creates a converter using the library's default division precision.
+     */
     public UnitConverter() {
         this(DEFAULT_DIVISION_PRECISION);
     }
 
+    /**
+     * Creates a converter using a math context derived from the given precision.
+     *
+     * @param divisionPrecision precision used to build the internal {@link MathContext}
+     */
     public UnitConverter(final int divisionPrecision) {
         this(CalculatorEngineUtils.getDefaultMathContext(divisionPrecision));
     }
 
+    /**
+     * Creates a converter with an explicit math context.
+     *
+     * @param mathContext math context controlling precision and rounding; must not be {@code null}
+     */
+    public UnitConverter(@NonNull final MathContext mathContext) {
+        this.mathContext = mathContext;
+    }
+
+    /**
+     * Converts {@code value} from {@code fromUnit} to {@code toUnit}.
+     * <p>
+     * Conversions are only valid within the same unit category. If the units belong to different
+     * categories, a {@link UnitConversionException} is thrown.
+     * </p>
+     *
+     * @param value    input value; must not be {@code null}
+     * @param fromUnit source unit; must not be {@code null}
+     * @param toUnit   target unit; must not be {@code null}
+     * @return converted value; never {@code null}
+     * @throws UnitConversionException if the units are from different categories
+     */
     public BigNumber convert(@NonNull final BigNumber value, @NonNull final Unit fromUnit, @NonNull final Unit toUnit) {
-        final BigNumber valueInBaseUnit = UnitElements.toBase(fromUnit, value, mathContext);
-        return UnitElements.fromBase(toUnit, valueInBaseUnit, mathContext);
+        final var fromCategory = UnitElements.getCategory(fromUnit);
+        final var toCategory = UnitElements.getCategory(toUnit);
+
+        if (fromCategory != toCategory) {
+            throw new UnitConversionException(
+                    "Incompatible unit categories: cannot convert from " + fromCategory + " (" + fromUnit + ") to "
+                            + toCategory + " (" + toUnit + ")."
+            );
+        }
+
+        final BigNumber valueInBase = UnitElements.toBase(fromUnit, value, mathContext);
+        return UnitElements.fromBase(toUnit, valueInBase, mathContext);
     }
 
 }
