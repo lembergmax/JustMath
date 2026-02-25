@@ -21,7 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/**
+
+package com.mlprograms.justmath.calculator;
+
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.internal.Token;
+
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.math.MathContext;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
+
+/**zzzhh
  * ExactCalculatorEngine.java
  * <p>
  * Main entry point for evaluating mathematical expressions as strings with exact precision.
