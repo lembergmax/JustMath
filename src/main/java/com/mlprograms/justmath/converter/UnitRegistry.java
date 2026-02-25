@@ -29,127 +29,165 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Internal single source of truth for all built-in unit definitions.
  *
  * <p>
- * This registry is intentionally package-private. Library users interact with units via {@link UnitElements}.
- * The registry provides:
+ * This registry is intentionally package-private to keep the public API surface minimal and stable.
+ * Public access is provided via {@link UnitElements}.
  * </p>
  *
+ * <h2>Design goals</h2>
  * <ul>
- *   <li>mapping from {@link Unit} identifiers to immutable {@link UnitDefinition}</li>
- *   <li>symbol lookup</li>
- *   <li>category groupings</li>
- *   <li>integrity validation (unique symbols, all units defined)</li>
+ *   <li><strong>Enums are identifiers only</strong>: {@link Unit.Length} and {@link Unit.Mass} do not carry metadata.</li>
+ *   <li><strong>Single place to edit</strong>: add/remove units by editing one list ({@link #BUILT_IN}).</li>
+ *   <li><strong>Deterministic and validated</strong>: unit symbols are unique and group mappings are consistent.</li>
+ *   <li><strong>Thread-safe</strong>: all registries are immutable after class initialization.</li>
  * </ul>
+ *
+ * <h2>How to add a new unit</h2>
+ * <p>
+ * Add exactly one entry to {@link #BUILT_IN}. That is the only place you should need to touch.
+ * </p>
+ *
+ * <pre>
+ * define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000", "0")
+ * </pre>
+ *
+ * <p>
+ * The {@code scaleToBase} and {@code offsetToBase} parameters define the mapping into the group base unit:
+ * </p>
+ *
+ * <pre>
+ * base = value * scaleToBase + offsetToBase
+ * </pre>
+ *
+ * <p>
+ * For purely linear conversions, use {@code offsetToBase = "0"}.
+ * </p>
  */
 @UtilityClass
 class UnitRegistry {
 
     /**
-     * Deterministic list of all built-in units in declaration order (category order, then enum order).
+     * Declarative list of all built-in units and their definitions.
      *
      * <p>
-     * This list is used as the authoritative iteration order for registry initialization and public enumeration.
+     * This list is the <strong>only</strong> place you need to edit to add or modify units.
+     * The rest of the registry is derived from this list and validated at startup.
      * </p>
      */
-    private static final List<Unit> ALL_UNITS = List.copyOf(
-            Stream.concat(
-                    Arrays.stream(Unit.Length.values()).map(u -> (Unit) u),
-                    Arrays.stream(Unit.Mass.values()).map(u -> (Unit) u)
-            ).toList()
+    private static final List<UnitSpec> BUILT_IN = List.of(
+            // =========================
+            // LENGTH (base: meter)
+            // =========================
+            define(Unit.Length.KILOMETER, "Kilometer", "km", "1000", "0"),
+            define(Unit.Length.HECTOMETER, "Hectometer", "hm", "100", "0"),
+            define(Unit.Length.METER, "Meter", "m", "1", "0"),
+            define(Unit.Length.DECIMETER, "Decimeter", "dm", "0.1", "0"),
+            define(Unit.Length.CENTIMETER, "Centimeter", "cm", "0.01", "0"),
+            define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001", "0"),
+            define(Unit.Length.MICROMETER, "Micrometer", "um", "0.000001", "0"),
+            define(Unit.Length.NANOMETER, "Nanometer", "nm", "0.000000001", "0"),
+            define(Unit.Length.ANGSTROM, "Angstrom", "A", "0.0000000001", "0"),
+            define(Unit.Length.PICOMETER, "Picometer", "pm", "0.000000000001", "0"),
+            define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "0.000000000000001", "0"),
+            define(Unit.Length.INCH, "Inch", "in", "0.0254", "0"),
+            define(Unit.Length.FEET, "Foot", "ft", "0.3048", "0"),
+            define(Unit.Length.YARD, "Yard", "yd", "0.9144", "0"),
+            define(Unit.Length.MILE, "Mile", "mi", "1609.344", "0"),
+            define(Unit.Length.NAUTICAL_MILE, "Nautical Mile", "nmi", "1852", "0"),
+            define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580800", "0"),
+            define(Unit.Length.PARSEC, "Parsec", "pc", "30856775814913673", "0"),
+            define(Unit.Length.PIXEL, "Pixel", "px", "0.0002645833333333", "0"),
+            define(Unit.Length.POINT, "Point", "pt", "0.0003527777777778", "0"),
+            define(Unit.Length.PICA, "Pica", "pica", "0.0042333333333333", "0"),
+            define(Unit.Length.EM, "Em", "em", "0.0042333333333333", "0"),
+
+            // =========================
+            // MASS (base: kilogram)
+            // =========================
+            define(Unit.Mass.TONNE, "Tonne", "t", "1000", "0"),
+            define(Unit.Mass.KILOGRAM, "Kilogram", "kg", "1", "0"),
+            define(Unit.Mass.GRAM, "Gram", "g", "0.001", "0"),
+            define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001", "0"),
+            define(Unit.Mass.POUND, "Pound", "lb", "0.45359237", "0"),
+            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.028349523125", "0")
     );
 
     /**
-     * Map from unit identifiers to their immutable {@link UnitDefinition}.
+     * Map from unit identifier to its immutable {@link UnitDefinition}.
      *
      * <p>
-     * For LENGTH the base unit is meter; for MASS the base unit is kilogram.
+     * This is the canonical lookup structure used by the public facade.
      * </p>
      */
-    private static final Map<Unit, UnitDefinition> BY_UNIT = Map.ofEntries(
-            // LENGTH (base: meter)
-            Map.entry(Unit.Length.KILOMETER, linear(UnitCategory.LENGTH, "Kilometer", "km", new BigNumber("1000"))),
-            Map.entry(Unit.Length.HECTOMETER, linear(UnitCategory.LENGTH, "Hectometer", "hm", new BigNumber("100"))),
-            Map.entry(Unit.Length.METER, linear(UnitCategory.LENGTH, "Meter", "m", new BigNumber("1"))),
-            Map.entry(Unit.Length.DECIMETER, linear(UnitCategory.LENGTH, "Decimeter", "dm", new BigNumber("0.1"))),
-            Map.entry(Unit.Length.CENTIMETER, linear(UnitCategory.LENGTH, "Centimeter", "cm", new BigNumber("0.01"))),
-            Map.entry(Unit.Length.MILLIMETER, linear(UnitCategory.LENGTH, "Millimeter", "mm", new BigNumber("0.001"))),
-            Map.entry(Unit.Length.MICROMETER, linear(UnitCategory.LENGTH, "Micrometer", "um", new BigNumber("0.000001"))),
-            Map.entry(Unit.Length.NANOMETER, linear(UnitCategory.LENGTH, "Nanometer", "nm", new BigNumber("0.000000001"))),
-            Map.entry(Unit.Length.ANGSTROM, linear(UnitCategory.LENGTH, "Angstrom", "A", new BigNumber("0.0000000001"))),
-            Map.entry(Unit.Length.PICOMETER, linear(UnitCategory.LENGTH, "Picometer", "pm", new BigNumber("0.000000000001"))),
-            Map.entry(Unit.Length.FEMTOMETER, linear(UnitCategory.LENGTH, "Femtometer", "fm", new BigNumber("0.000000000000001"))),
-            Map.entry(Unit.Length.INCH, linear(UnitCategory.LENGTH, "Inch", "in", new BigNumber("0.0254"))),
-            Map.entry(Unit.Length.FEET, linear(UnitCategory.LENGTH, "Foot", "ft", new BigNumber("0.3048"))),
-            Map.entry(Unit.Length.YARD, linear(UnitCategory.LENGTH, "Yard", "yd", new BigNumber("0.9144"))),
-            Map.entry(Unit.Length.MILE, linear(UnitCategory.LENGTH, "Mile", "mi", new BigNumber("1609.344"))),
-            Map.entry(Unit.Length.NAUTICAL_MILE, linear(UnitCategory.LENGTH, "Nautical Mile", "nmi", new BigNumber("1852"))),
-            Map.entry(Unit.Length.LIGHT_YEAR, linear(UnitCategory.LENGTH, "Light Year", "ly", new BigNumber("9460730472580800"))),
-            Map.entry(Unit.Length.PARSEC, linear(UnitCategory.LENGTH, "Parsec", "pc", new BigNumber("30856775814913673"))),
-            Map.entry(Unit.Length.PIXEL, linear(UnitCategory.LENGTH, "Pixel", "px", new BigNumber("0.0002645833333333"))),
-            Map.entry(Unit.Length.POINT, linear(UnitCategory.LENGTH, "Point", "pt", new BigNumber("0.0003527777777778"))),
-            Map.entry(Unit.Length.PICA, linear(UnitCategory.LENGTH, "Pica", "pica", new BigNumber("0.0042333333333333"))),
-            Map.entry(Unit.Length.EM, linear(UnitCategory.LENGTH, "Em", "em", new BigNumber("0.0042333333333333"))),
-
-            // MASS (base: kilogram)
-            Map.entry(Unit.Mass.TONNE, linear(UnitCategory.MASS, "Tonne", "t", new BigNumber("1000"))),
-            Map.entry(Unit.Mass.KILOGRAM, linear(UnitCategory.MASS, "Kilogram", "kg", new BigNumber("1"))),
-            Map.entry(Unit.Mass.GRAM, linear(UnitCategory.MASS, "Gram", "g", new BigNumber("0.001"))),
-            Map.entry(Unit.Mass.MILLIGRAM, linear(UnitCategory.MASS, "Milligram", "mg", new BigNumber("0.000001"))),
-            Map.entry(Unit.Mass.POUND, linear(UnitCategory.MASS, "Pound", "lb", new BigNumber("0.45359237"))),
-            Map.entry(Unit.Mass.OUNCE, linear(UnitCategory.MASS, "Ounce", "oz", new BigNumber("0.028349523125")))
-    );
+    private static final Map<Unit, UnitDefinition> BY_UNIT;
 
     /**
      * Map from unit symbol to unit identifier.
      *
      * <p>
-     * Symbols are case-sensitive and must be unique across the entire catalog.
+     * Symbols are treated as case-sensitive because some real-world symbols are case-sensitive
+     * (e.g., {@code "K"} vs {@code "k"}). Validation ensures every symbol is unique.
      * </p>
      */
     private static final Map<String, Unit> BY_SYMBOL;
 
     /**
-     * Map from category to immutable list of unit identifiers.
+     * Map from unit group type (e.g., {@code Unit.Length.class}) to an immutable list of units
+     * belonging to that group.
+     *
+     * <p>
+     * This mapping enables compatibility checks and group-wise listing without a separate
+     * {@code UnitCategory} enum.
+     * </p>
      */
-    private static final Map<UnitCategory, List<Unit>> BY_CATEGORY;
+    private static final Map<Class<? extends Unit>, List<Unit>> BY_GROUP;
 
     static {
-        final Map<String, Unit> symbols = new HashMap<>();
-        final Map<UnitCategory, List<Unit>> byCategory = new EnumMap<>(UnitCategory.class);
+        final Map<Unit, UnitDefinition> byUnit = new LinkedHashMap<>();
+        final Map<String, Unit> bySymbol = new HashMap<>();
+        final Map<Class<? extends Unit>, List<Unit>> byGroup = new LinkedHashMap<>();
 
-        for (final Unit unit : ALL_UNITS) {
-            final UnitDefinition definition = requireDefinition(unit);
+        for (final UnitSpec spec : BUILT_IN) {
+            final Unit unit = spec.unit();
+            final UnitDefinition definition = spec.definition();
 
-            final Unit previous = symbols.put(definition.symbol(), unit);
-            if (previous != null) {
+            final UnitDefinition previousDef = byUnit.put(unit, definition);
+            if (previousDef != null) {
+                throw new IllegalStateException("Duplicate unit definition detected for: " + unit);
+            }
+
+            final Unit previousUnit = bySymbol.put(definition.symbol(), unit);
+            if (previousUnit != null) {
                 throw new IllegalStateException(
-                        "Duplicate unit symbol detected: '" + definition.symbol() + "' used by " + previous + " and " + unit
+                        "Duplicate unit symbol detected: '" + definition.symbol() + "' used by " + previousUnit + " and " + unit
                 );
             }
 
-            byCategory.computeIfAbsent(definition.category(), ignored -> new ArrayList<>()).add(unit);
+            final Class<? extends Unit> groupType = groupTypeOf(unit);
+            byGroup.computeIfAbsent(groupType, ignored -> new ArrayList<>()).add(unit);
         }
 
-        BY_SYMBOL = Map.copyOf(symbols);
+        BY_UNIT = Map.copyOf(byUnit);
+        BY_SYMBOL = Map.copyOf(bySymbol);
 
-        final Map<UnitCategory, List<Unit>> immutableByCategory = new EnumMap<>(UnitCategory.class);
-        for (final Map.Entry<UnitCategory, List<Unit>> entry : byCategory.entrySet()) {
-            immutableByCategory.put(entry.getKey(), List.copyOf(entry.getValue()));
+        final Map<Class<? extends Unit>, List<Unit>> immutableGroupMap = new LinkedHashMap<>();
+        for (final Map.Entry<Class<? extends Unit>, List<Unit>> entry : byGroup.entrySet()) {
+            immutableGroupMap.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
-        BY_CATEGORY = Map.copyOf(immutableByCategory);
+        BY_GROUP = Map.copyOf(immutableGroupMap);
     }
 
     /**
-     * Returns the definition for the given unit or throws if it does not exist.
+     * Returns the immutable {@link UnitDefinition} for a given unit identifier or throws
+     * if no definition exists.
      *
      * @param unit the unit identifier; must not be {@code null}
-     * @return the immutable definition for the unit; never {@code null}
-     * @throws IllegalStateException if the unit has no definition
+     * @return immutable unit definition; never {@code null}
+     * @throws IllegalStateException if no definition exists for {@code unit}
      */
     static UnitDefinition requireDefinition(@NonNull final Unit unit) {
         final UnitDefinition definition = BY_UNIT.get(unit);
@@ -162,8 +200,8 @@ class UnitRegistry {
     /**
      * Finds a unit identifier by its symbol.
      *
-     * @param symbol the unit symbol to look up; may be {@code null}
-     * @return an optional unit identifier; empty if {@code symbol} is {@code null} or unknown
+     * @param symbol the symbol to look up (e.g., {@code "km"}, {@code "kg"}); may be {@code null}
+     * @return optional unit identifier; empty if {@code symbol} is {@code null} or unknown
      */
     static Optional<Unit> findBySymbol(final String symbol) {
         if (symbol == null) {
@@ -173,26 +211,30 @@ class UnitRegistry {
     }
 
     /**
-     * Returns all units belonging to the given category.
+     * Returns all units of the given group (e.g., {@code Unit.Length.class}).
      *
-     * @param category the category; must not be {@code null}
-     * @return immutable list of unit identifiers; never {@code null}
+     * @param groupType the group type; must not be {@code null}
+     * @return immutable list of units; never {@code null}
      */
-    static List<Unit> byCategory(@NonNull final UnitCategory category) {
-        return BY_CATEGORY.getOrDefault(category, List.of());
+    static List<Unit> unitsOfGroup(@NonNull final Class<? extends Unit> groupType) {
+        return BY_GROUP.getOrDefault(groupType, List.of());
     }
 
     /**
-     * Returns all built-in units in deterministic order.
+     * Returns all built-in units in deterministic registry order.
+     *
+     * <p>
+     * The order is the order of {@link #BUILT_IN}, which is intended to be stable and human-controlled.
+     * </p>
      *
      * @return immutable list of all units; never {@code null}
      */
     static List<Unit> allUnits() {
-        return ALL_UNITS;
+        return List.copyOf(BY_UNIT.keySet());
     }
 
     /**
-     * Returns the human-readable display name of a unit.
+     * Returns the display name of a unit.
      *
      * @param unit the unit identifier; must not be {@code null}
      * @return display name; never {@code null}
@@ -212,47 +254,85 @@ class UnitRegistry {
     }
 
     /**
-     * Returns the category of a unit.
-     *
-     * @param unit the unit identifier; must not be {@code null}
-     * @return category; never {@code null}
-     */
-    static UnitCategory category(@NonNull final Unit unit) {
-        return requireDefinition(unit).category();
-    }
-
-    /**
-     * Exposes the immutable symbol registry for internal and test usage.
-     *
-     * @return immutable mapping of {@code symbol -> unit}; never {@code null}
-     */
-    static Map<String, Unit> symbolRegistry() {
-        return BY_SYMBOL;
-    }
-
-    /**
-     * Creates a linear unit definition using the provided scale factor.
+     * Checks whether two units belong to the same group type.
      *
      * <p>
-     * Linear means offset is assumed to be zero:
+     * This replaces the need for a separate {@code UnitCategory} enum. Group identity is derived
+     * from the unit's declaring enum type (e.g., {@code Unit.Length} or {@code Unit.Mass}).
      * </p>
+     *
+     * @param left the left unit; must not be {@code null}
+     * @param right the right unit; must not be {@code null}
+     * @return {@code true} if both units are in the same group; otherwise {@code false}
+     */
+    static boolean areCompatible(@NonNull final Unit left, @NonNull final Unit right) {
+        return groupTypeOf(left).equals(groupTypeOf(right));
+    }
+
+    /**
+     * Creates one declarative built-in definition entry.
+     *
+     * <p>
+     * The conversion is defined by the affine mapping into the group base unit:
+     * </p>
+     *
      * <pre>
-     * base = value * scale
+     * base = value * scaleToBase + offsetToBase
      * </pre>
      *
-     * @param category     the unit category; must not be {@code null}
-     * @param displayName  human-readable name; must not be {@code null}
-     * @param symbol       unit symbol; must not be {@code null}
-     * @param factorToBase scale factor into base unit; must not be {@code null}
-     * @return immutable unit definition; never {@code null}
+     * @param unit the unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol unit symbol; must not be {@code null}
+     * @param scaleToBase multiplicative factor into base unit; must not be {@code null}
+     * @param offsetToBase additive offset into base unit; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
      */
-    private static UnitDefinition linear(
-            @NonNull final UnitCategory category,
+    private static UnitSpec define(
+            @NonNull final Unit unit,
             @NonNull final String displayName,
             @NonNull final String symbol,
-            @NonNull final BigNumber factorToBase
+            @NonNull final String scaleToBase,
+            @NonNull final String offsetToBase
     ) {
-        return new UnitDefinition(category, displayName, symbol, ConversionFormulas.linear(factorToBase));
+        final BigNumber scale = new BigNumber(scaleToBase);
+        final BigNumber offset = new BigNumber(offsetToBase);
+
+        final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+
+        return new UnitSpec(unit, definition);
     }
+
+    /**
+     * Determines the logical group type of a unit.
+     *
+     * <p>
+     * For enum-based units, the group type is the declaring enum type (e.g., {@code Unit.Length.class}).
+     * This makes grouping stable and independent of enum constant-specific classes.
+     * </p>
+     *
+     * @param unit unit identifier; must not be {@code null}
+     * @return the group type; never {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Unit> groupTypeOf(@NonNull final Unit unit) {
+        if (unit instanceof Enum<?> enumValue) {
+            final Class<?> declaring = enumValue.getDeclaringClass();
+            return (Class<? extends Unit>) declaring;
+        }
+        return unit.getClass();
+    }
+
+    /**
+     * Internal immutable pair of a unit identifier and its {@link UnitDefinition}.
+     *
+     * <p>
+     * This is purely a registry construction artifact to keep {@link #BUILT_IN} readable.
+     * </p>
+     *
+     * @param unit the unit identifier
+     * @param definition the unit definition
+     */
+    private record UnitSpec(Unit unit, UnitDefinition definition) { }
 
 }
