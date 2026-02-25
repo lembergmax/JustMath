@@ -27,8 +27,6 @@ package com.mlprograms.justmath.converter;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.NonNull;
 
-import java.math.MathContext;
-
 /**
  * Immutable definition of a unit, containing human-readable metadata and conversion behavior.
  * <p>
@@ -51,22 +49,20 @@ record UnitDefinition(
      * Converts a value from the concrete unit into the base unit of its category.
      *
      * @param value       the value expressed in the concrete unit; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return the converted value expressed in the category base unit; never {@code null}
      */
-    BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
-        return formula.toBase(value, mathContext);
+    BigNumber toBase(@NonNull final BigNumber value) {
+        return formula.toBase(value);
     }
 
     /**
      * Converts a value from the category base unit into the concrete unit.
      *
      * @param baseValue   the value expressed in the base unit; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return the converted value expressed in the concrete unit; never {@code null}
      */
-    BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
-        return formula.fromBase(baseValue, mathContext);
+    BigNumber fromBase(@NonNull final BigNumber baseValue) {
+        return formula.fromBase(baseValue);
     }
 
 }
