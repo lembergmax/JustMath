@@ -39,7 +39,7 @@ public class Main {
         UnitConverter unitConverter = new UnitConverter(mathContext);
 
         BigNumber value = new BigNumber("3");
-        BigNumber converted = unitConverter.convert(value, Unit.METER, Unit.FEET);
+        BigNumber converted = unitConverter.convert(value, Unit.Length.METER, Unit.Length.FEET);
 
         System.out.println("3 m in ft = " + converted);
 

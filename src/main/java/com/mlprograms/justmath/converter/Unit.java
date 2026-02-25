@@ -25,102 +25,117 @@
 package com.mlprograms.justmath.converter;
 
 /**
- * Technical unit identifiers used by the converter module.
+ * Marker type for all units supported by the converter module.
+ *
  * <p>
- * This enum intentionally contains <strong>no metadata</strong> and <strong>no conversion values</strong>.
- * All unit details (display name, symbol, category, conversion behavior) are defined externally
- * and retrieved via {@link UnitElements}.
+ * The public API exposes units as strongly typed identifiers (not data holders). All metadata such as
+ * symbols, display names, categories, and conversion behavior is stored externally and accessed via
+ * {@link UnitElements}.
+ * </p>
+ *
+ * <p>
+ * Units are grouped by domain category using nested enums, enabling readable and type-safe references like
+ * {@code Unit.Length.METER} or {@code Unit.Mass.KILOGRAM}.
  * </p>
  */
-public enum Unit {
+public sealed interface Unit permits Unit.Length {
 
     /**
-     * Kilometer.
+     * Length unit identifiers (base unit: meter).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
      */
-    KILOMETER,
-    /**
-     * Hectometer.
-     */
-    HECTOMETER,
-    /**
-     * Meter (base unit of {@link UnitCategory#LENGTH}).
-     */
-    METER,
-    /**
-     * Decimeter.
-     */
-    DECIMETER,
-    /**
-     * Centimeter.
-     */
-    CENTIMETER,
-    /**
-     * Millimeter.
-     */
-    MILLIMETER,
-    /**
-     * Micrometer (ASCII symbol "um").
-     */
-    MICROMETER,
-    /**
-     * Nanometer.
-     */
-    NANOMETER,
-    /**
-     * Ångström (ASCII symbol "A").
-     */
-    ANGSTROM,
-    /**
-     * Picometer.
-     */
-    PICOMETER,
-    /**
-     * Femtometer.
-     */
-    FEMTOMETER,
-    /**
-     * Inch.
-     */
-    INCH,
-    /**
-     * Foot.
-     */
-    FEET,
-    /**
-     * Yard.
-     */
-    YARD,
-    /**
-     * Mile.
-     */
-    MILE,
-    /**
-     * Nautical mile.
-     */
-    NAUTICAL_MILE,
-    /**
-     * Light year.
-     */
-    LIGHT_YEAR,
-    /**
-     * Parsec.
-     */
-    PARSEC,
-    /**
-     * CSS pixel.
-     */
-    PIXEL,
-    /**
-     * Typographic point.
-     */
-    POINT,
-    /**
-     * Typographic pica.
-     */
-    PICA,
-    /**
-     * EM unit (mapped to a fixed physical length in the built-in catalog).
-     */
-    EM,
+    enum Length implements Unit {
+        /**
+         * Kilometer (km).
+         */
+        KILOMETER,
+        /**
+         * Hectometer (hm).
+         */
+        HECTOMETER,
+        /**
+         * Meter (m), base unit of the LENGTH category.
+         */
+        METER,
+        /**
+         * Decimeter (dm).
+         */
+        DECIMETER,
+        /**
+         * Centimeter (cm).
+         */
+        CENTIMETER,
+        /**
+         * Millimeter (mm).
+         */
+        MILLIMETER,
+        /**
+         * Micrometer (um).
+         */
+        MICROMETER,
+        /**
+         * Nanometer (nm).
+         */
+        NANOMETER,
+        /**
+         * Ångström (A).
+         */
+        ANGSTROM,
+        /**
+         * Picometer (pm).
+         */
+        PICOMETER,
+        /**
+         * Femtometer (fm).
+         */
+        FEMTOMETER,
+        /**
+         * Inch (in).
+         */
+        INCH,
+        /**
+         * Foot (ft).
+         */
+        FEET,
+        /**
+         * Yard (yd).
+         */
+        YARD,
+        /**
+         * Mile (mi).
+         */
+        MILE,
+        /**
+         * Nautical mile (nmi).
+         */
+        NAUTICAL_MILE,
+        /**
+         * Light year (ly).
+         */
+        LIGHT_YEAR,
+        /**
+         * Parsec (pc).
+         */
+        PARSEC,
+        /**
+         * CSS pixel (px).
+         */
+        PIXEL,
+        /**
+         * Typographic point (pt).
+         */
+        POINT,
+        /**
+         * Typographic pica (pica).
+         */
+        PICA,
+        /**
+         * Em (em).
+         */
+        EM
+    }
 
 }
