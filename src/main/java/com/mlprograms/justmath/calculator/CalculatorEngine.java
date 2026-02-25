@@ -41,9 +41,7 @@ import java.util.Objects;
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
 
-/**zzzhh
- * ExactCalculatorEngine.java
- * <p>
+/**
  * Main entry point for evaluating mathematical expressions as strings with exact precision.
  * Converts the input to tokens, parses them to postfix (RPN), and evaluates the result.
  */
