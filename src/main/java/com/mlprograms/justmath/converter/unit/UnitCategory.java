@@ -24,9 +24,13 @@
 
 package com.mlprograms.justmath.converter.unit;
 
+/**
+ * Fachliche Kategorien für Umrechnungseinheiten.
+ */
 public enum UnitCategory {
 
-    LENGTH
+    LENGTH,
+    MASS,
+    TEMPERATURE
 
 }
-
