@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.math.MathContext;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,48 +39,34 @@ import java.util.Optional;
  * Public lookup and conversion facade for built-in unit definitions.
  *
  * <p>
- * This class exposes a stable API for library users while the actual unit metadata
- * and validation logic live in the internal {@link UnitRegistry}.
+ * This class provides a stable API for library consumers while keeping the catalog metadata in the
+ * internal registry ({@link UnitRegistry}).
  * </p>
- *
- * <p>
- * Design goals:
- * </p>
- * <ul>
- *   <li>Keep {@link Unit} as a pure identifier enum (no metadata)</li>
- *   <li>Offer a small, discoverable API surface for consumers</li>
- *   <li>Hide internal registry details and validation logic</li>
- * </ul>
  */
 @UtilityClass
 public class UnitElements {
 
     /**
-     * Attempts to find a {@link Unit} by its symbol.
+     * Finds a unit identifier by its symbol.
      *
-     * <p>
-     * This method is lenient: it does not throw if the symbol is unknown.
-     * Use {@link #parseUnit(String)} for strict parsing.
-     * </p>
-     *
-     * @param symbol the unit symbol (e.g., {@code "km"}); may be {@code null}
-     * @return an {@link Optional} containing the unit if found; otherwise empty
+     * @param symbol unit symbol (e.g., {@code "km"}, {@code "kg"}); may be {@code null}
+     * @return optional unit identifier; empty if not found
      */
     public static Optional<Unit> findBySymbol(final String symbol) {
         return UnitRegistry.findBySymbol(symbol);
     }
 
     /**
-     * Parses the given unit symbol into a {@link Unit}.
+     * Parses a unit symbol into a {@link Unit}.
      *
      * <p>
-     * This method is strict and will throw if the symbol is blank or unknown.
-     * Parsing is case-sensitive because unit symbols may be case-sensitive.
+     * This method provides strict parse-or-fail behavior and is intended for API consumers.
+     * Symbols are treated as case-sensitive.
      * </p>
      *
-     * @param symbol the unit symbol (e.g., {@code "km"}); must not be {@code null} or blank
-     * @return the parsed unit; never {@code null}
-     * @throws UnitConversionException if the symbol is blank or not known by the registry
+     * @param symbol unit symbol (e.g., {@code "km"}, {@code "kg"}); must not be {@code null} or blank
+     * @return parsed unit identifier; never {@code null}
+     * @throws UnitConversionException if the symbol is blank or unknown
      */
     public static Unit parseUnit(@NonNull final String symbol) {
         final String trimmed = symbol.trim();
@@ -91,17 +78,17 @@ public class UnitElements {
     }
 
     /**
-     * Returns the category of the given unit.
+     * Returns the category of a unit.
      *
      * @param unit unit identifier; must not be {@code null}
-     * @return category of the unit; never {@code null}
+     * @return category; never {@code null}
      */
     public static UnitCategory getCategory(@NonNull final Unit unit) {
         return UnitRegistry.category(unit);
     }
 
     /**
-     * Returns the human-readable display name of the given unit.
+     * Returns the human-readable display name of a unit.
      *
      * @param unit unit identifier; must not be {@code null}
      * @return display name; never {@code null}
@@ -111,33 +98,29 @@ public class UnitElements {
     }
 
     /**
-     * Returns the symbol of the given unit.
+     * Returns the symbol of a unit.
      *
      * @param unit unit identifier; must not be {@code null}
-     * @return unit symbol; never {@code null}
+     * @return symbol; never {@code null}
      */
     public static String getSymbol(@NonNull final Unit unit) {
         return UnitRegistry.symbol(unit);
     }
 
     /**
-     * Returns all units belonging to the specified category.
+     * Returns all units in a category.
      *
-     * <p>
-     * The returned list is immutable.
-     * </p>
-     *
-     * @param category the unit category; must not be {@code null}
-     * @return immutable list of units in that category; never {@code null}
+     * @param category category; must not be {@code null}
+     * @return immutable list of unit identifiers; never {@code null}
      */
     public static List<Unit> byCategory(@NonNull final UnitCategory category) {
         return UnitRegistry.byCategory(category);
     }
 
     /**
-     * Returns all built-in units in enum declaration order.
+     * Returns all built-in units in deterministic order.
      *
-     * @return immutable list of all built-in units; never {@code null}
+     * @return immutable list of all unit identifiers; never {@code null}
      */
     public static List<Unit> all() {
         return UnitRegistry.allUnits();
@@ -146,10 +129,10 @@ public class UnitElements {
     /**
      * Converts a value expressed in {@code unit} to the category base unit.
      *
-     * @param unit the concrete unit identifier; must not be {@code null}
-     * @param value the value expressed in {@code unit}; must not be {@code null}
-     * @param mathContext math context controlling precision and rounding; must not be {@code null}
-     * @return value expressed in the category base unit; never {@code null}
+     * @param unit unit identifier; must not be {@code null}
+     * @param value value expressed in {@code unit}; must not be {@code null}
+     * @param mathContext math context controlling precision/rounding; must not be {@code null}
+     * @return value converted to the base unit; never {@code null}
      */
     public static BigNumber toBase(
             @NonNull final Unit unit,
@@ -160,33 +143,36 @@ public class UnitElements {
     }
 
     /**
-     * Converts a value expressed in the category base unit to the specified concrete unit.
+     * Converts a value expressed in the category base unit to {@code unit}.
      *
-     * @param unit the target unit identifier; must not be {@code null}
-     * @param baseValue the value expressed in the category base unit; must not be {@code null}
-     * @param mathContext math context controlling precision and rounding; must not be {@code null}
-     * @return value expressed in {@code unit}; never {@code null}
+     * @param unit target unit identifier; must not be {@code null}
+     * @param value value expressed in the base unit; must not be {@code null}
+     * @param mathContext math context controlling precision/rounding; must not be {@code null}
+     * @return value converted to {@code unit}; never {@code null}
      */
     public static BigNumber fromBase(
             @NonNull final Unit unit,
-            @NonNull final BigNumber baseValue,
+            @NonNull final BigNumber value,
             @NonNull final MathContext mathContext
     ) {
-        return UnitRegistry.requireDefinition(unit).fromBase(baseValue, mathContext);
+        return UnitRegistry.requireDefinition(unit).fromBase(value, mathContext);
     }
 
     /**
-     * Returns the immutable symbol registry map.
+     * Returns an immutable symbol registry map.
      *
      * <p>
-     * The map keys are unit symbols and the values are the corresponding {@link Unit} identifiers.
-     * The registry order follows the enum declaration order to keep iteration deterministic.
+     * The returned map is deterministic: it follows the registry's unit iteration order.
      * </p>
      *
      * @return immutable mapping of {@code symbol -> unit}; never {@code null}
      */
     public static Map<String, Unit> getRegistry() {
-        return UnitRegistry.symbolRegistry();
+        final Map<String, Unit> registry = new LinkedHashMap<>();
+        for (final Unit unit : UnitRegistry.allUnits()) {
+            registry.put(UnitRegistry.symbol(unit), unit);
+        }
+        return Map.copyOf(registry);
     }
 
 }
