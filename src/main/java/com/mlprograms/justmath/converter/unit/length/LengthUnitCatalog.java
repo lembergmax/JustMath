@@ -25,6 +25,8 @@
 package com.mlprograms.justmath.converter.unit.length;
 
 import com.mlprograms.justmath.converter.unit.Unit;
+import com.mlprograms.justmath.converter.unit.UnitCategory;
+import com.mlprograms.justmath.converter.unit.UnitElements;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -36,7 +38,7 @@ import java.util.List;
 public class LengthUnitCatalog {
 
     public static List<Unit> definitions() {
-        return Unit.LENGTH.all();
+        return UnitElements.byCategory(UnitCategory.LENGTH);
     }
 
 }

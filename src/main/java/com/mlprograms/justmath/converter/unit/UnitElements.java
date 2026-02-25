@@ -24,46 +24,71 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-import lombok.Getter;
+import com.mlprograms.justmath.bignumber.BigNumber;
 import lombok.experimental.UtilityClass;
 
-import java.util.HashMap;
+import java.math.MathContext;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Öffentliche Lookup-API für Einheiten.
+ */
 @UtilityClass
 public class UnitElements {
 
-    @Getter
-    private static final Map<String, Unit> registry = new HashMap<>();
+    public static Optional<Unit> findBySymbol(final String symbol) {
+        return UnitDefinitionRegistry.findBySymbol(symbol);
+    }
 
-    static {
-        List<Unit> units = Unit.LENGTH.all();
+    public static UnitCategory getCategory(final Unit unit) {
+        return UnitDefinitionRegistry.category(unit);
+    }
 
-        for (Unit unit : units) {
-            register(unit);
+    public static String getDisplayName(final Unit unit) {
+        return UnitDefinitionRegistry.displayName(unit);
+    }
+
+    public static String getSymbol(final Unit unit) {
+        return UnitDefinitionRegistry.symbol(unit);
+    }
+
+    public static List<Unit> byCategory(final UnitCategory category) {
+        return UnitDefinitionRegistry.byCategory(category);
+    }
+
+    public static List<Unit> all() {
+        return UnitDefinitionRegistry.allUnits();
+    }
+
+    public static BigNumber toBase(final Unit unit,
+                                   final BigNumber value,
+                                   final MathContext mathContext) {
+        return UnitDefinitionRegistry.requireDefinition(unit).toBase(value, mathContext);
+    }
+
+    public static BigNumber fromBase(final Unit unit,
+                                     final BigNumber value,
+                                     final MathContext mathContext) {
+        return UnitDefinitionRegistry.requireDefinition(unit).fromBase(value, mathContext);
+    }
+
+    /**
+     * @deprecated Units sind statisch hinterlegt; Registrierung zur Laufzeit wird nicht unterstützt.
+     */
+    @Deprecated(forRemoval = true)
+    public static void register(final Unit unit) {
+        throw new UnsupportedOperationException("Runtime registration is not supported. Add the unit to UnitDefinitionRegistry.");
+    }
+
+    public static Map<String, Unit> getRegistry() {
+        Map<String, Unit> registry = new LinkedHashMap<>();
+        for (Unit unit : UnitDefinitionRegistry.allUnits()) {
+            registry.put(UnitDefinitionRegistry.symbol(unit), unit);
         }
-    }
-
-    /**
-     * Finds a {@link Unit} by its symbol.
-     *
-     * @param symbol the symbol to look up
-     * @return an {@link Optional} containing the found {@code Unit}, or empty if not found
-     */
-    public static Optional<Unit> findBySymbol(String symbol) {
-        return Optional.ofNullable(registry.get(symbol));
-    }
-
-    /**
-     * Registers an {@link Unit} in the registry.
-     * The unit is mapped by its symbol for a later lookup.
-     *
-     * @param unit the {@code Unit} to register
-     */
-    public static void register(Unit unit) {
-        registry.put(unit.getSymbol(), unit);
+        return Map.copyOf(registry);
     }
 
 }
