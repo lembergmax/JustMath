@@ -31,6 +31,8 @@ import com.mlprograms.justmath.calculator.internal.Token;
 
 import lombok.NonNull;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class CalculatorEngineUtils {
@@ -195,6 +197,16 @@ public class CalculatorEngineUtils {
 
         currentPath.remove(variableName);
         visitedVariables.add(variableName);
+    }
+
+    /**
+     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
+     *
+     * @param divisionPrecision the precision for division operations
+     * @return a MathContext instance with the given precision and HALF_UP rounding mode
+     */
+    public static MathContext getDefaultMathContext(int divisionPrecision) {
+        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
     }
 
 }

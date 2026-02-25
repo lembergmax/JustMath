@@ -25,7 +25,7 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import lombok.NonNull;
 
 import java.math.BigInteger;
@@ -48,7 +48,7 @@ public class BigNumbers {
 	/**
 	 * Default {@link MathContext} used for calculations, based on {@link #DEFAULT_DIVISION_PRECISION}.
 	 */
-	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
 	/**
 	 * Constant representing the value -1 as a {@link BigNumber}.

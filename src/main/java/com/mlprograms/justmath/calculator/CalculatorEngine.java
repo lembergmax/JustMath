@@ -21,27 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.mlprograms.justmath.calculator;
-
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.Token;
-
-import lombok.Getter;
-import lombok.NonNull;
-
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
-
 /**
  * ExactCalculatorEngine.java
  * <p>
@@ -124,16 +103,6 @@ public class CalculatorEngine {
         this.tokenizer = new Tokenizer();
         this.evaluator = new Evaluator(mathContext, trigonometricMode);
         this.postfixParser = new PostfixParser();
-    }
-
-    /**
-     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
-     *
-     * @param divisionPrecision the precision for division operations
-     * @return a MathContext instance with the given precision and HALF_UP rounding mode
-     */
-    public static MathContext getDefaultMathContext(int divisionPrecision) {
-        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
     }
 
     /**
