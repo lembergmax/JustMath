@@ -77,43 +77,44 @@ class UnitRegistry {
      * This list is the <strong>only</strong> place you need to edit to add or modify units.
      * The rest of the registry is derived from this list and validated at startup.
      * </p>
+     * <a href="https://www.unitconverters.net/length-converter.html">Get the scaleToBase from this website</a>
      */
     private static final List<UnitSpec> BUILT_IN = List.of(
             // =========================
             // LENGTH (base: meter)
             // =========================
-            define(Unit.Length.KILOMETER, "Kilometer", "km", "1000", "0"),
-            define(Unit.Length.HECTOMETER, "Hectometer", "hm", "100", "0"),
-            define(Unit.Length.METER, "Meter", "m", "1", "0"),
-            define(Unit.Length.DECIMETER, "Decimeter", "dm", "0.1", "0"),
-            define(Unit.Length.CENTIMETER, "Centimeter", "cm", "0.01", "0"),
-            define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001", "0"),
-            define(Unit.Length.MICROMETER, "Micrometer", "um", "0.000001", "0"),
-            define(Unit.Length.NANOMETER, "Nanometer", "nm", "0.000000001", "0"),
-            define(Unit.Length.ANGSTROM, "Angstrom", "A", "0.0000000001", "0"),
-            define(Unit.Length.PICOMETER, "Picometer", "pm", "0.000000000001", "0"),
-            define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "0.000000000000001", "0"),
-            define(Unit.Length.INCH, "Inch", "in", "0.0254", "0"),
-            define(Unit.Length.FEET, "Foot", "ft", "0.3048", "0"),
-            define(Unit.Length.YARD, "Yard", "yd", "0.9144", "0"),
-            define(Unit.Length.MILE, "Mile", "mi", "1609.344", "0"),
-            define(Unit.Length.NAUTICAL_MILE, "Nautical Mile", "nmi", "1852", "0"),
-            define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580800", "0"),
-            define(Unit.Length.PARSEC, "Parsec", "pc", "30856775814913673", "0"),
-            define(Unit.Length.PIXEL, "Pixel", "px", "0.0002645833333333", "0"),
-            define(Unit.Length.POINT, "Point", "pt", "0.0003527777777778", "0"),
-            define(Unit.Length.PICA, "Pica", "pica", "0.0042333333333333", "0"),
-            define(Unit.Length.EM, "Em", "em", "0.0042333333333333", "0"),
+            define(Unit.Length.KILOMETER, "Kilometer", "km", "1000"),
+            define(Unit.Length.HECTOMETER, "Hectometer", "hm", "100"),
+            define(Unit.Length.METER, "Meter", "m", "1"),
+            define(Unit.Length.DECIMETER, "Decimeter", "dm", "0.1"),
+            define(Unit.Length.CENTIMETER, "Centimeter", "cm", "0.01"),
+            define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001"),
+            define(Unit.Length.MICROMETER, "Micrometer", "um", "0.000001"),
+            define(Unit.Length.NANOMETER, "Nanometer", "nm", "0.000000001"),
+            define(Unit.Length.ANGSTROM, "Angstrom", "A", "0.0000000001"),
+            define(Unit.Length.PICOMETER, "Picometer", "pm", "0.000000000001"),
+            define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "0.000000000000001"),
+            define(Unit.Length.INCH, "Inch", "in", "0.0254"),
+            define(Unit.Length.FEET, "Foot", "ft", "0.3048"),
+            define(Unit.Length.YARD, "Yard", "yd", "0.9144"),
+            define(Unit.Length.MILE, "Mile", "mi", "1609.344"),
+            define(Unit.Length.NAUTICAL_MILE, "Nautical Mile", "nmi", "1852"),
+            define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580800"),
+            define(Unit.Length.PARSEC, "Parsec", "pc", "30856775814913673"),
+            define(Unit.Length.PIXEL, "Pixel", "px", "0.0002645833333333"),
+            define(Unit.Length.POINT, "Point", "pt", "0.0003527777777778"),
+            define(Unit.Length.PICA, "Pica", "pica", "0.0042333333333333"),
+            define(Unit.Length.EM, "Em", "em", "0.0042333333333333"),
 
             // =========================
             // MASS (base: kilogram)
             // =========================
-            define(Unit.Mass.TONNE, "Ton", "t", "1000", "0"),
-            define(Unit.Mass.KILOGRAM, "Kilogram", "kg", "1", "0"),
-            define(Unit.Mass.GRAM, "Gram", "g", "0.001", "0"),
-            define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001", "0"),
-            define(Unit.Mass.POUND, "Pound", "lb", "0.45359237", "0"),
-            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.028349523125", "0")
+            define(Unit.Mass.TONNE, "Ton", "t", "1000"),
+            define(Unit.Mass.KILOGRAM, "Kilogram", "kg", "1"),
+            define(Unit.Mass.GRAM, "Gram", "g", "0.001"),
+            define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001"),
+            define(Unit.Mass.POUND, "Pound", "lb", "0.45359237"),
+            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.028349523125")
     );
 
     /**
@@ -267,6 +268,32 @@ class UnitRegistry {
      */
     static boolean areCompatible(@NonNull final Unit left, @NonNull final Unit right) {
         return groupTypeOf(left).equals(groupTypeOf(right));
+    }
+
+    /**
+     * Creates one declarative built-in definition entry.
+     *
+     * <p>
+     * The conversion is defined by the affine mapping into the group base unit:
+     * </p>
+     *
+     * <pre>
+     * base = value * scaleToBase + offsetToBase
+     * </pre>
+     *
+     * @param unit the unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol unit symbol; must not be {@code null}
+     * @param scaleToBase multiplicative factor into base unit; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
+     */
+    private static UnitSpec define(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String scaleToBase
+    ) {
+        return define(unit, displayName, symbol, scaleToBase, "0");
     }
 
     /**
