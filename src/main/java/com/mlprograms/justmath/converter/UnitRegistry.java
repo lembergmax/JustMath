@@ -108,7 +108,7 @@ class UnitRegistry {
             // =========================
             // MASS (base: kilogram)
             // =========================
-            define(Unit.Mass.TONNE, "Tonne", "t", "1000", "0"),
+            define(Unit.Mass.TONNE, "Ton", "t", "1000", "0"),
             define(Unit.Mass.KILOGRAM, "Kilogram", "kg", "1", "0"),
             define(Unit.Mass.GRAM, "Gram", "g", "0.001", "0"),
             define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001", "0"),
