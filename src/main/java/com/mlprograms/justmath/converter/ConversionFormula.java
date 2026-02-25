@@ -48,18 +48,16 @@ public interface ConversionFormula {
      * Converts a value expressed in a concrete unit to the base unit of the category.
      *
      * @param value       the input value expressed in the concrete unit; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return the converted value expressed in the category base unit; never {@code null}
      */
-    BigNumber toBase(BigNumber value, MathContext mathContext);
+    BigNumber toBase(BigNumber value);
 
     /**
      * Converts a value expressed in the category base unit to the concrete unit.
      *
      * @param baseValue   the input value expressed in the base unit; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return the converted value expressed in the concrete unit; never {@code null}
      */
-    BigNumber fromBase(BigNumber baseValue, MathContext mathContext);
+    BigNumber fromBase(BigNumber baseValue);
 
 }

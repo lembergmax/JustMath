@@ -129,15 +129,13 @@ public class UnitElements {
      *
      * @param unit        unit identifier; must not be {@code null}
      * @param value       value expressed in {@code unit}; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return value converted to the base unit; never {@code null}
      */
     public static BigNumber toBase(
             @NonNull final Unit unit,
-            @NonNull final BigNumber value,
-            @NonNull final MathContext mathContext
+            @NonNull final BigNumber value
     ) {
-        return UnitRegistry.requireDefinition(unit).toBase(value, mathContext);
+        return UnitRegistry.requireDefinition(unit).toBase(value);
     }
 
     /**
@@ -153,7 +151,7 @@ public class UnitElements {
             @NonNull final BigNumber value,
             @NonNull final MathContext mathContext
     ) {
-        return UnitRegistry.requireDefinition(unit).fromBase(value, mathContext);
+        return UnitRegistry.requireDefinition(unit).fromBase(value);
     }
 
     /**

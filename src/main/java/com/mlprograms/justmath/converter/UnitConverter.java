@@ -73,7 +73,7 @@ public final class UnitConverter {
             );
         }
 
-        final BigNumber valueInBase = UnitElements.toBase(fromUnit, value, mathContext);
+        final BigNumber valueInBase = UnitElements.toBase(fromUnit, value);
         return UnitElements.fromBase(toUnit, valueInBase, mathContext);
     }
 

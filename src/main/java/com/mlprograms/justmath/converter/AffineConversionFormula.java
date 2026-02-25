@@ -28,9 +28,6 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
-import java.math.BigNumber;
-import java.math.MathContext;
-
 /**
  * Affine conversion formula of the form:
  * <pre>
@@ -87,16 +84,11 @@ final class AffineConversionFormula implements ConversionFormula {
      * </pre>
      *
      * @param value       concrete unit value; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return base unit value; never {@code null}
      */
     @Override
-    public BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
-        final BigNumber result = value.toBigNumber()
-                .multiply(scale, mathContext)
-                .add(offset, mathContext);
-
-        return new BigNumber(result.toPlainString(), value.getLocale(), mathContext);
+    public BigNumber toBase(@NonNull final BigNumber value) {
+        return value.multiply(scale).add(offset);
     }
 
     /**
@@ -106,16 +98,11 @@ final class AffineConversionFormula implements ConversionFormula {
      * </pre>
      *
      * @param baseValue   base unit value; must not be {@code null}
-     * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return concrete unit value; never {@code null}
      */
     @Override
-    public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
-        final BigNumber result = baseValue.toBigNumber()
-                .subtract(offset, mathContext)
-                .divide(scale, mathContext);
-
-        return new BigNumber(result.toPlainString(), baseValue.getLocale(), mathContext);
+    public BigNumber fromBase(@NonNull final BigNumber baseValue) {
+        return baseValue.subtract(offset).divide(scale);
     }
 
 }
