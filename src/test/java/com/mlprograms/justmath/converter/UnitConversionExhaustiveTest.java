@@ -134,7 +134,7 @@ final class UnitConversionExhaustiveTest {
      * @return stream of arguments in CSV-column form
      */
     static Stream<org.junit.jupiter.params.provider.Arguments> lengthCsvRows() {
-        return buildRows(UnitElements.allLengthUnits(), LENGTH_SCALE_TO_BASE);
+        return buildRows(UnitRegistry.unitsOfGroup(Unit.Length.class), LENGTH_SCALE_TO_BASE);
     }
 
     /**
@@ -144,7 +144,7 @@ final class UnitConversionExhaustiveTest {
      * @return stream of arguments in CSV-column form
      */
     static Stream<org.junit.jupiter.params.provider.Arguments> massCsvRows() {
-        return buildRows(UnitElements.allMassUnits(), MASS_SCALE_TO_BASE);
+        return buildRows(UnitRegistry.unitsOfGroup(Unit.Mass.class), MASS_SCALE_TO_BASE);
     }
 
     /**
