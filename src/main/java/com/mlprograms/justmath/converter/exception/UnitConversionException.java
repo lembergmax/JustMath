@@ -22,14 +22,26 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.exception;
 
 /**
- * Einheitliche Runtime-Exception für Konvertierungsfehler.
+ * Exception thrown when a unit conversion is invalid or unsupported.
+ * <p>
+ * Common causes:
+ * </p>
+ * <ul>
+ *   <li>attempting to convert between different categories (e.g., length -> temperature)</li>
+ *   <li>invalid unit selection for a conversion API</li>
+ * </ul>
  */
-public class ConversionException extends IllegalArgumentException {
+public class UnitConversionException extends ConversionException {
 
-    public ConversionException(final String message) {
+    /**
+     * Creates a new exception with the given message.
+     *
+     * @param message human-readable error message; may be {@code null}
+     */
+    public UnitConversionException(final String message) {
         super(message);
     }
 
