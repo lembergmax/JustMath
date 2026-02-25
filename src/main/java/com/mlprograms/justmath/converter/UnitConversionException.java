@@ -22,12 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter.unit;
+package com.mlprograms.justmath.converter;
 
-public enum UnitCategory {
+/**
+ * Konsistente Exception für ungültige oder nicht unterstützte Einheitenkonvertierungen.
+ */
+public class UnitConversionException extends IllegalArgumentException {
 
-    LENGTH,
-    MASS,
-    TEMPERATURE
+    public UnitConversionException(final String message) {
+        super(message);
+    }
 
 }

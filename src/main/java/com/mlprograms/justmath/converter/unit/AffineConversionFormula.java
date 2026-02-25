@@ -24,10 +24,35 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-public enum UnitCategory {
+import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-    LENGTH,
-    MASS,
-    TEMPERATURE
+import java.math.BigDecimal;
+import java.math.MathContext;
+
+/**
+ * Allgemeine affine Umrechnung: base = value * scale + offset.
+ */
+@RequiredArgsConstructor
+final class AffineConversionFormula implements ConversionFormula {
+
+    @NonNull
+    private final BigDecimal scale;
+    @NonNull
+    private final BigDecimal offset;
+
+    @Override
+    public BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
+        final BigDecimal result = value.toBigDecimal().multiply(scale, mathContext).add(offset, mathContext);
+        return new BigNumber(result.toPlainString(), value.getLocale(), mathContext);
+    }
+
+    @Override
+    public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
+        final BigDecimal numerator = baseValue.toBigDecimal().subtract(offset, mathContext);
+        final BigDecimal result = numerator.divide(scale, mathContext);
+        return new BigNumber(result.toPlainString(), baseValue.getLocale(), mathContext);
+    }
 
 }
