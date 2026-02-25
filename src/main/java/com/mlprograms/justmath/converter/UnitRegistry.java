@@ -77,7 +77,7 @@ class UnitRegistry {
             Map.entry(Unit.PARSEC, linear(UnitCategory.LENGTH, "Parsec", "pc", new BigNumber("30856775814913673"))),
             Map.entry(Unit.PIXEL, linear(UnitCategory.LENGTH, "Pixel", "px", new BigNumber("0.0002645833333333"))),
             Map.entry(Unit.POINT, linear(UnitCategory.LENGTH, "Point", "pt", new BigNumber("0.0003527777777778"))),
-            Map.entry(Unit.PICA, linear(UnitCategory.LENGTH, "Pica", "pc_typ", new BigNumber("0.0042333333333333"))),
+            Map.entry(Unit.PICA, linear(UnitCategory.LENGTH, "Pica", "pica", new BigNumber("0.0042333333333333"))),
             Map.entry(Unit.EM, linear(UnitCategory.LENGTH, "Em", "em", new BigNumber("0.0042333333333333")))
     );
 
