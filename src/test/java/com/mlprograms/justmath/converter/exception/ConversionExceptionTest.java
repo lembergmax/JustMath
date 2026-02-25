@@ -22,19 +22,42 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.converter;
+package com.mlprograms.justmath.converter.exception;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Domain categories for unit conversions.
+ * Unit tests for {@link ConversionException}.
+ *
  * <p>
- * Conversions are only valid within the same category.
+ * These tests verify that the exception behaves like a consistent base exception type
+ * for conversion-related failures.
  * </p>
  */
-public enum UnitCategory {
+final class ConversionExceptionTest {
 
     /**
-     * Length units (base: meter).
+     * Verifies that the message-only constructor stores the provided message.
      */
-    LENGTH
+    @Test
+    void messageConstructorStoresMessage() {
+        final ConversionException ex = new ConversionException("message");
+        assertEquals("message", ex.getMessage());
+        assertNull(ex.getCause());
+    }
+
+    /**
+     * Verifies that the message+cause constructor stores both message and cause.
+     */
+    @Test
+    void messageAndCauseConstructorStoresBoth() {
+        final RuntimeException cause = new RuntimeException("cause");
+        final ConversionException ex = new ConversionException("message", cause);
+
+        assertEquals("message", ex.getMessage());
+        assertSame(cause, ex.getCause());
+    }
 
 }

@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2026 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
@@ -6,52 +30,41 @@ import lombok.NonNull;
 import java.math.MathContext;
 
 /**
- * Immutable unit definition that contains:
- * <ul>
- *   <li>human-readable metadata (display name, symbol)</li>
- *   <li>the unit category</li>
- *   <li>conversion behavior to and from the category base unit</li>
- * </ul>
+ * Immutable definition of a unit, containing human-readable metadata and conversion behavior.
  *
  * <p>
- * This type is intentionally separate from {@link Unit}. The {@link Unit} enum remains a pure
- * identifier list (no metadata, no conversion values).
+ * This type is intentionally separated from {@link Unit} to keep enums as pure identifiers.
+ * The category/group is encoded by the unit's runtime type (e.g. {@code Unit.Length} vs {@code Unit.Mass})
+ * and does not need to be stored here.
  * </p>
  *
- * <p>
- * The converter module treats this record as internal "unit configuration".
- * Public access is provided via {@link UnitElements}.
- * </p>
- *
- * @param category the domain category of the unit; must not be {@code null}
  * @param displayName human-readable name intended for UI display; must not be {@code null}
  * @param symbol short unit symbol used for parsing/formatting; must not be {@code null}
- * @param formula conversion strategy used for converting values to/from base; must not be {@code null}
+ * @param formula conversion behavior to and from the base unit of the group; must not be {@code null}
  */
 record UnitDefinition(
-        @NonNull UnitCategory category,
         @NonNull String displayName,
         @NonNull String symbol,
         @NonNull ConversionFormula formula
 ) {
 
     /**
-     * Converts a value expressed in this unit into the base unit of the unit's category.
+     * Converts a value from the concrete unit into the base unit of its group.
      *
-     * @param value the input value expressed in this concrete unit; must not be {@code null}
-     * @param mathContext the math context controlling precision and rounding; must not be {@code null}
-     * @return the converted value expressed in the category base unit; never {@code null}
+     * @param value the value expressed in the concrete unit; must not be {@code null}
+     * @param mathContext math context controlling precision/rounding; must not be {@code null}
+     * @return the converted value expressed in the base unit; never {@code null}
      */
     BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
         return formula.toBase(value, mathContext);
     }
 
     /**
-     * Converts a value expressed in the base unit of the category into this unit.
+     * Converts a value from the group base unit into the concrete unit.
      *
-     * @param baseValue the input value expressed in the category base unit; must not be {@code null}
-     * @param mathContext the math context controlling precision and rounding; must not be {@code null}
-     * @return the converted value expressed in this concrete unit; never {@code null}
+     * @param baseValue the value expressed in the base unit; must not be {@code null}
+     * @param mathContext math context controlling precision/rounding; must not be {@code null}
+     * @return the converted value expressed in the concrete unit; never {@code null}
      */
     BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
         return formula.fromBase(baseValue, mathContext);

@@ -39,8 +39,18 @@ import java.util.Optional;
  * Public lookup and conversion facade for built-in unit definitions.
  *
  * <p>
- * This class provides a stable API for library consumers while keeping the catalog metadata in the
- * internal registry ({@link UnitRegistry}).
+ * This class is the stable entry point for library consumers who want to:
+ * </p>
+ * <ul>
+ *   <li>parse unit symbols (e.g. {@code "km"} -> {@link Unit})</li>
+ *   <li>query unit metadata such as display name and symbol</li>
+ *   <li>convert values to and from base units for a unit's group</li>
+ *   <li>enumerate all built-in units</li>
+ * </ul>
+ *
+ * <p>
+ * The unit group/category is derived from the unit's runtime type and does not require a separate
+ * public {@code UnitCategory} enum.
  * </p>
  */
 @UtilityClass
@@ -60,8 +70,7 @@ public class UnitElements {
      * Parses a unit symbol into a {@link Unit}.
      *
      * <p>
-     * This method provides strict parse-or-fail behavior and is intended for API consumers.
-     * Symbols are treated as case-sensitive.
+     * This method provides strict parse-or-fail behavior. Symbols are treated as case-sensitive.
      * </p>
      *
      * @param symbol unit symbol (e.g., {@code "km"}, {@code "kg"}); must not be {@code null} or blank
@@ -75,16 +84,6 @@ public class UnitElements {
         }
         return findBySymbol(trimmed)
                 .orElseThrow(() -> new UnitConversionException("Unknown unit symbol: '" + trimmed + "'."));
-    }
-
-    /**
-     * Returns the category of a unit.
-     *
-     * @param unit unit identifier; must not be {@code null}
-     * @return category; never {@code null}
-     */
-    public static UnitCategory getCategory(@NonNull final Unit unit) {
-        return UnitRegistry.category(unit);
     }
 
     /**
@@ -108,13 +107,20 @@ public class UnitElements {
     }
 
     /**
-     * Returns all units in a category.
+     * Checks whether two units are compatible for conversion.
      *
-     * @param category category; must not be {@code null}
-     * @return immutable list of unit identifiers; never {@code null}
+     * <p>
+     * Compatibility is defined by group runtime type equality:
+     * {@code Unit.Length.*} can only convert to {@code Unit.Length.*}, and
+     * {@code Unit.Mass.*} can only convert to {@code Unit.Mass.*}.
+     * </p>
+     *
+     * @param from source unit; must not be {@code null}
+     * @param to target unit; must not be {@code null}
+     * @return {@code true} if the units are convertible; {@code false} otherwise
      */
-    public static List<Unit> byCategory(@NonNull final UnitCategory category) {
-        return UnitRegistry.byCategory(category);
+    public static boolean areCompatible(@NonNull final Unit from, @NonNull final Unit to) {
+        return UnitRegistry.areCompatible(from, to);
     }
 
     /**
@@ -127,7 +133,7 @@ public class UnitElements {
     }
 
     /**
-     * Converts a value expressed in {@code unit} to the category base unit.
+     * Converts a value expressed in {@code unit} to the base unit of the unit's group.
      *
      * @param unit unit identifier; must not be {@code null}
      * @param value value expressed in {@code unit}; must not be {@code null}
@@ -143,19 +149,19 @@ public class UnitElements {
     }
 
     /**
-     * Converts a value expressed in the category base unit to {@code unit}.
+     * Converts a value expressed in the group base unit to {@code unit}.
      *
      * @param unit target unit identifier; must not be {@code null}
-     * @param value value expressed in the base unit; must not be {@code null}
+     * @param baseValue value expressed in the base unit; must not be {@code null}
      * @param mathContext math context controlling precision/rounding; must not be {@code null}
      * @return value converted to {@code unit}; never {@code null}
      */
     public static BigNumber fromBase(
             @NonNull final Unit unit,
-            @NonNull final BigNumber value,
+            @NonNull final BigNumber baseValue,
             @NonNull final MathContext mathContext
     ) {
-        return UnitRegistry.requireDefinition(unit).fromBase(value, mathContext);
+        return UnitRegistry.requireDefinition(unit).fromBase(baseValue, mathContext);
     }
 
     /**

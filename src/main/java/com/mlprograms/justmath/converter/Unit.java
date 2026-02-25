@@ -38,7 +38,7 @@ package com.mlprograms.justmath.converter;
  * {@code Unit.Length.METER} or {@code Unit.Mass.KILOGRAM}.
  * </p>
  */
-public sealed interface Unit permits Unit.Length {
+public sealed interface Unit permits Unit.Length, Unit.Mass {
 
     /**
      * Length unit identifiers (base unit: meter).
@@ -136,6 +136,45 @@ public sealed interface Unit permits Unit.Length {
          * Em (em).
          */
         EM
+    }
+
+    /**
+     * Mass unit identifiers (base unit: meter).
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Mass implements Unit {
+
+        /**
+         * Metric tonne (t).
+         */
+        TONNE,
+
+        /**
+         * Kilogram (kg).
+         */
+        KILOGRAM,
+
+        /**
+         * Gram (g).
+         */
+        GRAM,
+
+        /**
+         * Milligram (mg).
+         */
+        MILLIGRAM,
+
+        /**
+         * Pound (lb).
+         */
+        POUND,
+
+        /**
+         * Ounce (oz).
+         */
+        OUNCE
     }
 
 }
