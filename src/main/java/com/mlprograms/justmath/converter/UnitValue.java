@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.math.MathContext;
+import java.text.DecimalFormatSymbols;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -192,11 +193,12 @@ public class UnitValue {
 
         final BigNumber parsedNumber;
         try {
-            parsedNumber = new BigNumber(parts.numberText(), locale, mathContext);
-        } catch (final RuntimeException ex) {
+            final String normalized = normalizeNumberText(parts.numberText(), locale);
+            parsedNumber = new BigNumber(normalized, locale, mathContext);
+        } catch (final RuntimeException runtimeException) {
             throw new ConversionException(
                     "Invalid numeric value '" + parts.numberText() + "' for locale " + locale + ".",
-                    ex
+                    runtimeException
             );
         }
 
@@ -284,6 +286,47 @@ public class UnitValue {
         throw new UnitConversionException(
                 "Could not extract unit symbol from '" + token + "'. Expected format: '<number> <unitSymbol>'."
         );
+    }
+
+
+    /**
+     * Normalizes a locale-specific numeric text into a canonical representation that is safe to parse.
+     *
+     * <p>
+     * The normalization performs two steps:
+     * </p>
+     * <ul>
+     *   <li>Removes grouping separators (e.g., '.' in Germany, ',' in US).</li>
+     *   <li>Converts the locale decimal separator into '.' (dot) for canonical decimal representation.</li>
+     * </ul>
+     *
+     * <p>
+     * This makes parsing deterministic even if the underlying {@link com.mlprograms.justmath.bignumber.BigNumber}
+     * implementation does not fully honor locale-specific decimal separators.
+     * </p>
+     *
+     * @param rawNumberText the raw numeric text extracted from the input (e.g., {@code "1.234,56"}); must not be {@code null}
+     * @param locale the locale that defines decimal and grouping separators; must not be {@code null}
+     * @return canonical numeric text (e.g., {@code "1234.56"}); never {@code null}
+     */
+    private static String normalizeNumberText(@NonNull final String rawNumberText, @NonNull final Locale locale) {
+        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        final char decimalSeparator = symbols.getDecimalSeparator();
+        final char groupingSeparator = symbols.getGroupingSeparator();
+
+        // Remove common non-breaking space group separators too (some locales use NBSP).
+        final String withoutNbsp = rawNumberText.replace("\u00A0", "").replace("\u202F", "");
+
+        // 1) remove grouping separator
+        final String withoutGrouping = (groupingSeparator == '\0')
+                ? withoutNbsp
+                : withoutNbsp.replace(String.valueOf(groupingSeparator), "");
+
+        // 2) replace decimal separator with '.'
+        if (decimalSeparator == '.') {
+            return withoutGrouping;
+        }
+        return withoutGrouping.replace(decimalSeparator, '.');
     }
 
     /**
