@@ -24,10 +24,17 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-public enum UnitCategory {
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-    LENGTH,
-    MASS,
-    TEMPERATURE
+import java.math.MathContext;
+
+/**
+ * Definiert die Umrechnung einer Einheit in die Base-Unit einer Kategorie und zurück.
+ */
+public interface ConversionFormula {
+
+    BigNumber toBase(BigNumber value, MathContext mathContext);
+
+    BigNumber fromBase(BigNumber baseValue, MathContext mathContext);
 
 }

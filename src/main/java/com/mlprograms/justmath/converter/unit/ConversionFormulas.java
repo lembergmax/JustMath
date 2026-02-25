@@ -24,10 +24,19 @@
 
 package com.mlprograms.justmath.converter.unit;
 
-public enum UnitCategory {
+import lombok.experimental.UtilityClass;
 
-    LENGTH,
-    MASS,
-    TEMPERATURE
+import java.math.BigDecimal;
+
+@UtilityClass
+public class ConversionFormulas {
+
+    public static ConversionFormula linear(final String scale) {
+        return affine(scale, "0");
+    }
+
+    public static ConversionFormula affine(final String scale, final String offset) {
+        return new AffineConversionFormula(new BigDecimal(scale), new BigDecimal(offset));
+    }
 
 }
