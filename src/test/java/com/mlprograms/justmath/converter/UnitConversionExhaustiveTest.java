@@ -63,7 +63,7 @@ final class UnitConversionExhaustiveTest {
     /**
      * High precision math context used to compute expected values and to drive converter rounding.
      */
-    private static final MathContext MC = new MathContext(34);
+    private static final MathContext MATH_CONTEXT = new MathContext(34);
 
     /**
      * Representative numeric inputs used for the exhaustive matrix.
@@ -165,10 +165,10 @@ final class UnitConversionExhaustiveTest {
         final Unit from = UnitTestSupport.parseQualifiedUnitName(fromText);
         final Unit to = UnitTestSupport.parseQualifiedUnitName(toText);
 
-        final UnitConverter converter = new UnitConverter(MC);
+        final UnitConverter converter = new UnitConverter(MATH_CONTEXT);
 
         final BigNumber actual = converter.convert(new BigNumber(valueText), from, to);
-        final java.math.BigDecimal expected = new java.math.BigDecimal(expectedText, MC);
+        final java.math.BigDecimal expected = new java.math.BigDecimal(expectedText, MATH_CONTEXT);
 
         assertEquals(
                 0,
@@ -230,7 +230,7 @@ final class UnitConversionExhaustiveTest {
             throw new AssertionError("Missing scale factor for unit(s): " + from + ", " + to);
         }
 
-        return value.multiply(fromScale, MC).divide(toScale, MC);
+        return value.multiply(fromScale, MATH_CONTEXT).divide(toScale, MATH_CONTEXT);
     }
 
     /**
