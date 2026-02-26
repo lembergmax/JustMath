@@ -91,7 +91,7 @@ class UnitRegistry {
             define(Unit.Length.KILOMETER, "Kilometer", "km", "1000"),
             define(Unit.Length.HECTOMETER, "Hectometer", "hm", "100"),
             define(Unit.Length.DEKAMETER, "Dekameter", "dam", "10"),
-            define(Unit.Length.METER, "Meter", "m", "1"),
+            define(Unit.Length.METER, "Meter", "m"),
             define(Unit.Length.DECIMETER, "Decimeter", "dm", "0.1"),
             define(Unit.Length.CENTIMETER, "Centimeter", "cm", "0.01"),
             define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001"),
@@ -166,7 +166,7 @@ class UnitRegistry {
             // MASS (base: kilogram)
             // =========================
             define(Unit.Mass.TON, "Tonne", "t", "1000"),
-            define(Unit.Mass.KILOGRAM, "Kilogram", "kg", "1"),
+            define(Unit.Mass.KILOGRAM, "Kilogram", "kg"),
             define(Unit.Mass.GRAM, "Gram", "g", "0.001"),
             define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001"),
 
@@ -182,8 +182,48 @@ class UnitRegistry {
             // TEMPERATURE (base: celsius)
             // =========================
             define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
-            define(Unit.Temperature.CELSIUS, "Celsius", "°C", "1"),
-            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778")
+            define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
+            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778"),
+
+            // =========================
+            // AREA (base: square meter)
+            // =========================
+            define(Unit.Area.SQUARE_KILOMETER, "Square Kilometer", "km^2", "1000000"),
+            define(Unit.Area.SQUARE_HECTOMETER, "Square Hectometer", "hm^2", "10000"),
+            define(Unit.Area.SQUARE_DEKAMETER, "Square Dekameter", "dam^2", "100"),
+            define(Unit.Area.SQUARE_METER, "Square Meter", "m^2"),
+            define(Unit.Area.SQUARE_DECIMETER, "Square Decimeter", "dm^2", "0.01"),
+            define(Unit.Area.SQUARE_CENTIMETER, "Square Centimeter", "cm^2", "0.0001"),
+            define(Unit.Area.SQUARE_MILLIMETER, "Square Millimeter", "mm^2", "0.000001"),
+            define(Unit.Area.SQUARE_MICROMETER, "Square Micrometer", "µm^2", "1.E-12"),
+            define(Unit.Area.SQUARE_NANOMETER, "Square Nanometer", "nm^2", "1.E-18"),
+
+            define(Unit.Area.HECTARE, "Hectare", "ha", "10000"),
+            define(Unit.Area.ARE, "Are", "a", "100"),
+
+            define(Unit.Area.BARN, "Barn", "b", "1.E-28"),
+            define(Unit.Area.ELECTRON_CROSS_SECTION, "Thomson Cross Section", "σT", "6.652461599E-29"),
+
+            define(Unit.Area.TOWNSHIP, "Township", "twp", "93239571.972"),
+            define(Unit.Area.SECTION, "Section", "sec", "2589988.1103"),
+            define(Unit.Area.HOMESTEAD, "Homestead", "hstd", "647497.02758"),
+
+            define(Unit.Area.SQUARE_MILE, "Square Mile", "mi^2", "6.4516E-10"),
+            define(Unit.Area.ACRE, "Acre", "ac", "4046.8564224"),
+            define(Unit.Area.ROOD, "Rood", "rood", "1011.7141056"),
+
+            define(Unit.Area.SQUARE_CHAIN, "Square Chain", "ch^2", "404.68564224"),
+            define(Unit.Area.SQUARE_ROD, "Square Rod", "rd^2", "25.29285264"),
+            define(Unit.Area.SQUARE_POLE, "Square Pole", "pole^2", "25.29285264"),
+            define(Unit.Area.SQUARE_ROPE, "Square Rope", "rope^2", "37.161216"),
+
+            define(Unit.Area.SQUARE_YARD, "Square Yard", "yd^2", "0.83612736"),
+            define(Unit.Area.SQUARE_FOOT, "Square Foot", "ft^2", "0.09290304"),
+            define(Unit.Area.SQUARE_INCH, "Square Inch", "in^2", "0.00064516"),
+
+            define(Unit.Area.ARPENT, "Arpent", "arp", "3418.8929237"),
+            define(Unit.Area.CUERDA, "Cuerda", "cda", "3930.395625"),
+            define(Unit.Area.PLAZA, "Plaza", "plz", "6400")
     );
 
     /**
@@ -331,7 +371,7 @@ class UnitRegistry {
      * from the unit's declaring enum type (e.g., {@code Unit.Length} or {@code Unit.Mass}).
      * </p>
      *
-     * @param left the left unit; must not be {@code null}
+     * @param left  the left unit; must not be {@code null}
      * @param right the right unit; must not be {@code null}
      * @return {@code true} if both units are in the same group; otherwise {@code false}
      */
@@ -350,9 +390,33 @@ class UnitRegistry {
      * base = value * scaleToBase + offsetToBase
      * </pre>
      *
-     * @param unit the unit identifier; must not be {@code null}
+     * @param unit        the unit identifier; must not be {@code null}
      * @param displayName human-readable display name; must not be {@code null}
-     * @param symbol unit symbol; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
+     */
+    private static UnitSpec define(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol
+    ) {
+        return define(unit, displayName, symbol, "1", "0");
+    }
+
+    /**
+     * Creates one declarative built-in definition entry.
+     *
+     * <p>
+     * The conversion is defined by the affine mapping into the group base unit:
+     * </p>
+     *
+     * <pre>
+     * base = value * scaleToBase + offsetToBase
+     * </pre>
+     *
+     * @param unit        the unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
      * @param scaleToBase multiplicative factor into base unit; must not be {@code null}
      * @return immutable unit spec entry; never {@code null}
      */
@@ -376,10 +440,10 @@ class UnitRegistry {
      * base = value * scaleToBase + offsetToBase
      * </pre>
      *
-     * @param unit the unit identifier; must not be {@code null}
-     * @param displayName human-readable display name; must not be {@code null}
-     * @param symbol unit symbol; must not be {@code null}
-     * @param scaleToBase multiplicative factor into base unit; must not be {@code null}
+     * @param unit         the unit identifier; must not be {@code null}
+     * @param displayName  human-readable display name; must not be {@code null}
+     * @param symbol       unit symbol; must not be {@code null}
+     * @param scaleToBase  multiplicative factor into base unit; must not be {@code null}
      * @param offsetToBase additive offset into base unit; must not be {@code null}
      * @return immutable unit spec entry; never {@code null}
      */
@@ -426,9 +490,10 @@ class UnitRegistry {
      * This is purely a registry construction artifact to keep {@link #BUILT_IN} readable.
      * </p>
      *
-     * @param unit the unit identifier
+     * @param unit       the unit identifier
      * @param definition the unit definition
      */
-    private record UnitSpec(Unit unit, UnitDefinition definition) { }
+    private record UnitSpec(Unit unit, UnitDefinition definition) {
+    }
 
 }
