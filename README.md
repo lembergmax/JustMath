@@ -348,9 +348,163 @@ System.out.println(result);
 // 61
 ```
 
-## 📈 GraphFx (JavaFX Plotting)
+## 📏 Unit Converter (High-Precision)
 
-### TODO
+JustMath includes a **high-precision unit converter** built on top of `BigNumber`.  
+It is designed to be:
+
+- **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
+- **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
+- **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
+
+### ✅ Supported Unit Groups (so far)
+
+- **Length** (base: meter) → `Unit.Length`
+- **Mass** (base: kilogram) → `Unit.Mass`
+
+> Cross-group conversions are **rejected** by design (e.g. length → mass).
+
+### 🧠 Design Overview
+
+The converter module separates **unit identifiers** from **unit metadata**:
+
+- `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`) are **pure identifiers**.
+- The internal `UnitRegistry` is the **single source of truth** for:
+  - `displayName` (human-readable label)
+  - `symbol` (parse/format token, e.g. `"km"`)
+  - conversion formula (scale/offset mapping to the base unit)
+
+This keeps the public API stable and makes the unit catalog deterministic and easy to maintain.
+
+### 🔁 Converting Values
+
+Use `UnitConverter` to convert between units **within the same group**.
+
+```java
+UnitConverter converter = new UnitConverter();
+
+// 1 km -> m
+BigNumber meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
+System.out.println(meters); // 1000
+
+// 2.5 lb -> kg
+BigNumber kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
+System.out.println(kg); // 1.13398 ...
+```
+
+#### Precision / Rounding
+
+Conversions use a `MathContext` internally (especially for divisions).
+You can control this via:
+
+```java
+// uses a MathContext derived from the given division precision
+UnitConverter converter = new UnitConverter(50);
+
+// or provide your own MathContext
+UnitConverter converter2 = new UnitConverter(new MathContext(80, RoundingMode.HALF_UP));
+```
+
+### 🧾 Parsing Inputs like `"12.5 km"`
+
+Use `UnitValue` to parse a combined text input into a `(BigNumber + Unit)` pair.
+
+Supported formats:
+
+* Preferred: `"<number> <symbol>"` → `"12.5 km"`
+* Also supported: suffix without whitespace → `"12.5km"`
+
+Locale handling:
+
+* `UnitValue.parse(String)` detects decimal separators using lightweight heuristics
+* You can also pass an explicit `Locale`
+
+```java
+import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.UnitValue;
+
+UnitValue value = UnitValue.parse("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
+UnitConverter converter = new UnitConverter();
+
+var result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
+System.out.println(result); // 12500
+```
+
+### 🔎 Looking up Units by Symbol / Getting Metadata
+
+The public facade `UnitElements` provides:
+
+* strict symbol parsing
+* metadata access (display name, symbol)
+* listing all built-in units
+
+```java
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitElements;
+
+// parse symbol -> unit
+Unit km = UnitElements.parseUnit("km");
+
+// metadata
+System.out.println(UnitElements.getDisplayName(km)); // "Kilometer"
+System.out.println(UnitElements.getSymbol(km));      // "km"
+
+// list all units (deterministic registry order)
+for (Unit unit : UnitElements.all()) {
+    System.out.println(UnitElements.getSymbol(unit) + " -> " + UnitElements.getDisplayName(unit));
+}
+```
+
+### 🚫 Error Handling
+
+The converter module uses conversion-specific runtime exceptions:
+
+* `ConversionException`
+  Thrown for invalid numeric input / parse issues.
+
+* `UnitConversionException`
+  Thrown when:
+
+    * symbols are unknown or missing
+    * units are incompatible (cross-group conversion)
+    * the input format is malformed
+
+This makes it easy to catch converter-related failures explicitly:
+
+```java
+try {
+    UnitValue v = UnitValue.parse("abc km");
+} catch (ConversionException ex) {
+    // invalid number
+}
+```
+
+### ➕ Adding a New Unit (Internal Registry)
+
+To add a new built-in unit, you typically do **only one thing**:
+
+1. Add the enum constant to the correct group (e.g. `Unit.Length`)
+2. Add exactly one `define(...)` entry to the internal `UnitRegistry.BUILT_IN`
+
+Conversion mapping is defined using an affine formula into the base unit:
+
+```
+base = value * scaleToBase + offsetToBase
+```
+
+For purely linear conversions (most units), `offsetToBase = "0"`.
+
+Example (linear):
+
+```java
+define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000")
+```
+
+The registry validates at startup:
+
+* every unit is defined exactly once
+* every symbol is unique
+* groups are consistent and deterministic
 
 ## ⚙️ Maven (Coming Soon)
 
