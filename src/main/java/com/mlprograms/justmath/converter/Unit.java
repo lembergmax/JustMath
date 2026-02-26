@@ -46,8 +46,38 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
      * <p>
      * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
      * </p>
+     *
+     * <p><b>Ordering</b></p>
+     * <ul>
+     *   <li><b>Metric (SI + prefixes)</b> from largest to smallest.</li>
+     *   <li><b>Very small / physics</b> (Planck length, radii, etc.).</li>
+     *   <li><b>Astronomy</b> (AU, Earth–Sun distance, parsec, light-year, etc.).</li>
+     *   <li><b>Imperial / US customary</b> (mile → inch) + historical.</li>
+     *   <li><b>Typographic / CSS</b> units (pixel, point, pica, em).</li>
+     * </ul>
      */
     enum Length implements Unit {
+
+        /**
+         * Exameter (Em).
+         */
+        EXAMETER,
+        /**
+         * Petameter (Pm).
+         */
+        PETAMETER,
+        /**
+         * Terameter (Tm).
+         */
+        TERAMETER,
+        /**
+         * Gigameter (Gm).
+         */
+        GIGAMETER,
+        /**
+         * Megameter (Mm).
+         */
+        MEGAMETER,
         /**
          * Kilometer (km).
          */
@@ -56,6 +86,10 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          * Hectometer (hm).
          */
         HECTOMETER,
+        /**
+         * Dekameter (dam).
+         */
+        DEKAMETER,
         /**
          * Meter (m), base unit of the LENGTH category.
          */
@@ -73,15 +107,19 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          */
         MILLIMETER,
         /**
-         * Micrometer (um).
+         * Micrometer (µm).
          */
         MICROMETER,
+        /**
+         * Micron (µm) – alias/common name for micrometer.
+         */
+        MICRON,
         /**
          * Nanometer (nm).
          */
         NANOMETER,
         /**
-         * Ångström (A).
+         * Ångström (Å).
          */
         ANGSTROM,
         /**
@@ -93,33 +131,235 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          */
         FEMTOMETER,
         /**
-         * Inch (in).
+         * Attometer (am).
          */
-        INCH,
+        ATTOMETER,
+
         /**
-         * Foot (ft).
+         * Planck length (ℓP).
          */
-        FEET,
+        PLANCK_LENGTH,
+        /**
+         * Classical electron radius (re).
+         */
+        ELECTRON_RADIUS,
+        /**
+         * Bohr radius (a0).
+         */
+        BOHR_RADIUS,
+        /**
+         * X unit (xu) – crystallography X-ray wavelength unit.
+         */
+        X_UNIT,
+        /**
+         * Fermi (fm) – common name for femtometer.
+         */
+        FERMI,
+
+        /**
+         * Sun radius (R☉).
+         */
+        SUN_RADIUS,
+        /**
+         * Earth equatorial radius (a).
+         */
+        EARTH_EQUATORIAL_RADIUS,
+        /**
+         * Earth polar radius (b).
+         */
+        EARTH_POLAR_RADIUS,
+        /**
+         * Astronomical unit (au).
+         */
+        ASTRONOMICAL_UNIT,
+        /**
+         * Earth distance from Sun – usually ~1 au (mean).
+         */
+        EARTH_DISTANCE_FROM_SUN,
+        /**
+         * Kiloparsec (kpc).
+         */
+        KILOPARSEC,
+        /**
+         * Megaparsec (Mpc).
+         */
+        MEGAPARSEC,
+        /**
+         * Parsec (pc).
+         */
+        PARSEC,
+        /**
+         * Light year (ly).
+         */
+        LIGHT_YEAR,
+
+        /**
+         * League (general; historically variable).
+         */
+        LEAGUE,
+        /**
+         * Statute league (land league; historically variable).
+         */
+        LEAGUE_STATUTE,
+        /**
+         * Nautical league (International; historically variable).
+         */
+        NAUTICAL_LEAGUE_INTERNATIONAL,
+        /**
+         * Nautical league (UK; historically variable).
+         */
+        NAUTICAL_LEAGUE_UK,
+
+        /**
+         * Nautical mile (generic).
+         */
+        NAUTICAL_MILE,
+        /**
+         * Nautical mile (International).
+         */
+        NAUTICAL_MILE_INTERNATIONAL,
+        /**
+         * Nautical mile (UK).
+         */
+        NAUTICAL_MILE_UK,
+
+        /**
+         * Mile (generic).
+         */
+        MILE,
+        /**
+         * Statute mile (mi).
+         */
+        MILE_STATUTE,
+        /**
+         * Roman mile (mille passus; historical).
+         */
+        MILE_ROMAN,
+
+        /**
+         * Kiloyard (kyd).
+         */
+        KILOYARD,
+        /**
+         * Furlong (fur).
+         */
+        FURLONG,
+        /**
+         * Chain (ch).
+         */
+        CHAIN,
+        /**
+         * Rope (rope) – historical surveying length (often 20 yd / 100 links).
+         */
+        ROPE,
+        /**
+         * Rod (rd).
+         */
+        ROD,
+        /**
+         * Perch (rd) – commonly same as rod.
+         */
+        PERCH,
+        /**
+         * Pole (rd) – commonly same as rod.
+         */
+        POLE,
+        /**
+         * Fathom (ftm).
+         */
+        FATHOM,
+        /**
+         * Ell (ell) – historical cloth measure (varies).
+         */
+        ELL,
+        /**
+         * Link (li) – surveying (often 1/100 chain; varies by system).
+         */
+        LINK,
+        /**
+         * Cubit (UK) – historical (varies).
+         */
+        CUBIT_UK,
+        /**
+         * Hand (hand).
+         */
+        HAND,
+        /**
+         * Handbreadth (hb) – historical/anthropometric (varies).
+         */
+        HANDBREADTH,
+        /**
+         * Fingerbreadth (fb) – historical/anthropometric (varies).
+         */
+        FINGERBREADTH,
+        /**
+         * Span (cloth) – historical/anthropometric (varies).
+         */
+        SPAN_CLOTH,
+        /**
+         * Finger (cloth) – historical (varies).
+         */
+        FINGER_CLOTH,
+        /**
+         * Nail (cloth) – historical (varies).
+         */
+        NAIL_COTH,
+        /**
+         * Barleycorn – historical (often 1/3 inch; varies).
+         */
+        BARLEYCORN,
+
         /**
          * Yard (yd).
          */
         YARD,
         /**
-         * Mile (mi).
+         * Foot (ft).
          */
-        MILE,
+        FEET,
         /**
-         * Nautical mile (nmi).
+         * Inch (in).
          */
-        NAUTICAL_MILE,
+        INCH,
+
         /**
-         * Light year (ly).
+         * Caliber (cal) – firearms/engineering; context-dependent.
          */
-        LIGHT_YEAR,
+        CALIBER,
         /**
-         * Parsec (pc).
+         * Centiinch (cin) – 1/100 inch.
          */
-        PARSEC,
+        CENTIINCH,
+        /**
+         * Mil (mil) – 1/1000 inch (thou).
+         */
+        MIL,
+        /**
+         * Microinch (µin).
+         */
+        MICROINCH,
+        /**
+         * Twip (twp) – 1/20 point (typography/UI).
+         */
+        TWIP,
+
+        /**
+         * Arpent (arp) – French/Canadian land measure (varies).
+         */
+        ARPENT,
+        /**
+         * Aln (aln) – Scandinavian ell (historical; varies).
+         */
+        ALN,
+        /**
+         * Famn (famn) – Swedish fathom (historical; varies).
+         */
+        FAMN,
+        /**
+         * Ken (ken) – Japanese unit (varies by context/period).
+         */
+        KEN,
+
         /**
          * CSS pixel (px).
          */
@@ -129,27 +369,18 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          */
         POINT,
         /**
-         * Typographic pica (pica).
+         * Typographic pica (pc / pica).
          */
         PICA,
         /**
-         * Em (em).
+         * Em (em) – relative to current font size.
          */
-        EM,
-
-
-        EXAMETER, PETAMETER, TERAMETER, GIGAMETER, MEGAMETER, DEKAMETER,
-        MICRON, ATTOMETER, MEGAPARSEC, KILOPARSEC, ASTRONOMICAL_UNIT, LEAGUE,
-        NAUTICAL_LEAGUE_UK, NAUTICAL_LEAGUE_INTERNATIONAL, LEAGUE_STATUTE,
-        NAUTICAL_MILE_UK, NAUTICAL_MILE_INTERNATIONAL, MILE_STATUTE, MILE_ROMAN,
-        KILOYARD, FURLONG, CHAIN, ROPE, ROD, PERCH, POLE, FATHOM, ELL, LINK, CUBIT_UK, HAND, SPAN_CLOTH, FINGER_CLOTH, NAIL_COTH,
-        BARLEYCORN, MIL, MICROINCH, X_UNIT, FERMI, ARPENT, TWIP, ALN, FAMN, CALIBER, CENTIINCH, KEN,
-        HANDBREADTH, FINGERBREADTH, PLANCK_LENGTH, ELECTRON_RADIUS, BOHR_RADIUS, EARTH_EQUATORIAL_RADIUS,
-        EARTH_POLAR_RADIUS, EARTH_DISTANCE_FROM_SUN, SUN_RADIUS
+        EM
     }
 
     /**
-     * Mass unit identifiers (base unit: meter).
+     * Mass unit identifiers (base unit: kilogram).
+     *
      * <p>
      * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
      * </p>
@@ -159,32 +390,46 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
         /**
          * Metric tonne (t).
          */
-        TONNE,
-
+        TON,
         /**
-         * Kilogram (kg).
+         * Kilogram (kg), base unit of the MASS category.
          */
         KILOGRAM,
-
         /**
          * Gram (g).
          */
         GRAM,
-
         /**
          * Milligram (mg).
          */
         MILLIGRAM,
 
         /**
+         * Long ton (lt) – UK ton.
+         */
+        LONG_TON,
+        /**
+         * Short ton (st) – US ton.
+         */
+        SHORT_TON,
+        /**
          * Pound (lb).
          */
         POUND,
-
         /**
          * Ounce (oz).
          */
-        OUNCE
+        OUNCE,
+
+        /**
+         * Carat (ct) – 0.2 g (gem mass).
+         */
+        CARRAT,
+        /**
+         * Unified atomic mass unit (u) – also known as Dalton (Da).
+         */
+        ATOMIC_MASS_UNIT
+
     }
 
 }
