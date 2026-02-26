@@ -40,7 +40,6 @@ public class Main {
 
         System.out.println(convertedToBigNumber);
         System.out.println(convertedToUnitValue.getValue());
-        System.out.println(convertedToUnitValue.getUnit());
 
     }
 
