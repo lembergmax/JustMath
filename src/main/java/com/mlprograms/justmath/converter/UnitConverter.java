@@ -74,7 +74,7 @@ public final class UnitConverter {
      * Creates a converter using the library's default division precision.
      *
      * <p>
-     * The precision is derived from {@link #DEFAULT_DIVISION_PRECISION} via
+     * The precision is derived from {@link com.mlprograms.justmath.bignumber.BigNumbers#DEFAULT_DIVISION_PRECISION} via
      * {@link CalculatorEngineUtils#getDefaultMathContext(int)}.
      * </p>
      */
@@ -165,7 +165,7 @@ public final class UnitConverter {
      * @throws NullPointerException    if any argument is {@code null}
      */
     public UnitValue convert(@NonNull final UnitValue input, @NonNull final Unit toUnit) {
-        return convert(input.toBigNumber(), input.toUnit(), toUnit);
+        return convert(input.getValue(), input.getUnit(), toUnit);
     }
 
     /**
@@ -214,7 +214,7 @@ public final class UnitConverter {
      * @throws NullPointerException    if any argument is {@code null}
      */
     public BigNumber convertToBigNumber(@NonNull final UnitValue input, @NonNull final Unit toUnit) {
-        return convertToBigNumber(input.toBigNumber(), input.toUnit(), toUnit);
+        return convertToBigNumber(input.getValue(), input.getUnit(), toUnit);
     }
 
     /**
