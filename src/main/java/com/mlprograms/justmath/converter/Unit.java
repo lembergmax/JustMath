@@ -38,7 +38,7 @@ package com.mlprograms.justmath.converter;
  * {@code Unit.Length.METER} or {@code Unit.Mass.KILOGRAM}.
  * </p>
  */
-public sealed interface Unit permits Unit.Length, Unit.Mass {
+public interface Unit {
 
     /**
      * Length unit identifiers (base unit: meter).
@@ -413,6 +413,32 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          * Unified atomic mass unit (u) – also known as Dalton (Da).
          */
         ATOMIC_MASS_UNIT
+
+    }
+
+    /**
+     * Temperature unit identifiers.
+     *
+     * <p>
+     * The base unit of this group is {@code KELVIN}. Unlike length/mass, temperature conversions
+     * generally require an <em>offset</em> (affine transformation). The exact conversion formulas
+     * are defined in {@link UnitRegistry}.
+     * </p>
+     */
+    enum Temperature implements Unit {
+
+        /**
+         * Kelvin (base unit).
+         */
+        KELVIN,
+        /**
+         * Degrees Celsius.
+         */
+        CELSIUS,
+        /**
+         * Degrees Fahrenheit.
+         */
+        FAHRENHEIT
 
     }
 

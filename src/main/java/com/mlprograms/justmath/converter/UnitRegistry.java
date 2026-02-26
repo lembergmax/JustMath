@@ -176,7 +176,14 @@ class UnitRegistry {
             define(Unit.Mass.OUNCE, "Ounce", "oz", "0.0283495"),
 
             define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
-            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.660540199E-27")
+            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.660540199E-27"),
+
+            // =========================
+            // TEMPERATURE (base: celsius)
+            // =========================
+            define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
+            define(Unit.Temperature.CELSIUS, "Celsius", "°C", "1"),
+            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778")
     );
 
     /**
