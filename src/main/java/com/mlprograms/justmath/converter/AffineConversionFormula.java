@@ -28,6 +28,8 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
+import java.math.MathContext;
+
 /**
  * Immutable affine conversion formula of the form:
  *
@@ -103,7 +105,7 @@ final class AffineConversionFormula implements ConversionFormula {
      * @return value expressed in the base unit; never {@code null}
      */
     @Override
-    public BigNumber toBase(@NonNull final BigNumber value, @NonNull final java.math.MathContext mathContext) {
+    public BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
         return value.multiply(scale).add(offset);
     }
 
@@ -119,7 +121,7 @@ final class AffineConversionFormula implements ConversionFormula {
      * @return value expressed in the concrete unit; never {@code null}
      */
     @Override
-    public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final java.math.MathContext mathContext) {
+    public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {
         return baseValue.subtract(offset).divide(scale, mathContext);
     }
 
