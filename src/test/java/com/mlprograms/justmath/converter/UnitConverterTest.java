@@ -60,7 +60,7 @@ final class UnitConverterTest {
         final UnitConverter converter = new UnitConverter(MC);
 
         assertThrows(UnitConversionException.class, () ->
-                converter.convert(new BigNumber("1"), Unit.Length.METER, Unit.Mass.KILOGRAM)
+                converter.convertToBigNumber(new BigNumber("1"), Unit.Length.METER, Unit.Mass.KILOGRAM)
         );
     }
 
@@ -71,7 +71,7 @@ final class UnitConverterTest {
     void convertsKilometerToMeter() {
         final UnitConverter converter = new UnitConverter(MC);
 
-        final BigNumber result = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
+        final BigNumber result = converter.convertToBigNumber(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
         assertEquals(0, result.toBigDecimal().compareTo(new java.math.BigDecimal("1000")));
     }
 
@@ -82,7 +82,7 @@ final class UnitConverterTest {
     void convertsGramToKilogram() {
         final UnitConverter converter = new UnitConverter(MC);
 
-        final BigNumber result = converter.convert(new BigNumber("1000"), Unit.Mass.GRAM, Unit.Mass.KILOGRAM);
+        final BigNumber result = converter.convertToBigNumber(new BigNumber("1000"), Unit.Mass.GRAM, Unit.Mass.KILOGRAM);
         assertEquals(0, result.toBigDecimal().compareTo(new java.math.BigDecimal("1")));
     }
 
@@ -93,7 +93,7 @@ final class UnitConverterTest {
     void identityConversionPreservesValue() {
         final UnitConverter converter = new UnitConverter(MC);
 
-        final BigNumber result = converter.convert(new BigNumber("123.456"), Unit.Length.METER, Unit.Length.METER);
+        final BigNumber result = converter.convertToBigNumber(new BigNumber("123.456"), Unit.Length.METER, Unit.Length.METER);
         assertEquals(0, result.toBigDecimal().compareTo(new java.math.BigDecimal("123.456")));
     }
 
