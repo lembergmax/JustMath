@@ -350,7 +350,7 @@ System.out.println(result);
 
 ## 📏 Unit Converter (High-Precision)
 
-JustMath includes a **high-precision unit converter** built on top of `BigNumber`.  
+JustMath includes a **high-precision unit converter** built on top of `BigNumber`.
 It is designed to be:
 
 - **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
@@ -361,6 +361,8 @@ It is designed to be:
 
 - **Length** (base: meter) → `Unit.Length`
 - **Mass** (base: kilogram) → `Unit.Mass`
+- **Temperature** (base: kelvin) → `Unit.Temperature`
+- **Area** (base: square meter) → `Unit.Area`
 
 > Cross-group conversions are **rejected** by design (e.g. length → mass).
 
@@ -384,12 +386,12 @@ Use `UnitConverter` to convert between units **within the same group**.
 UnitConverter converter = new UnitConverter();
 
 // 1 km -> m
-BigNumber meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
-System.out.println(meters); // 1000
+UnitValue meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
+System.out.println(meters.toDisplayString()); // 1000 m
 
 // 2.5 lb -> kg
-BigNumber kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
-System.out.println(kg); // 1.13398 ...
+UnitValue kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
+System.out.println(kg.toDisplayString()); // 1.13398... kg
 ```
 
 #### Precision / Rounding
@@ -416,18 +418,18 @@ Supported formats:
 
 Locale handling:
 
-* `UnitValue.parse(String)` detects decimal separators using lightweight heuristics
+* `new UnitValue(String)` detects decimal separators using lightweight heuristics
 * You can also pass an explicit `Locale`
 
 ```java
 import com.mlprograms.justmath.converter.UnitConverter;
 import com.mlprograms.justmath.converter.UnitValue;
 
-UnitValue value = UnitValue.parse("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
+UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
 UnitConverter converter = new UnitConverter();
 
-var result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
-System.out.println(result); // 12500
+UnitValue result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
+System.out.println(result.toDisplayString()); // 12500 m
 ```
 
 ### 🔎 Looking up Units by Symbol / Getting Metadata
@@ -455,6 +457,172 @@ for (Unit unit : UnitElements.all()) {
 }
 ```
 
+### 📚 Supported Units (Built-In Catalog)
+
+> The table lists **Symbol → Name → Enum constant**.
+> All symbols are **case-sensitive**.
+
+#### 📏 Length (Unit.Length) — base: meter
+
+**Metric / SI & small units**
+
+| Name       | Symbol | Enum                     |
+| ---------- | ------ | ------------------------ |
+| Exameter   | Em     | `Unit.Length.EXAMETER`   |
+| Petameter  | Pm     | `Unit.Length.PETAMETER`  |
+| Terameter  | Tm     | `Unit.Length.TERAMETER`  |
+| Gigameter  | Gm     | `Unit.Length.GIGAMETER`  |
+| Megameter  | Mm     | `Unit.Length.MEGAMETER`  |
+| Kilometer  | km     | `Unit.Length.KILOMETER`  |
+| Hectometer | hm     | `Unit.Length.HECTOMETER` |
+| Dekameter  | dam    | `Unit.Length.DEKAMETER`  |
+| Meter      | m      | `Unit.Length.METER`      |
+| Decimeter  | dm     | `Unit.Length.DECIMETER`  |
+| Centimeter | cm     | `Unit.Length.CENTIMETER` |
+| Millimeter | mm     | `Unit.Length.MILLIMETER` |
+| Micrometer | um     | `Unit.Length.MICROMETER` |
+| Micron     | µm     | `Unit.Length.MICRON`     |
+| Nanometer  | nm     | `Unit.Length.NANOMETER`  |
+| Angstrom   | Å      | `Unit.Length.ANGSTROM`   |
+| Picometer  | pm     | `Unit.Length.PICOMETER`  |
+| Femtometer | fm     | `Unit.Length.FEMTOMETER` |
+| Attometer  | am     | `Unit.Length.ATTOMETER`  |
+
+**Physics / constants**
+
+| Name            | Symbol | Enum                          |
+| --------------- | ------ | ----------------------------- |
+| Planck Length   | lP     | `Unit.Length.PLANCK_LENGTH`   |
+| Electron Radius | re     | `Unit.Length.ELECTRON_RADIUS` |
+| Bohr Radius     | a0     | `Unit.Length.BOHR_RADIUS`     |
+| X Unit          | xu     | `Unit.Length.X_UNIT`          |
+| Fermi           | frm    | `Unit.Length.FERMI`           |
+
+**Astronomy**
+
+| Name                    | Symbol     | Enum                                  |
+| ----------------------- | ---------- | ------------------------------------- |
+| Sun Radius              | Rsun       | `Unit.Length.SUN_RADIUS`              |
+| Earth Equatorial Radius | R_earth_eq | `Unit.Length.EARTH_EQUATORIAL_RADIUS` |
+| Earth Polar Radius      | R_earth_p  | `Unit.Length.EARTH_POLAR_RADIUS`      |
+| Astronomical Unit       | au         | `Unit.Length.ASTRONOMICAL_UNIT`       |
+| Earth Distance from Sun | AU         | `Unit.Length.EARTH_DISTANCE_FROM_SUN` |
+| Parsec                  | pc         | `Unit.Length.PARSEC`                  |
+| Kiloparsec              | kpc        | `Unit.Length.KILOPARSEC`              |
+| Megaparsec              | Mpc        | `Unit.Length.MEGAPARSEC`              |
+| Light Year              | ly         | `Unit.Length.LIGHT_YEAR`              |
+
+**Nautical / maritime**
+
+| Name                 | Symbol   | Enum                                        |
+| -------------------- | -------- | ------------------------------------------- |
+| League               | lea      | `Unit.Length.LEAGUE`                        |
+| Nautical League      | NL       | `Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL` |
+| Nautical League (UK) | NL (UK)  | `Unit.Length.NAUTICAL_LEAGUE_UK`            |
+| Nautical Mile        | nmi      | `Unit.Length.NAUTICAL_MILE`                 |
+| Nautical Mile (UK)   | nmi (UK) | `Unit.Length.NAUTICAL_MILE_UK`              |
+
+**Imperial / historical / misc.**
+
+| Name           | Symbol     | Enum                        |
+| -------------- | ---------- | --------------------------- |
+| Mile           | mi         | `Unit.Length.MILE`          |
+| Roman Mile     | m.p.       | `Unit.Length.MILE_ROMAN`    |
+| Kiloyard       | kyd        | `Unit.Length.KILOYARD`      |
+| Furlong        | fur        | `Unit.Length.FURLONG`       |
+| Chain          | ch         | `Unit.Length.CHAIN`         |
+| Rope           | rope       | `Unit.Length.ROPE`          |
+| Rod            | rod        | `Unit.Length.ROD`           |
+| Fathom         | ftm        | `Unit.Length.FATHOM`        |
+| Famn           | famn       | `Unit.Length.FAMN`          |
+| Ell            | ell        | `Unit.Length.ELL`           |
+| Aln            | aln        | `Unit.Length.ALN`           |
+| Cubit (UK)     | cubit      | `Unit.Length.CUBIT_UK`      |
+| Span (cloth)   | span       | `Unit.Length.SPAN_CLOTH`    |
+| Link           | li         | `Unit.Length.LINK`          |
+| Finger (cloth) | finger     | `Unit.Length.FINGER_CLOTH`  |
+| Hand           | hand       | `Unit.Length.HAND`          |
+| Handbreadth    | hb         | `Unit.Length.HANDBREADTH`   |
+| Nail (cloth)   | nail       | `Unit.Length.NAIL_COTH`     |
+| Fingerbreadth  | fb         | `Unit.Length.FINGERBREADTH` |
+| Barleycorn     | barleycorn | `Unit.Length.BARLEYCORN`    |
+| Yard           | yd         | `Unit.Length.YARD`          |
+| Foot           | ft         | `Unit.Length.FEET`          |
+| Inch           | in         | `Unit.Length.INCH`          |
+| Centiinch      | cin        | `Unit.Length.CENTIINCH`     |
+| Caliber        | cl         | `Unit.Length.CALIBER`       |
+| Mil            | mil        | `Unit.Length.MIL`           |
+| Microinch      | µin        | `Unit.Length.MICROINCH`     |
+| Arpent         | arp        | `Unit.Length.ARPENT`        |
+| Ken            | ken        | `Unit.Length.KEN`           |
+
+**Typography / CSS**
+
+| Name  | Symbol | Enum                |
+| ----- | ------ | ------------------- |
+| Pixel | px     | `Unit.Length.PIXEL` |
+| Point | pt     | `Unit.Length.POINT` |
+| Pica  | pica   | `Unit.Length.PICA`  |
+| Em    | em     | `Unit.Length.EM`    |
+| Twip  | twip   | `Unit.Length.TWIP`  |
+
+#### ⚖️ Mass (Unit.Mass) — base: kilogram
+
+| Name             | Symbol | Enum                         |
+| ---------------- | ------ | ---------------------------- |
+| Tonne            | t      | `Unit.Mass.TON`              |
+| Kilogram         | kg     | `Unit.Mass.KILOGRAM`         |
+| Gram             | g      | `Unit.Mass.GRAM`             |
+| Milligram        | mg     | `Unit.Mass.MILLIGRAM`        |
+| Long Ton         | lt     | `Unit.Mass.LONG_TON`         |
+| Short Ton        | st     | `Unit.Mass.SHORT_TON`        |
+| Pound            | lb     | `Unit.Mass.POUND`            |
+| Ounce            | oz     | `Unit.Mass.OUNCE`            |
+| Carat            | ct     | `Unit.Mass.CARRAT`           |
+| Atomic Mass Unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
+
+#### 🌡️ Temperature (Unit.Temperature) — base: kelvin
+
+| Name       | Symbol | Enum                          |
+| ---------- | ------ | ----------------------------- |
+| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
+| Celsius    | °C     | `Unit.Temperature.CELSIUS`    |
+| Fahrenheit | °F     | `Unit.Temperature.FAHRENHEIT` |
+
+#### 🧱 Area (Unit.Area) — base: square meter
+
+| Name                  | Symbol   | Enum                               |
+| --------------------- | -------- | ---------------------------------- |
+| Square Kilometer      | km^2     | `Unit.Area.SQUARE_KILOMETER`       |
+| Square Hectometer     | hm^2     | `Unit.Area.SQUARE_HECTOMETER`      |
+| Square Dekameter      | dam^2    | `Unit.Area.SQUARE_DEKAMETER`       |
+| Square Meter          | m^2      | `Unit.Area.SQUARE_METER`           |
+| Square Decimeter      | dm^2     | `Unit.Area.SQUARE_DECIMETER`       |
+| Square Centimeter     | cm^2     | `Unit.Area.SQUARE_CENTIMETER`      |
+| Square Millimeter     | mm^2     | `Unit.Area.SQUARE_MILLIMETER`      |
+| Square Micrometer     | µm^2     | `Unit.Area.SQUARE_MICROMETER`      |
+| Square Nanometer      | nm^2     | `Unit.Area.SQUARE_NANOMETER`       |
+| Hectare               | ha       | `Unit.Area.HECTARE`                |
+| Are                   | a        | `Unit.Area.ARE`                    |
+| Barn                  | b        | `Unit.Area.BARN`                   |
+| Thomson Cross Section | σT       | `Unit.Area.ELECTRON_CROSS_SECTION` |
+| Township              | twp      | `Unit.Area.TOWNSHIP`               |
+| Section               | sec      | `Unit.Area.SECTION`                |
+| Homestead             | hstd     | `Unit.Area.HOMESTEAD`              |
+| Square Mile           | mi^2     | `Unit.Area.SQUARE_MILE`            |
+| Acre                  | ac       | `Unit.Area.ACRE`                   |
+| Rood                  | rood     | `Unit.Area.ROOD`                   |
+| Square Chain          | ch^2     | `Unit.Area.SQUARE_CHAIN`           |
+| Square Rod            | rd^2     | `Unit.Area.SQUARE_ROD`             |
+| Square Pole           | pole^2   | `Unit.Area.SQUARE_POLE`            |
+| Square Rope           | rope^2   | `Unit.Area.SQUARE_ROPE`            |
+| Square Yard           | yd^2     | `Unit.Area.SQUARE_YARD`            |
+| Square Foot           | ft^2     | `Unit.Area.SQUARE_FOOT`            |
+| Square Inch           | in^2     | `Unit.Area.SQUARE_INCH`            |
+| Arpent                | arp_area | `Unit.Area.ARPENT`                 |
+| Cuerda                | cda      | `Unit.Area.CUERDA`                 |
+| Plaza                 | plz      | `Unit.Area.PLAZA`                  |
+
 ### 🚫 Error Handling
 
 The converter module uses conversion-specific runtime exceptions:
@@ -465,15 +633,15 @@ The converter module uses conversion-specific runtime exceptions:
 * `UnitConversionException`
   Thrown when:
 
-    * symbols are unknown or missing
-    * units are incompatible (cross-group conversion)
-    * the input format is malformed
+  * symbols are unknown or missing
+  * units are incompatible (cross-group conversion)
+  * the input format is malformed
 
-This makes it easy to catch converter-related failures explicitly:
+Example:
 
 ```java
 try {
-    UnitValue v = UnitValue.parse("abc km");
+    UnitValue v = new UnitValue("abc km");
 } catch (ConversionException ex) {
     // invalid number
 }
@@ -481,14 +649,14 @@ try {
 
 ### ➕ Adding a New Unit (Internal Registry)
 
-To add a new built-in unit, you typically do **only one thing**:
+To add a new built-in unit, you typically do **only two things**:
 
 1. Add the enum constant to the correct group (e.g. `Unit.Length`)
 2. Add exactly one `define(...)` entry to the internal `UnitRegistry.BUILT_IN`
 
 Conversion mapping is defined using an affine formula into the base unit:
 
-```
+```text
 base = value * scaleToBase + offsetToBase
 ```
 
