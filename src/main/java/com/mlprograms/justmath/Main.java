@@ -33,7 +33,7 @@ public class Main {
     public static void main(final String[] args) {
 
         UnitConverter unitConverter = new UnitConverter();
-        BigNumber converted = unitConverter.convert("25.3391", Unit.Mass.LONG_TON, Unit.Mass.ATOMIC_MASS_UNIT);
+        BigNumber converted = unitConverter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
         System.out.println(converted);
 
     }
