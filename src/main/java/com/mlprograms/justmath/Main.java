@@ -33,8 +33,8 @@ public class Main {
     public static void main(final String[] args) {
 
         UnitConverter unitConverter = new UnitConverter();
-        BigNumber converted = unitConverter.convert("3", Unit.Length.METER, Unit.Length.FEET);
-        System.out.println("3 m in ft = " + converted);
+        BigNumber converted = unitConverter.convert("25.3391", Unit.Length.CALIBER, Unit.Length.ROPE);
+        System.out.println(converted);
 
     }
 
