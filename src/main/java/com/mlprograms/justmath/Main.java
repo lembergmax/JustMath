@@ -33,7 +33,7 @@ public class Main {
     public static void main(final String[] args) {
 
         UnitConverter unitConverter = new UnitConverter();
-        BigNumber converted = unitConverter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
+        BigNumber converted = unitConverter.convert("102", Unit.Length.INCH, Unit.Length.ELL);
         System.out.println(converted);
 
     }
