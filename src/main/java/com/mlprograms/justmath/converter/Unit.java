@@ -198,10 +198,6 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          */
         LEAGUE,
         /**
-         * Statute league (land league; historically variable).
-         */
-        LEAGUE_STATUTE,
-        /**
          * Nautical league (International; historically variable).
          */
         NAUTICAL_LEAGUE_INTERNATIONAL,
@@ -228,10 +224,6 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          */
         MILE,
         /**
-         * Statute mile (mi).
-         */
-        MILE_STATUTE,
-        /**
          * Roman mile (mille passus; historical).
          */
         MILE_ROMAN,
@@ -256,14 +248,6 @@ public sealed interface Unit permits Unit.Length, Unit.Mass {
          * Rod (rd).
          */
         ROD,
-        /**
-         * Perch (rd) – commonly same as rod.
-         */
-        PERCH,
-        /**
-         * Pole (rd) – commonly same as rod.
-         */
-        POLE,
         /**
          * Fathom (ftm).
          */
