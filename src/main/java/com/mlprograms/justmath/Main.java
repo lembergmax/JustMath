@@ -27,14 +27,20 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.Unit;
 import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.UnitValue;
 
 public class Main {
 
     public static void main(final String[] args) {
 
         UnitConverter unitConverter = new UnitConverter();
-        BigNumber converted = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-        System.out.println(converted);
+
+        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+
+        System.out.println(convertedToBigNumber);
+        System.out.println(convertedToUnitValue.getValue());
+        System.out.println(convertedToUnitValue.getUnit());
 
     }
 
