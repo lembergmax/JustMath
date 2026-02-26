@@ -33,7 +33,7 @@ public class Main {
     public static void main(final String[] args) {
 
         UnitConverter unitConverter = new UnitConverter();
-        BigNumber converted = unitConverter.convert("102", Unit.Length.INCH, Unit.Length.ELL);
+        BigNumber converted = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
         System.out.println(converted);
 
     }
