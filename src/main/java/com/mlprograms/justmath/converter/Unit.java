@@ -360,6 +360,142 @@ public interface Unit {
          * Em (em) – relative to current font size.
          */
         EM
+
+    }
+
+    /**
+     * Area unit identifiers (base unit: square meter).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Area implements Unit {
+
+        /**
+         * Square kilometer (km^2).
+         */
+        SQUARE_KILOMETER,
+        /**
+         * Square hectometer (hm^2).
+         */
+        SQUARE_HECTOMETER,
+        /**
+         * Square dekameter (dam^2).
+         */
+        SQUARE_DEKAMETER,
+        /**
+         * Square meter (m^2), base unit of the AREA category.
+         */
+        SQUARE_METER,
+        /**
+         * Square decimeter (dm^2).
+         */
+        SQUARE_DECIMETER,
+        /**
+         * Square centimeter (cm^2).
+         */
+        SQUARE_CENTIMETER,
+        /**
+         * Square millimeter (mm^2).
+         */
+        SQUARE_MILLIMETER,
+        /**
+         * Square micrometer (µm^2).
+         */
+        SQUARE_MICROMETER,
+        /**
+         * Square nanometer (nm^2).
+         */
+        SQUARE_NANOMETER,
+
+        /**
+         * Hectare (ha).
+         */
+        HECTARE,
+        /**
+         * Are (a).
+         */
+        ARE,
+
+        /**
+         * Barn (b).
+         */
+        BARN,
+        /**
+         * Electron cross section (Thomson cross section, σT).
+         */
+        ELECTRON_CROSS_SECTION,
+
+        /**
+         * Township (twp).
+         */
+        TOWNSHIP,
+        /**
+         * Section (sec).
+         */
+        SECTION,
+        /**
+         * Homestead (hstd).
+         */
+        HOMESTEAD,
+
+        /**
+         * Square mile (mi^2).
+         */
+        SQUARE_MILE,
+        /**
+         * Acre (ac).
+         */
+        ACRE,
+        /**
+         * Rood (rood).
+         */
+        ROOD,
+
+        /**
+         * Square chain (ch^2).
+         */
+        SQUARE_CHAIN,
+        /**
+         * Square rod (rd^2).
+         */
+        SQUARE_ROD,
+        /**
+         * Square pole (pole^2).
+         */
+        SQUARE_POLE,
+        /**
+         * Square rope (rope^2).
+         */
+        SQUARE_ROPE,
+
+        /**
+         * Square yard (yd^2).
+         */
+        SQUARE_YARD,
+        /**
+         * Square foot (ft^2).
+         */
+        SQUARE_FOOT,
+        /**
+         * Square inch (in^2).
+         */
+        SQUARE_INCH,
+
+        /**
+         * Arpent (arp).
+         */
+        ARPENT,
+        /**
+         * Cuerda (cda).
+         */
+        CUERDA,
+        /**
+         * Plaza (plz).
+         */
+        PLAZA
+
     }
 
     /**
