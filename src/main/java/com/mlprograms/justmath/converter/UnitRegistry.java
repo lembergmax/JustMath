@@ -96,9 +96,9 @@ class UnitRegistry {
             define(Unit.Length.CENTIMETER, "Centimeter", "cm", "0.01"),
             define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001"),
             define(Unit.Length.MICROMETER, "Micrometer", "um", "0.000001"),
-            define(Unit.Length.MICRON, "Micron", "µm", "0.000001"), // alias for micrometer
+            define(Unit.Length.MICRON, "Micron", "µm", "0.000001"),
             define(Unit.Length.NANOMETER, "Nanometer", "nm", "9.999999999E-10"),
-            define(Unit.Length.ANGSTROM, "Angstrom", "A", "9.999999999E-11"),
+            define(Unit.Length.ANGSTROM, "Angstrom", "Å", "9.999999999E-11"),
             define(Unit.Length.PICOMETER, "Picometer", "pm", "1.E-12"),
             define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "9.999999999E-16"),
             define(Unit.Length.ATTOMETER, "Attometer", "am", "1.E-18"),
@@ -110,8 +110,8 @@ class UnitRegistry {
             define(Unit.Length.FERMI, "Fermi", "frm", "9.999999999E-16"),
 
             define(Unit.Length.SUN_RADIUS, "Sun Radius", "Rsun", "696000000"),
-            define(Unit.Length.EARTH_EQUATORIAL_RADIUS, "Earth Equatorial Radius", "a", "6378160"),
-            define(Unit.Length.EARTH_POLAR_RADIUS, "Earth Polar Radius", "b", "6356777"),
+            define(Unit.Length.EARTH_EQUATORIAL_RADIUS, "Earth Equatorial Radius", "R_earth_eq", "6378160"),
+            define(Unit.Length.EARTH_POLAR_RADIUS, "Earth Polar Radius", "R_earth_p", "6356777"),
             define(Unit.Length.ASTRONOMICAL_UNIT, "Astronomical Unit", "au", "149597870691"),
             define(Unit.Length.EARTH_DISTANCE_FROM_SUN, "Earth Distance from Sun", "AU", "149600000000"),
             define(Unit.Length.KILOPARSEC, "Kiloparsec", "kpc", "30856775812799586000"),
@@ -160,7 +160,7 @@ class UnitRegistry {
             define(Unit.Length.POINT, "Point", "pt", "0.0003527778"),
             define(Unit.Length.PICA, "Pica", "pica", "0.0042333333"),
             define(Unit.Length.EM, "Em", "em", "0.0042175176"),
-            define(Unit.Length.TWIP, "Twip", "twp", "0.0000176389"),
+            define(Unit.Length.TWIP, "Twip", "twip", "0.0000176389"),
 
             // =========================
             // MASS (base: kilogram)
@@ -221,7 +221,7 @@ class UnitRegistry {
             define(Unit.Area.SQUARE_FOOT, "Square Foot", "ft^2", "0.09290304"),
             define(Unit.Area.SQUARE_INCH, "Square Inch", "in^2", "0.00064516"),
 
-            define(Unit.Area.ARPENT, "Arpent", "arp", "3418.8929237"),
+            define(Unit.Area.ARPENT, "Arpent", "arp_area", "3418.8929237"),
             define(Unit.Area.CUERDA, "Cuerda", "cda", "3930.395625"),
             define(Unit.Area.PLAZA, "Plaza", "plz", "6400")
     );
