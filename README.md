@@ -353,28 +353,47 @@ System.out.println(result);
 JustMath includes a **high-precision unit converter** built on top of `BigNumber`.
 It is designed to be:
 
-- **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
-- **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
-- **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
+* **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
+* **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
+* **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
 
-### ✅ Supported Unit Groups (so far)
+### ✅ Supported Unit Groups (built-in)
 
-- **Length** (base: meter) → `Unit.Length`
-- **Mass** (base: kilogram) → `Unit.Mass`
-- **Temperature** (base: kelvin) → `Unit.Temperature`
-- **Area** (base: square meter) → `Unit.Area`
+> Each group is a nested enum inside `Unit` (pure identifiers).
+> Metadata (symbol, display name, conversion formula) is stored in the internal registry and exposed via `UnitElements`.
+
+* **Length** (base: meter)                        → `Unit.Length`
+* **Area** (base: square meter)                   → `Unit.Area`
+* **Volume** (base: cubic meter)                  → `Unit.Volume`
+* **Mass** (base: kilogram)                       → `Unit.Mass`
+* **Temperature** (base: celsius)                 → `Unit.Temperature`
+* **Pressure** (base: pascal)                     → `Unit.Pressure`
+* **Energy** (base: joule)                        → `Unit.Energy`
+* **Power** (base: watt)                          → `Unit.Power`
+* **Time** (base: second)                         → `Unit.Time`
+* **Force** (base: newton)                        → `Unit.Force`
+* **Speed** (base: meter per second)              → `Unit.Speed`
+* **Fuel Consumption** (base: meter per liter)    → `Unit.FuelConsumption`
+* **Data Storage** (base: bit)                    → `Unit.DataStorage`
 
 > Cross-group conversions are **rejected** by design (e.g. length → mass).
+
+### 🔤 Symbols: strict, unique, case-sensitive
+
+* Symbols are the **parse/format tokens** stored in the registry (e.g. `km`, `m/s`, `kW*h`, `°C`, `µs`).
+* Symbols are **case-sensitive**.
+* The registry validates at startup that **every symbol is unique** (no ambiguities when parsing).
 
 ### 🧠 Design Overview
 
 The converter module separates **unit identifiers** from **unit metadata**:
 
-- `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`) are **pure identifiers**.
-- The internal `UnitRegistry` is the **single source of truth** for:
-  - `displayName` (human-readable label)
-  - `symbol` (parse/format token, e.g. `"km"`)
-  - conversion formula (scale/offset mapping to the base unit)
+* `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`, …) are **pure identifiers**.
+* The internal registry is the **single source of truth** for:
+
+  * `displayName` (human-readable label)
+  * `symbol` (parse/format token)
+  * conversion formula (scale/offset mapping into the base unit)
 
 This keeps the public API stable and makes the unit catalog deterministic and easy to maintain.
 
@@ -392,6 +411,10 @@ System.out.println(meters.toDisplayString()); // 1000 m
 // 2.5 lb -> kg
 UnitValue kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
 System.out.println(kg.toDisplayString()); // 1.13398... kg
+
+// 212 °F -> °C
+UnitValue celsius = converter.convert("212", Unit.Temperature.FAHRENHEIT, Unit.Temperature.CELSIUS);
+System.out.println(celsius.toDisplayString()); // 100 °C
 ```
 
 #### Precision / Rounding
@@ -407,7 +430,7 @@ UnitConverter converter = new UnitConverter(50);
 UnitConverter converter2 = new UnitConverter(new MathContext(80, RoundingMode.HALF_UP));
 ```
 
-### 🧾 Parsing Inputs like `"12.5 km"`
+### 🧾 Parsing Inputs like `"12.5 km"` or `"1 rd^2"`
 
 Use `UnitValue` to parse a combined text input into a `(BigNumber + Unit)` pair.
 
@@ -415,6 +438,7 @@ Supported formats:
 
 * Preferred: `"<number> <symbol>"` → `"12.5 km"`
 * Also supported: suffix without whitespace → `"12.5km"`
+* Power/exponent tokens are supported where applicable (e.g. area): `"1 rd^2"`
 
 Locale handling:
 
@@ -422,9 +446,6 @@ Locale handling:
 * You can also pass an explicit `Locale`
 
 ```java
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
-
 UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
 UnitConverter converter = new UnitConverter();
 
@@ -438,7 +459,7 @@ The public facade `UnitElements` provides:
 
 * strict symbol parsing
 * metadata access (display name, symbol)
-* listing all built-in units
+* listing all built-in units (deterministic registry order)
 
 ```java
 import com.mlprograms.justmath.converter.Unit;
@@ -459,114 +480,48 @@ for (Unit unit : UnitElements.all()) {
 
 ### 📚 Supported Units (Built-In Catalog)
 
-> The table lists **Symbol → Name → Enum constant**.
-> All symbols are **case-sensitive**.
+> The built-in catalog contains **many** units (incl. scientific, historical, and domain-specific units).
+> Use `UnitElements.all()` to print the complete list.
+> Below are the **core / most common** symbols per group.
+> All symbols are **case-sensitive** and **globally unique**.
 
-#### 📏 Length (Unit.Length) — base: meter
+#### 📏 Length (`Unit.Length`) — base: meter
 
-**Metric / SI & small units**
+| Name          | Symbol | Enum                        |
+| ------------- | ------ | --------------------------- |
+| Kilometer     | km     | `Unit.Length.KILOMETER`     |
+| Meter         | m      | `Unit.Length.METER`         |
+| Centimeter    | cm     | `Unit.Length.CENTIMETER`    |
+| Millimeter    | mm     | `Unit.Length.MILLIMETER`    |
+| Inch          | in     | `Unit.Length.INCH`          |
+| Foot          | ft     | `Unit.Length.FEET`          |
+| Yard          | yd     | `Unit.Length.YARD`          |
+| Mile          | mi     | `Unit.Length.MILE`          |
+| Nautical Mile | nmi    | `Unit.Length.NAUTICAL_MILE` |
 
-| Name       | Symbol | Enum                     |
-| ---------- | ------ | ------------------------ |
-| Exameter   | Em     | `Unit.Length.EXAMETER`   |
-| Petameter  | Pm     | `Unit.Length.PETAMETER`  |
-| Terameter  | Tm     | `Unit.Length.TERAMETER`  |
-| Gigameter  | Gm     | `Unit.Length.GIGAMETER`  |
-| Megameter  | Mm     | `Unit.Length.MEGAMETER`  |
-| Kilometer  | km     | `Unit.Length.KILOMETER`  |
-| Hectometer | hm     | `Unit.Length.HECTOMETER` |
-| Dekameter  | dam    | `Unit.Length.DEKAMETER`  |
-| Meter      | m      | `Unit.Length.METER`      |
-| Decimeter  | dm     | `Unit.Length.DECIMETER`  |
-| Centimeter | cm     | `Unit.Length.CENTIMETER` |
-| Millimeter | mm     | `Unit.Length.MILLIMETER` |
-| Micrometer | um     | `Unit.Length.MICROMETER` |
-| Micron     | µm     | `Unit.Length.MICRON`     |
-| Nanometer  | nm     | `Unit.Length.NANOMETER`  |
-| Angstrom   | Å      | `Unit.Length.ANGSTROM`   |
-| Picometer  | pm     | `Unit.Length.PICOMETER`  |
-| Femtometer | fm     | `Unit.Length.FEMTOMETER` |
-| Attometer  | am     | `Unit.Length.ATTOMETER`  |
+#### 🧱 Area (`Unit.Area`) — base: square meter
 
-**Physics / constants**
+| Name             | Symbol | Enum                         |
+| ---------------- | ------ | ---------------------------- |
+| Square Kilometer | km^2   | `Unit.Area.SQUARE_KILOMETER` |
+| Square Meter     | m^2    | `Unit.Area.SQUARE_METER`     |
+| Hectare          | ha     | `Unit.Area.HECTARE`          |
+| Acre             | ac     | `Unit.Area.ACRE`             |
+| Square Foot      | ft^2   | `Unit.Area.SQUARE_FOOT`      |
+| Square Rod       | rd^2   | `Unit.Area.SQUARE_ROD`       |
+
+#### 🧪 Volume (`Unit.Volume`) — base: cubic meter
 
 | Name            | Symbol | Enum                          |
 | --------------- | ------ | ----------------------------- |
-| Planck Length   | lP     | `Unit.Length.PLANCK_LENGTH`   |
-| Electron Radius | re     | `Unit.Length.ELECTRON_RADIUS` |
-| Bohr Radius     | a0     | `Unit.Length.BOHR_RADIUS`     |
-| X Unit          | xu     | `Unit.Length.X_UNIT`          |
-| Fermi           | frm    | `Unit.Length.FERMI`           |
+| Cubic Meter     | m^3    | `Unit.Volume.CUBIC_METER`     |
+| Liter           | L      | `Unit.Volume.LITER`           |
+| Milliliter      | mL     | `Unit.Volume.MILLILITER`      |
+| US Gallon       | gal_us | `Unit.Volume.US_GALLON`       |
+| Imperial Gallon | gal_uk | `Unit.Volume.IMPERIAL_GALLON` |
+| Cubic Inch      | in^3   | `Unit.Volume.CUBIC_INCH`      |
 
-**Astronomy**
-
-| Name                    | Symbol     | Enum                                  |
-| ----------------------- | ---------- | ------------------------------------- |
-| Sun Radius              | Rsun       | `Unit.Length.SUN_RADIUS`              |
-| Earth Equatorial Radius | R_earth_eq | `Unit.Length.EARTH_EQUATORIAL_RADIUS` |
-| Earth Polar Radius      | R_earth_p  | `Unit.Length.EARTH_POLAR_RADIUS`      |
-| Astronomical Unit       | au         | `Unit.Length.ASTRONOMICAL_UNIT`       |
-| Earth Distance from Sun | AU         | `Unit.Length.EARTH_DISTANCE_FROM_SUN` |
-| Parsec                  | pc         | `Unit.Length.PARSEC`                  |
-| Kiloparsec              | kpc        | `Unit.Length.KILOPARSEC`              |
-| Megaparsec              | Mpc        | `Unit.Length.MEGAPARSEC`              |
-| Light Year              | ly         | `Unit.Length.LIGHT_YEAR`              |
-
-**Nautical / maritime**
-
-| Name                 | Symbol   | Enum                                        |
-| -------------------- | -------- | ------------------------------------------- |
-| League               | lea      | `Unit.Length.LEAGUE`                        |
-| Nautical League      | NL       | `Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL` |
-| Nautical League (UK) | NL (UK)  | `Unit.Length.NAUTICAL_LEAGUE_UK`            |
-| Nautical Mile        | nmi      | `Unit.Length.NAUTICAL_MILE`                 |
-| Nautical Mile (UK)   | nmi (UK) | `Unit.Length.NAUTICAL_MILE_UK`              |
-
-**Imperial / historical / misc.**
-
-| Name           | Symbol     | Enum                        |
-| -------------- | ---------- | --------------------------- |
-| Mile           | mi         | `Unit.Length.MILE`          |
-| Roman Mile     | m.p.       | `Unit.Length.MILE_ROMAN`    |
-| Kiloyard       | kyd        | `Unit.Length.KILOYARD`      |
-| Furlong        | fur        | `Unit.Length.FURLONG`       |
-| Chain          | ch         | `Unit.Length.CHAIN`         |
-| Rope           | rope       | `Unit.Length.ROPE`          |
-| Rod            | rod        | `Unit.Length.ROD`           |
-| Fathom         | ftm        | `Unit.Length.FATHOM`        |
-| Famn           | famn       | `Unit.Length.FAMN`          |
-| Ell            | ell        | `Unit.Length.ELL`           |
-| Aln            | aln        | `Unit.Length.ALN`           |
-| Cubit (UK)     | cubit      | `Unit.Length.CUBIT_UK`      |
-| Span (cloth)   | span       | `Unit.Length.SPAN_CLOTH`    |
-| Link           | li         | `Unit.Length.LINK`          |
-| Finger (cloth) | finger     | `Unit.Length.FINGER_CLOTH`  |
-| Hand           | hand       | `Unit.Length.HAND`          |
-| Handbreadth    | hb         | `Unit.Length.HANDBREADTH`   |
-| Nail (cloth)   | nail       | `Unit.Length.NAIL_COTH`     |
-| Fingerbreadth  | fb         | `Unit.Length.FINGERBREADTH` |
-| Barleycorn     | barleycorn | `Unit.Length.BARLEYCORN`    |
-| Yard           | yd         | `Unit.Length.YARD`          |
-| Foot           | ft         | `Unit.Length.FEET`          |
-| Inch           | in         | `Unit.Length.INCH`          |
-| Centiinch      | cin        | `Unit.Length.CENTIINCH`     |
-| Caliber        | cl         | `Unit.Length.CALIBER`       |
-| Mil            | mil        | `Unit.Length.MIL`           |
-| Microinch      | µin        | `Unit.Length.MICROINCH`     |
-| Arpent         | arp        | `Unit.Length.ARPENT`        |
-| Ken            | ken        | `Unit.Length.KEN`           |
-
-**Typography / CSS**
-
-| Name  | Symbol | Enum                |
-| ----- | ------ | ------------------- |
-| Pixel | px     | `Unit.Length.PIXEL` |
-| Point | pt     | `Unit.Length.POINT` |
-| Pica  | pica   | `Unit.Length.PICA`  |
-| Em    | em     | `Unit.Length.EM`    |
-| Twip  | twip   | `Unit.Length.TWIP`  |
-
-#### ⚖️ Mass (Unit.Mass) — base: kilogram
+#### ⚖️ Mass (`Unit.Mass`) — base: kilogram
 
 | Name             | Symbol | Enum                         |
 | ---------------- | ------ | ---------------------------- |
@@ -574,54 +529,99 @@ for (Unit unit : UnitElements.all()) {
 | Kilogram         | kg     | `Unit.Mass.KILOGRAM`         |
 | Gram             | g      | `Unit.Mass.GRAM`             |
 | Milligram        | mg     | `Unit.Mass.MILLIGRAM`        |
-| Long Ton         | lt     | `Unit.Mass.LONG_TON`         |
-| Short Ton        | st     | `Unit.Mass.SHORT_TON`        |
 | Pound            | lb     | `Unit.Mass.POUND`            |
 | Ounce            | oz     | `Unit.Mass.OUNCE`            |
 | Carat            | ct     | `Unit.Mass.CARRAT`           |
-| Atomic Mass Unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
+| Atomic mass unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
 
-#### 🌡️ Temperature (Unit.Temperature) — base: kelvin
+#### 🌡️ Temperature (`Unit.Temperature`) — base: celsius
 
 | Name       | Symbol | Enum                          |
 | ---------- | ------ | ----------------------------- |
-| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
 | Celsius    | °C     | `Unit.Temperature.CELSIUS`    |
+| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
 | Fahrenheit | °F     | `Unit.Temperature.FAHRENHEIT` |
 
-#### 🧱 Area (Unit.Area) — base: square meter
+#### 🧯 Pressure (`Unit.Pressure`) — base: pascal
 
-| Name                  | Symbol   | Enum                               |
-| --------------------- | -------- | ---------------------------------- |
-| Square Kilometer      | km^2     | `Unit.Area.SQUARE_KILOMETER`       |
-| Square Hectometer     | hm^2     | `Unit.Area.SQUARE_HECTOMETER`      |
-| Square Dekameter      | dam^2    | `Unit.Area.SQUARE_DEKAMETER`       |
-| Square Meter          | m^2      | `Unit.Area.SQUARE_METER`           |
-| Square Decimeter      | dm^2     | `Unit.Area.SQUARE_DECIMETER`       |
-| Square Centimeter     | cm^2     | `Unit.Area.SQUARE_CENTIMETER`      |
-| Square Millimeter     | mm^2     | `Unit.Area.SQUARE_MILLIMETER`      |
-| Square Micrometer     | µm^2     | `Unit.Area.SQUARE_MICROMETER`      |
-| Square Nanometer      | nm^2     | `Unit.Area.SQUARE_NANOMETER`       |
-| Hectare               | ha       | `Unit.Area.HECTARE`                |
-| Are                   | a        | `Unit.Area.ARE`                    |
-| Barn                  | b        | `Unit.Area.BARN`                   |
-| Thomson Cross Section | σT       | `Unit.Area.ELECTRON_CROSS_SECTION` |
-| Township              | twp      | `Unit.Area.TOWNSHIP`               |
-| Section               | sec      | `Unit.Area.SECTION`                |
-| Homestead             | hstd     | `Unit.Area.HOMESTEAD`              |
-| Square Mile           | mi^2     | `Unit.Area.SQUARE_MILE`            |
-| Acre                  | ac       | `Unit.Area.ACRE`                   |
-| Rood                  | rood     | `Unit.Area.ROOD`                   |
-| Square Chain          | ch^2     | `Unit.Area.SQUARE_CHAIN`           |
-| Square Rod            | rd^2     | `Unit.Area.SQUARE_ROD`             |
-| Square Pole           | pole^2   | `Unit.Area.SQUARE_POLE`            |
-| Square Rope           | rope^2   | `Unit.Area.SQUARE_ROPE`            |
-| Square Yard           | yd^2     | `Unit.Area.SQUARE_YARD`            |
-| Square Foot           | ft^2     | `Unit.Area.SQUARE_FOOT`            |
-| Square Inch           | in^2     | `Unit.Area.SQUARE_INCH`            |
-| Arpent                | arp_area | `Unit.Area.ARPENT`                 |
-| Cuerda                | cda      | `Unit.Area.CUERDA`                 |
-| Plaza                 | plz      | `Unit.Area.PLAZA`                  |
+| Name       | Symbol | Enum                                |
+| ---------- | ------ | ----------------------------------- |
+| Pascal     | Pa     | `Unit.Pressure.PASCAL`              |
+| Bar        | bar    | `Unit.Pressure.BAR`                 |
+| Atmosphere | atm    | `Unit.Pressure.STANDARD_ATMOSPHERE` |
+| PSI        | psi    | `Unit.Pressure.PSI`                 |
+| Torr       | Torr   | `Unit.Pressure.TORR`                |
+
+#### ⚡ Energy (`Unit.Energy`) — base: joule
+
+| Name          | Symbol | Enum                        |
+| ------------- | ------ | --------------------------- |
+| Joule         | J      | `Unit.Energy.JOULE`         |
+| Kilojoule     | kJ     | `Unit.Energy.KILOJOULE`     |
+| Watt-hour     | W*h    | `Unit.Energy.WATT_HOUR`     |
+| Kilowatt-hour | kW*h   | `Unit.Energy.KILOWATT_HOUR` |
+| Calorie (IT)  | cal    | `Unit.Energy.CALORIE_IT`    |
+
+#### 🔌 Power (`Unit.Power`) — base: watt
+
+| Name         | Symbol | Enum                       |
+| ------------ | ------ | -------------------------- |
+| Watt         | W      | `Unit.Power.WATT`          |
+| Kilowatt     | kW     | `Unit.Power.KILOWATT`      |
+| Megawatt     | MW     | `Unit.Power.MEGAWATT`      |
+| Horsepower   | hp     | `Unit.Power.HORSEPOWER`    |
+| Pferdestärke | PS     | `Unit.Power.PFERDESTAERKE` |
+
+#### ⏱️ Time (`Unit.Time`) — base: second
+
+| Name        | Symbol | Enum                    |
+| ----------- | ------ | ----------------------- |
+| Second      | s      | `Unit.Time.SECOND`      |
+| Minute      | min    | `Unit.Time.MINUTE`      |
+| Hour        | h      | `Unit.Time.HOUR`        |
+| Day         | d      | `Unit.Time.DAY`         |
+| Year        | y      | `Unit.Time.YEAR`        |
+| Millisecond | ms     | `Unit.Time.MILLISECOND` |
+| Microsecond | µs     | `Unit.Time.MICROSECOND` |
+
+#### 🧲 Force (`Unit.Force`) — base: newton
+
+| Name        | Symbol | Enum                     |
+| ----------- | ------ | ------------------------ |
+| Newton      | N      | `Unit.Force.NEWTON`      |
+| Kilonewton  | kN     | `Unit.Force.KILONEWTON`  |
+| Dyne        | dyn    | `Unit.Force.DYNE`        |
+| Pound-force | lbf    | `Unit.Force.POUND_FORCE` |
+
+#### 🏎️ Speed (`Unit.Speed`) — base: meter per second
+
+| Name               | Symbol | Enum                            |
+| ------------------ | ------ | ------------------------------- |
+| Meter per Second   | m/s    | `Unit.Speed.METER_PER_SECOND`   |
+| Kilometer per Hour | km/h   | `Unit.Speed.KILOMETER_PER_HOUR` |
+| Mile per Hour      | mi/h   | `Unit.Speed.MILE_PER_HOUR`      |
+| Knot               | kn     | `Unit.Speed.KNOT`               |
+
+#### ⛽ Fuel Consumption (`Unit.FuelConsumption`) — base: meter per liter
+
+| Name                    | Symbol      | Enum                                           |
+| ----------------------- | ----------- | ---------------------------------------------- |
+| Meter per Liter         | m/L         | `Unit.FuelConsumption.METER_PER_LITER`         |
+| Kilometer per Liter     | km/L        | `Unit.FuelConsumption.KILOMETER_PER_LITER`     |
+| Liter per 100 Kilometer | L/100 km    | `Unit.FuelConsumption.LITER_PER_100_KILOMETER` |
+| Mile per Gallon (US)    | mi/gal (US) | `Unit.FuelConsumption.MILE_PER_GALLON_US`      |
+| Gallon (US) per Mile    | gal (US)/mi | `Unit.FuelConsumption.GALLON_US_PER_MILE`      |
+
+#### 💾 Data Storage (`Unit.DataStorage`) — base: bit
+
+| Name     | Symbol | Enum                        |
+| -------- | ------ | --------------------------- |
+| Bit      | b      | `Unit.DataStorage.BIT`      |
+| Byte     | B      | `Unit.DataStorage.BYTE`     |
+| Kilobyte | kB     | `Unit.DataStorage.KILOBYTE` |
+| Megabyte | MB     | `Unit.DataStorage.MEGABYTE` |
+| Gigabyte | GB     | `Unit.DataStorage.GIGABYTE` |
+| Terabyte | TB     | `Unit.DataStorage.TERABYTE` |
 
 ### 🚫 Error Handling
 
@@ -636,8 +636,6 @@ The converter module uses conversion-specific runtime exceptions:
   * symbols are unknown or missing
   * units are incompatible (cross-group conversion)
   * the input format is malformed
-
-Example:
 
 ```java
 try {
@@ -671,7 +669,7 @@ define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000")
 The registry validates at startup:
 
 * every unit is defined exactly once
-* every symbol is unique
+* every symbol is globally unique
 * groups are consistent and deterministic
 
 ## ⚙️ Maven (Coming Soon)
