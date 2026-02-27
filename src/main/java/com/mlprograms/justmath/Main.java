@@ -41,7 +41,7 @@ public class Main {
 //        System.out.println(convertedToUnitValue.getValue());
 
         final UnitValue unitValue = new UnitValue("12L");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP).getLocale());
+        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
 
     }
 
