@@ -50,7 +50,6 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
 @AllArgsConstructor
 class Evaluator {
 
-
     /**
      * Math context specifying the precision and rounding mode for calculations.
      */
@@ -60,7 +59,6 @@ class Evaluator {
      * The mode used for trigonometric calculations (e.g., degrees or radians).
      */
     private TrigonometricMode trigonometricMode;
-
 
     /**
      * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result as a {@link BigNumber}.

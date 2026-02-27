@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,28 +24,24 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.api.DisplayTheme;
-import com.mlprograms.justmath.graphfx.api.GraphFxPlotViewer;
-import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.UnitValue;
 
 public class Main {
 
     public static void main(final String[] args) {
 
-        final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+//        UnitConverter unitConverter = new UnitConverter();
+//
+//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+//
+//        System.out.println(convertedToBigNumber);
+//        System.out.println(convertedToUnitValue.getValue());
 
-        // Expression plots
-        viewer.plotExpression("sin(x)", "#00B7FF");
-        viewer.plotExpression("cos(x)", "#FF5500");
-        viewer.plotExpression("tan(x)", "#5500FF");
-
-        viewer.show("GraphFx Plot Viewer (Dark)", 1200, 800);
+        final UnitValue unitValue = new UnitValue("12L");
+        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
 
     }
 
