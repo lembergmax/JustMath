@@ -2666,27 +2666,27 @@ public interface Unit {
         BYTE,
 
         /**
-         * 1 character = 8 bits (as provided).
+         * 1 character = 8 bits.
          */
         CHARACTER,
 
         /**
-         * 1 word = 16 bits (as provided).
+         * 1 word = 16 bits.
          */
         WORD,
 
         /**
-         * 1 MAPM-word = 32 bits (as provided).
+         * 1 MAPM-word = 32 bits.
          */
         MAPM_WORD,
 
         /**
-         * 1 quadruple-word = 64 bits (as provided).
+         * 1 quadruple-word = 64 bits.
          */
         QUADRUPLE_WORD,
 
         /**
-         * 1 block = 4096 bits (as provided).
+         * 1 block = 4096 bits.
          */
         BLOCK,
 
@@ -2781,77 +2781,77 @@ public interface Unit {
         EXABYTE_DECIMAL,
 
         /**
-         * Floppy disk (3.5", DD) = 5,830,656 bits (as provided).
+         * Floppy disk (3.5", DD) = 5,830,656 bits.
          */
         FLOPPY_35_DD,
 
         /**
-         * Floppy disk (3.5", HD) = 11,661,312 bits (as provided).
+         * Floppy disk (3.5", HD) = 11,661,312 bits.
          */
         FLOPPY_35_HD,
 
         /**
-         * Floppy disk (3.5", ED) = 23,322,624 bits (as provided).
+         * Floppy disk (3.5", ED) = 23,322,624 bits.
          */
         FLOPPY_35_ED,
 
         /**
-         * Floppy disk (5.25", DD) = 2,915,328 bits (as provided).
+         * Floppy disk (5.25", DD) = 2,915,328 bits.
          */
         FLOPPY_525_DD,
 
         /**
-         * Floppy disk (5.25", HD) = 9,711,616 bits (as provided).
+         * Floppy disk (5.25", HD) = 9,711,616 bits.
          */
         FLOPPY_525_HD,
 
         /**
-         * Zip 100 = 803,454,976 bits (as provided).
+         * Zip 100 = 803,454,976 bits.
          */
         ZIP_100,
 
         /**
-         * Zip 250 = 2,008,637,440 bits (as provided).
+         * Zip 250 = 2,008,637,440 bits.
          */
         ZIP_250,
 
         /**
-         * Jaz 1GB = 8,589,934,592 bits (as provided).
+         * Jaz 1GB = 8,589,934,592 bits.
          */
         JAZ_1GB,
 
         /**
-         * Jaz 2GB = 17,179,869,184 bits (as provided).
+         * Jaz 2GB = 17,179,869,184 bits.
          */
         JAZ_2GB,
 
         /**
-         * CD (74 minute) = 5,448,466,432 bits (as provided).
+         * CD (74 minute) = 5,448,466,432 bits.
          */
         CD_74_MIN,
 
         /**
-         * CD (80 minute) = 5,890,233,976 bits (as provided).
+         * CD (80 minute) = 5,890,233,976 bits.
          */
         CD_80_MIN,
 
         /**
-         * DVD (1 layer, 1 side) = 40,372,692,582.4 bits (as provided).
+         * DVD (1 layer, 1 side) = 40,372,692,582.4 bits.
          */
         DVD_1L_1S,
 
         /**
-         * DVD (2 layer, 1 side) = 73,014,444,032 bits (as provided).
+         * DVD (2 layer, 1 side) = 73,014,444,032 bits.
          */
         DVD_2L_1S,
 
         /**
-         * DVD (1 layer, 2 side) = 80,745,385,164.8 bits (as provided).
+         * DVD (1 layer, 2 side) = 80,745,385,164.8 bits.
          */
         DVD_1L_2S,
 
         /**
-         * DVD (2 layer, 2 side) = 146,028,888,064 bits (as provided).
+         * DVD (2 layer, 2 side) = 146,028,888,064 bits.
          */
         DVD_2L_2S
 
