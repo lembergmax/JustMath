@@ -27,6 +27,7 @@ package com.mlprograms.justmath;
 import com.mlprograms.justmath.converter.Unit;
 import com.mlprograms.justmath.converter.UnitConverter;
 import com.mlprograms.justmath.converter.UnitValue;
+import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
 
 public class Main {
 
@@ -42,6 +43,11 @@ public class Main {
 
         final UnitValue unitValue = new UnitValue("12L");
         System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
+
+        GraphFxViewer viewer = new GraphFxViewer("Test");
+        viewer.plotExpression("x^2");
+        viewer.show();
+
 
     }
 
