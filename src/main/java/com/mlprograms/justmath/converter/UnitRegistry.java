@@ -163,29 +163,6 @@ class UnitRegistry {
             define(Unit.Length.TWIP, "Twip", "twip", "0.0000176389"),
 
             // =========================
-            // MASS (base: kilogram)
-            // =========================
-            define(Unit.Mass.TON, "Tonne", "t", "1000"),
-            define(Unit.Mass.KILOGRAM, "Kilogram", "kg"),
-            define(Unit.Mass.GRAM, "Gram", "g", "0.001"),
-            define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001"),
-
-            define(Unit.Mass.LONG_TON, "Long Ton", "lt", "1016.04608"),
-            define(Unit.Mass.SHORT_TON, "Short Ton", "st", "907.184"),
-            define(Unit.Mass.POUND, "Pound", "lb", "0.453592"),
-            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.0283495"),
-
-            define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
-            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.660540199E-27"),
-
-            // =========================
-            // TEMPERATURE (base: celsius)
-            // =========================
-            define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
-            define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
-            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778"),
-
-            // =========================
             // AREA (base: square meter)
             // =========================
             define(Unit.Area.SQUARE_KILOMETER, "Square Kilometer", "km^2", "1000000"),
@@ -223,7 +200,117 @@ class UnitRegistry {
 
             define(Unit.Area.ARPENT, "Arpent", "arp_area", "3418.8929237"),
             define(Unit.Area.CUERDA, "Cuerda", "cda", "3930.395625"),
-            define(Unit.Area.PLAZA, "Plaza", "plz", "6400")
+            define(Unit.Area.PLAZA, "Plaza", "plz", "6400"),
+
+            // =========================
+            // VOLUME (base: cubic meter)
+            // =========================
+
+            define(Unit.Volume.CUBIC_KILOMETER, "Cubic Kilometer", "km^3", "1000000000"),
+            define(Unit.Volume.CUBIC_METER, "Cubic Meter", "m^3"),
+            define(Unit.Volume.CUBIC_DECIMETER, "Cubic Decimeter", "dm^3", "0.0001"), // TODO: check if correct
+            define(Unit.Volume.CUBIC_CENTIMETER, "Cubic Centimeter", "cm^3", "0.000001"),
+            define(Unit.Volume.CUBIC_MILLIMETER, "Cubic Millimeter", "mm^3", "1.E-9"),
+
+            define(Unit.Volume.EXALITER, "Exaliter", "EL", "1000000000000000"),
+            define(Unit.Volume.PETALITER, "Petaliter", "PL", "1000000000000"),
+            define(Unit.Volume.TERALITER, "Teraliter", "TL", "1000000000"),
+            define(Unit.Volume.GIGALITER, "Gigaliter", "GL", "1000000"),
+            define(Unit.Volume.MEGALITER, "Megaliter", "ML", "1000"),
+            define(Unit.Volume.KILOLITER, "Kiloliter", "kL", "1"),
+            define(Unit.Volume.HECTOLITER, "Hectoliter", "hL", "0.1"),
+            define(Unit.Volume.DEKALITER, "Dekaliter", "daL", "0.01"),
+            define(Unit.Volume.LITER, "Liter", "L", "0.001"),
+            define(Unit.Volume.DECILITER, "Deciliter", "dL", "0.0001"),
+            define(Unit.Volume.CENTILITER, "Centiliter", "cL", "0.00001"),
+            define(Unit.Volume.MILLILITER, "Milliliter", "mL", "0.000001"),
+            define(Unit.Volume.MICROLITER, "Microliter", "uL", "1.E-9"),
+            define(Unit.Volume.NANOLITER, "Nanoliter", "nL", "1.E-12"),
+            define(Unit.Volume.PICOLITER, "Picoliter", "pL", "9.999999999E-16"),
+            define(Unit.Volume.FEMTOLITER, "Femtoliter", "fL", "1.E-18"),
+            define(Unit.Volume.ATTOLITER, "Attoliter", "aL", "1.E-21"),
+
+            define(Unit.Volume.METRIC_CUP, "Cup (Metric)", "cup_metric", "0.00025"),
+            define(Unit.Volume.METRIC_TABLESPOON, "Tablespoon (Metric)", "tbsp_metric", "0.000015"),
+            define(Unit.Volume.METRIC_TEASPOON, "Teaspoon (Metric)", "tsp_metric", "0.000005"),
+
+            define(Unit.Volume.US_GALLON, "Gallon (United States)", "gal_us", "0.0037854118"),
+            define(Unit.Volume.US_QUART, "Quart (United States)", "qt_us", "0.0009463529"),
+            define(Unit.Volume.US_PINT, "Pint (United States)", "pt_us", "0.0004731765"),
+            define(Unit.Volume.US_CUP, "Cup (United States)", "cup_us", "0.0002365882"),
+            define(Unit.Volume.US_FLUID_OUNCE, "Fluid Ounce (United States)", "floz_us", "0.0000295735"),
+            define(Unit.Volume.US_TABLESPOON, "Tablespoon (United States)", "tbsp_us", "0.0000147868"),
+            define(Unit.Volume.US_DESSERTSPOON, "Dessertspoon (United States)", "dsp_us", "0.0000098578"),
+            define(Unit.Volume.US_TEASPOON, "Teaspoon (United States)", "tsp_us", "0.0000049289"),
+            define(Unit.Volume.US_GILL, "Gill (United States)", "gi_us", "0.0001182941"),
+            define(Unit.Volume.US_MINIM, "Minim (United States)", "minim_us", "6.161151992E-8"),
+            define(Unit.Volume.US_BARREL, "Barrel (United States)", "bbl_us", "0.1192404712"),
+
+            define(Unit.Volume.IMPERIAL_GALLON, "Gallon (United Kingdom)", "gal_uk", "0.00454609"),
+            define(Unit.Volume.IMPERIAL_QUART, "Quart (United Kingdom)", "qt_uk", "0.0011365225"),
+            define(Unit.Volume.IMPERIAL_PINT, "Pint (United Kingdom)", "pt_uk", "0.0005682613"),
+            define(Unit.Volume.IMPERIAL_CUP, "Cup (United Kingdom)", "cup_uk", "0.0002841306"),
+            define(Unit.Volume.IMPERIAL_FLUID_OUNCE, "Fluid Ounce (United Kingdom)", "floz_uk", "0.0000284131"),
+            define(Unit.Volume.IMPERIAL_TABLESPOON, "Tablespoon (United Kingdom)", "tbsp_uk", "0.0000177582"),
+            define(Unit.Volume.IMPERIAL_DESSERTSPOON, "Dessertspoon (United Kingdom)", "dsp_uk", "0.0000118388"),
+            define(Unit.Volume.IMPERIAL_TEASPOON, "Teaspoon (United Kingdom)", "tsp_uk", "0.0000059194"),
+            define(Unit.Volume.IMPERIAL_GILL, "Gill (United Kingdom)", "gi_uk", "0.0001420653"),
+            define(Unit.Volume.IMPERIAL_MINIM, "Minim (United Kingdom)", "minim_uk", "5.91938802E-8"),
+            define(Unit.Volume.IMPERIAL_BARREL, "Barrel (United Kingdom)", "bbl_uk", "0.16365924"),
+
+            define(Unit.Volume.CUBIC_MILE, "Cubic Mile", "mi^3", "4168181825.4"),
+            define(Unit.Volume.CUBIC_YARD, "Cubic Yard", "yd^3", "0.764554858"),
+            define(Unit.Volume.CUBIC_FOOT, "Cubic Foot", "ft^3", "0.0283168466"),
+            define(Unit.Volume.CUBIC_INCH, "Cubic Inch", "in^3", "0.0000163871"),
+
+            define(Unit.Volume.HUNDRED_CUBIC_FOOT, "Hundred Cubic Foot", "hundred_cubic_foot", "2.8316846592"),
+            define(Unit.Volume.TON_REGISTER, "Ton Register", "ton_reg", "2.8316846592"),
+            define(Unit.Volume.ACRE_FOOT, "Acre-Foot", "ac*ft", "1233.4818375"),
+            define(Unit.Volume.ACRE_INCH, "Acre-Inch", "ac*in", "102.79015313"),
+            define(Unit.Volume.BOARD_FOOT, "Board Foot", "board_foot", "0.0023597372"),
+            define(Unit.Volume.STERE, "Stere", "stere", "1"),
+            define(Unit.Volume.DEKASTERE, "Dekastere", "dekastere", "10"),
+            define(Unit.Volume.DECISTERE, "Decistere", "decistere", "0.1"),
+            define(Unit.Volume.CORD, "Cord", "cord", "3.6245563638"),
+
+            define(Unit.Volume.DROP, "Drop", "drop", "5.E-8"),
+            define(Unit.Volume.OIL_BARREL, "Barrel (Oil)", "bbl_oil", "0.1589872949"),
+            define(Unit.Volume.TUN, "Tun", "tun", "0.9539237696"),
+            define(Unit.Volume.HOGSHEAD, "Hogshead", "hogshead", "0.2384809424"),
+            define(Unit.Volume.DRAM, "Dram", "dr", "0.0000036967"),
+            define(Unit.Volume.SPANISH_TAZA, "Taza (Spanish)", "taza", "0.0002365882"),
+
+            define(Unit.Volume.BIBLICAL_COR, "Cor (Biblical)", "cor_biblical", "0.22"),
+            define(Unit.Volume.BIBLICAL_HOMER, "Homer (Biblical)", "homer_biblical", "0.22"),
+            define(Unit.Volume.BIBLICAL_BATH, "Bath (Biblical)", "bath_biblical", "0.022"),
+            define(Unit.Volume.BIBLICAL_HIN, "Hin (Biblical)", "hin_biblical", "0.0036666667"),
+            define(Unit.Volume.BIBLICAL_CAB, "Cab (Biblical)", "cab_biblical", "0.0012222222"),
+            define(Unit.Volume.BIBLICAL_LOG, "Log (Biblical)", "log_biblical", "0.0003055556"),
+
+            define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.082999999E+21"),
+
+            // =========================
+            // MASS (base: kilogram)
+            // =========================
+            define(Unit.Mass.TON, "Tonne", "t", "1000"),
+            define(Unit.Mass.KILOGRAM, "Kilogram", "kg"),
+            define(Unit.Mass.GRAM, "Gram", "g", "0.001"),
+            define(Unit.Mass.MILLIGRAM, "Milligram", "mg", "0.000001"),
+
+            define(Unit.Mass.LONG_TON, "Long Ton", "lt", "1016.04608"),
+            define(Unit.Mass.SHORT_TON, "Short Ton", "st", "907.184"),
+            define(Unit.Mass.POUND, "Pound", "lb", "0.453592"),
+            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.0283495"),
+
+            define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
+            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.660540199E-27"),
+
+            // =========================
+            // TEMPERATURE (base: celsius)
+            // =========================
+            define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
+            define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
+            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778")
     );
 
     /**
