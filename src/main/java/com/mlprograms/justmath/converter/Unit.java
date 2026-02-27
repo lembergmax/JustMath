@@ -202,10 +202,6 @@ public interface Unit {
          */
         NAUTICAL_MILE,
         /**
-         * Nautical mile (International).
-         */
-        NAUTICAL_MILE_INTERNATIONAL,
-        /**
          * Nautical mile (UK).
          */
         NAUTICAL_MILE_UK,
@@ -720,10 +716,6 @@ public interface Unit {
          * Acre-foot (ac*ft).
          */
         ACRE_FOOT,
-        /**
-         * Acre-foot (US survey).
-         */
-        ACRE_FOOT_US_SURVEY,
         /**
          * Acre-inch (ac*in).
          */
