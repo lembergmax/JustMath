@@ -38,15 +38,15 @@ BigNumberList is a domain-specific, list-like container for BigNumber instances.
 It implements java.util.List<BigNumber> and adds high-level statistical, transformation, and sorting utilities on top.
 
 ### ✅ Core Capabilities
-| Category                 | Methods                                                                                                         | Description                                              |
-|--------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`             | Create lists from existing values or string representations |
-| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                      | Convert to arrays, immutable views, or string/double lists |
-| **Sorting**              | `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                   | Sort using custom algorithms or natural order            |
-| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean` | High-precision statistical operations                    |
-| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map` | In-place or copy-based transformations on all elements   |
-| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                             | Remove duplicates, concatenate lists, copy subranges     |
-| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way        |
+| Category                 | Methods                                                                                                                                    | Description                                                 |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`                                        | Create lists from existing values or string representations |
+| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                                                  | Convert to arrays, immutable views, or string/double lists  |
+| **Sorting**              | `sort`, `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                                       | Sort using custom algorithms or natural order               |
+| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`               | High-precision statistical operations                       |
+| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map`                | In-place or copy-based transformations on all elements      |
+| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                                                        | Remove duplicates, concatenate lists, copy subranges        |
+| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way           |
 
 All higher-level operations are implemented in terms of BigNumber’s arbitrary precision arithmetic and comparison,
 avoiding issues with primitive types.
@@ -253,6 +253,13 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 | `ONE`                        | BigNumber value of 1                            |
 | `TWO`                        | BigNumber value of 2                            |
 | `THREE`                      | BigNumber value of 3                            |
+| `FOUR`                       | BigNumber value of 4                            |
+| `FIVE`                       | BigNumber value of 5                            |
+| `SIX`                        | BigNumber value of 6                            |
+| `SEVEN`                      | BigNumber value of 7                            |
+| `EIGHT`                      | BigNumber value of 8                            |
+| `NINE`                       | BigNumber value of 9                            |
+| `TEN`                        | BigNumber value of 10                           |
 | `ONE_HUNDRED`                | BigNumber value of 100                          |
 | `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
 
@@ -260,9 +267,16 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 
 You can also sort a `List<BigNumber>` using any of the following algorithms.
 
-| Algorithm                         |
-|-----------------------------------|
-| `QuickSort`                       |
+| Algorithm       |
+|-----------------|
+| `BubbleSort`    |
+| `GnomeSort`     |
+| `InsertionSort` |
+| `MergeSort`     |
+| `QuickSort`     |
+| `RadixSort`     |
+| `SelectionSort` |
+| `TimSort`       |
 
 ### ✅ Example: Using Algorithms
 
@@ -274,7 +288,7 @@ List<BigNumber> numbers = Arrays.asList(
         new BigNumber("1.73")
 );
 
-numbers = QuickSort.sort(numbers); // [1.41, 1.73, 2.71, 3.14]
+numbers = new QuickSort().sort(numbers); // [1.41, 1.73, 2.71, 3.14]
 ```
 
 ## 🧑‍💻 Practical Examples
@@ -334,181 +348,331 @@ System.out.println(result);
 // 61
 ```
 
-## 📈 GraphFx
+## 📏 Unit Converter (High-Precision)
 
-### High-Precision Function Plotting for JustMath
+JustMath includes a **high-precision unit converter** built on top of `BigNumber`.
+It is designed to be:
 
-**GraphFx** is the official **JavaFX plotting and visualization module** for **JustMath**.
-It renders mathematical expressions defined as **strings** and evaluates them using the calculation engine
-with high numerical precision.
-GraphFx is designed as a **developer-oriented library component** and can be embedded into custom JavaFX applications
-or shown as a standalone plotting window.
+- **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
+- **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
+- **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
 
-### ️ Screenshots
+### ✅ Supported Unit Groups (so far)
 
-<p align="center">
-  <img src="images/GraphFx-Dark.png" width="900" alt="GraphFx main window – dark theme">
-  <br/>
-  <em>GraphFx main window – dark theme</em>
-</p>
+- **Length** (base: meter) → `Unit.Length`
+- **Mass** (base: kilogram) → `Unit.Mass`
+- **Temperature** (base: kelvin) → `Unit.Temperature`
+- **Area** (base: square meter) → `Unit.Area`
 
-<p align="center">
-  <img src="images/GraphFx-Multi-Plot.png" width="900" alt="Multiple expressions plotted simultaneously">
-  <br/>
-  <em>Multiple expressions plotted simultaneously</em>
-</p>
+> Cross-group conversions are **rejected** by design (e.g. length → mass).
 
-<p align="center">
-  <img src="images/GraphFx-Zoom-Pan.png" width="900" alt="Zooming &amp; panning interaction">
-  <br/>
-  <em>Zooming &amp; panning interaction</em>
-</p>
+### 🧠 Design Overview
 
-### ✨ Features
+The converter module separates **unit identifiers** from **unit metadata**:
 
-GraphFx focuses on the features developers typically need when building mathematical tools: the ability to plot
-expressions quickly, understand behavior interactively, and present results in a clean and configurable UI.
+- `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`) are **pure identifiers**.
+- The internal `UnitRegistry` is the **single source of truth** for:
+  - `displayName` (human-readable label)
+  - `symbol` (parse/format token, e.g. `"km"`)
+  - conversion formula (scale/offset mapping to the base unit)
 
-* 🧮 String-based expression plotting  
-  Expressions are provided as plain strings, which makes GraphFx easy to integrate into apps where users type
-  mathematical formulas or where expressions come from external sources.
+This keeps the public API stable and makes the unit catalog deterministic and easy to maintain.
 
-* 🔢 Powered by JustMath’s high-precision engine  
-  The same engine that evaluates expressions in JustMath is used for plotting, ensuring consistency and high precision.
+### 🔁 Converting Values
 
-* 🔤 Variable support via Map<String, String>  
-  Variables are passed exactly like in the JustMath engine: Map<String, String>. This allows not only numeric values
-  but also full sub-expressions as variable values.
-
-* 🖱️ Interactive coordinate system  
-  GraphFx supports smooth exploration. You can zoom in to inspect local behavior (e.g., oscillations) and pan to follow
-  the curve across the coordinate system.
-
-* 🎨 Light & dark themes  
-  You can style the plot window to match your application design or user preference.
-
-* 📊 Multiple expressions per plot  
-  Plot multiple curves at once to compare functions, check identities, or visualize overlays (e.g., approximation vs.
-  original function).
-
-* 📍 Overlay layers (points & polylines, id-based)  
-  In addition to expression plots, GraphFx supports manual overlays that can be managed individually:
-  each overlay element (point/polyline) returns a stable id that can be removed or re-styled later.
-
-* 🔒 Thread-safe public API  
-  Public methods can be called from any thread. GraphFx dispatches UI work internally to the JavaFX Application Thread.
-
-### 📋 GraphFx API Overview
-
-The `GraphFxPlotViewer` class is the main entry point for library users. It can be used as a standalone window or
-embedded into other JavaFX layouts. Expression plots are created by calling `plotExpression(...)`, which returns a plot
-id that can later be removed again.
-
-Manual overlays (points and polylines) are independent from expression plots. Overlays are **id-based**, meaning you can
-add, remove and style single overlay elements without re-uploading the full list.
-
-| Category                | Method                                                                          | Description                                                |
-| ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| **Window Lifecycle**    | `show()`                                                                        | Shows the plot viewer using default window settings        |
-|                         | `show(String title, double width, double height)`                               | Shows the viewer with a custom title and size              |
-|                         | `hide()`                                                                        | Hides the window without disposing it                      |
-|                         | `dispose()`                                                                     | Closes the window and releases all resources               |
-| **Embedding**           | `asNode()`                                                                      | Returns an embeddable JavaFX node                          |
-| **Expression Plotting** | `plotExpression(String expression, String color)`                               | Plots an expression without variables                      |
-|                         | `plotExpression(String expression, Map<String,String> variables, String color)` | Plots an expression with variables                         |
-|                         | `removeExpressionPlot(long plotId)`                                             | Removes a plotted expression by id                         |
-|                         | `clearExpressionPlots()`                                                        | Removes all plotted expressions                            |
-| **Viewport Control**    | `centerOrigin()`                                                                | Centers the coordinate system at (0, 0)                    |
-| **Themes**              | `setTheme(DisplayTheme theme)`                                                  | Applies a light or dark theme                              |
-| **Overlay – Points**    | `addPoint(Point2D point)`                                                       | Adds a point using the default style and returns an id     |
-|                         | `addPoint(Point2D point, Color color, double radiusPx)`                         | Adds a point with individual style and returns an id       |
-|                         | `removePoint(long pointId)`                                                     | Removes a single point by id                               |
-|                         | `setPointStyle(long pointId, Color color, double radiusPx)`                     | Updates the style of an existing point                     |
-|                         | `clearPoints()`                                                                 | Removes all points                                         |
-|                         | `setDefaultPointStyle(Color color, double radiusPx)`                            | Sets the default style for future points                   |
-|                         | `setPoints(List<Point2D> points)`                                               | Replaces all points (uses the current default style)       |
-| **Overlay – Polylines** | `addPolyline(List<Point2D> polyline)`                                           | Adds a polyline using the default style and returns an id  |
-|                         | `addPolyline(List<Point2D> polyline, Color color, double widthPx)`              | Adds a polyline with individual style and returns an id    |
-|                         | `removePolyline(long polylineId)`                                               | Removes a single polyline by id                            |
-|                         | `setPolylineStyle(long polylineId, Color color, double widthPx)`                | Updates the style of an existing polyline                  |
-|                         | `clearPolylines()`                                                              | Removes all polylines                                      |
-|                         | `setDefaultPolylineStyle(Color color, double widthPx)`                          | Sets the default style for future polylines                |
-|                         | `setPolyline(List<Point2D> polyline)`                                           | Replaces all polylines with a single one (default style)   |
-
-### 🚀 Quick Start
-
-The simplest way to use GraphFx is the standalone window mode. Create a viewer, plot one or more expressions, center
-the origin and call `show()`.
+Use `UnitConverter` to convert between units **within the same group**.
 
 ```java
-public static void main(final String[] args) {
-    final GraphFxPlotViewer viewer = new GraphFxPlotViewer(DisplayTheme.DARK);
+UnitConverter converter = new UnitConverter();
 
-    viewer.plotExpression("sin(10x)/x + 0.2x^3 - 2x", "#ff5500");
-    viewer.centerOrigin();
-    viewer.show();
+// 1 km -> m
+UnitValue meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
+System.out.println(meters.toDisplayString()); // 1000 m
+
+// 2.5 lb -> kg
+UnitValue kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
+System.out.println(kg.toDisplayString()); // 1.13398... kg
+```
+
+#### Precision / Rounding
+
+Conversions use a `MathContext` internally (especially for divisions).
+You can control this via:
+
+```java
+// uses a MathContext derived from the given division precision
+UnitConverter converter = new UnitConverter(50);
+
+// or provide your own MathContext
+UnitConverter converter2 = new UnitConverter(new MathContext(80, RoundingMode.HALF_UP));
+```
+
+### 🧾 Parsing Inputs like `"12.5 km"`
+
+Use `UnitValue` to parse a combined text input into a `(BigNumber + Unit)` pair.
+
+Supported formats:
+
+* Preferred: `"<number> <symbol>"` → `"12.5 km"`
+* Also supported: suffix without whitespace → `"12.5km"`
+
+Locale handling:
+
+* `new UnitValue(String)` detects decimal separators using lightweight heuristics
+* You can also pass an explicit `Locale`
+
+```java
+import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.UnitValue;
+
+UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
+UnitConverter converter = new UnitConverter();
+
+UnitValue result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
+System.out.println(result.toDisplayString()); // 12500 m
+```
+
+### 🔎 Looking up Units by Symbol / Getting Metadata
+
+The public facade `UnitElements` provides:
+
+* strict symbol parsing
+* metadata access (display name, symbol)
+* listing all built-in units
+
+```java
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitElements;
+
+// parse symbol -> unit
+Unit km = UnitElements.parseUnit("km");
+
+// metadata
+System.out.println(UnitElements.getDisplayName(km)); // "Kilometer"
+System.out.println(UnitElements.getSymbol(km));      // "km"
+
+// list all units (deterministic registry order)
+for (Unit unit : UnitElements.all()) {
+    System.out.println(UnitElements.getSymbol(unit) + " -> " + UnitElements.getDisplayName(unit));
 }
 ```
 
-<p align="center">
-  <img src="images/GraphFx-Quickstart.png" width="900" alt="Quick start output">
-  <br/>
-  <em>Quick start output</em>
-</p>
+### 📚 Supported Units (Built-In Catalog)
 
-### 🔤 Variables (`Map<String, String>`)
+> The table lists **Symbol → Name → Enum constant**.
+> All symbols are **case-sensitive**.
 
-GraphFx uses the same variable model as the JustMath CalculatorEngine: variables are passed as a
-`Map<String, String>`. This is a deliberate design choice because it enables much more than numeric substitution.
-Variable values can be simple literals like "2.5", but they can also be full expressions like "5+3" or
-`root(b)`. Variable substitution and evaluation are performed by the calculation engine and are therefore consistent
-with the rest of JustMath.
+#### 📏 Length (Unit.Length) — base: meter
+
+**Metric / SI & small units**
+
+| Name       | Symbol | Enum                     |
+| ---------- | ------ | ------------------------ |
+| Exameter   | Em     | `Unit.Length.EXAMETER`   |
+| Petameter  | Pm     | `Unit.Length.PETAMETER`  |
+| Terameter  | Tm     | `Unit.Length.TERAMETER`  |
+| Gigameter  | Gm     | `Unit.Length.GIGAMETER`  |
+| Megameter  | Mm     | `Unit.Length.MEGAMETER`  |
+| Kilometer  | km     | `Unit.Length.KILOMETER`  |
+| Hectometer | hm     | `Unit.Length.HECTOMETER` |
+| Dekameter  | dam    | `Unit.Length.DEKAMETER`  |
+| Meter      | m      | `Unit.Length.METER`      |
+| Decimeter  | dm     | `Unit.Length.DECIMETER`  |
+| Centimeter | cm     | `Unit.Length.CENTIMETER` |
+| Millimeter | mm     | `Unit.Length.MILLIMETER` |
+| Micrometer | um     | `Unit.Length.MICROMETER` |
+| Micron     | µm     | `Unit.Length.MICRON`     |
+| Nanometer  | nm     | `Unit.Length.NANOMETER`  |
+| Angstrom   | Å      | `Unit.Length.ANGSTROM`   |
+| Picometer  | pm     | `Unit.Length.PICOMETER`  |
+| Femtometer | fm     | `Unit.Length.FEMTOMETER` |
+| Attometer  | am     | `Unit.Length.ATTOMETER`  |
+
+**Physics / constants**
+
+| Name            | Symbol | Enum                          |
+| --------------- | ------ | ----------------------------- |
+| Planck Length   | lP     | `Unit.Length.PLANCK_LENGTH`   |
+| Electron Radius | re     | `Unit.Length.ELECTRON_RADIUS` |
+| Bohr Radius     | a0     | `Unit.Length.BOHR_RADIUS`     |
+| X Unit          | xu     | `Unit.Length.X_UNIT`          |
+| Fermi           | frm    | `Unit.Length.FERMI`           |
+
+**Astronomy**
+
+| Name                    | Symbol     | Enum                                  |
+| ----------------------- | ---------- | ------------------------------------- |
+| Sun Radius              | Rsun       | `Unit.Length.SUN_RADIUS`              |
+| Earth Equatorial Radius | R_earth_eq | `Unit.Length.EARTH_EQUATORIAL_RADIUS` |
+| Earth Polar Radius      | R_earth_p  | `Unit.Length.EARTH_POLAR_RADIUS`      |
+| Astronomical Unit       | au         | `Unit.Length.ASTRONOMICAL_UNIT`       |
+| Earth Distance from Sun | AU         | `Unit.Length.EARTH_DISTANCE_FROM_SUN` |
+| Parsec                  | pc         | `Unit.Length.PARSEC`                  |
+| Kiloparsec              | kpc        | `Unit.Length.KILOPARSEC`              |
+| Megaparsec              | Mpc        | `Unit.Length.MEGAPARSEC`              |
+| Light Year              | ly         | `Unit.Length.LIGHT_YEAR`              |
+
+**Nautical / maritime**
+
+| Name                 | Symbol   | Enum                                        |
+| -------------------- | -------- | ------------------------------------------- |
+| League               | lea      | `Unit.Length.LEAGUE`                        |
+| Nautical League      | NL       | `Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL` |
+| Nautical League (UK) | NL (UK)  | `Unit.Length.NAUTICAL_LEAGUE_UK`            |
+| Nautical Mile        | nmi      | `Unit.Length.NAUTICAL_MILE`                 |
+| Nautical Mile (UK)   | nmi (UK) | `Unit.Length.NAUTICAL_MILE_UK`              |
+
+**Imperial / historical / misc.**
+
+| Name           | Symbol     | Enum                        |
+| -------------- | ---------- | --------------------------- |
+| Mile           | mi         | `Unit.Length.MILE`          |
+| Roman Mile     | m.p.       | `Unit.Length.MILE_ROMAN`    |
+| Kiloyard       | kyd        | `Unit.Length.KILOYARD`      |
+| Furlong        | fur        | `Unit.Length.FURLONG`       |
+| Chain          | ch         | `Unit.Length.CHAIN`         |
+| Rope           | rope       | `Unit.Length.ROPE`          |
+| Rod            | rod        | `Unit.Length.ROD`           |
+| Fathom         | ftm        | `Unit.Length.FATHOM`        |
+| Famn           | famn       | `Unit.Length.FAMN`          |
+| Ell            | ell        | `Unit.Length.ELL`           |
+| Aln            | aln        | `Unit.Length.ALN`           |
+| Cubit (UK)     | cubit      | `Unit.Length.CUBIT_UK`      |
+| Span (cloth)   | span       | `Unit.Length.SPAN_CLOTH`    |
+| Link           | li         | `Unit.Length.LINK`          |
+| Finger (cloth) | finger     | `Unit.Length.FINGER_CLOTH`  |
+| Hand           | hand       | `Unit.Length.HAND`          |
+| Handbreadth    | hb         | `Unit.Length.HANDBREADTH`   |
+| Nail (cloth)   | nail       | `Unit.Length.NAIL_COTH`     |
+| Fingerbreadth  | fb         | `Unit.Length.FINGERBREADTH` |
+| Barleycorn     | barleycorn | `Unit.Length.BARLEYCORN`    |
+| Yard           | yd         | `Unit.Length.YARD`          |
+| Foot           | ft         | `Unit.Length.FEET`          |
+| Inch           | in         | `Unit.Length.INCH`          |
+| Centiinch      | cin        | `Unit.Length.CENTIINCH`     |
+| Caliber        | cl         | `Unit.Length.CALIBER`       |
+| Mil            | mil        | `Unit.Length.MIL`           |
+| Microinch      | µin        | `Unit.Length.MICROINCH`     |
+| Arpent         | arp        | `Unit.Length.ARPENT`        |
+| Ken            | ken        | `Unit.Length.KEN`           |
+
+**Typography / CSS**
+
+| Name  | Symbol | Enum                |
+| ----- | ------ | ------------------- |
+| Pixel | px     | `Unit.Length.PIXEL` |
+| Point | pt     | `Unit.Length.POINT` |
+| Pica  | pica   | `Unit.Length.PICA`  |
+| Em    | em     | `Unit.Length.EM`    |
+| Twip  | twip   | `Unit.Length.TWIP`  |
+
+#### ⚖️ Mass (Unit.Mass) — base: kilogram
+
+| Name             | Symbol | Enum                         |
+| ---------------- | ------ | ---------------------------- |
+| Tonne            | t      | `Unit.Mass.TON`              |
+| Kilogram         | kg     | `Unit.Mass.KILOGRAM`         |
+| Gram             | g      | `Unit.Mass.GRAM`             |
+| Milligram        | mg     | `Unit.Mass.MILLIGRAM`        |
+| Long Ton         | lt     | `Unit.Mass.LONG_TON`         |
+| Short Ton        | st     | `Unit.Mass.SHORT_TON`        |
+| Pound            | lb     | `Unit.Mass.POUND`            |
+| Ounce            | oz     | `Unit.Mass.OUNCE`            |
+| Carat            | ct     | `Unit.Mass.CARRAT`           |
+| Atomic Mass Unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
+
+#### 🌡️ Temperature (Unit.Temperature) — base: kelvin
+
+| Name       | Symbol | Enum                          |
+| ---------- | ------ | ----------------------------- |
+| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
+| Celsius    | °C     | `Unit.Temperature.CELSIUS`    |
+| Fahrenheit | °F     | `Unit.Temperature.FAHRENHEIT` |
+
+#### 🧱 Area (Unit.Area) — base: square meter
+
+| Name                  | Symbol   | Enum                               |
+| --------------------- | -------- | ---------------------------------- |
+| Square Kilometer      | km^2     | `Unit.Area.SQUARE_KILOMETER`       |
+| Square Hectometer     | hm^2     | `Unit.Area.SQUARE_HECTOMETER`      |
+| Square Dekameter      | dam^2    | `Unit.Area.SQUARE_DEKAMETER`       |
+| Square Meter          | m^2      | `Unit.Area.SQUARE_METER`           |
+| Square Decimeter      | dm^2     | `Unit.Area.SQUARE_DECIMETER`       |
+| Square Centimeter     | cm^2     | `Unit.Area.SQUARE_CENTIMETER`      |
+| Square Millimeter     | mm^2     | `Unit.Area.SQUARE_MILLIMETER`      |
+| Square Micrometer     | µm^2     | `Unit.Area.SQUARE_MICROMETER`      |
+| Square Nanometer      | nm^2     | `Unit.Area.SQUARE_NANOMETER`       |
+| Hectare               | ha       | `Unit.Area.HECTARE`                |
+| Are                   | a        | `Unit.Area.ARE`                    |
+| Barn                  | b        | `Unit.Area.BARN`                   |
+| Thomson Cross Section | σT       | `Unit.Area.ELECTRON_CROSS_SECTION` |
+| Township              | twp      | `Unit.Area.TOWNSHIP`               |
+| Section               | sec      | `Unit.Area.SECTION`                |
+| Homestead             | hstd     | `Unit.Area.HOMESTEAD`              |
+| Square Mile           | mi^2     | `Unit.Area.SQUARE_MILE`            |
+| Acre                  | ac       | `Unit.Area.ACRE`                   |
+| Rood                  | rood     | `Unit.Area.ROOD`                   |
+| Square Chain          | ch^2     | `Unit.Area.SQUARE_CHAIN`           |
+| Square Rod            | rd^2     | `Unit.Area.SQUARE_ROD`             |
+| Square Pole           | pole^2   | `Unit.Area.SQUARE_POLE`            |
+| Square Rope           | rope^2   | `Unit.Area.SQUARE_ROPE`            |
+| Square Yard           | yd^2     | `Unit.Area.SQUARE_YARD`            |
+| Square Foot           | ft^2     | `Unit.Area.SQUARE_FOOT`            |
+| Square Inch           | in^2     | `Unit.Area.SQUARE_INCH`            |
+| Arpent                | arp_area | `Unit.Area.ARPENT`                 |
+| Cuerda                | cda      | `Unit.Area.CUERDA`                 |
+| Plaza                 | plz      | `Unit.Area.PLAZA`                  |
+
+### 🚫 Error Handling
+
+The converter module uses conversion-specific runtime exceptions:
+
+* `ConversionException`
+  Thrown for invalid numeric input / parse issues.
+
+* `UnitConversionException`
+  Thrown when:
+
+  * symbols are unknown or missing
+  * units are incompatible (cross-group conversion)
+  * the input format is malformed
+
+Example:
 
 ```java
-Map<String, String> variables = new HashMap<>();
-variables.put("a", "2.5");
-variables.put("b", "1.2");
-
-viewer.plotExpression("a*sin(x) + b", variables, "#00B7FF");
+try {
+    UnitValue v = new UnitValue("abc km");
+} catch (ConversionException ex) {
+    // invalid number
+}
 ```
 
-<p align="center">
-  <img src="images/GraphFx-Variables.png" width="900" alt="Variable-based plot">
-  <br/>
-  <em>Variable-based plot</em>
-</p>
+### ➕ Adding a New Unit (Internal Registry)
 
-### 📍 Overlays (Points & Polylines)
+To add a new built-in unit, you typically do **only two things**:
 
-Expression plots are not the only thing you may want to visualize. In many real applications you compute data points
-(e.g., samples, measurements, roots, intersections, or numerical solutions) and want to display them together with a
-function. GraphFx therefore supports manual overlays that are drawn on top of the plot. These overlays use world
-coordinates (the same coordinate system as the function plot) and automatically scale and translate with the viewport.
+1. Add the enum constant to the correct group (e.g. `Unit.Length`)
+2. Add exactly one `define(...)` entry to the internal `UnitRegistry.BUILT_IN`
 
-`setPoints(...)` replaces all overlay points at once, which makes it easy to render scatter plots or highlight special
-points. `setPolyline(...)` draws a custom connected path. Together, these overlays can be used to visualize discrete
-data on top of continuous functions or to show algorithmic results such as approximation curves.
+Conversion mapping is defined using an affine formula into the base unit:
+
+```text
+base = value * scaleToBase + offsetToBase
+```
+
+For purely linear conversions (most units), `offsetToBase = "0"`.
+
+Example (linear):
 
 ```java
-viewer.setPoints(List.of(
-        new Point2D(-2, 1),
-        new Point2D(0, 0),
-        new Point2D(2, -1)
-));
-
-viewer.setPolyline(List.of(
-        new Point2D(-3, -1),
-        new Point2D(-1, 2),
-        new Point2D(1, -2),
-        new Point2D(3, 1)
-));
+define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000")
 ```
 
-<p align="center">
-  <img src="images/GraphFx-Overlays.png" width="900" alt="Overlay example">
-  <br/>
-  <em>Overlay example</em>
-</p>
+The registry validates at startup:
+
+* every unit is defined exactly once
+* every symbol is unique
+* groups are consistent and deterministic
 
 ## ⚙️ Maven (Coming Soon)
 
@@ -521,8 +685,13 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
-    <td>v1.2.3.14</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.3.14.jar">JustMath v1.2.3.14</a></td>
+    <td>v1.3.0</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.3.0.jar">JustMath v1.3.0</a></td>
+    <td>Release</td>
+  </tr>
+  <tr>
+    <td>v1.2.5</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.5.jar">JustMath v1.2.5</a></td>
     <td>Preview</td>
   </tr>
   <tr>

@@ -38,7 +38,6 @@ import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -68,7 +67,7 @@ import java.util.stream.Collectors;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-class Tokenizer {
+public class Tokenizer {
 
     /**
      * Candidate descriptor for registered three-argument functions used by the tokenizer.
@@ -110,13 +109,13 @@ class Tokenizer {
      * a known operator or function. It is a live view and will reflect changes in the
      * registry.
      */
-    private static final Set<String> VALID_OPERATORS_AND_FUNCTIONS = ExpressionElements.registry.keySet();
+    private static final Set<String> VALID_OPERATORS_AND_FUNCTIONS = ExpressionElements.getRegistry().keySet();
 
     /**
      * Precomputed candidates for registered three-argument functions.
      *
      * <p>This array is constructed once at class initialization by scanning
-     * {@link ExpressionElements#registry} for instances of {@link ThreeArgumentFunction}.
+     * {@link ExpressionElements#getRegistry()} for instances of {@link ThreeArgumentFunction}.
      * Candidates are sorted by decreasing symbol length to ensure a maximal-munch
      * matching strategy during tokenization.</p>
      */
@@ -172,7 +171,7 @@ class Tokenizer {
      * @throws IllegalArgumentException if the input contains invalid characters or malformed expressions
      * @throws NullPointerException     if the input string is null
      */
-    public List<Token> tokenize(String input) {
+    public List<Token> tokenize(@NonNull final String input) {
         List<Token> tokens = new ArrayList<>();
         String expression = removeWhitespace(input);
         int index = 0;
@@ -560,7 +559,7 @@ class Tokenizer {
     /**
      * Build an array of candidates representing registered three-argument functions.
      *
-     * <p>This method performs two passes over the {@link ExpressionElements#registry}:
+     * <p>This method performs two passes over the {@link ExpressionElements#getRegistry()}:
      * <ol>
      *   <li>First pass: counts how many registry entries are instances of {@link ThreeArgumentFunction}
      *       to allocate an array of the exact required size.</li>
@@ -577,7 +576,7 @@ class Tokenizer {
      */
     private static ThreeArgCandidate[] buildThreeArgumentFunctionCandidates() {
         int count = 0;
-        for (final var element : ExpressionElements.registry.values()) {
+        for (final var element : ExpressionElements.getRegistry().values()) {
             if (element instanceof ThreeArgumentFunction) {
                 count++;
             }
@@ -586,7 +585,7 @@ class Tokenizer {
         final ThreeArgCandidate[] candidates = new ThreeArgCandidate[count];
         int writeIndex = 0;
 
-        for (final var entry : ExpressionElements.registry.entrySet()) {
+        for (final var entry : ExpressionElements.getRegistry().entrySet()) {
             final ExpressionElement element = entry.getValue();
             if (element instanceof ThreeArgumentFunction) {
                 final String symbol = entry.getKey();

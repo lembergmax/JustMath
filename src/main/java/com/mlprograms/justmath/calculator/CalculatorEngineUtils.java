@@ -31,9 +31,11 @@ import com.mlprograms.justmath.calculator.internal.Token;
 
 import lombok.NonNull;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.*;
 
-class CalculatorEngineUtils {
+public class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
@@ -70,7 +72,7 @@ class CalculatorEngineUtils {
      *                                  absolute value signs, since this would result in unbalanced expressions
      *                                  (e.g., {@code |x+3}).
      */
-    static String replaceAbsSigns(String expression) {
+    public static String replaceAbsSigns(String expression) {
         String absValueSign = ExpressionElements.SURRFUNC_ABS_S;
 
         int occurrences = countOccurrences(expression, absValueSign);
@@ -195,6 +197,16 @@ class CalculatorEngineUtils {
 
         currentPath.remove(variableName);
         visitedVariables.add(variableName);
+    }
+
+    /**
+     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
+     *
+     * @param divisionPrecision the precision for division operations
+     * @return a MathContext instance with the given precision and HALF_UP rounding mode
+     */
+    public static MathContext getDefaultMathContext(int divisionPrecision) {
+        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
     }
 
 }
