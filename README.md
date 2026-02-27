@@ -457,7 +457,7 @@ for (Unit unit : UnitElements.all()) {
 }
 ```
 
-### 📚 Supported Units (Built-In Catalog)
+### 📚 Supported Units (most common)
 
 > The table lists **Symbol → Name → Enum constant**.
 > All symbols are **case-sensitive**.
