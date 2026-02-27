@@ -84,8 +84,7 @@ final class UnitValueParser {
      * Parses the given text and returns the parsed components (value + unit).
      *
      * <p>
-     * The locale for numeric parsing is detected using simple heuristics based on the presence and position of
-     * {@code '.'} and {@code ','}. If detection is unclear, {@link Locale#getDefault()} is used.
+     * The locale for numeric parsing is auto-detected by {@link BigNumber} based on the input string.
      * </p>
      *
      * @param text the raw input; must not be {@code null} or blank
@@ -99,7 +98,7 @@ final class UnitValueParser {
     }
 
     /**
-     * Parses the given text using heuristic locale detection and a provided {@link MathContext}.
+     * Parses the given text using auto locale detection and a provided {@link MathContext}.
      *
      * @param text        the raw input; must not be {@code null} or blank
      * @param mathContext the math context used to create the {@link BigNumber}; must not be {@code null}
@@ -115,8 +114,7 @@ final class UnitValueParser {
         }
 
         final ParsedParts parts = splitIntoNumberAndSymbol(trimmed);
-        final Locale detectedLocale = detectLocaleForNumber(parts.numberText());
-        return parseComponents(parts, detectedLocale, mathContext);
+        return parseComponents(parts, mathContext);
     }
 
     /**
@@ -159,24 +157,31 @@ final class UnitValueParser {
     }
 
     /**
-     * Parses already split parts (numeric text + unit symbol) into a strongly typed result.
-     *
-     * <p>
-     * This method is responsible for:
-     * </p>
-     * <ul>
-     *   <li>resolving the unit symbol via {@link UnitElements#parseUnit(String)}</li>
-     *   <li>normalizing the number text based on the provided locale</li>
-     *   <li>creating the {@link BigNumber} instance</li>
-     * </ul>
-     *
-     * @param parts       numeric and unit symbol parts; must not be {@code null}
-     * @param locale      locale used for numeric normalization; must not be {@code null}
-     * @param mathContext math context used to create the {@link BigNumber}; must not be {@code null}
-     * @return parsed components; never {@code null}
-     * @throws UnitConversionException if the unit symbol is unknown
-     * @throws ConversionException     if numeric parsing fails
-     * @throws NullPointerException    if any argument is {@code null}
+     * Parses already split parts (numeric text + unit symbol) into a strongly typed result
+     * using auto locale detection for the numeric part.
+     */
+    private static ParsedComponents parseComponents(
+            @NonNull final ParsedParts parts,
+            @NonNull final MathContext mathContext
+    ) {
+        final Unit parsedUnit = UnitElements.parseUnit(parts.symbol());
+
+        final BigNumber parsedNumber;
+        try {
+            parsedNumber = new BigNumber(parts.numberText(), mathContext); // ✅ new auto-locale constructor
+        } catch (final RuntimeException runtimeException) {
+            throw new ConversionException(
+                    "Invalid numeric value '" + parts.numberText() + "'.",
+                    runtimeException
+            );
+        }
+
+        return new ParsedComponents(parsedNumber, parsedUnit);
+    }
+
+    /**
+     * Parses already split parts (numeric text + unit symbol) into a strongly typed result
+     * using a caller-provided locale (strict normalization based on that locale).
      */
     private static ParsedComponents parseComponents(
             @NonNull final ParsedParts parts,
@@ -199,56 +204,6 @@ final class UnitValueParser {
         return new ParsedComponents(parsedNumber, parsedUnit);
     }
 
-    /**
-     * Attempts to detect a suitable {@link Locale} for parsing the numeric part.
-     *
-     * <p>
-     * Heuristic rules:
-     * </p>
-     * <ul>
-     *   <li>If only {@code ','} occurs: assume comma-decimal (e.g. {@link Locale#GERMANY})</li>
-     *   <li>If only {@code '.'} occurs: assume dot-decimal (e.g. {@link Locale#US})</li>
-     *   <li>If both occur: whichever appears last is assumed to be the decimal separator</li>
-     *   <li>If none occur: fall back to {@link Locale#getDefault()}</li>
-     * </ul>
-     *
-     * @param numberText numeric part as text; must not be {@code null}
-     * @return detected locale; never {@code null}
-     * @throws NullPointerException if {@code numberText} is {@code null}
-     */
-    private static Locale detectLocaleForNumber(@NonNull final String numberText) {
-        final int lastComma = numberText.lastIndexOf(',');
-        final int lastDot = numberText.lastIndexOf('.');
-
-        final boolean hasComma = lastComma >= 0;
-        final boolean hasDot = lastDot >= 0;
-
-        if (hasComma && !hasDot) {
-            return Locale.GERMANY;
-        }
-        if (hasDot && !hasComma) {
-            return Locale.US;
-        }
-        if (hasComma) {
-            return (lastComma > lastDot) ? Locale.GERMANY : Locale.US;
-        }
-
-        return Locale.getDefault();
-    }
-
-    /**
-     * Splits the input into numeric text and a unit symbol.
-     *
-     * <p>
-     * This method prefers the whitespace-separated format. If whitespace does not exist,
-     * it falls back to suffix matching against the known unit symbols.
-     * </p>
-     *
-     * @param trimmedInput input string that has already been {@link String#trim() trimmed}; must not be {@code null}
-     * @return parsed parts; never {@code null}
-     * @throws UnitConversionException if no unit symbol can be extracted
-     * @throws NullPointerException    if {@code trimmedInput} is {@code null}
-     */
     private static ParsedParts splitIntoNumberAndSymbol(@NonNull final String trimmedInput) {
         final String[] tokens = trimmedInput.split("\\s+");
 
@@ -269,18 +224,6 @@ final class UnitValueParser {
         return splitBySuffixSymbol(tokens[0]);
     }
 
-    /**
-     * Splits a single-token input by locating a known unit symbol suffix.
-     *
-     * <p>
-     * The lookup iterates over {@link #SYMBOLS_BY_LENGTH_DESC} and thus prefers the longest suffix match.
-     * </p>
-     *
-     * @param token single token input, e.g. {@code "12.5km"}; must not be {@code null}
-     * @return parsed parts; never {@code null}
-     * @throws UnitConversionException if no known symbol is a suffix of the token
-     * @throws NullPointerException    if {@code token} is {@code null}
-     */
     private static ParsedParts splitBySuffixSymbol(@NonNull final String token) {
         for (final String symbol : SYMBOLS_BY_LENGTH_DESC) {
             if (token.endsWith(symbol)) {
@@ -297,26 +240,6 @@ final class UnitValueParser {
         );
     }
 
-    /**
-     * Normalizes a locale-specific numeric string into a canonical representation.
-     *
-     * <p>
-     * The normalization performs two operations:
-     * </p>
-     * <ol>
-     *   <li>Remove grouping separators (e.g. '.' in Germany, ',' in US).</li>
-     *   <li>Replace the locale decimal separator with '.' (dot).</li>
-     * </ol>
-     *
-     * <p>
-     * It also removes common non-breaking space characters used as grouping separators in some locales.
-     * </p>
-     *
-     * @param rawNumberText the raw numeric text (e.g. {@code "1.234,56"}); must not be {@code null}
-     * @param locale        the locale defining decimal and grouping separators; must not be {@code null}
-     * @return canonical numeric text (e.g. {@code "1234.56"}); never {@code null}
-     * @throws NullPointerException if any argument is {@code null}
-     */
     private static String normalizeNumberText(@NonNull final String rawNumberText, @NonNull final Locale locale) {
         final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         final char decimalSeparator = symbols.getDecimalSeparator();
@@ -335,37 +258,12 @@ final class UnitValueParser {
         return withoutGrouping.replace(decimalSeparator, '.');
     }
 
-    /**
-     * Builds an immutable list of known unit symbols sorted by descending length.
-     *
-     * <p>
-     * This ordering is required for correct suffix parsing with ambiguous symbols.
-     * </p>
-     *
-     * @param registry the symbol registry (symbol -&gt; unit); must not be {@code null}
-     * @return symbols sorted by descending length; never {@code null}
-     * @throws NullPointerException if {@code registry} is {@code null}
-     */
     private static List<String> symbolsByLengthDesc(@NonNull final Map<String, Unit> registry) {
         return registry.keySet().stream()
                 .sorted(Comparator.comparingInt(String::length).reversed())
                 .toList();
     }
 
-    /**
-     * Joins a sub-range of a token array using a single space character.
-     *
-     * <p>
-     * This is used to reconstruct numeric text that may itself contain spaces (e.g. if inputs were
-     * already tokenized by whitespace and the unit is the last token).
-     * </p>
-     *
-     * @param tokens array of tokens; must not be {@code null}
-     * @param start  start index (inclusive)
-     * @param end    end index (exclusive)
-     * @return joined string; never {@code null}
-     * @throws NullPointerException if {@code tokens} is {@code null}
-     */
     private static String join(@NonNull final String[] tokens, final int start, final int end) {
         final StringBuilder builder = new StringBuilder();
         for (int i = start; i < end; i++) {
@@ -374,65 +272,21 @@ final class UnitValueParser {
             }
             builder.append(tokens[i]);
         }
-
         return builder.toString();
     }
 
-    /**
-     * Lightweight internal carrier for parsed components (value + unit).
-     *
-     * <p>
-     * This type is deliberately small and immutable. It exists to keep {@link UnitValue} constructors simple
-     * and to avoid exposing parsing APIs on {@link UnitValue} directly.
-     * </p>
-     *
-     * @param value the parsed numeric value; never {@code null}
-     * @param unit  the parsed unit; never {@code null}
-     */
     record ParsedComponents(BigNumber value, Unit unit) {
-
-        /**
-         * Creates a new parsed component carrier and validates its invariants.
-         *
-         * @param value the parsed numeric value; must not be {@code null}
-         * @param unit  the parsed unit; must not be {@code null}
-         * @throws NullPointerException if any argument is {@code null}
-         */
         ParsedComponents {
             Objects.requireNonNull(value, "value must not be null");
             Objects.requireNonNull(unit, "unit must not be null");
         }
-
     }
 
-    /**
-     * Internal parsing result holding the textual numeric part and the textual unit symbol.
-     *
-     * <p>
-     * This type represents an intermediate state, before:
-     * </p>
-     * <ul>
-     *   <li>the unit symbol is resolved to a {@link Unit}</li>
-     *   <li>the number text is normalized and converted to {@link BigNumber}</li>
-     * </ul>
-     *
-     * @param numberText numeric part as extracted from input; never {@code null}
-     * @param symbol     unit symbol as extracted from input; never {@code null}
-     */
     private record ParsedParts(String numberText, String symbol) {
-
-        /**
-         * Creates a new textual parsing result.
-         *
-         * @param numberText numeric part; must not be {@code null}
-         * @param symbol     unit symbol; must not be {@code null}
-         * @throws NullPointerException if any argument is {@code null}
-         */
         private ParsedParts {
             Objects.requireNonNull(numberText, "numberText must not be null");
             Objects.requireNonNull(symbol, "symbol must not be null");
         }
-
     }
 
 }

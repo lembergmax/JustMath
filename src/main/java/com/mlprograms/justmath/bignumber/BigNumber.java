@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -108,25 +108,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     private MathContext mathContext;
 
     /**
-     * Constructs a BigNumber from a string using the default locale.
-     *
-     * @param number the string representation of the number
-     */
-    public BigNumber(@NonNull final String number) {
-        this(number, Locale.US);
-    }
-
-    /**
-     * Constructs a BigNumber from a string and trigonometric mode using the default locale and math context.
-     *
-     * @param number            the string representation of the number
-     * @param trigonometricMode the trigonometric mode to use
-     */
-    public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
-        this(number, Locale.US, DEFAULT_MATH_CONTEXT, trigonometricMode);
-    }
-
-    /**
      * Constructs a BigNumber from a string and locale using the default math context.
      *
      * @param number       the string representation of the number
@@ -145,16 +126,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale targetLocale) {
         this(number, targetLocale, DEFAULT_MATH_CONTEXT, trigonometricMode);
-    }
-
-    /**
-     * Constructs a BigNumber from a string and math context using the default locale.
-     *
-     * @param number      the string representation of the number
-     * @param mathContext the math context to use for precision and rounding
-     */
-    public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
-        this(number, Locale.US, mathContext);
     }
 
     /**
@@ -186,6 +157,73 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.valueBeforeDecimalPoint = parsedAndFormatted.valueBeforeDecimalPoint;
         this.valueAfterDecimalPoint = parsedAndFormatted.valueAfterDecimalPoint;
         this.isNegative = parsedAndFormatted.isNegative;
+        this.mathContext = mathContext;
+        this.trigonometricMode = trigonometricMode;
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+    }
+
+    /**
+     * Constructs a BigNumber from a string using an auto-resolved locale.
+     *
+     * <p>
+     * The locale is detected from the input string (grouping/decimal separators).
+     * </p>
+     *
+     * @param number the string representation of the number
+     */
+    public BigNumber(@NonNull final String number) {
+        this(number, DEFAULT_MATH_CONTEXT, TrigonometricMode.DEG);
+    }
+
+    /**
+     * Constructs a BigNumber from a string and trigonometric mode using an auto-resolved locale
+     * and the default math context.
+     *
+     * @param number            the string representation of the number
+     * @param trigonometricMode the trigonometric mode to use
+     */
+    public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
+        this(number, DEFAULT_MATH_CONTEXT, trigonometricMode);
+    }
+
+    /**
+     * Constructs a BigNumber from a string and math context using an auto-resolved locale
+     * and the default trigonometric mode (DEG).
+     *
+     * @param number      the string representation of the number
+     * @param mathContext the math context to use for precision and rounding
+     */
+    public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
+        this(number, mathContext, TrigonometricMode.DEG);
+    }
+
+    /**
+     * Constructs a BigNumber from a string using an auto-resolved locale, a provided math context,
+     * and a provided trigonometric mode.
+     *
+     * <p>
+     * The locale is detected from the input string (grouping/decimal separators). The detected locale
+     * is stored on the BigNumber instance.
+     * </p>
+     *
+     * @param number            the string representation of the number
+     * @param mathContext       the math context to use for precision and rounding
+     * @param trigonometricMode the trigonometric mode to use
+     */
+    public BigNumber(
+            @NonNull final String number,
+            @NonNull final MathContext mathContext,
+            @NonNull final TrigonometricMode trigonometricMode
+    ) {
+        MathUtils.checkMathContext(mathContext);
+
+        final BigNumber parsed = bigNumberParser.parse(number);
+
+        this.locale = parsed.locale;
+        this.valueBeforeDecimalPoint = parsed.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = parsed.valueAfterDecimalPoint;
+        this.isNegative = parsed.isNegative;
+
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
         this.calculatorEngine = new CalculatorEngine(trigonometricMode);
@@ -3143,7 +3181,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
         return isNegative ? "-" + localized : localized;
     }
-
 
     /**
      * Converts this BigNumber to a BigDecimal using normalized US-format string.
