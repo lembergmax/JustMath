@@ -46,15 +46,6 @@ public interface Unit {
      * <p>
      * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
      * </p>
-     *
-     * <p><b>Ordering</b></p>
-     * <ul>
-     *   <li><b>Metric (SI + prefixes)</b> from largest to smallest.</li>
-     *   <li><b>Very small / physics</b> (Planck length, radii, etc.).</li>
-     *   <li><b>Astronomy</b> (AU, Earth–Sun distance, parsec, light-year, etc.).</li>
-     *   <li><b>Imperial / US customary</b> (mile → inch) + historical.</li>
-     *   <li><b>Typographic / CSS</b> units (pixel, point, pica, em).</li>
-     * </ul>
      */
     enum Length implements Unit {
 
@@ -499,7 +490,7 @@ public interface Unit {
     }
 
     /**
-     * Volume unit identifiers (base unit: square meter).
+     * Volume unit identifiers (base unit: cubic meter).
      *
      * <p>
      * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
@@ -825,57 +816,293 @@ public interface Unit {
     enum Mass implements Unit {
 
         /**
+         * Exagram.
+         */
+        EXAGRAM,
+        /**
+         * Petagram.
+         */
+        PETAGRAM,
+        /**
+         * Teragram.
+         */
+        TERAGRAM,
+        /**
+         * Gigagram.
+         */
+        GIGAGRAM,
+        /**
+         * Megagram.
+         */
+        MEGAGRAM,
+        /**
+         * Kiloton (metric).
+         */
+        KILOTON,
+        /**
+         * Quintal (metric).
+         */
+        QUINTAL_METRIC,
+        /**
          * Metric tonne (t).
          */
         TON,
+
         /**
-         * Kilogram (kg), base unit of the MASS category.
+         * Kilogram, base unit of the MASS category.
          */
         KILOGRAM,
         /**
-         * Gram (g).
+         * Hectogram.
+         */
+        HECTOGRAM,
+        /**
+         * Dekagram.
+         */
+        DEKAGRAM,
+        /**
+         * Gram.
          */
         GRAM,
         /**
-         * Milligram (mg).
+         * Decigram.
+         */
+        DECIGRAM,
+        /**
+         * Centigram.
+         */
+        CENTIGRAM,
+        /**
+         * Milligram.
          */
         MILLIGRAM,
+        /**
+         * Microgram.
+         */
+        MICROGRAM,
+        /**
+         * Gamma (microgram alias used in some contexts).
+         */
+        GAMMA,
+        /**
+         * Nanogram.
+         */
+        NANOGRAM,
+        /**
+         * Picogram.
+         */
+        PICOGRAM,
+        /**
+         * Femtogram.
+         */
+        FEMTOGRAM,
+        /**
+         * Attogram.
+         */
+        ATTOGRAM,
 
         /**
-         * Long ton (lt) – UK ton.
+         * Carat.
+         */
+        CARRAT,
+        /**
+         * Grain.
+         */
+        GRAIN,
+        /**
+         * Pennyweight.
+         */
+        PENNYWEIGHT,
+        /**
+         * Scruple (apothecary).
+         */
+        SCRUPLE_APOTHECARY,
+        /**
+         * Pound (troy or apothecary).
+         */
+        POUND_TROY_APOTHECARY,
+
+        /**
+         * Ton (long).
          */
         LONG_TON,
         /**
-         * Short ton (st) – US ton.
+         * Ton (short).
          */
         SHORT_TON,
         /**
-         * Pound (lb).
+         * Pound.
          */
         POUND,
         /**
-         * Ounce (oz).
+         * Ounce.
          */
         OUNCE,
 
         /**
-         * Carat (ct) – 0.2 g (gem mass).
+         * Hundredweight (United States).
          */
-        CARRAT,
+        HUNDREDWEIGHT_UNITED_STATES,
         /**
-         * Unified atomic mass unit (u) – also known as Dalton (Da).
+         * Hundredweight (United Kingdom).
          */
-        ATOMIC_MASS_UNIT
+        HUNDREDWEIGHT_UNITED_KINGDOM,
+        /**
+         * Quarter (United States).
+         */
+        QUARTER_UNITED_STATES,
+        /**
+         * Quarter (United Kingdom).
+         */
+        QUARTER_UNITED_KINGDOM,
+        /**
+         * Stone (United States).
+         */
+        STONE_UNITED_STATES,
+        /**
+         * Stone (United Kingdom).
+         */
+        STONE_UNITED_KINGDOM,
+
+        /**
+         * Kilogram-force square second per meter.
+         */
+        KILOGRAM_FORCE_SECOND_SQUARED_PER_METER,
+        /**
+         * Pound-force square second per foot.
+         */
+        POUND_FORCE_SECOND_SQUARED_PER_FOOT,
+        /**
+         * Slug.
+         */
+        SLUG,
+        /**
+         * Poundal.
+         */
+        POUNDAL,
+        /**
+         * Kilopound.
+         */
+        KILOPOUND,
+
+        /**
+         * Ton (assay) (United States).
+         */
+        ASSAY_TON_UNITED_STATES,
+        /**
+         * Ton (assay) (United Kingdom).
+         */
+        ASSAY_TON_UNITED_KINGDOM,
+
+        /**
+         * Atomic mass unit (u).
+         */
+        ATOMIC_MASS_UNIT,
+        /**
+         * Dalton.
+         */
+        DALTON,
+
+        /**
+         * Planck mass.
+         */
+        PLANCK_MASS,
+        /**
+         * Electron mass (rest).
+         */
+        ELECTRON_REST_MASS,
+        /**
+         * Muon mass.
+         */
+        MUON_MASS,
+        /**
+         * Proton mass.
+         */
+        PROTON_MASS,
+        /**
+         * Neutron mass.
+         */
+        NEUTRON_MASS,
+        /**
+         * Deuteron mass.
+         */
+        DEUTERON_MASS,
+
+        /**
+         * Earth's mass.
+         */
+        EARTH_MASS,
+        /**
+         * Sun's mass.
+         */
+        SUN_MASS,
+
+        /**
+         * Talent (Biblical Hebrew).
+         */
+        BIBLICAL_HEBREW_TALENT,
+        /**
+         * Mina (Biblical Hebrew).
+         */
+        BIBLICAL_HEBREW_MINA,
+        /**
+         * Shekel (Biblical Hebrew).
+         */
+        BIBLICAL_HEBREW_SHEKEL,
+        /**
+         * Bekan (Biblical Hebrew).
+         */
+        BIBLICAL_HEBREW_BEKAN,
+        /**
+         * Gerah (Biblical Hebrew).
+         */
+        BIBLICAL_HEBREW_GERAH,
+
+        /**
+         * Talent (Biblical Greek).
+         */
+        BIBLICAL_GREEK_TALENT,
+        /**
+         * Mina (Biblical Greek).
+         */
+        BIBLICAL_GREEK_MINA,
+        /**
+         * Tetradrachma (Biblical Greek).
+         */
+        BIBLICAL_GREEK_TETRADRACHMA,
+        /**
+         * Didrachma (Biblical Greek).
+         */
+        BIBLICAL_GREEK_DIDRACHMA,
+        /**
+         * Drachma (Biblical Greek).
+         */
+        BIBLICAL_GREEK_DRACHMA,
+
+        /**
+         * Denarius (Biblical Roman).
+         */
+        BIBLICAL_ROMAN_DENARIUS,
+        /**
+         * Assarion (Biblical Roman).
+         */
+        BIBLICAL_ROMAN_ASSARION,
+        /**
+         * Quadrans (Biblical Roman).
+         */
+        BIBLICAL_ROMAN_QUADRANS,
+        /**
+         * Lepton (Biblical Roman).
+         */
+        BIBLICAL_ROMAN_LEPTON
 
     }
 
     /**
-     * Temperature unit identifiers.
+     * Temperature unit identifiers (base unit: celsius).
      *
      * <p>
-     * The base unit of this group is {@code KELVIN}. Unlike length/mass, temperature conversions
-     * generally require an <em>offset</em> (affine transformation). The exact conversion formulas
-     * are defined in {@link UnitRegistry}.
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
      * </p>
      */
     enum Temperature implements Unit {
@@ -892,6 +1119,814 @@ public interface Unit {
          * Degrees Fahrenheit.
          */
         FAHRENHEIT
+
+    }
+
+    /**
+     * Pressure unit identifiers (base unit: pascal).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Pressure implements Unit {
+
+        /**
+         * Exapascal.
+         */
+        EXAPASCAL,
+        /**
+         * Petapascal.
+         */
+        PETAPASCAL,
+        /**
+         * Terapascal.
+         */
+        TERAPASCAL,
+        /**
+         * Gigapascal.
+         */
+        GIGAPASCAL,
+        /**
+         * Megapascal.
+         */
+        MEGAPASCAL,
+        /**
+         * Kilopascal.
+         */
+        KILOPASCAL,
+        /**
+         * Hectopascal.
+         */
+        HECTOPASCAL,
+        /**
+         * Dekapascal.
+         */
+        DEKAPASCAL,
+
+        /**
+         * Pascal, base unit of the PRESSURE category.
+         */
+        PASCAL,
+
+        /**
+         * Decipascal.
+         */
+        DECIPASCAL,
+        /**
+         * Centipascal.
+         */
+        CENTIPASCAL,
+        /**
+         * Millipascal.
+         */
+        MILLIPASCAL,
+        /**
+         * Micropascal.
+         */
+        MICROPASCAL,
+        /**
+         * Nanopascal.
+         */
+        NANOPASCAL,
+        /**
+         * Picopascal.
+         */
+        PICOPASCAL,
+        /**
+         * Femtopascal.
+         */
+        FEMTOPASCAL,
+        /**
+         * Attopascal.
+         */
+        ATTOPASCAL,
+
+        /**
+         * Bar.
+         */
+        BAR,
+        /**
+         * Millibar.
+         */
+        MILLIBAR,
+        /**
+         * Microbar.
+         */
+        MICROBAR,
+        /**
+         * Standard atmosphere.
+         */
+        STANDARD_ATMOSPHERE,
+        /**
+         * Technical atmosphere.
+         */
+        TECHNICAL_ATMOSPHERE,
+        /**
+         * Pounds per square inch.
+         */
+        PSI,
+        /**
+         * Kips per square inch (also commonly used as "ksi").
+         */
+        KSI,
+        /**
+         * Torr.
+         */
+        TORR,
+
+        /**
+         * Newton per square meter.
+         */
+        NEWTON_PER_SQUARE_METER,
+        /**
+         * Newton per square centimeter.
+         */
+        NEWTON_PER_SQUARE_CENTIMETER,
+        /**
+         * Newton per square millimeter.
+         */
+        NEWTON_PER_SQUARE_MILLIMETER,
+        /**
+         * Kilonewton per square meter.
+         */
+        KILONEWTON_PER_SQUARE_METER,
+        /**
+         * Dyne per square centimeter.
+         */
+        DYNE_PER_SQUARE_CENTIMETER,
+
+        /**
+         * Kilogram-force per square meter.
+         */
+        KILOGRAM_FORCE_PER_SQUARE_METER,
+        /**
+         * Kilogram-force per square centimeter.
+         */
+        KILOGRAM_FORCE_PER_SQUARE_CENTIMETER,
+        /**
+         * Kilogram-force per square millimeter.
+         */
+        KILOGRAM_FORCE_PER_SQUARE_MILLIMETER,
+        /**
+         * Gram-force per square centimeter.
+         */
+        GRAM_FORCE_PER_SQUARE_CENTIMETER,
+
+        /**
+         * Short ton-force per square foot.
+         */
+        SHORT_TON_FORCE_PER_SQUARE_FOOT,
+        /**
+         * Short ton-force per square inch.
+         */
+        SHORT_TON_FORCE_PER_SQUARE_INCH,
+        /**
+         * Long ton-force per square foot.
+         */
+        LONG_TON_FORCE_PER_SQUARE_FOOT,
+        /**
+         * Long ton-force per square inch.
+         */
+        LONG_TON_FORCE_PER_SQUARE_INCH,
+
+        /**
+         * Kip-force per square inch.
+         */
+        KIP_FORCE_PER_SQUARE_INCH,
+        /**
+         * Pound-force per square foot.
+         */
+        POUND_FORCE_PER_SQUARE_FOOT,
+        /**
+         * Pound-force per square inch.
+         */
+        POUND_FORCE_PER_SQUARE_INCH,
+        /**
+         * Poundal per square foot.
+         */
+        POUNDAL_PER_SQUARE_FOOT,
+
+        /**
+         * Centimeter of mercury at 0°C.
+         */
+        CENTIMETER_OF_MERCURY_0C,
+        /**
+         * Millimeter of mercury at 0°C.
+         */
+        MILLIMETER_OF_MERCURY_0C,
+        /**
+         * Inch of mercury at 32°F.
+         */
+        INCH_OF_MERCURY_32F,
+        /**
+         * Inch of mercury at 60°F.
+         */
+        INCH_OF_MERCURY_60F,
+
+        /**
+         * Centimeter of water at 4°C.
+         */
+        CENTIMETER_OF_WATER_4C,
+        /**
+         * Millimeter of water at 4°C.
+         */
+        MILLIMETER_OF_WATER_4C,
+        /**
+         * Inch of water at 4°C.
+         */
+        INCH_OF_WATER_4C,
+        /**
+         * Foot of water at 4°C.
+         */
+        FOOT_OF_WATER_4C,
+        /**
+         * Inch of water at 60°F.
+         */
+        INCH_OF_WATER_60F,
+        /**
+         * Foot of water at 60°F.
+         */
+        FOOT_OF_WATER_60F
+
+    }
+
+    /**
+     * Energy unit identifiers (base unit: joule).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Energy implements Unit {
+
+        /**
+         * Gigajoule.
+         */
+        GIGAJOULE,
+        /**
+         * Megajoule.
+         */
+        MEGAJOULE,
+        /**
+         * Kilojoule.
+         */
+        KILOJOULE,
+
+        /**
+         * Joule, base unit of the ENERGY category.
+         */
+        JOULE,
+
+        /**
+         * Millijoule.
+         */
+        MILLIJOULE,
+        /**
+         * Microjoule.
+         */
+        MICROJOULE,
+        /**
+         * Nanojoule.
+         */
+        NANOJOULE,
+        /**
+         * Attojoule.
+         */
+        ATTOJOULE,
+
+        /**
+         * Gigawatt-hour.
+         */
+        GIGAWATT_HOUR,
+        /**
+         * Megawatt-hour.
+         */
+        MEGAWATT_HOUR,
+        /**
+         * Kilowatt-hour.
+         */
+        KILOWATT_HOUR,
+        /**
+         * Watt-hour.
+         */
+        WATT_HOUR,
+        /**
+         * Kilowatt-second.
+         */
+        KILOWATT_SECOND,
+        /**
+         * Watt-second.
+         */
+        WATT_SECOND,
+
+        /**
+         * Calorie (nutritional).
+         */
+        CALORIE_NUTRITIONAL,
+        /**
+         * Kilocalorie (IT).
+         */
+        KILOCALORIE_IT,
+        /**
+         * Kilocalorie (th).
+         */
+        KILOCALORIE_TH,
+        /**
+         * Calorie (IT).
+         */
+        CALORIE_IT,
+        /**
+         * Calorie (th).
+         */
+        CALORIE_TH,
+
+        /**
+         * British thermal unit (IT).
+         */
+        BTU_IT,
+        /**
+         * British thermal unit (th).
+         */
+        BTU_TH,
+        /**
+         * Mega British thermal unit (IT).
+         */
+        MEGA_BTU_IT,
+
+        /**
+         * Therm.
+         */
+        THERM,
+        /**
+         * Therm (EC).
+         */
+        THERM_EC,
+        /**
+         * Therm (US).
+         */
+        THERM_US,
+
+        /**
+         * Ton-hour (refrigeration).
+         */
+        TON_HOUR_REFRIGERATION,
+
+        /**
+         * Horsepower (metric) hour.
+         */
+        HORSEPOWER_METRIC_HOUR,
+        /**
+         * Horsepower hour.
+         */
+        HORSEPOWER_HOUR,
+
+        /**
+         * Megaelectron-volt.
+         */
+        MEGAELECTRON_VOLT,
+        /**
+         * Kiloelectron-volt.
+         */
+        KILOELECTRON_VOLT,
+        /**
+         * Electron-volt.
+         */
+        ELECTRON_VOLT,
+
+        /**
+         * Hartree energy.
+         */
+        HARTREE_ENERGY,
+        /**
+         * Rydberg constant (energy equivalent).
+         */
+        RYDBERG_CONSTANT,
+
+        /**
+         * Erg.
+         */
+        ERG,
+
+        /**
+         * Newton meter.
+         */
+        NEWTON_METER,
+        /**
+         * Dyne centimeter.
+         */
+        DYNE_CENTIMETER,
+
+        /**
+         * Gram-force meter.
+         */
+        GRAM_FORCE_METER,
+        /**
+         * Gram-force centimeter.
+         */
+        GRAM_FORCE_CENTIMETER,
+        /**
+         * Kilogram-force centimeter.
+         */
+        KILOGRAM_FORCE_CENTIMETER,
+        /**
+         * Kilogram-force meter.
+         */
+        KILOGRAM_FORCE_METER,
+        /**
+         * Kilopond meter.
+         */
+        KILOPOND_METER,
+
+        /**
+         * Pound-force foot.
+         */
+        POUND_FORCE_FOOT,
+        /**
+         * Pound-force inch.
+         */
+        POUND_FORCE_INCH,
+        /**
+         * Ounce-force inch.
+         */
+        OUNCE_FORCE_INCH,
+
+        /**
+         * Foot-pound.
+         */
+        FOOT_POUND,
+        /**
+         * Inch-pound.
+         */
+        INCH_POUND,
+        /**
+         * Inch-ounce.
+         */
+        INCH_OUNCE,
+
+        /**
+         * Poundal foot.
+         */
+        POUNDAL_FOOT,
+
+        /**
+         * Gigaton (TNT equivalent).
+         */
+        GIGATON_TNT,
+        /**
+         * Megaton (TNT equivalent).
+         */
+        MEGATON_TNT,
+        /**
+         * Kiloton (TNT equivalent).
+         */
+        KILOTON_TNT,
+        /**
+         * Ton (explosives, TNT equivalent).
+         */
+        TON_TNT,
+
+        /**
+         * Fuel oil equivalent at kiloliter.
+         */
+        FUEL_OIL_EQUIVALENT_KILOLITER,
+        /**
+         * Fuel oil equivalent at barrel (US).
+         */
+        FUEL_OIL_EQUIVALENT_US_BARREL
+
+    }
+
+    /**
+     * Power unit identifiers (base unit: watt).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Power implements Unit {
+
+        /**
+         * Exawatt.
+         */
+        EXAWATT,
+        /**
+         * Petawatt.
+         */
+        PETAWATT,
+        /**
+         * Terawatt.
+         */
+        TERAWATT,
+        /**
+         * Gigawatt.
+         */
+        GIGAWATT,
+        /**
+         * Megawatt.
+         */
+        MEGAWATT,
+        /**
+         * Kilowatt.
+         */
+        KILOWATT,
+        /**
+         * Hectowatt.
+         */
+        HECTOWATT,
+        /**
+         * Dekawatt.
+         */
+        DEKAWATT,
+
+        /**
+         * Watt, base unit of the POWER category.
+         */
+        WATT,
+
+        /**
+         * Deciwatt.
+         */
+        DECIWATT,
+        /**
+         * Centiwatt.
+         */
+        CENTIWATT,
+        /**
+         * Milliwatt.
+         */
+        MILLIWATT,
+        /**
+         * Microwatt.
+         */
+        MICROWATT,
+        /**
+         * Nanowatt.
+         */
+        NANOWATT,
+        /**
+         * Picowatt.
+         */
+        PICOWATT,
+        /**
+         * Femtowatt.
+         */
+        FEMTOWATT,
+        /**
+         * Attowatt.
+         */
+        ATTOWATT,
+
+        /**
+         * Horsepower (general / UK).
+         */
+        HORSEPOWER,
+        /**
+         * Horsepower (550 ft·lbf/s) – mechanical horsepower.
+         */
+        HORSEPOWER_MECHANICAL_550_FTLBF_PER_S,
+        /**
+         * Horsepower (metric).
+         */
+        HORSEPOWER_METRIC,
+        /**
+         * Horsepower (boiler).
+         */
+        HORSEPOWER_BOILER,
+        /**
+         * Horsepower (electric).
+         */
+        HORSEPOWER_ELECTRIC,
+        /**
+         * Horsepower (water).
+         */
+        HORSEPOWER_WATER,
+        /**
+         * Pferdestärke (PS).
+         */
+        PFERDESTAERKE,
+
+        /**
+         * Btu (IT) per hour.
+         */
+        BTU_IT_PER_HOUR,
+        /**
+         * Btu (IT) per minute.
+         */
+        BTU_IT_PER_MINUTE,
+        /**
+         * Btu (IT) per second.
+         */
+        BTU_IT_PER_SECOND,
+
+        /**
+         * Btu (th) per hour.
+         */
+        BTU_TH_PER_HOUR,
+        /**
+         * Btu (th) per minute.
+         */
+        BTU_TH_PER_MINUTE,
+        /**
+         * Btu (th) per second.
+         */
+        BTU_TH_PER_SECOND,
+
+        /**
+         * Mega Btu (IT) per hour.
+         */
+        MEGA_BTU_IT_PER_HOUR,
+        /**
+         * MBH (thousand Btu per hour).
+         */
+        MBH,
+        /**
+         * Ton (refrigeration).
+         */
+        TON_REFRIGERATION,
+
+        /**
+         * Kilocalorie (IT) per hour.
+         */
+        KILOCALORIE_IT_PER_HOUR,
+        /**
+         * Kilocalorie (IT) per minute.
+         */
+        KILOCALORIE_IT_PER_MINUTE,
+        /**
+         * Kilocalorie (IT) per second.
+         */
+        KILOCALORIE_IT_PER_SECOND,
+
+        /**
+         * Kilocalorie (th) per hour.
+         */
+        KILOCALORIE_TH_PER_HOUR,
+        /**
+         * Kilocalorie (th) per minute.
+         */
+        KILOCALORIE_TH_PER_MINUTE,
+        /**
+         * Kilocalorie (th) per second.
+         */
+        KILOCALORIE_TH_PER_SECOND,
+
+        /**
+         * Calorie (IT) per hour.
+         */
+        CALORIE_IT_PER_HOUR,
+        /**
+         * Calorie (IT) per minute.
+         */
+        CALORIE_IT_PER_MINUTE,
+        /**
+         * Calorie (IT) per second.
+         */
+        CALORIE_IT_PER_SECOND,
+
+        /**
+         * Calorie (th) per hour.
+         */
+        CALORIE_TH_PER_HOUR,
+        /**
+         * Calorie (th) per minute.
+         */
+        CALORIE_TH_PER_MINUTE,
+        /**
+         * Calorie (th) per second.
+         */
+        CALORIE_TH_PER_SECOND,
+
+        /**
+         * Foot pound-force per hour.
+         */
+        FOOT_POUND_FORCE_PER_HOUR,
+        /**
+         * Foot pound-force per minute.
+         */
+        FOOT_POUND_FORCE_PER_MINUTE,
+        /**
+         * Foot pound-force per second.
+         */
+        FOOT_POUND_FORCE_PER_SECOND,
+
+        /**
+         * Pound-foot per hour.
+         */
+        POUND_FOOT_PER_HOUR,
+        /**
+         * Pound-foot per minute.
+         */
+        POUND_FOOT_PER_MINUTE,
+        /**
+         * Pound-foot per second.
+         */
+        POUND_FOOT_PER_SECOND,
+
+        /**
+         * Erg per second.
+         */
+        ERG_PER_SECOND,
+
+        /**
+         * Kilovolt-ampere.
+         */
+        KILOVOLT_AMPERE,
+        /**
+         * Volt-ampere.
+         */
+        VOLT_AMPERE,
+
+        /**
+         * Newton meter per second.
+         */
+        NEWTON_METER_PER_SECOND,
+
+        /**
+         * Joule per second.
+         */
+        JOULE_PER_SECOND,
+        /**
+         * Exajoule per second.
+         */
+        EXAJOULE_PER_SECOND,
+        /**
+         * Petajoule per second.
+         */
+        PETAJOULE_PER_SECOND,
+        /**
+         * Terajoule per second.
+         */
+        TERAJOULE_PER_SECOND,
+        /**
+         * Gigajoule per second.
+         */
+        GIGAJOULE_PER_SECOND,
+        /**
+         * Megajoule per second.
+         */
+        MEGAJOULE_PER_SECOND,
+        /**
+         * Kilojoule per second.
+         */
+        KILOJOULE_PER_SECOND,
+        /**
+         * Hectojoule per second.
+         */
+        HECTOJOULE_PER_SECOND,
+        /**
+         * Dekajoule per second.
+         */
+        DEKAJOULE_PER_SECOND,
+        /**
+         * Decijoule per second.
+         */
+        DECIJOULE_PER_SECOND,
+        /**
+         * Centijoule per second.
+         */
+        CENTIJOULE_PER_SECOND,
+        /**
+         * Millijoule per second.
+         */
+        MILLIJOULE_PER_SECOND,
+        /**
+         * Microjoule per second.
+         */
+        MICROJOULE_PER_SECOND,
+        /**
+         * Nanojoule per second.
+         */
+        NANOJOULE_PER_SECOND,
+        /**
+         * Picojoule per second.
+         */
+        PICOJOULE_PER_SECOND,
+        /**
+         * Femtojoule per second.
+         */
+        FEMTOJOULE_PER_SECOND,
+        /**
+         * Attojoule per second.
+         */
+        ATTOJOULE_PER_SECOND,
+
+        /**
+         * Joule per hour.
+         */
+        JOULE_PER_HOUR,
+        /**
+         * Joule per minute.
+         */
+        JOULE_PER_MINUTE,
+        /**
+         * Kilojoule per hour.
+         */
+        KILOJOULE_PER_HOUR,
+        /**
+         * Kilojoule per minute.
+         */
+        KILOJOULE_PER_MINUTE
 
     }
 
