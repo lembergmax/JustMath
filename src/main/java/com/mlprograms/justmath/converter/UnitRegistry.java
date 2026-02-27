@@ -208,7 +208,7 @@ class UnitRegistry {
 
             define(Unit.Volume.CUBIC_KILOMETER, "Cubic Kilometer", "km^3", "1000000000"),
             define(Unit.Volume.CUBIC_METER, "Cubic Meter", "m^3"),
-            define(Unit.Volume.CUBIC_DECIMETER, "Cubic Decimeter", "dm^3", "0.0001"), // TODO: check if correct
+            define(Unit.Volume.CUBIC_DECIMETER, "Cubic Decimeter", "dm^3", "0.001"),
             define(Unit.Volume.CUBIC_CENTIMETER, "Cubic Centimeter", "cm^3", "0.000001"),
             define(Unit.Volume.CUBIC_MILLIMETER, "Cubic Millimeter", "mm^3", "1.E-9"),
 
