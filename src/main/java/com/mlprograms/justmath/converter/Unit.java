@@ -1930,4 +1930,939 @@ public interface Unit {
 
     }
 
+    /**
+     * Time unit identifiers (base unit: second).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Time implements Unit {
+
+        /**
+         * Second (base unit).
+         */
+        SECOND,
+
+        /**
+         * Millisecond: 1 ms = 0.001 s.
+         */
+        MILLISECOND,
+
+        /**
+         * Microsecond: 1 µs = 1e-6 s.
+         */
+        MICROSECOND,
+
+        /**
+         * Nanosecond: 1 ns = 1e-9 s.
+         */
+        NANOSECOND,
+
+        /**
+         * Picosecond: 1 ps = 1e-12 s.
+         */
+        PICOSECOND,
+
+        /**
+         * Femtosecond: 1 fs = 1e-15 s.
+         */
+        FEMTOSECOND,
+
+        /**
+         * Attosecond: 1 as = 1e-18 s.
+         */
+        ATTOSECOND,
+
+        /**
+         * Minute: 1 min = 60 s.
+         */
+        MINUTE,
+
+        /**
+         * Hour: 1 h = 3600 s.
+         */
+        HOUR,
+
+        /**
+         * Day: 1 d = 86400 s.
+         */
+        DAY,
+
+        /**
+         * Week: 1 week = 604800 s.
+         */
+        WEEK,
+
+        /**
+         * Month: 1 month = 2628000 s.
+         */
+        MONTH,
+
+        /**
+         * Year: 1 y = 31557600 s.
+         */
+        YEAR,
+
+        /**
+         * Decade: 1 decade = 315576000 s.
+         */
+        DECADE,
+
+        /**
+         * Century: 1 century = 3155760000 s.
+         */
+        CENTURY,
+
+        /**
+         * Millennium: 1 millennium = 31557600000 s.
+         */
+        MILLENNIUM,
+
+        /**
+         * Shake: 1 shake = 1e-8 s.
+         */
+        SHAKE,
+
+        /**
+         * Synodic month: 1 month (synodic) = 2551443.84 s.
+         */
+        MONTH_SYNODIC,
+
+        /**
+         * Julian year: 1 year (Julian) = 31557600 s.
+         */
+        YEAR_JULIAN,
+
+        /**
+         * Leap year: 1 year (leap) = 31622400 s.
+         */
+        YEAR_LEAP,
+
+        /**
+         * Tropical year: 1 year (tropical) = 31556930 s.
+         */
+        YEAR_TROPICAL,
+
+        /**
+         * Sidereal year: 1 year (sidereal) = 31558149.54 s.
+         */
+        YEAR_SIDEREAL,
+
+        /**
+         * Sidereal day: 1 day (sidereal) = 86164.09 s.
+         */
+        DAY_SIDEREAL,
+
+        /**
+         * Sidereal hour: 1 hour (sidereal) = 3590.1704166667 s.
+         */
+        HOUR_SIDEREAL,
+
+        /**
+         * Sidereal minute: 1 minute (sidereal) = 59.8361736111 s.
+         */
+        MINUTE_SIDEREAL,
+
+        /**
+         * Sidereal second: 1 second (sidereal) = 0.9972695602 s.
+         */
+        SECOND_SIDEREAL,
+
+        /**
+         * Fortnight: 1 fortnight = 1209600 s.
+         */
+        FORTNIGHT,
+
+        /**
+         * Septennial: 1 septennial = 220752000 s.
+         */
+        SEPTENNIAL,
+
+        /**
+         * Octennial: 1 octennial = 252288000 s.
+         */
+        OCTENNIAL,
+
+        /**
+         * Novennial: 1 novennial = 283824000 s.
+         */
+        NOVENNIAL,
+
+        /**
+         * Quindecennial: 1 quindecennial = 473040000 s.
+         */
+        QUINDECENNIAL,
+
+        /**
+         * Quinquennial: 1 quinquennial = 157680000 s.
+         */
+        QUINQUENNIAL,
+
+        /**
+         * Planck time: 1 Planck time = 5.39056e-44 s.
+         */
+        PLANCK_TIME
+
+    }
+
+    /**
+     * Force unit identifiers (base unit: newton).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Force implements Unit {
+
+        /**
+         * Newton (base unit).
+         */
+        NEWTON,
+
+        /**
+         * Kilonewton: 1 kN = 1000 N.
+         */
+        KILONEWTON,
+
+        /**
+         * Exanewton: 1 EN = 1.0E+18 N.
+         */
+        EXANEWTON,
+
+        /**
+         * Petanewton: 1 PT = 1.0E+15 N.
+         */
+        PETANEWTON,
+
+        /**
+         * Teranewton: 1 TN = 1,000,000,000,000 N.
+         */
+        TERANEWTON,
+
+        /**
+         * Giganewton: 1 GN = 1,000,000,000 N.
+         */
+        GIGANEWTON,
+
+        /**
+         * Meganewton: 1 MN = 1,000,000 N.
+         */
+        MEGANEWTON,
+
+        /**
+         * Hectonewton: 1 hN = 100 N.
+         */
+        HECTONEWTON,
+
+        /**
+         * Dekanewton: 1 daN = 10 N.
+         */
+        DEKANEWTON,
+
+        /**
+         * Decinewton: 1 dN = 0.1 N.
+         */
+        DECINEWTON,
+
+        /**
+         * Centinewton: 1 cN = 0.01 N.
+         */
+        CENTINEWTON,
+
+        /**
+         * Millinewton: 1 mN = 0.001 N.
+         */
+        MILLINEWTON,
+
+        /**
+         * Micronewton: 1 µN = 1.0E-6 N.
+         */
+        MICRONEWTON,
+
+        /**
+         * Nanonewton: 1 nN = 1.0E-9 N.
+         */
+        NANONEWTON,
+
+        /**
+         * Piconewton: 1 pN = 1.0E-12 N.
+         */
+        PICONEWTON,
+
+        /**
+         * Femtonewton: 1 fN = 1.0E-15 N.
+         */
+        FEMTONEWTON,
+
+        /**
+         * Attonewton: 1 aN = 1.0E-18 N.
+         */
+        ATTONEWTON,
+
+        /**
+         * Dyne: 1 dyn = 1.0E-5 N.
+         */
+        DYNE,
+
+        /**
+         * Gram-force: 1 gf = 0.00980665 N.
+         */
+        GRAM_FORCE,
+
+        /**
+         * Kilogram-force: 1 kgf = 9.80665 N.
+         */
+        KILOGRAM_FORCE,
+
+        /**
+         * Ton-force (metric): 1 tf = 9806.65 N.
+         */
+        TON_FORCE_METRIC,
+
+        /**
+         * Ton-force (short): 1 ton-force (short) = 8896.443230521 N.
+         */
+        TON_FORCE_SHORT,
+
+        /**
+         * Ton-force (long) / tonf (UK): 1 tonf (UK) = 9964.0164181707 N.
+         */
+        TON_FORCE_LONG,
+
+        /**
+         * Kip-force: 1 kipf = 4448.2216152548 N.
+         */
+        KIP_FORCE,
+
+        /**
+         * Kilopound-force: 1 kipf = 4448.2216152548 N.
+         */
+        KILOPOUND_FORCE,
+
+        /**
+         * Pound-force: 1 lbf = 4.4482216153 N.
+         */
+        POUND_FORCE,
+
+        /**
+         * Ounce-force: 1 ozf = 0.278013851 N.
+         */
+        OUNCE_FORCE,
+
+        /**
+         * Poundal: 1 pdl = 0.1382549544 N.
+         */
+        POUNDAL,
+
+        /**
+         * Pound foot per square second: 1 (pound foot/square second) = 0.1382549544 N.
+         */
+        POUND_FOOT_PER_SQUARE_SECOND,
+
+        /**
+         * Joule per meter: 1 J/m = 1 N.
+         */
+        JOULE_PER_METER,
+
+        /**
+         * Joule per centimeter: 1 J/cm = 0.01 N.
+         */
+        JOULE_PER_CENTIMETER,
+
+        /**
+         * Pond: 1 p = 0.00980665 N.
+         */
+        POND,
+
+        /**
+         * Kilopond: 1 kp = 9.80665 N.
+         */
+        KILOPOND
+
+    }
+
+    /**
+     * Speed unit identifiers (base unit: meter per second).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Speed implements Unit {
+
+        /**
+         * Meter per second (base unit).
+         */
+        METER_PER_SECOND,
+
+        /**
+         * Kilometer per hour: 1 km/h = 0.2777777778 m/s.
+         */
+        KILOMETER_PER_HOUR,
+
+        /**
+         * Mile per hour: 1 mi/h = 0.44704 m/s.
+         */
+        MILE_PER_HOUR,
+
+        /**
+         * Meter per hour: 1 m/h = 0.0002777778 m/s.
+         */
+        METER_PER_HOUR,
+
+        /**
+         * Meter per minute: 1 m/min = 0.0166666667 m/s.
+         */
+        METER_PER_MINUTE,
+
+        /**
+         * Kilometer per minute: 1 km/min = 16.6666666667 m/s.
+         */
+        KILOMETER_PER_MINUTE,
+
+        /**
+         * Kilometer per second: 1 km/s = 1000 m/s.
+         */
+        KILOMETER_PER_SECOND,
+
+        /**
+         * Centimeter per hour: 1 cm/h = 2.7777777777778E-6 m/s.
+         */
+        CENTIMETER_PER_HOUR,
+
+        /**
+         * Centimeter per minute: 1 cm/min = 0.0001666667 m/s.
+         */
+        CENTIMETER_PER_MINUTE,
+
+        /**
+         * Centimeter per second: 1 cm/s = 0.01 m/s.
+         */
+        CENTIMETER_PER_SECOND,
+
+        /**
+         * Millimeter per hour: 1 mm/h = 2.7777777777778E-7 m/s.
+         */
+        MILLIMETER_PER_HOUR,
+
+        /**
+         * Millimeter per minute: 1 mm/min = 1.66667E-5 m/s.
+         */
+        MILLIMETER_PER_MINUTE,
+
+        /**
+         * Millimeter per second: 1 mm/s = 0.001 m/s.
+         */
+        MILLIMETER_PER_SECOND,
+
+        /**
+         * Foot per hour: 1 ft/h = 8.46667E-5 m/s.
+         */
+        FOOT_PER_HOUR,
+
+        /**
+         * Foot per minute: 1 ft/min = 0.00508 m/s.
+         */
+        FOOT_PER_MINUTE,
+
+        /**
+         * Foot per second: 1 ft/s = 0.3048 m/s.
+         */
+        FOOT_PER_SECOND,
+
+        /**
+         * Yard per hour: 1 yd/h = 0.000254 m/s.
+         */
+        YARD_PER_HOUR,
+
+        /**
+         * Yard per minute: 1 yd/min = 0.01524 m/s.
+         */
+        YARD_PER_MINUTE,
+
+        /**
+         * Yard per second: 1 yd/s = 0.9144 m/s.
+         */
+        YARD_PER_SECOND,
+
+        /**
+         * Mile per minute: 1 mi/min = 26.8224 m/s.
+         */
+        MILE_PER_MINUTE,
+
+        /**
+         * Mile per second: 1 mi/s = 1609.344 m/s.
+         */
+        MILE_PER_SECOND,
+
+        /**
+         * Knot: 1 kn = 0.5144444444 m/s.
+         */
+        KNOT,
+
+        /**
+         * Knot (UK): 1 kt (UK) = 0.5147733333 m/s.
+         */
+        KNOT_UK,
+
+        /**
+         * Speed of light in vacuum: 1 c = 299792458 m/s.
+         */
+        SPEED_OF_LIGHT_VACUUM,
+
+        /**
+         * Cosmic velocity (first): 1 v1 = 7899.9999999999 m/s.
+         */
+        COSMIC_VELOCITY_FIRST,
+
+        /**
+         * Cosmic velocity (second): 1 v2 = 11200 m/s.
+         */
+        COSMIC_VELOCITY_SECOND,
+
+        /**
+         * Cosmic velocity (third): 1 v3 = 16670 m/s.
+         */
+        COSMIC_VELOCITY_THIRD,
+
+        /**
+         * Earth's velocity: 1 v_earth = 29765 m/s.
+         */
+        EARTHS_VELOCITY,
+
+        /**
+         * Velocity of sound in pure water: 1 v_sound_water = 1482.6999999998 m/s.
+         */
+        SPEED_OF_SOUND_PURE_WATER,
+
+        /**
+         * Velocity of sound in sea water (20°C, 10 meter deep): 1 v_sound_sea = 1521.6 m/s.
+         */
+        SPEED_OF_SOUND_SEA_WATER_20C_10M,
+
+        /**
+         * Mach (20°C, 1 atm): 1 Ma(20°C) = 343.6 m/s.
+         */
+        MACH_20C_1ATM,
+
+        /**
+         * Mach (SI standard): 1 Ma(SI) = 295.0464000003 m/s.
+         */
+        MACH_SI_STANDARD
+
+    }
+
+    /**
+     * FuelConsumption unit identifiers (base unit: meter per liter).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum FuelConsumption implements Unit {
+
+        /**
+         * Meter per liter (base unit).
+         */
+        METER_PER_LITER,
+
+        /**
+         * Exameter per liter: 1 Em/L = 1.0E+18 m/L.
+         */
+        EXAMETER_PER_LITER,
+
+        /**
+         * Petameter per liter: 1 Pm/L = 1.0E+15 m/L.
+         */
+        PETAMETER_PER_LITER,
+
+        /**
+         * Terameter per liter: 1 Tm/L = 1000000000000 m/L.
+         */
+        TERAMETER_PER_LITER,
+
+        /**
+         * Gigameter per liter: 1 Gm/L = 1000000000 m/L.
+         */
+        GIGAMETER_PER_LITER,
+
+        /**
+         * Megameter per liter: 1 Mm/L = 1000000 m/L.
+         */
+        MEGAMETER_PER_LITER,
+
+        /**
+         * Kilometer per liter: 1 km/L = 1000 m/L.
+         */
+        KILOMETER_PER_LITER,
+
+        /**
+         * Hectometer per liter: 1 hm/L = 100 m/L.
+         */
+        HECTOMETER_PER_LITER,
+
+        /**
+         * Dekameter per liter: 1 dam/L = 10 m/L.
+         */
+        DEKAMETER_PER_LITER,
+
+        /**
+         * Centimeter per liter: 1 cm/L = 0.01 m/L.
+         */
+        CENTIMETER_PER_LITER,
+
+        /**
+         * Mile (US) per liter: 1 mi/L = 1609.344 m/L.
+         */
+        MILE_US_PER_LITER,
+
+        /**
+         * Nautical mile per liter: 1 n.mile/L = 1853.24496 m/L.
+         */
+        NAUTICAL_MILE_PER_LITER,
+
+        /**
+         * Nautical mile per gallon (US): 1 n.mile/gal(US) = 489.5755247 m/L.
+         */
+        NAUTICAL_MILE_PER_GALLON_US,
+
+        /**
+         * Kilometer per gallon (US): 1 km/gal(US) = 264.1720524 m/L.
+         */
+        KILOMETER_PER_GALLON_US,
+
+        /**
+         * Meter per gallon (US): 1 m/gal(US) = 0.2641720524 m/L.
+         */
+        METER_PER_GALLON_US,
+
+        /**
+         * Meter per gallon (UK): 1 m/gal(UK) = 0.2199687986 m/L.
+         */
+        METER_PER_GALLON_UK,
+
+        /**
+         * Mile per gallon (US): 1 mpg(US) = 425.1437075 m/L.
+         */
+        MILE_PER_GALLON_US,
+
+        /**
+         * Mile per gallon (UK): 1 mpg(UK) = 354.00619 m/L.
+         */
+        MILE_PER_GALLON_UK,
+
+        /**
+         * Meter per cubic meter: 1 m/m^3 = 0.001 m/L.
+         */
+        METER_PER_CUBIC_METER,
+
+        /**
+         * Meter per cubic centimeter: 1 m/cm^3 = 1000 m/L.
+         */
+        METER_PER_CUBIC_CENTIMETER,
+
+        /**
+         * Meter per cubic yard: 1 m/yd^3 = 0.0013079506 m/L.
+         */
+        METER_PER_CUBIC_YARD,
+
+        /**
+         * Meter per cubic foot: 1 m/ft^3 = 0.0353146667 m/L.
+         */
+        METER_PER_CUBIC_FOOT,
+
+        /**
+         * Meter per cubic inch: 1 m/in^3 = 61.02374409 m/L.
+         */
+        METER_PER_CUBIC_INCH,
+
+        /**
+         * Meter per quart (US): 1 m/qt(US) = 1.056688209 m/L.
+         */
+        METER_PER_QUART_US,
+
+        /**
+         * Meter per quart (UK): 1 m/qt(UK) = 0.8798751948 m/L.
+         */
+        METER_PER_QUART_UK,
+
+        /**
+         * Meter per pint (US): 1 m/pt(US) = 2.113376419 m/L.
+         */
+        METER_PER_PINT_US,
+
+        /**
+         * Meter per pint (UK): 1 m/pt(UK) = 1.759750389 m/L.
+         */
+        METER_PER_PINT_UK,
+
+        /**
+         * Meter per cup (US): 1 m/cup(US) = 4.226752838 m/L.
+         */
+        METER_PER_CUP_US,
+
+        /**
+         * Meter per cup (UK): 1 m/cup(UK) = 3.519500777 m/L.
+         */
+        METER_PER_CUP_UK,
+
+        /**
+         * Meter per fluid ounce (US): 1 m/fl oz(US) = 33.8140227 m/L.
+         */
+        METER_PER_FLUID_OUNCE_US,
+
+        /**
+         * Meter per fluid ounce (UK): 1 m/fl oz(UK) = 35.19500777 m/L.
+         */
+        METER_PER_FLUID_OUNCE_UK,
+
+        /**
+         * Liter per meter: 1 L/m = 1 m/L.
+         */
+        LITER_PER_METER,
+
+        /**
+         * Liter per 100 kilometer: 1 L/100 km = 100000 m/L.
+         */
+        LITER_PER_100_KILOMETER,
+
+        /**
+         * Gallon (US) per mile: 1 gal(US)/mi = 425.1437074976 m/L.
+         */
+        GALLON_US_PER_MILE,
+
+        /**
+         * Gallon (US) per 100 miles: 1 gal(US)/100 mi = 42514.370749763 m/L.
+         */
+        GALLON_US_PER_100_MILES,
+
+        /**
+         * Gallon (UK) per mile: 1 gal(UK)/mi = 354.0061899559 m/L.
+         */
+        GALLON_UK_PER_MILE,
+
+        /**
+         * Gallon (UK) per 100 miles: 1 gal(UK)/100 mi = 35400.618995592 m/L.
+         */
+        GALLON_UK_PER_100_MILES
+
+    }
+
+    /**
+     * DataStorage unit identifiers (base unit: bit).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum DataStorage implements Unit {
+
+        /**
+         * Base unit: 1 bit (b).
+         */
+        BIT,
+
+        /**
+         * 1 nibble = 4 bits (b).
+         */
+        NIBBLE,
+
+        /**
+         * 1 byte = 8 bits (B).
+         */
+        BYTE,
+
+        /**
+         * 1 character = 8 bits (as provided).
+         */
+        CHARACTER,
+
+        /**
+         * 1 word = 16 bits (as provided).
+         */
+        WORD,
+
+        /**
+         * 1 MAPM-word = 32 bits (as provided).
+         */
+        MAPM_WORD,
+
+        /**
+         * 1 quadruple-word = 64 bits (as provided).
+         */
+        QUADRUPLE_WORD,
+
+        /**
+         * 1 block = 4096 bits (as provided).
+         */
+        BLOCK,
+
+        /**
+         * 1 kilobit (kb) = 1024 bits (binary).
+         */
+        KILOBIT,
+
+        /**
+         * 1 kilobyte (kB) = 8192 bits = 1024 bytes (binary).
+         */
+        KILOBYTE,
+
+        /**
+         * 1 kilobyte (10^3 bytes) = 8000 bits = 1000 bytes (decimal).
+         */
+        KILOBYTE_DECIMAL,
+
+        /**
+         * 1 megabit (Mb) = 1,048,576 bits (binary).
+         */
+        MEGABIT,
+
+        /**
+         * 1 megabyte (MB) = 8,388,608 bits = 1,048,576 bytes (binary).
+         */
+        MEGABYTE,
+
+        /**
+         * 1 megabyte (10^6 bytes) = 8,000,000 bits = 1,000,000 bytes (decimal).
+         */
+        MEGABYTE_DECIMAL,
+
+        /**
+         * 1 gigabit (Gb) = 1,073,741,824 bits (binary).
+         */
+        GIGABIT,
+
+        /**
+         * 1 gigabyte (GB) = 8,589,934,592 bits = 1,073,741,824 bytes (binary).
+         */
+        GIGABYTE,
+
+        /**
+         * 1 gigabyte (10^9 bytes) = 8,000,000,000 bits = 1,000,000,000 bytes (decimal).
+         */
+        GIGABYTE_DECIMAL,
+
+        /**
+         * 1 terabit (Tb) = 1,099,511,627,776 bits (binary).
+         */
+        TERABIT,
+
+        /**
+         * 1 terabyte (TB) = 8,796,093,022,208 bits = 1,099,511,627,776 bytes (binary).
+         */
+        TERABYTE,
+
+        /**
+         * 1 terabyte (10^12 bytes) = 8,000,000,000,000 bits = 1,000,000,000,000 bytes (decimal).
+         */
+        TERABYTE_DECIMAL,
+
+        /**
+         * 1 petabit (Pb) = 1,125,899,906,842,624 bits (binary).
+         */
+        PETABIT,
+
+        /**
+         * 1 petabyte (PB) = 9,007,199,254,740,992 bits = 1,125,899,906,842,624 bytes (binary).
+         */
+        PETABYTE,
+
+        /**
+         * 1 petabyte (10^15 bytes) = 8.0E+15 bits = 1,000,000,000,000,000 bytes (decimal).
+         */
+        PETABYTE_DECIMAL,
+
+        /**
+         * 1 exabit (Eb) = 1,152,921,504,606,846,976 bits (binary).
+         */
+        EXABIT,
+
+        /**
+         * 1 exabyte (EB) = 9,223,372,036,854,775,808 bits = 1,152,921,504,606,846,976 bytes (binary).
+         */
+        EXABYTE,
+
+        /**
+         * 1 exabyte (10^18 bytes) = 8.0E+18 bits = 1,000,000,000,000,000,000 bytes (decimal).
+         */
+        EXABYTE_DECIMAL,
+
+        /**
+         * Floppy disk (3.5", DD) = 5,830,656 bits (as provided).
+         */
+        FLOPPY_35_DD,
+
+        /**
+         * Floppy disk (3.5", HD) = 11,661,312 bits (as provided).
+         */
+        FLOPPY_35_HD,
+
+        /**
+         * Floppy disk (3.5", ED) = 23,322,624 bits (as provided).
+         */
+        FLOPPY_35_ED,
+
+        /**
+         * Floppy disk (5.25", DD) = 2,915,328 bits (as provided).
+         */
+        FLOPPY_525_DD,
+
+        /**
+         * Floppy disk (5.25", HD) = 9,711,616 bits (as provided).
+         */
+        FLOPPY_525_HD,
+
+        /**
+         * Zip 100 = 803,454,976 bits (as provided).
+         */
+        ZIP_100,
+
+        /**
+         * Zip 250 = 2,008,637,440 bits (as provided).
+         */
+        ZIP_250,
+
+        /**
+         * Jaz 1GB = 8,589,934,592 bits (as provided).
+         */
+        JAZ_1GB,
+
+        /**
+         * Jaz 2GB = 17,179,869,184 bits (as provided).
+         */
+        JAZ_2GB,
+
+        /**
+         * CD (74 minute) = 5,448,466,432 bits (as provided).
+         */
+        CD_74_MIN,
+
+        /**
+         * CD (80 minute) = 5,890,233,976 bits (as provided).
+         */
+        CD_80_MIN,
+
+        /**
+         * DVD (1 layer, 1 side) = 40,372,692,582.4 bits (as provided).
+         */
+        DVD_1L_1S,
+
+        /**
+         * DVD (2 layer, 1 side) = 73,014,444,032 bits (as provided).
+         */
+        DVD_2L_1S,
+
+        /**
+         * DVD (1 layer, 2 side) = 80,745,385,164.8 bits (as provided).
+         */
+        DVD_1L_2S,
+
+        /**
+         * DVD (2 layer, 2 side) = 146,028,888,064 bits (as provided).
+         */
+        DVD_2L_2S
+
+    }
+
 }
