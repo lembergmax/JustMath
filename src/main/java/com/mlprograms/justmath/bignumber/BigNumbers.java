@@ -25,7 +25,7 @@
 package com.mlprograms.justmath.bignumber;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import lombok.NonNull;
 
 import java.math.BigInteger;
@@ -48,7 +48,7 @@ public class BigNumbers {
 	/**
 	 * Default {@link MathContext} used for calculations, based on {@link #DEFAULT_DIVISION_PRECISION}.
 	 */
-	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngine.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+	public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
 	/**
 	 * Constant representing the value -1 as a {@link BigNumber}.
@@ -74,6 +74,41 @@ public class BigNumbers {
 	 * Constant representing the value 3 as a {@link BigNumber}.
 	 */
 	public static final BigNumber THREE = new BigNumber("3", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 4 as a {@link BigNumber}.
+	 */
+	public static final BigNumber FOUR = new BigNumber("4", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 5 as a {@link BigNumber}.
+	 */
+	public static final BigNumber FIVE = new BigNumber("5", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 6 as a {@link BigNumber}.
+	 */
+	public static final BigNumber SIX = new BigNumber("6", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 7 as a {@link BigNumber}.
+	 */
+	public static final BigNumber SEVEN = new BigNumber("7", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 8 as a {@link BigNumber}.
+	 */
+	public static final BigNumber EIGHT = new BigNumber("8", DEFAULT_MATH_CONTEXT);
+
+	/**
+	 * Constant representing the value 9 as a {@link BigNumber}.
+	 */
+	public static final BigNumber NINE = new BigNumber("9", DEFAULT_MATH_CONTEXT);
+
+    /**
+     * Constant representing the value 10 as a {@link BigNumber}.
+     */
+	public static final BigNumber TEN = new BigNumber("10", DEFAULT_MATH_CONTEXT);
 
 	/**
 	 * Constant representing the value 100 as a {@link BigNumber}.

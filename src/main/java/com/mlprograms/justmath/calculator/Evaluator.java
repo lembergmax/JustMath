@@ -27,11 +27,11 @@ package com.mlprograms.justmath.calculator;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.exceptions.ProcessingErrorException;
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.internal.Token;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -50,7 +50,6 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
 @AllArgsConstructor
 class Evaluator {
 
-
     /**
      * Math context specifying the precision and rounding mode for calculations.
      */
@@ -60,7 +59,6 @@ class Evaluator {
      * The mode used for trigonometric calculations (e.g., degrees or radians).
      */
     private TrigonometricMode trigonometricMode;
-
 
     /**
      * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result as a {@link BigNumber}.

@@ -24,10 +24,12 @@
 
 package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
+import com.mlprograms.justmath.calculator.internal.Token;
+
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayDeque;
@@ -72,21 +74,36 @@ class PostfixParser {
     public List<Token> toPostfix(List<Token> tokens) {
         List<Token> output = new ArrayList<>();
         Deque<Token> operatorStack = new ArrayDeque<>();
+        Deque<Integer> argumentCountStack = new ArrayDeque<>();
+        Token previousToken = null;
 
         for (Token token : tokens) {
             switch (token.getType()) {
-                case NUMBER, STRING, CONSTANT -> output.add(token);
-                case FUNCTION, LEFT_PAREN -> operatorStack.push(token);
+                case NUMBER, STRING, CONSTANT, VARIABLE -> output.add(token);
+
+                case FUNCTION -> operatorStack.push(token);
+
+                case LEFT_PAREN -> {
+                    operatorStack.push(token);
+
+                    boolean isUnlimitedCall = previousToken != null
+                            && previousToken.getType() == Token.Type.FUNCTION
+                            && isUnlimitedArgumentFunction(previousToken);
+
+                    argumentCountStack.push(isUnlimitedCall ? 1 : 0);
+                }
+
                 case OPERATOR -> {
-                    // Factorial is a postfix operator → add directly to the output
                     if (token.getValue().equals("!")) {
                         output.add(token);
-                        continue;
+                        break;
                     }
 
                     while (!operatorStack.isEmpty()) {
                         Token top = operatorStack.peek();
-                        if ((top.getType() == Token.Type.FUNCTION) || (top.getType() == Token.Type.OPERATOR && (hasHigherPrecedence(top, token)
+                        if ((top.getType() == Token.Type.FUNCTION)
+                                || (top.getType() == Token.Type.OPERATOR
+                                && (hasHigherPrecedence(top, token)
                                 || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
                             output.add(operatorStack.pop());
                         } else {
@@ -103,22 +120,41 @@ class PostfixParser {
                     if (operatorStack.isEmpty()) {
                         throw new SyntaxErrorException("Mismatched parentheses");
                     }
-                    operatorStack.pop(); // Remove '('
 
-                    // If there's a function before the '(', pop it
+                    operatorStack.pop();
+
+                    int argumentCount = argumentCountStack.isEmpty() ? 0 : argumentCountStack.pop();
                     if (!operatorStack.isEmpty() && operatorStack.peek().getType() == Token.Type.FUNCTION) {
-                        output.add(operatorStack.pop());
+                        Token functionToken = operatorStack.pop();
+
+                        if (argumentCount > 0 && isUnlimitedArgumentFunction(functionToken)) {
+                            output.add(new Token(Token.Type.NUMBER, Integer.toString(argumentCount)));
+                        }
+
+                        output.add(functionToken);
                     }
                 }
                 case SEMICOLON -> {
-                    while (!operatorStack.isEmpty() && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
+                    while (!operatorStack.isEmpty()
+                            && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
                         throw new SyntaxErrorException("Misplaced semicolon or mismatched parentheses");
                     }
+
+                    if (!argumentCountStack.isEmpty()) {
+                        int current = argumentCountStack.pop();
+                        if (current > 0) {
+                            argumentCountStack.push(current + 1);
+                        } else {
+                            argumentCountStack.push(current);
+                        }
+                    }
                 }
             }
+
+            previousToken = token;
         }
 
         while (!operatorStack.isEmpty()) {
@@ -130,6 +166,23 @@ class PostfixParser {
         }
 
         return output;
+    }
+
+    /**
+     * Checks whether the provided function token corresponds to a function that accepts
+     * an unlimited number of arguments (variadic function).
+     * <p>
+     * The method resolves the associated ExpressionElement by its symbol and checks
+     * whether it is an instance of UnlimitedArgumentFunction. If the element cannot be
+     * found, the method returns false.
+     *
+     * @param functionToken the token representing the function (expected Token.Type.FUNCTION)
+     * @return true if the function allows a variable number of arguments, false otherwise
+     */
+    private boolean isUnlimitedArgumentFunction(Token functionToken) {
+        return ExpressionElements.findBySymbol(functionToken.getValue())
+                .map(element -> element instanceof UnlimitedArgumentFunction)
+                .orElse(false);
     }
 
     /**

@@ -27,25 +27,21 @@ package com.mlprograms.justmath.calculator;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.internal.Token;
+
 import lombok.Getter;
 import lombok.NonNull;
 
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceAbsSigns;
-import static com.mlprograms.justmath.calculator.util.CalculatorEngineUtils.replaceVariables;
+import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
 
 /**
- * ExactCalculatorEngine.java
- * <p>
  * Main entry point for evaluating mathematical expressions as strings with exact precision.
  * Converts the input to tokens, parses them to postfix (RPN), and evaluates the result.
  */
@@ -56,7 +52,7 @@ public class CalculatorEngine {
      * Static thread-local storage for the current variables in the evaluation context.
      * This allows nested evaluations to access variables from the outer context.
      */
-    private static final ThreadLocal<Map<String, BigNumber>> currentVariables = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, String>> currentVariables = ThreadLocal.withInitial(HashMap::new);
     /**
      * Tokenizer instance used to convert input expressions into tokens.
      */
@@ -128,22 +124,12 @@ public class CalculatorEngine {
     }
 
     /**
-     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
-     *
-     * @param divisionPrecision the precision for division operations
-     * @return a MathContext instance with the given precision and HALF_UP rounding mode
-     */
-    public static MathContext getDefaultMathContext(int divisionPrecision) {
-        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
-    }
-
-    /**
      * Gets the current variables in the evaluation context.
      * This includes variables from outer evaluation contexts in nested evaluations.
      *
      * @return a map of variable names with their BigNumber values
      */
-    public static Map<String, BigNumber> getCurrentVariables() {
+    public static Map<String, String> getCurrentVariables() {
         return new HashMap<>(currentVariables.get());
     }
 
@@ -164,13 +150,13 @@ public class CalculatorEngine {
      * @param variables  a map of variable names with their BigNumber values
      * @return the result as a BigNumber, trimmed of trailing zeros
      */
-    public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+    public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         if (expression.isBlank()) {
             return BigNumbers.ZERO;
         }
 
         // Store the current variables in the thread-local storage
-        Map<String, BigNumber> combinedVariables = new HashMap<>(getCurrentVariables());
+        Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(variables);
         currentVariables.set(combinedVariables);
 
@@ -180,7 +166,7 @@ public class CalculatorEngine {
         // Tokenize the input string
         List<Token> tokens = tokenizer.tokenize(expressionWithoutAbsValueSign);
 
-        replaceVariables(tokens, combinedVariables);
+        replaceVariables(this, tokens, combinedVariables);
 
         // Parse to postfix notation using shunting yard algorithm
         List<Token> postfix = postfixParser.toPostfix(tokens);
@@ -206,7 +192,7 @@ public class CalculatorEngine {
      * @param variables  a map of variable names and their BigNumber values
      * @return the result as a string or an error message if an exception occurs
      */
-    public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+    public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toString();
@@ -232,7 +218,7 @@ public class CalculatorEngine {
      * @param variables  a map of variable names and their BigNumber values
      * @return the formatted result as a string or an error message if an exception occurs
      */
-    public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, BigNumber> variables) {
+    public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toPrettyString();

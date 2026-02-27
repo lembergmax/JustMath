@@ -27,9 +27,58 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
 | **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
 | **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
+| **Statistics**                   | `sum`, `average`, `median`                                             |
 
 All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
 formatting requirements.
+
+## 📃 BigNumberList – High-Precision Collections
+
+BigNumberList is a domain-specific, list-like container for BigNumber instances.
+It implements java.util.List<BigNumber> and adds high-level statistical, transformation, and sorting utilities on top.
+
+### ✅ Core Capabilities
+| Category                 | Methods                                                                                                                                    | Description                                                 |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`                                        | Create lists from existing values or string representations |
+| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                                                  | Convert to arrays, immutable views, or string/double lists  |
+| **Sorting**              | `sort`, `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                                       | Sort using custom algorithms or natural order               |
+| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`               | High-precision statistical operations                       |
+| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map`                | In-place or copy-based transformations on all elements      |
+| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                                                        | Remove duplicates, concatenate lists, copy subranges        |
+| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way           |
+
+All higher-level operations are implemented in terms of BigNumber’s arbitrary precision arithmetic and comparison,
+avoiding issues with primitive types.
+
+### 🧮 Example: Working with BigNumberList
+```java
+// Create a high-precision list
+BigNumberList numbers = BigNumberList.of(
+new BigNumber("3"),
+new BigNumber("1"),
+new BigNumber("2"),
+new BigNumber("2")
+);
+
+// Sort ascending using the built-in natural order
+numbers.sortAscending();
+System.out.println(numbers);
+// [1, 2, 2, 3]
+
+// Compute statistics
+BigNumber sum     = numbers.sum();       // 8
+BigNumber avg     = numbers.average();   // 2
+BigNumber median  = numbers.median();    // 2
+Set<BigNumber> modes = numbers.modes();  // {2}
+
+// Transform values in-place
+numbers.negateAll();                     // [-1, -2, -2, -3]
+numbers.absAll();                        // [1, 2, 2, 3]
+
+// Use a custom sorting algorithm
+numbers.sort(QuickSort.class);           // Uses your SortingAlgorithm implementation
+```
 
 ## 🧩 BigNumberMatrix – High-Precision Matrices
 
@@ -84,47 +133,50 @@ The built-in **CalculatorEngine** directly evaluates mathematical strings and su
 
 ### ✅ Supported Operators & Functions
 
-| Category                         | Operator / Function      | Description                        |
-|----------------------------------|--------------------------|------------------------------------|
-| **Arithmetic**                   | `+`, `-`, `*`, `/`       | Basic operations                   |
-|                                  | `%`, `^`, `!`            | Modulo, exponentiation, factorial  |
-| **Roots**                        | `√(x)`, `sqrt(x)`        | Square root                        |
-|                                  | `³√(x)`, `cbrt(x)`       | Cube root                          |
-|                                  | `rootn(a, n)`            | n-th root                          |
-| **Logarithms**                   | `log2(x)`                | Base-2 logarithm                   |
-|                                  | `log(x)`                 | Base-10 logarithm                  |
-|                                  | `ln(x)`                  | Natural logarithm                  |
-|                                  | `logbase(x, b)`          | Logarithm with arbitrary base      |
-| **Trigonometry**                 | `sin(x)`, `cos(x)`       | Sine, cosine                       |
-|                                  | `tan(x)`, `cot(x)`       | Tangent, cotangent                 |
-|                                  | `atan(x)`, `tan⁻¹(x)`    | Arctangent                         |
-|                                  | `acot(x)`, `cot⁻¹(x)`    | Arccotangent                       |
-|                                  | `atan2(y, x)`            | Two-argument arctangent            |
-| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`     | Hyperbolic sine, cosine            |
-|                                  | `tanh(x)`, `coth(x)`     | Hyperbolic tangent, cotangent      |
-| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`  | Inverse hyperbolic sine            |
-|                                  | `acosh(x)`, `cosh⁻¹(x)`  | Inverse hyperbolic cosine          |
-|                                  | `atanh(x)`, `tanh⁻¹(x)`  | Inverse hyperbolic tangent         |
-|                                  | `acoth(x)`, `coth⁻¹(x)`  | Inverse hyperbolic cotangent       |
-| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`| Combinations                       |
-|                                  | `nPr(n, r)`, `perm(n, r)`| Permutations                       |
-| **Series**                       | `∑(start; end; expr)`    | Sigma notation (e.g., ∑(0;10;2^k)) |
-|                                  | `sum(start; end; expr)`  | Named summation function           |
-|                                  | `∏(start; end; expr)`    | Product notation (e.g., ∏(1;4;k))  |
-|                                  | `prod(start; end; expr)` | Named product function             |
-| **Number Theory**                | `GCD(a, b)`              | Greatest common divisor            |
-|                                  | `LCM(a, b)`              | Least common multiple              |
-| **Random Generator**             | `RandInt(min, max)`      | Random integer in a given range    |
-| **Coordinates**                  | `Pol(x, y)`              | Cartesian → Polar                  |
-|                                  | `Rec(r, θ)`              | Polar → Cartesian                  |
-| **Special Functions**            | `Γ(x, y)`, `gamma(x)`    | Gamma                              |
-|                                  | `B(x, y)`, `beta(x, y)`  | Beta                               |
-|                                  | `\|x\|`, `abs(x)`        | Absolute value                     |
+| Category                         | Operator / Function                              | Description                        |
+|----------------------------------|--------------------------------------------------|------------------------------------|
+| **Arithmetic**                   | `+`, `-`, `*`, `/`                               | Basic operations                   |
+|                                  | `%`, `^`, `!`                                    | Modulo, exponentiation, factorial  |
+| **Roots**                        | `√(x)`, `sqrt(x)`                                | Square root                        |
+|                                  | `³√(x)`, `cbrt(x)`                               | Cube root                          |
+|                                  | `rootn(a, n)`                                    | n-th root                          |
+| **Logarithms**                   | `log2(x)`                                        | Base-2 logarithm                   |
+|                                  | `log(x)`                                         | Base-10 logarithm                  |
+|                                  | `ln(x)`                                          | Natural logarithm                  |
+|                                  | `logbase(x, b)`                                  | Logarithm with arbitrary base      |
+| **Trigonometry**                 | `sin(x)`, `cos(x)`                               | Sine, cosine                       |
+|                                  | `tan(x)`, `cot(x)`                               | Tangent, cotangent                 |
+|                                  | `atan(x)`, `tan⁻¹(x)`                            | Arctangent                         |
+|                                  | `acot(x)`, `cot⁻¹(x)`                            | Arccotangent                       |
+|                                  | `atan2(y, x)`                                    | Two-argument arctangent            |
+| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`                             | Hyperbolic sine, cosine            |
+|                                  | `tanh(x)`, `coth(x)`                             | Hyperbolic tangent, cotangent      |
+| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`                          | Inverse hyperbolic sine            |
+|                                  | `acosh(x)`, `cosh⁻¹(x)`                          | Inverse hyperbolic cosine          |
+|                                  | `atanh(x)`, `tanh⁻¹(x)`                          | Inverse hyperbolic tangent         |
+|                                  | `acoth(x)`, `coth⁻¹(x)`                          | Inverse hyperbolic cotangent       |
+| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`                        | Combinations                       |
+|                                  | `nPr(n, r)`, `perm(n, r)`                        | Permutations                       |
+| **Series**                       | `∑(start; end; expr)`                            | Sigma notation (e.g., ∑(0;10;2^k)) |
+|                                  | `sum(start; end; expr)`                          | Named summation function           |
+|                                  | `∏(start; end; expr)`                            | Product notation (e.g., ∏(1;4;k))  |
+|                                  | `prod(start; end; expr)`                         | Named product function             |
+| **Number Theory**                | `GCD(a, b)`                                      | Greatest common divisor            |
+|                                  | `LCM(a, b)`                                      | Least common multiple              |
+| **Random Generator**             | `RandInt(min, max)`                              | Random integer in a given range    |
+| **Coordinates**                  | `Pol(x, y)`                                      | Cartesian → Polar                  |
+|                                  | `Rec(r, θ)`                                      | Polar → Cartesian                  |
+| **Special Functions**            | `Γ(x, y)`, `gamma(x)`                            | Gamma                              |
+|                                  | `B(x, y)`, `beta(x, y)`                          | Beta                               |
+|                                  | `\|x\|`, `abs(x)`                                | Absolute value                     |
+| **Statistics**                   | `avg(n1, n2, n3, ...)`, `average(n1, n2, n3...)` | Average of n elements              |
+|                                  | `sum(n1, n2, n3, ...)`                           | Sum of n elements                  |
+|                                  | `median(n1, n2, n3, ...)`                        | Median of n elements               |
 
 ## 🔤 Variables
 
 JustMath allows you to **define and substitute variables** directly in expressions.  
-Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
+Variables are passed as a `Map<String, String>` when calling `evaluate`.
 
 - Variables can be reused across nested evaluations.
 - An **exception** is thrown if an undefined variable is encountered.
@@ -135,15 +187,25 @@ Variables are passed as a `Map<String, BigNumber>` when calling `evaluate`.
 CalculatorEngine calculator = new CalculatorEngine();
 
 // Define variables
-Map<String, BigNumber> variables = new HashMap<>();
-variables.put("a", new BigNumber("5"));
-variables.put("b", new BigNumber("3"));
+Map<String, String> variables = new HashMap<>();
+variables.put("a", "5+3");
+variables.put("b", "3");
 
 // Evaluate expression with variables
 BigNumber result = calculator.evaluate("2*a + b^2", variables);
 
 System.out.println(result);
-// 19
+// 25
+
+// Call other variables in a variable
+variables = new HashMap<>();
+variables.put("a", "root(b)");
+variables.put("b", "3");
+
+result = calculator.evaluate("2*a + b^2", variables);
+
+System.out.println(result);
+// 12.464101615...
 ```
 
 ## 📚 Static Utility Methods
@@ -151,28 +213,30 @@ System.out.println(result);
 JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
 `BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
 
-| Class                                | Method(s)                                                                 | Description                                              |
-|--------------------------------------|---------------------------------------------------------------------------|----------------------------------------------------------|
-| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                | Basic arithmetic operations                              |
-|                                      | `factorial`, `exp`                                                        | Factorial and exponential function                       |
-| `CombinatoricsMath`                  | `combination`, `permutation`                                              | Calculate combinations (nCr) and permutations (nPr)      |
-| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`              | Convert between polar and cartesian coordinates          |
-| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                            | Hyperbolic sine, cosine, tangent, and cotangent          |
-| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                        | Inverse hyperbolic functions                             |
-| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                            | Inverse trigonometric functions                          |
-| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                          | Binary, decimal, natural, and arbitrary base logarithms  |
-| `NumberTheoryMath`                   | `gcd`, `lcm`                                                              | Greatest common divisor and least common multiple        |
-| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                         | Percent calculations                                     |
-| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                      | Compute square, cube, and n-th roots                     |
-| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                               | Trigonometric functions (coth also here for convenience) |
-| `TwoDimensionalMath`                 | `atan2`                                                                   | Two-argument arctangent                                  |
-| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians` | Angle conversions                                        |
-|                                      | `randomIntegerBigNumberInRange`                                           | Random integer generation using `BigNumber`              |
-|                                      | `e`, `pi`                                                                 | Mathematical constants as `BigNumber`                    |
-| `SeriesMath`                         | `summation`                                                               | Summation logic                                          |
-|                                      | `product`                                                                 | Product logic                                            |
-|                                      | `product`                                                                 | Product logic                                            |
-| `SpecialFunctionMath`                | `gamma`, `beta`                                                           | Gamma and Beta special functions                         | 
+| Class                                | Method(s)                                                                                                                                  | Description                                              |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                                                                                 | Basic arithmetic operations                              |
+|                                      | `factorial`, `exp`                                                                                                                         | Factorial and exponential function                       |
+| `CombinatoricsMath`                  | `combination`, `permutation`                                                                                                               | Calculate combinations (nCr) and permutations (nPr)      |
+| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`                                                                               | Convert between polar and cartesian coordinates          |
+| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                                                                                             | Hyperbolic sine, cosine, tangent, and cotangent          |
+| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                                                                                         | Inverse hyperbolic functions                             |
+| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                                                                                             | Inverse trigonometric functions                          |
+| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                                                                                           | Binary, decimal, natural, and arbitrary base logarithms  |
+| `MatrixMath`                         | `add`, `subtract`, `multiply`, `divide`, `scalarMultiply`, `transpose`, `determinant`, `inverse`, `power`, `minor`, `identity`, `adjugate` | Matrix operations                                        |
+| `NumberTheoryMath`                   | `gcd`, `lcm`                                                                                                                               | Greatest common divisor and least common multiple        |
+| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                                                                                          | Percent calculations                                     |
+| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                                                                                       | Compute square, cube, and n-th roots                     |
+| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                                                                                                | Trigonometric functions (coth also here for convenience) |
+| `TwoDimensionalMath`                 | `atan2`                                                                                                                                    | Two-argument arctangent                                  |
+| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians`                                                                  | Angle conversions                                        |
+|                                      | `randomIntegerBigNumberInRange`                                                                                                            | Random integer generation using `BigNumber`              |
+|                                      | `e`, `pi`                                                                                                                                  | Mathematical constants as `BigNumber`                    |
+| `SeriesMath`                         | `summation`                                                                                                                                | Summation logic                                          |
+|                                      | `product`                                                                                                                                  | Product logic                                            |
+|                                      | `product`                                                                                                                                  | Product logic                                            |
+| `SpecialFunctionMath`                | `gamma`, `beta`                                                                                                                            | Gamma and Beta special functions                         | 
+| `StatisticsMath`                     | `sum`, `average`, `median`                                                                                                                 | Sum and average of provided elements                     | 
  
 ## 📐 Constants
 
@@ -189,8 +253,43 @@ used throughout JustMath. These can be accessed statically and are ideal for cus
 | `ONE`                        | BigNumber value of 1                            |
 | `TWO`                        | BigNumber value of 2                            |
 | `THREE`                      | BigNumber value of 3                            |
+| `FOUR`                       | BigNumber value of 4                            |
+| `FIVE`                       | BigNumber value of 5                            |
+| `SIX`                        | BigNumber value of 6                            |
+| `SEVEN`                      | BigNumber value of 7                            |
+| `EIGHT`                      | BigNumber value of 8                            |
+| `NINE`                       | BigNumber value of 9                            |
+| `TEN`                        | BigNumber value of 10                           |
 | `ONE_HUNDRED`                | BigNumber value of 100                          |
 | `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
+
+## 🧭 Algorithms
+
+You can also sort a `List<BigNumber>` using any of the following algorithms.
+
+| Algorithm       |
+|-----------------|
+| `BubbleSort`    |
+| `GnomeSort`     |
+| `InsertionSort` |
+| `MergeSort`     |
+| `QuickSort`     |
+| `RadixSort`     |
+| `SelectionSort` |
+| `TimSort`       |
+
+### ✅ Example: Using Algorithms
+
+```java
+List<BigNumber> numbers = Arrays.asList(
+        new BigNumber("3.14"),
+        new BigNumber("2.71"),
+        new BigNumber("1.41"),
+        new BigNumber("1.73")
+);
+
+numbers = new QuickSort().sort(numbers); // [1.41, 1.73, 2.71, 3.14]
+```
 
 ## 🧑‍💻 Practical Examples
 
@@ -249,6 +348,330 @@ System.out.println(result);
 // 61
 ```
 
+## 📏 Unit Converter (High-Precision)
+
+JustMath includes a **high-precision unit converter** built on top of `BigNumber`.
+It is designed to be:
+
+* **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
+* **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
+* **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
+
+### ✅ Supported Unit Groups (built-in)
+
+> Each group is a nested enum inside `Unit` (pure identifiers).
+> Metadata (symbol, display name, conversion formula) is stored in the internal registry and exposed via `UnitElements`.
+
+* **Length** (base: meter)                        → `Unit.Length`
+* **Area** (base: square meter)                   → `Unit.Area`
+* **Volume** (base: cubic meter)                  → `Unit.Volume`
+* **Mass** (base: kilogram)                       → `Unit.Mass`
+* **Temperature** (base: celsius)                 → `Unit.Temperature`
+* **Pressure** (base: pascal)                     → `Unit.Pressure`
+* **Energy** (base: joule)                        → `Unit.Energy`
+* **Power** (base: watt)                          → `Unit.Power`
+* **Time** (base: second)                         → `Unit.Time`
+* **Force** (base: newton)                        → `Unit.Force`
+* **Speed** (base: meter per second)              → `Unit.Speed`
+* **Fuel Consumption** (base: meter per liter)    → `Unit.FuelConsumption`
+* **Data Storage** (base: bit)                    → `Unit.DataStorage`
+
+> Cross-group conversions are **rejected** by design (e.g. length → mass).
+
+### 🔤 Symbols: strict, unique, case-sensitive
+
+* Symbols are the **parse/format tokens** stored in the registry (e.g. `km`, `m/s`, `kW*h`, `°C`, `µs`).
+* Symbols are **case-sensitive**.
+* The registry validates at startup that **every symbol is unique** (no ambiguities when parsing).
+
+### 🧠 Design Overview
+
+The converter module separates **unit identifiers** from **unit metadata**:
+
+* `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`, …) are **pure identifiers**.
+* The internal registry is the **single source of truth** for:
+
+  * `displayName` (human-readable label)
+  * `symbol` (parse/format token)
+  * conversion formula (scale/offset mapping into the base unit)
+
+This keeps the public API stable and makes the unit catalog deterministic and easy to maintain.
+
+### 🔁 Converting Values
+
+Use `UnitConverter` to convert between units **within the same group**.
+
+```java
+UnitConverter converter = new UnitConverter();
+
+// 1 km -> m
+UnitValue meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
+System.out.println(meters.toDisplayString()); // 1000 m
+
+// 2.5 lb -> kg
+UnitValue kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
+System.out.println(kg.toDisplayString()); // 1.13398... kg
+
+// 212 °F -> °C
+UnitValue celsius = converter.convert("212", Unit.Temperature.FAHRENHEIT, Unit.Temperature.CELSIUS);
+System.out.println(celsius.toDisplayString()); // 100 °C
+```
+
+#### Precision / Rounding
+
+Conversions use a `MathContext` internally (especially for divisions).
+You can control this via:
+
+```java
+// uses a MathContext derived from the given division precision
+UnitConverter converter = new UnitConverter(50);
+
+// or provide your own MathContext
+UnitConverter converter2 = new UnitConverter(new MathContext(80, RoundingMode.HALF_UP));
+```
+
+### 🧾 Parsing Inputs like `"12.5 km"` or `"1 rd^2"`
+
+Use `UnitValue` to parse a combined text input into a `(BigNumber + Unit)` pair.
+
+Supported formats:
+
+* Preferred: `"<number> <symbol>"` → `"12.5 km"`
+* Also supported: suffix without whitespace → `"12.5km"`
+* Power/exponent tokens are supported where applicable (e.g. area): `"1 rd^2"`
+
+Locale handling:
+
+* `new UnitValue(String)` detects decimal separators using lightweight heuristics
+* You can also pass an explicit `Locale`
+
+```java
+UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
+UnitConverter converter = new UnitConverter();
+
+UnitValue result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
+System.out.println(result.toDisplayString()); // 12500 m
+```
+
+### 🔎 Looking up Units by Symbol / Getting Metadata
+
+The public facade `UnitElements` provides:
+
+* strict symbol parsing
+* metadata access (display name, symbol)
+* listing all built-in units (deterministic registry order)
+
+```java
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitElements;
+
+// parse symbol -> unit
+Unit km = UnitElements.parseUnit("km");
+
+// metadata
+System.out.println(UnitElements.getDisplayName(km)); // "Kilometer"
+System.out.println(UnitElements.getSymbol(km));      // "km"
+
+// list all units (deterministic registry order)
+for (Unit unit : UnitElements.all()) {
+    System.out.println(UnitElements.getSymbol(unit) + " -> " + UnitElements.getDisplayName(unit));
+}
+```
+
+### 📚 Supported Units (Built-In Catalog)
+
+> The built-in catalog contains **many** units (incl. scientific, historical, and domain-specific units).
+> Use `UnitElements.all()` to print the complete list.
+> Below are the **core / most common** symbols per group.
+> All symbols are **case-sensitive** and **globally unique**.
+
+#### 📏 Length (`Unit.Length`) — base: meter
+
+| Name          | Symbol | Enum                        |
+| ------------- | ------ | --------------------------- |
+| Kilometer     | km     | `Unit.Length.KILOMETER`     |
+| Meter         | m      | `Unit.Length.METER`         |
+| Centimeter    | cm     | `Unit.Length.CENTIMETER`    |
+| Millimeter    | mm     | `Unit.Length.MILLIMETER`    |
+| Inch          | in     | `Unit.Length.INCH`          |
+| Foot          | ft     | `Unit.Length.FEET`          |
+| Yard          | yd     | `Unit.Length.YARD`          |
+| Mile          | mi     | `Unit.Length.MILE`          |
+| Nautical Mile | nmi    | `Unit.Length.NAUTICAL_MILE` |
+
+#### 🧱 Area (`Unit.Area`) — base: square meter
+
+| Name             | Symbol | Enum                         |
+| ---------------- | ------ | ---------------------------- |
+| Square Kilometer | km^2   | `Unit.Area.SQUARE_KILOMETER` |
+| Square Meter     | m^2    | `Unit.Area.SQUARE_METER`     |
+| Hectare          | ha     | `Unit.Area.HECTARE`          |
+| Acre             | ac     | `Unit.Area.ACRE`             |
+| Square Foot      | ft^2   | `Unit.Area.SQUARE_FOOT`      |
+| Square Rod       | rd^2   | `Unit.Area.SQUARE_ROD`       |
+
+#### 🧪 Volume (`Unit.Volume`) — base: cubic meter
+
+| Name            | Symbol | Enum                          |
+| --------------- | ------ | ----------------------------- |
+| Cubic Meter     | m^3    | `Unit.Volume.CUBIC_METER`     |
+| Liter           | L      | `Unit.Volume.LITER`           |
+| Milliliter      | mL     | `Unit.Volume.MILLILITER`      |
+| US Gallon       | gal_us | `Unit.Volume.US_GALLON`       |
+| Imperial Gallon | gal_uk | `Unit.Volume.IMPERIAL_GALLON` |
+| Cubic Inch      | in^3   | `Unit.Volume.CUBIC_INCH`      |
+
+#### ⚖️ Mass (`Unit.Mass`) — base: kilogram
+
+| Name             | Symbol | Enum                         |
+| ---------------- | ------ | ---------------------------- |
+| Tonne            | t      | `Unit.Mass.TON`              |
+| Kilogram         | kg     | `Unit.Mass.KILOGRAM`         |
+| Gram             | g      | `Unit.Mass.GRAM`             |
+| Milligram        | mg     | `Unit.Mass.MILLIGRAM`        |
+| Pound            | lb     | `Unit.Mass.POUND`            |
+| Ounce            | oz     | `Unit.Mass.OUNCE`            |
+| Carat            | ct     | `Unit.Mass.CARRAT`           |
+| Atomic mass unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
+
+#### 🌡️ Temperature (`Unit.Temperature`) — base: celsius
+
+| Name       | Symbol | Enum                          |
+| ---------- | ------ | ----------------------------- |
+| Celsius    | °C     | `Unit.Temperature.CELSIUS`    |
+| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
+| Fahrenheit | °F     | `Unit.Temperature.FAHRENHEIT` |
+
+#### 🧯 Pressure (`Unit.Pressure`) — base: pascal
+
+| Name       | Symbol | Enum                                |
+| ---------- | ------ | ----------------------------------- |
+| Pascal     | Pa     | `Unit.Pressure.PASCAL`              |
+| Bar        | bar    | `Unit.Pressure.BAR`                 |
+| Atmosphere | atm    | `Unit.Pressure.STANDARD_ATMOSPHERE` |
+| PSI        | psi    | `Unit.Pressure.PSI`                 |
+| Torr       | Torr   | `Unit.Pressure.TORR`                |
+
+#### ⚡ Energy (`Unit.Energy`) — base: joule
+
+| Name          | Symbol | Enum                        |
+| ------------- | ------ | --------------------------- |
+| Joule         | J      | `Unit.Energy.JOULE`         |
+| Kilojoule     | kJ     | `Unit.Energy.KILOJOULE`     |
+| Watt-hour     | W*h    | `Unit.Energy.WATT_HOUR`     |
+| Kilowatt-hour | kW*h   | `Unit.Energy.KILOWATT_HOUR` |
+| Calorie (IT)  | cal    | `Unit.Energy.CALORIE_IT`    |
+
+#### 🔌 Power (`Unit.Power`) — base: watt
+
+| Name         | Symbol | Enum                       |
+| ------------ | ------ | -------------------------- |
+| Watt         | W      | `Unit.Power.WATT`          |
+| Kilowatt     | kW     | `Unit.Power.KILOWATT`      |
+| Megawatt     | MW     | `Unit.Power.MEGAWATT`      |
+| Horsepower   | hp     | `Unit.Power.HORSEPOWER`    |
+| Pferdestärke | PS     | `Unit.Power.PFERDESTAERKE` |
+
+#### ⏱️ Time (`Unit.Time`) — base: second
+
+| Name        | Symbol | Enum                    |
+| ----------- | ------ | ----------------------- |
+| Second      | s      | `Unit.Time.SECOND`      |
+| Minute      | min    | `Unit.Time.MINUTE`      |
+| Hour        | h      | `Unit.Time.HOUR`        |
+| Day         | d      | `Unit.Time.DAY`         |
+| Year        | y      | `Unit.Time.YEAR`        |
+| Millisecond | ms     | `Unit.Time.MILLISECOND` |
+| Microsecond | µs     | `Unit.Time.MICROSECOND` |
+
+#### 🧲 Force (`Unit.Force`) — base: newton
+
+| Name        | Symbol | Enum                     |
+| ----------- | ------ | ------------------------ |
+| Newton      | N      | `Unit.Force.NEWTON`      |
+| Kilonewton  | kN     | `Unit.Force.KILONEWTON`  |
+| Dyne        | dyn    | `Unit.Force.DYNE`        |
+| Pound-force | lbf    | `Unit.Force.POUND_FORCE` |
+
+#### 🏎️ Speed (`Unit.Speed`) — base: meter per second
+
+| Name               | Symbol | Enum                            |
+| ------------------ | ------ | ------------------------------- |
+| Meter per Second   | m/s    | `Unit.Speed.METER_PER_SECOND`   |
+| Kilometer per Hour | km/h   | `Unit.Speed.KILOMETER_PER_HOUR` |
+| Mile per Hour      | mi/h   | `Unit.Speed.MILE_PER_HOUR`      |
+| Knot               | kn     | `Unit.Speed.KNOT`               |
+
+#### ⛽ Fuel Consumption (`Unit.FuelConsumption`) — base: meter per liter
+
+| Name                    | Symbol      | Enum                                           |
+| ----------------------- | ----------- | ---------------------------------------------- |
+| Meter per Liter         | m/L         | `Unit.FuelConsumption.METER_PER_LITER`         |
+| Kilometer per Liter     | km/L        | `Unit.FuelConsumption.KILOMETER_PER_LITER`     |
+| Liter per 100 Kilometer | L/100 km    | `Unit.FuelConsumption.LITER_PER_100_KILOMETER` |
+| Mile per Gallon (US)    | mi/gal (US) | `Unit.FuelConsumption.MILE_PER_GALLON_US`      |
+| Gallon (US) per Mile    | gal (US)/mi | `Unit.FuelConsumption.GALLON_US_PER_MILE`      |
+
+#### 💾 Data Storage (`Unit.DataStorage`) — base: bit
+
+| Name     | Symbol | Enum                        |
+| -------- | ------ | --------------------------- |
+| Bit      | b      | `Unit.DataStorage.BIT`      |
+| Byte     | B      | `Unit.DataStorage.BYTE`     |
+| Kilobyte | kB     | `Unit.DataStorage.KILOBYTE` |
+| Megabyte | MB     | `Unit.DataStorage.MEGABYTE` |
+| Gigabyte | GB     | `Unit.DataStorage.GIGABYTE` |
+| Terabyte | TB     | `Unit.DataStorage.TERABYTE` |
+
+### 🚫 Error Handling
+
+The converter module uses conversion-specific runtime exceptions:
+
+* `ConversionException`
+  Thrown for invalid numeric input / parse issues.
+
+* `UnitConversionException`
+  Thrown when:
+
+  * symbols are unknown or missing
+  * units are incompatible (cross-group conversion)
+  * the input format is malformed
+
+```java
+try {
+    UnitValue v = new UnitValue("abc km");
+} catch (ConversionException ex) {
+    // invalid number
+}
+```
+
+### ➕ Adding a New Unit (Internal Registry)
+
+To add a new built-in unit, you typically do **only two things**:
+
+1. Add the enum constant to the correct group (e.g. `Unit.Length`)
+2. Add exactly one `define(...)` entry to the internal `UnitRegistry.BUILT_IN`
+
+Conversion mapping is defined using an affine formula into the base unit:
+
+```text
+base = value * scaleToBase + offsetToBase
+```
+
+For purely linear conversions (most units), `offsetToBase = "0"`.
+
+Example (linear):
+
+```java
+define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000")
+```
+
+The registry validates at startup:
+
+* every unit is defined exactly once
+* every symbol is globally unique
+* groups are consistent and deterministic
+
 ## ⚙️ Maven (Coming Soon)
 
 Cannot wait? Just download the latest jar:
@@ -260,49 +683,59 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
+    <td>v1.3.0</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.3.0.jar">JustMath v1.3.0</a></td>
+    <td>Release</td>
+  </tr>
+  <tr>
+    <td>v1.2.5</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.5.jar">JustMath v1.2.5</a></td>
+    <td>Preview</td>
+  </tr>
+  <tr>
+    <td>v1.2.2</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.jar">JustMath v1.2.2</a></td>
+    <td>Release</td>
+  </tr>
+  <tr>
     <td>v1.2.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.1.jar">JustMath v1.2.1</a></td>
-    <td>Pre</td>
+    <td>Preview</td>
   </tr>
  <tr>
     <td>v1.2.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.2.0.jar">JustMath v1.2.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.5</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.5.jar">JustMath v1.1.5</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
  <tr>
     <td>v1.1.4</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.1.4.jar">JustMath v1.1.4</a></td>
-    <td>Stable</td>
-  </tr>
- <tr>
-    <td>v1.0.4</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.4.jar">JustMath v1.0.4</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.3</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.3.jar">JustMath v1.0.3</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.2</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.2.jar">JustMath v1.0.2</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.1</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.1.jar">JustMath v1.0.1</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.0.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">JustMath v1.0.0</a></td>
-    <td>Stable</td>
+    <td>Release</td>
   </tr>
 </table>
 

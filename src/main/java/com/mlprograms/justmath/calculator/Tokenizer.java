@@ -25,15 +25,19 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.internal.expression.ExpressionElements;
-import com.mlprograms.justmath.calculator.internal.expression.elements.*;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.Constant;
+import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
+import com.mlprograms.justmath.calculator.expression.elements.Separator;
+import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.internal.Token;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -63,14 +67,60 @@ import java.util.stream.Collectors;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-class Tokenizer {
+public class Tokenizer {
 
     /**
-     * Set of all valid operator and function symbols recognized by the tokenizer.
-     * Populated from the registry of {@link ExpressionElement} instances.
-     * Used to identify operators and functions during tokenization.
+     * Candidate descriptor for registered three-argument functions used by the tokenizer.
+     *
+     * <p>This record stores:
+     * <ul>
+     *   <li>{@code symbol} — the function symbol as registered in {@link ExpressionElements},</li>
+     *   <li>{@code symbolLength} — the precomputed length of the symbol (used to optimize matching),</li>
+     *   <li>{@code element} — the corresponding {@link ExpressionElement} instance.</li>
+     * </ul>
+     *
+     * <p>Instances of this record are sorted by {@code symbolLength} (longest first) to
+     * implement a maximal-munch lexical matching strategy.</p>
+     *
+     * @param symbol       the function symbol string
+     * @param symbolLength the length of the function symbol (precomputed)
+     * @param element      the associated ExpressionElement instance
      */
-    private final Set<String> validOperatorsAndFunctions = ExpressionElements.registry.values().stream().map(ExpressionElement::getSymbol).collect(Collectors.toSet());
+    private record ThreeArgCandidate(String symbol, int symbolLength, ExpressionElement element) {
+
+        /**
+         * Convenience constructor that computes {@code symbolLength} from the provided {@code symbol}
+         * and delegates to the canonical record constructor.
+         *
+         * @param symbol  the function symbol
+         * @param element the associated ExpressionElement instance
+         */
+        private ThreeArgCandidate(final String symbol, final ExpressionElement element) {
+            this(symbol, symbol.length(), element);
+        }
+
+    }
+
+    /**
+     * Cached view of the registered operator and function symbols.
+     * <p>
+     * This set references the key set of the {@link ExpressionElements} registry and is
+     * used during tokenization to quickly determine whether a substring corresponds to
+     * a known operator or function. It is a live view and will reflect changes in the
+     * registry.
+     */
+    private static final Set<String> VALID_OPERATORS_AND_FUNCTIONS = ExpressionElements.getRegistry().keySet();
+
+    /**
+     * Precomputed candidates for registered three-argument functions.
+     *
+     * <p>This array is constructed once at class initialization by scanning
+     * {@link ExpressionElements#getRegistry()} for instances of {@link ThreeArgumentFunction}.
+     * Candidates are sorted by decreasing symbol length to ensure a maximal-munch
+     * matching strategy during tokenization.</p>
+     */
+    private static final ThreeArgCandidate[] THREE_ARGUMENT_FUNCTION_CANDIDATES =
+            buildThreeArgumentFunctionCandidates();
 
     /**
      * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
@@ -121,13 +171,14 @@ class Tokenizer {
      * @throws IllegalArgumentException if the input contains invalid characters or malformed expressions
      * @throws NullPointerException     if the input string is null
      */
-    public List<Token> tokenize(String input) {
+    public List<Token> tokenize(@NonNull final String input) {
         List<Token> tokens = new ArrayList<>();
         String expression = removeWhitespace(input);
         int index = 0;
 
         while (index < expression.length()) {
             char character = expression.charAt(index);
+            Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
@@ -150,13 +201,7 @@ class Tokenizer {
 
                 nextAbsoluteIsOpen = !nextAbsoluteIsOpen;
                 index++;
-            } else if (matchThreeArgumentFunction(expression, index).isPresent()) {
-                Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
-
-                if (matchedFunction.isEmpty()) {
-                    throw new SyntaxErrorException("Invalid function at position " + index);
-                }
-
+            } else if (matchedFunction.isPresent()) {
                 ExpressionElement expressionElement = matchedFunction.get();
                 String symbol = expressionElement.getSymbol();
 
@@ -222,7 +267,7 @@ class Tokenizer {
             }
 
             // Insert * where implicit multiplication is likely
-            if (needsMultiplication(current, next)) {
+            if (needsMultiplicationSign(current, next)) {
                 tokens.add(i + 1, new Token(Token.Type.OPERATOR, ExpressionElements.OP_MULTIPLY));
                 i++; // Skip the inserted token
             }
@@ -245,48 +290,151 @@ class Tokenizer {
      * @param next    the next token in the sequence
      * @return true if implicit multiplication is needed, false otherwise
      */
-    private boolean needsMultiplication(final Token current, final Token next) {
+    private boolean needsMultiplicationSign(final Token current, final Token next) {
         return isNumberFollowedByParenOrFunction(current, next)
-                || isRightParenFollowedByValid(current, next)
+                || isRightParenFollowedByValidToken(current, next)
                 || isNumberOrConstantFollowedByZeroArgFunction(current, next)
                 || isZeroArgFunctionFollowedByNumberOrVariable(current, next)
                 || isConstantFollowedByFunction(current, next)
                 || isVariableFollowedByVariableOrConstant(current, next)
-                || isConstantFollowedByVariable(current, next);
+                || isVariableOrConstantFollowedByNumber(current, next)
+                || isNumberFollowedByVariableOrConstant(current, next)
+                || isConstantFollowedByVariable(current, next)
+                || isVariableOrConstantFollowedByLeftParenOrFunction(current, next);
     }
 
+    /**
+     * Checks whether a numeric token is immediately followed by either a left parenthesis
+     * or a function token. Used to detect contexts where implicit multiplication should
+     * be inserted (e.g. "2(" or "2sin").
+     *
+     * @param current the current token (expected to be a number)
+     * @param next    the next token in sequence
+     * @return true if current is NUMBER and next is LEFT_PAREN or FUNCTION; false otherwise
+     */
     private boolean isNumberFollowedByParenOrFunction(final Token current, final Token next) {
         return current.getType() == Token.Type.NUMBER
                 && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION);
     }
 
-    private boolean isRightParenFollowedByValid(final Token current, final Token next) {
+    /**
+     * Determines whether a closing parenthesis is followed by a token that can form
+     * an implicit multiplication with it. Typical cases are ")2", ")sin", or ")(".
+     *
+     * @param current the current token (expected to be a right parenthesis)
+     * @param next    the following token to inspect
+     * @return true if current is RIGHT_PAREN and next is NUMBER, FUNCTION, or LEFT_PAREN
+     */
+    private boolean isRightParenFollowedByValidToken(final Token current, final Token next) {
         return current.getType() == Token.Type.RIGHT_PAREN
                 && (next.getType() == Token.Type.NUMBER
                 || next.getType() == Token.Type.FUNCTION
-                || next.getType() == Token.Type.LEFT_PAREN);
+                || next.getType() == Token.Type.LEFT_PAREN
+                || next.getType() == Token.Type.VARIABLE
+                || next.getType() == Token.Type.CONSTANT);
     }
 
+    /**
+     * Checks whether a NUMBER or a zero-argument constant is followed by another
+     * zero-argument constant. This indicates a juxtaposition like "2pi" or "pi e"
+     * which may require implicit multiplication.
+     *
+     * @param current the current token (NUMBER or potential zero-arg constant)
+     * @param next    the next token to check for being a zero-argument constant
+     * @return true if (current is NUMBER or zero-arg constant) and next is a zero-arg constant
+     */
     private boolean isNumberOrConstantFollowedByZeroArgFunction(final Token current, final Token next) {
         return (current.getType() == Token.Type.NUMBER || isZeroArgConstant(current))
                 && isZeroArgConstant(next);
     }
 
+    /**
+     * Determines if a zero-argument constant (e.g. "pi") is followed by a NUMBER or VARIABLE,
+     * which often implies multiplication (e.g. "pi2" or "pi x").
+     *
+     * @param current the current token to test (expected zero-arg constant)
+     * @param next    the token following current
+     * @return true if current is a zero-arg constant and next is a NUMBER
+     */
     private boolean isZeroArgFunctionFollowedByNumberOrVariable(final Token current, final Token next) {
         return isZeroArgConstant(current)
                 && next.getType() == Token.Type.NUMBER;
     }
 
+    /**
+     * Checks whether a constant token is immediately followed by a function token.
+     * Example: "pi sin" could be treated as implicit multiplication "pi * sin".
+     *
+     * @param current the current token (expected to be CONSTANT)
+     * @param next    the token that follows
+     * @return true if current is CONSTANT and next is FUNCTION
+     */
     private boolean isConstantFollowedByFunction(final Token current, final Token next) {
         return current.getType() == Token.Type.CONSTANT
                 && next.getType() == Token.Type.FUNCTION;
     }
 
+    /**
+     * Determines whether a VARIABLE or CONSTANT token is immediately followed by a left parenthesis
+     * or a function token. This is used to detect contexts where implicit multiplication is implied,
+     * e.g. `x(` or `pi sin` should behave like `x * (` or `pi * sin`.
+     *
+     * @param current the current token (expected to be VARIABLE or CONSTANT)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is VARIABLE or CONSTANT and {@code next} is LEFT_PAREN or FUNCTION
+     */
+    private boolean isVariableOrConstantFollowedByLeftParenOrFunction(final Token current, final Token next) {
+        return (current.getType() == Token.Type.VARIABLE || current.getType() == Token.Type.CONSTANT)
+                && (next.getType() == Token.Type.LEFT_PAREN || next.getType() == Token.Type.FUNCTION);
+    }
+
+    /**
+     * Determines whether a variable token is followed by another variable or a constant.
+     * Useful for detecting implicit multiplication in sequences like "xy" or "xpi".
+     *
+     * @param current the current token (VARIABLE)
+     * @param next    the following token
+     * @return true if current is VARIABLE and next is VARIABLE or CONSTANT
+     */
     private boolean isVariableFollowedByVariableOrConstant(final Token current, final Token next) {
         return current.getType() == Token.Type.VARIABLE
                 && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
     }
 
+    /**
+     * Returns true when a variable or a constant token is immediately followed by a numeric token.
+     * This scenario commonly implies implicit multiplication (e.g. `x2` or `pi2`).
+     *
+     * @param current the current token (expected VARIABLE or CONSTANT)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is VARIABLE or CONSTANT and {@code next} is NUMBER
+     */
+    private boolean isVariableOrConstantFollowedByNumber(final Token current, final Token next) {
+        return (current.getType() == Token.Type.VARIABLE || current.getType() == Token.Type.CONSTANT)
+                && next.getType() == Token.Type.NUMBER;
+    }
+
+    /**
+     * Returns true when a numeric token is immediately followed by a variable or constant token.
+     * This also commonly implies implicit multiplication (e.g. `2x` or `2pi`).
+     *
+     * @param current the current token (expected NUMBER)
+     * @param next    the following token to inspect
+     * @return true if {@code current} is NUMBER and {@code next} is VARIABLE or CONSTANT
+     */
+    private boolean isNumberFollowedByVariableOrConstant(final Token current, final Token next) {
+        return current.getType() == Token.Type.NUMBER
+                && (next.getType() == Token.Type.VARIABLE || next.getType() == Token.Type.CONSTANT);
+    }
+
+    /**
+     * Checks whether a constant is followed by a variable (e.g. "pi x"),
+     * which commonly indicates implicit multiplication.
+     *
+     * @param current the current token (CONSTANT)
+     * @param next    the following token (VARIABLE)
+     * @return true if current is CONSTANT and next is VARIABLE
+     */
     private boolean isConstantFollowedByVariable(final Token current, final Token next) {
         return current.getType() == Token.Type.CONSTANT
                 && next.getType() == Token.Type.VARIABLE;
@@ -296,14 +444,14 @@ class Tokenizer {
      * Checks if the given token represents a zero-argument constant.
      * <p>
      * This method looks up the token's symbol in the {@link ExpressionElements} registry
-     * and verifies if the associated {@link ExpressionElement} is an instance of {@link ZeroArgumentConstant}.
+     * and verifies if the associated {@link ExpressionElement} is an instance of {@link Constant}.
      *
      * @param token the token to check
      * @return true if the token is a zero-argument constant, false otherwise
      */
     private boolean isZeroArgConstant(Token token) {
         Optional<ExpressionElement> expressionElementOptional = ExpressionElements.findBySymbol(token.getValue());
-        return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == ZeroArgumentConstant.class;
+        return expressionElementOptional.isPresent() && expressionElementOptional.get().getClass() == Constant.class;
     }
 
     /**
@@ -409,6 +557,47 @@ class Tokenizer {
     }
 
     /**
+     * Build an array of candidates representing registered three-argument functions.
+     *
+     * <p>This method performs two passes over the {@link ExpressionElements#getRegistry()}:
+     * <ol>
+     *   <li>First pass: counts how many registry entries are instances of {@link ThreeArgumentFunction}
+     *       to allocate an array of the exact required size.</li>
+     *   <li>Second pass: creates a {@link ThreeArgCandidate} for each matching entry and fills the array.</li>
+     * </ol>
+     *
+     * <p>Finally, the resulting array is sorted in descending order by symbol length. Sorting
+     * longest-first is important for lexical scanning: when attempting to match a function
+     * symbol in the input expression, longer symbols must be tested before shorter ones so
+     * that the tokenizer implements a maximal-munch strategy and avoids premature shorter matches.
+     *
+     * @return a non-null array of {@link ThreeArgCandidate} instances sorted by decreasing symbol length;
+     * the array may be empty if no three-argument functions are registered
+     */
+    private static ThreeArgCandidate[] buildThreeArgumentFunctionCandidates() {
+        int count = 0;
+        for (final var element : ExpressionElements.getRegistry().values()) {
+            if (element instanceof ThreeArgumentFunction) {
+                count++;
+            }
+        }
+
+        final ThreeArgCandidate[] candidates = new ThreeArgCandidate[count];
+        int writeIndex = 0;
+
+        for (final var entry : ExpressionElements.getRegistry().entrySet()) {
+            final ExpressionElement element = entry.getValue();
+            if (element instanceof ThreeArgumentFunction) {
+                final String symbol = entry.getKey();
+                candidates[writeIndex++] = new ThreeArgCandidate(symbol, element);
+            }
+        }
+
+        Arrays.sort(candidates, (a, b) -> Integer.compare(b.symbolLength, a.symbolLength));
+        return candidates;
+    }
+
+    /**
      * Tries to match a three-argument function starting at the given index.
      *
      * @param expression the full input expression
@@ -416,15 +605,36 @@ class Tokenizer {
      * @return an Optional containing the matched function symbol, or empty if not found
      */
     private Optional<ExpressionElement> matchThreeArgumentFunction(String expression, int index) {
-        for (Map.Entry<String, ExpressionElement> entry : ExpressionElements.registry.entrySet()) {
-            String symbol = entry.getKey();
-            ExpressionElement expressionElement = entry.getValue();
+        if (expression == null) {
+            return Optional.empty();
+        }
 
-            if (expressionElement instanceof ThreeArgumentFunction &&
-                    expression.startsWith(symbol + ExpressionElements.PAR_LEFT, index)) {
-                return Optional.of(expressionElement);
+        final int expressionLength = expression.length();
+        if (index < 0 || index >= expressionLength) {
+            return Optional.empty();
+        }
+
+        final char firstChar = expression.charAt(index);
+
+        for (final ThreeArgCandidate candidate : THREE_ARGUMENT_FUNCTION_CANDIDATES) {
+            if (candidate.symbol.charAt(0) != firstChar) {
+                continue;
+            }
+
+            final int afterSymbolIndex = index + candidate.symbolLength;
+            if (afterSymbolIndex >= expressionLength) {
+                continue;
+            }
+
+            if (expression.charAt(afterSymbolIndex) != ExpressionElements.PAR_LEFT.charAt(0)) {
+                continue;
+            }
+
+            if (expression.regionMatches(index, candidate.symbol, 0, candidate.symbolLength)) {
+                return Optional.of(candidate.element);
             }
         }
+
         return Optional.empty();
     }
 
@@ -434,8 +644,22 @@ class Tokenizer {
      * @param input the string to process
      * @return the input string with all whitespace removed
      */
-    private String removeWhitespace(String input) {
-        return input.replaceAll("\\s+", "");
+    private String removeWhitespace(final String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        final int length = input.length();
+        final StringBuilder stringBuilder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            final char charAt = input.charAt(i);
+            if (!Character.isWhitespace(charAt)) {
+                stringBuilder.append(charAt);
+            }
+        }
+
+        return stringBuilder.length() == length ? input : stringBuilder.toString();
     }
 
     /**
@@ -524,7 +748,6 @@ class Tokenizer {
     private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
         int currentIndex = startIndex;
 
-        // optional sign char
         if (currentIndex < expression.length()) {
             char fc = expression.charAt(currentIndex);
             if (fc == '+' || fc == '-') {
@@ -538,12 +761,10 @@ class Tokenizer {
 
         String rawNumber = expression.substring(startIndex, currentIndex);
 
-        // Always strip leading '+' for tests/expectation.
         if (rawNumber.startsWith("+")) {
             rawNumber = rawNumber.substring(1);
         }
 
-        // keep leading '-' (negative numbers)
         tokens.add(new Token(Token.Type.NUMBER, rawNumber));
         return currentIndex;
     }
@@ -613,10 +834,7 @@ class Tokenizer {
      * @throws NullPointerException     if expression or tokens is null
      */
     private int getLengthOfMatchingOperatorOrFunction(String expression, int startIndex, List<Token> tokens) {
-        int maxTokenLength = validOperatorsAndFunctions.stream()
-                .mapToInt(String::length)
-                .max()
-                .orElse(0);
+        int maxTokenLength = ExpressionElements.getMaxTokenLength();
 
         for (int length = maxTokenLength; length > 0; length--) {
             int endIndex = startIndex + length;
@@ -626,13 +844,13 @@ class Tokenizer {
 
             String candidate = expression.substring(startIndex, endIndex);
 
-            Optional<ExpressionElement> zeroArg = ExpressionElements.findBySymbol(candidate).filter(element -> element instanceof ZeroArgumentConstant);
+            Optional<ExpressionElement> zeroArg = ExpressionElements.findBySymbol(candidate).filter(element -> element instanceof Constant);
             if (zeroArg.isPresent()) {
                 tokens.add(new Token(Token.Type.CONSTANT, zeroArg.get().getSymbol()));
                 return length;
             }
 
-            if (validOperatorsAndFunctions.contains(candidate)) {
+            if (VALID_OPERATORS_AND_FUNCTIONS.contains(candidate)) {
                 if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
                     // must not be in the beginning or after another expressionElement
                     Token previous = tokens.getLast();

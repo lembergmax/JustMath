@@ -24,8 +24,8 @@
 
 package com.mlprograms.justmath.calculator;
 
-import com.mlprograms.justmath.calculator.internal.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.internal.token.Token;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.internal.Token;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -671,6 +671,104 @@ class TokenizerTest {
                 new Token(Token.Type.NUMBER, "7"),
                 new Token(Token.Type.RIGHT_PAREN, ")")
         ), tokens3);
+    }
+
+    @Test
+    void testVariableAndVariableImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("xy");
+        assertEquals(List.of(
+                new Token(Token.Type.VARIABLE, "xy")
+        ), tokens);
+    }
+
+    @Test
+    void testNumberAndParenthesisImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("2(x+1)");
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "2"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.VARIABLE, "x"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.RIGHT_PAREN, ")")
+        ), tokens);
+    }
+
+    @Test
+    void testParenthesisAndVariableImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("(x+1)y");
+        assertEquals(List.of(
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.VARIABLE, "x"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.RIGHT_PAREN, ")"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "y")
+        ), tokens);
+    }
+
+    @Test
+    void testVariableAndParenthesisImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("x(y+1)");
+        assertEquals(List.of(
+                new Token(Token.Type.VARIABLE, "x"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.VARIABLE, "y"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.RIGHT_PAREN, ")")
+        ), tokens);
+    }
+
+    @Test
+    void testDecimalCommaAndVariableImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("4.3a");
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "4.3"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "a")
+        ), tokens);
+    }
+
+    @Test
+    void testWhitespaceStillCreatesImplicitMultiplication() {
+        List<Token> tokens = tokenizer.tokenize("2 x");
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "2"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "x")
+        ), tokens);
+    }
+
+    @Test
+    void testPowerOperator() {
+        List<Token> tokens = tokenizer.tokenize("x^2");
+        assertEquals(List.of(
+                new Token(Token.Type.VARIABLE, "x"),
+                new Token(Token.Type.OPERATOR, "^"),
+                new Token(Token.Type.NUMBER, "2")
+        ), tokens);
+    }
+
+    @Test
+    void testMixedExpressionWithMultipleImplicitMultiplications() {
+        List<Token> tokens = tokenizer.tokenize("2x-3y+4.3a");
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "2"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "x"),
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "y"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "4.3"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.VARIABLE, "a")
+        ), tokens);
     }
 
 }

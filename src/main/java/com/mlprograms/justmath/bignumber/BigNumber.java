@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -29,15 +29,14 @@ import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -59,6 +58,7 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
  * such as financial systems, scientific calculations, or custom calculators.</p>
  */
 @Getter
+@EqualsAndHashCode(callSuper = false, of = {"valueBeforeDecimalPoint", "valueAfterDecimalPoint", "isNegative"})
 public class BigNumber extends Number implements Comparable<BigNumber> {
 
     /**
@@ -75,12 +75,12 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * The numeric value before the decimal separator.
      */
     @NonNull
-    private String valueBeforeDecimal;
+    private String valueBeforeDecimalPoint;
     /**
      * The numeric value after the decimal separator. Defaults to "0" if absent.
      */
     @NonNull
-    private String valueAfterDecimal;
+    private String valueAfterDecimalPoint;
     /**
      * Indicates whether the number is negative.
      */
@@ -108,25 +108,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     private MathContext mathContext;
 
     /**
-     * Constructs a BigNumber from a string using the default locale.
-     *
-     * @param number the string representation of the number
-     */
-    public BigNumber(@NonNull final String number) {
-        this(number, Locale.US);
-    }
-
-    /**
-     * Constructs a BigNumber from a string and trigonometric mode using the default locale and math context.
-     *
-     * @param number            the string representation of the number
-     * @param trigonometricMode the trigonometric mode to use
-     */
-    public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
-        this(number, Locale.US, DEFAULT_MATH_CONTEXT, trigonometricMode);
-    }
-
-    /**
      * Constructs a BigNumber from a string and locale using the default math context.
      *
      * @param number       the string representation of the number
@@ -145,16 +126,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale targetLocale) {
         this(number, targetLocale, DEFAULT_MATH_CONTEXT, trigonometricMode);
-    }
-
-    /**
-     * Constructs a BigNumber from a string and math context using the default locale.
-     *
-     * @param number      the string representation of the number
-     * @param mathContext the math context to use for precision and rounding
-     */
-    public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
-        this(number, Locale.US, mathContext);
     }
 
     /**
@@ -183,9 +154,76 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimal = parsedAndFormatted.valueBeforeDecimal;
-        this.valueAfterDecimal = parsedAndFormatted.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = parsedAndFormatted.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = parsedAndFormatted.valueAfterDecimalPoint;
         this.isNegative = parsedAndFormatted.isNegative;
+        this.mathContext = mathContext;
+        this.trigonometricMode = trigonometricMode;
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+    }
+
+    /**
+     * Constructs a BigNumber from a string using an auto-resolved locale.
+     *
+     * <p>
+     * The locale is detected from the input string (grouping/decimal separators).
+     * </p>
+     *
+     * @param number the string representation of the number
+     */
+    public BigNumber(@NonNull final String number) {
+        this(number, DEFAULT_MATH_CONTEXT, TrigonometricMode.DEG);
+    }
+
+    /**
+     * Constructs a BigNumber from a string and trigonometric mode using an auto-resolved locale
+     * and the default math context.
+     *
+     * @param number            the string representation of the number
+     * @param trigonometricMode the trigonometric mode to use
+     */
+    public BigNumber(@NonNull final String number, @NonNull final TrigonometricMode trigonometricMode) {
+        this(number, DEFAULT_MATH_CONTEXT, trigonometricMode);
+    }
+
+    /**
+     * Constructs a BigNumber from a string and math context using an auto-resolved locale
+     * and the default trigonometric mode (DEG).
+     *
+     * @param number      the string representation of the number
+     * @param mathContext the math context to use for precision and rounding
+     */
+    public BigNumber(@NonNull final String number, @NonNull final MathContext mathContext) {
+        this(number, mathContext, TrigonometricMode.DEG);
+    }
+
+    /**
+     * Constructs a BigNumber from a string using an auto-resolved locale, a provided math context,
+     * and a provided trigonometric mode.
+     *
+     * <p>
+     * The locale is detected from the input string (grouping/decimal separators). The detected locale
+     * is stored on the BigNumber instance.
+     * </p>
+     *
+     * @param number            the string representation of the number
+     * @param mathContext       the math context to use for precision and rounding
+     * @param trigonometricMode the trigonometric mode to use
+     */
+    public BigNumber(
+            @NonNull final String number,
+            @NonNull final MathContext mathContext,
+            @NonNull final TrigonometricMode trigonometricMode
+    ) {
+        MathUtils.checkMathContext(mathContext);
+
+        final BigNumber parsed = bigNumberParser.parse(number);
+
+        this.locale = parsed.locale;
+        this.valueBeforeDecimalPoint = parsed.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = parsed.valueAfterDecimalPoint;
+        this.isNegative = parsed.isNegative;
+
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
         this.calculatorEngine = new CalculatorEngine(trigonometricMode);
@@ -244,8 +282,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         MathUtils.checkMathContext(mathContext);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimal = bigNumber.valueBeforeDecimal;
-        this.valueAfterDecimal = bigNumber.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = bigNumber.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = bigNumber.valueAfterDecimalPoint;
         this.isNegative = bigNumber.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -261,8 +299,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         MathUtils.checkMathContext(other.mathContext);
 
         this.locale = other.locale;
-        this.valueBeforeDecimal = other.valueBeforeDecimal;
-        this.valueAfterDecimal = other.valueAfterDecimal;
+        this.valueBeforeDecimalPoint = other.valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = other.valueAfterDecimalPoint;
         this.isNegative = other.isNegative;
         this.mathContext = other.mathContext;
         this.trigonometricMode = other.trigonometricMode;
@@ -272,21 +310,20 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     /**
      * Builder constructor for BigNumber.
      *
-     * @param locale             the locale to use for parsing and formatting
-     * @param valueBeforeDecimal the integer part of the number
-     * @param valueAfterDecimal  the decimal part of the number
-     * @param isNegative         whether the number is negative
-     * @param mathContext        the math context to use for precision and rounding
-     * @param trigonometricMode  the trigonometric mode to use
+     * @param locale                  the locale to use for parsing and formatting
+     * @param valueBeforeDecimalPoint the integer part of the number
+     * @param valueAfterDecimalPoint  the decimal part of the number
+     * @param isNegative              whether the number is negative
+     * @param mathContext             the math context to use for precision and rounding
+     * @param trigonometricMode       the trigonometric mode to use
      */
-    // TODO: remove this builder thing
     @Builder
-    public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimal, @NonNull final String valueAfterDecimal, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+    public BigNumber(@NonNull final Locale locale, @NonNull final String valueBeforeDecimalPoint, @NonNull final String valueAfterDecimalPoint, final boolean isNegative, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         MathUtils.checkMathContext(mathContext);
 
         this.locale = locale;
-        this.valueBeforeDecimal = valueBeforeDecimal;
-        this.valueAfterDecimal = valueAfterDecimal;
+        this.valueBeforeDecimalPoint = valueBeforeDecimalPoint;
+        this.valueAfterDecimalPoint = valueAfterDecimalPoint;
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -487,6 +524,40 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber modulo(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
         return BasicMath.modulo(this, divisor, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}
+     * using the current locale.
+     *
+     * <p>This is a convenience method that delegates to {@link #remainder(BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor) {
+        return remainder(divisor, locale);
+    }
+
+    /**
+     * Computes the truncating remainder of this number divided by the specified {@link BigNumber}.
+     *
+     * <p>This implementation delegates to {@link BasicMath#remainder(BigNumber, BigNumber, Locale)}.</p>
+     *
+     * <p><b>Semantics:</b> This method behaves like Java's {@code %} operator (truncating remainder):
+     * the sign of the result follows the dividend (this number).</p>
+     *
+     * @param divisor the divisor to compute the remainder with (must not be zero)
+     * @param locale  the locale used to construct the returned {@link BigNumber}
+     * @return a new {@code BigNumber} representing {@code this % divisor}
+     * @throws ArithmeticException if {@code divisor} is zero
+     */
+    public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
+        return BasicMath.remainder(this, divisor, locale);
     }
 
     /**
@@ -1916,7 +1987,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return summation(this, kCalculation, externalVariables);
     }
 
@@ -1941,7 +2012,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, externalVariables);
     }
 
@@ -1968,7 +2039,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
     }
 
@@ -1997,7 +2068,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, String> externalVariables) {
         return summation(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2028,7 +2099,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the summation as a {@code BigNumber}
      */
-    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber summation(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         return SeriesMath.summation(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2053,7 +2124,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, externalVariables);
     }
 
@@ -2080,7 +2151,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, trigonometricMode, externalVariables);
     }
 
@@ -2109,7 +2180,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Map<String, String> externalVariables) {
         return product(kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2140,7 +2211,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @param externalVariables a map of external variable names with their BigNumber values that can be used in the calculation
      * @return the result of the product as a {@code BigNumber}
      */
-    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, BigNumber> externalVariables) {
+    public BigNumber product(@NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         return SeriesMath.product(this, kEnd, kCalculation, mathContext, trigonometricMode, locale, externalVariables);
     }
 
@@ -2427,13 +2498,192 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the instance's
+     * default {@link MathContext} and {@link Locale}.
+     *
+     * <p>The method delegates to {@link #average(List, MathContext, Locale)} with the instance defaults.
+     * The input list must be non\-null (annotated with {@code @NonNull}).</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to average; must not be {@code null}
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the instance's
+     * default {@link MathContext} and the supplied {@link Locale}.
+     *
+     * <p>This is a convenience overload that allows specifying locale-specific behaviour for any internal
+     * formatting or parsing while keeping precision/rounding from the instance.</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the specified
+     * {@link MathContext} and the instance's current {@link Locale}.
+     *
+     * <p>This overload allows callers to control precision and rounding behavior while using the default locale.</p>
+     *
+     * @param numbers     the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext) {
+        return average(numbers, mathContext, locale);
+    }
+
+    /**
+     * Computes the arithmetic mean (average) of the supplied list of {@code BigNumber} values using the provided
+     * {@link MathContext} and {@link Locale}.
+     *
+     * <p>The computation is delegated to {@link StatisticsMath#average(List, MathContext, Locale)} which performs
+     * the actual aggregation and averaging logic. The returned value represents the average with the requested
+     * precision and locale-specific formatting rules applied where relevant.</p>
+     *
+     * @param numbers     the list of {@link BigNumber} values to average; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode
+     * @param locale      the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the arithmetic mean of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        return StatisticsMath.average(addThisTobigNumberList(numbers), mathContext, locale);
+    }
+
+    /**
+     * Computes the sum of the supplied list of {@code BigNumber} values using the instance's default {@link Locale}.
+     *
+     * <p>This is a convenience overload that delegates to {@link #sum(List, Locale)} using the instance locale.
+     * The input list must be non\-null (annotated with {@code @NonNull}).</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to sum; must not be {@code null}
+     * @return a new {@code BigNumber} representing the sum of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber sum(@NonNull final List<BigNumber> numbers) {
+        return sum(numbers, locale);
+    }
+
+    /**
+     * Computes the sum of the supplied list of {@code BigNumber} values using the specified {@link Locale}.
+     *
+     * <p>The computation is delegated to {@link StatisticsMath#sum(List, Locale)} which performs the actual accumulation.
+     * Locale is provided for any locale-sensitive formatting or parsing that may occur inside the implementation.</p>
+     *
+     * @param numbers the list of {@link BigNumber} values to sum; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the sum of the provided values
+     * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
+     */
+    public BigNumber sum(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return StatisticsMath.sum(addThisTobigNumberList(numbers), locale);
+    }
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset.
+     *
+     * <p>This convenience overload uses the instance's default {@link MathContext} and {@link Locale}. The supplied
+     * {@code numbers} list is combined with this {@code BigNumber} via {@code addThisTobigNumberList(numbers)} before
+     * delegating to the canonical implementation.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the provided {@link Locale}.
+     *
+     * <p>This overload keeps the instance's default {@link MathContext} but allows callers to specify a {@code locale}
+     * that may affect locale-sensitive formatting or parsing performed by the underlying implementation.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param locale  the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the provided {@link MathContext}.
+     *
+     * <p>This overload lets callers control precision and rounding by supplying a {@code mathContext} while using the
+     * instance's default {@link Locale}.</p>
+     *
+     * @param numbers     the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode for the computation
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to the underlying implementation)
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext) {
+        return median(numbers, mathContext, locale);
+    }
+
+
+    /**
+     * Computes the median of a collection of {@code BigNumber} values, including this instance as an element of the
+     * dataset, using the specified {@link MathContext} and {@link Locale}.
+     *
+     * <p>This is the canonical implementation: the supplied {@code numbers} list is combined with this instance and
+     * the actual median calculation is delegated to {@link StatisticsMath#median(List, MathContext, Locale)}.</p>
+     *
+     * @param numbers     the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
+     * @param mathContext the {@link MathContext} specifying precision and rounding mode for the computation
+     * @param locale      the {@link Locale} to use for any locale-sensitive operations
+     * @return a new {@code BigNumber} representing the median of the combined dataset (this + {@code numbers})
+     * @throws IllegalArgumentException if the resulting dataset is empty (delegated to {@link StatisticsMath#median})
+     */
+    public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        final List<BigNumber> allNumbers = addThisTobigNumberList(numbers);
+        return StatisticsMath.median(allNumbers, mathContext, locale);
+    }
+
+    /**
+     * Returns a new list with this {@code BigNumber} prepended to the provided list.
+     *
+     * <p>The returned list is a newly created {@code ArrayList} and does not modify the original
+     * {@code numbers} argument. This is useful for delegating calculations that expect the receiver
+     * to be included as the first element followed by additional operands.</p>
+     *
+     * @param numbers the list of {@code BigNumber} values to append after {@code this}; must not be {@code null}
+     * @return a new {@code List<BigNumber>} containing {@code this} followed by all elements of {@code numbers}
+     */
+    private List<BigNumber> addThisTobigNumberList(@NonNull final List<BigNumber> numbers) {
+        List<BigNumber> bigNumbers = new ArrayList<>(numbers.size() + 1);
+        bigNumbers.add(this);
+        bigNumbers.addAll(numbers);
+        return bigNumbers;
+    }
+
+    /**
      * Returns a new {@code BigNumber} whose value is the largest integer less than or equal to this number.
      * This operation sets the value after the decimal point to zero.
      *
      * @return this {@code BigNumber} with the fractional part removed
      */
     public BigNumber floor() {
-        valueAfterDecimal = "0";
+        valueAfterDecimalPoint = "0";
         return this;
     }
 
@@ -2453,7 +2703,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber ceil() {
         // Already an integer → return directly
-        if (this.valueAfterDecimal.equals("0")) {
+        if (this.valueAfterDecimalPoint.equals("0")) {
             return new BigNumber(this.toString());
         }
 
@@ -2484,14 +2734,14 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public BigNumber truncate() {
         // If the number has no decimal part, nothing to do
-        if ("0".equals(valueAfterDecimal) || valueAfterDecimal.isEmpty()) {
+        if ("0".equals(valueAfterDecimalPoint) || valueAfterDecimalPoint.isEmpty()) {
             return this;
         }
 
         // Simply drop the fractional part
-        valueAfterDecimal = "0";
+        valueAfterDecimalPoint = "0";
 
-        if (isNegative() && valueBeforeDecimal.equals("0")) {
+        if (isNegative() && valueBeforeDecimalPoint.equals("0")) {
             return BigNumbers.ZERO;
         }
 
@@ -2664,8 +2914,35 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
-        valueBeforeDecimal = trimLeadingZeros(valueBeforeDecimal);
-        valueAfterDecimal = trimTrailingZeros(valueAfterDecimal);
+        valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes leading zeros from the integer (before-decimal) part of this BigNumber.
+     *
+     * <p>This method updates the internal {@code valueBeforeDecimalPoint} in-place by delegating to
+     * {@link #trimLeadingZeros(String)} and returns this instance to allow method chaining.</p>
+     *
+     * @return this {@code BigNumber} with the integer part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes leading zeros from the fractional (after-decimal) part of this BigNumber.
+     *
+     * <p>Normalizes fractional representations by delegating to
+     * {@link #trimLeadingZeros(String)}. The method modifies {@code valueAfterDecimalPoint} in-place
+     * and returns this instance for chaining.</p>
+     *
+     * @return this {@code BigNumber} with the fractional part's leading zeros removed
+     */
+    public BigNumber trimLeadingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimLeadingZeros(valueAfterDecimalPoint);
         return this;
     }
 
@@ -2693,6 +2970,28 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Removes trailing zeros from the integer (before-decimal) part of this number.
+     * The operation modifies the internal `valueBeforeDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed before the decimal point
+     */
+    public BigNumber trimTrailingZerosBeforeDecimalPoint() {
+        this.valueBeforeDecimalPoint = trimTrailingZeros(valueBeforeDecimalPoint);
+        return this;
+    }
+
+    /**
+     * Removes trailing zeros from the fractional (after-decimal) part of this number.
+     * The operation modifies the internal `valueAfterDecimalPoint` field in-place.
+     *
+     * @return this {@code BigNumber} with trailing zeros removed after the decimal point
+     */
+    public BigNumber trimTrailingZerosAfterDecimalPoint() {
+        this.valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        return this;
+    }
+
+    /**
      * Removes trailing zeros from a numeric string (typically the decimal part).
      * If the string only contains zeros, it returns an empty string.
      *
@@ -2714,79 +3013,60 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
+     * Returns the signum function of this {@code BigDecimal}.
+     *
+     * @return -1, 0, or 1 as the value of this {@code BigDecimal}
+     * is negative, zero, or positive.
+     */
+    public int signum() {
+        if (isLessThan(BigNumbers.ZERO)) {
+            return -1;
+        }
+        if (isGreaterThan(BigNumbers.ZERO)) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
      * Returns the value of this {@code BigNumber} as an {@code int}.
-     * <p>
-     * If the integer part exceeds 10 digits, only the first 10 digits are used.
-     * If parsing fails, {@code Integer.MAX_VALUE} is returned (with sign).
      *
      * @return the integer value represented by this object, or {@code Integer.MAX_VALUE} on error
      */
     @Override
     public int intValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 10 ? valueBeforeDecimal.substring(0, 10) : valueBeforeDecimal;
-        int result;
-        try {
-            result = Integer.parseInt(valueBeforeDecimalAsString);
-        } catch (NumberFormatException e) {
-            result = Integer.MAX_VALUE;
-        }
-        return isNegative ? -result : result;
+        return Integer.parseInt((isNegative ? "-" : "") + valueBeforeDecimalPoint);
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code long}.
-     * <p>
-     * If the integer part exceeds 19 digits, only the first 19 digits are used.
-     * If parsing fails, {@code Long.MAX_VALUE} is returned (with sign).
      *
      * @return the long value represented by this object, or {@code Long.MAX_VALUE} on error
      */
     @Override
     public long longValue() {
-        String valueBeforeDecimalAsString = valueBeforeDecimal.length() > 19 ? valueBeforeDecimal.substring(0, 19) : valueBeforeDecimal;
-        long result;
-        try {
-            result = Long.parseLong(valueBeforeDecimalAsString);
-        } catch (NumberFormatException e) {
-            result = Long.MAX_VALUE;
-        }
-        return isNegative ? -result : result;
+        return Long.parseLong(toString());
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code float}.
-     * <p>
-     * Only the integer part is used for conversion. If parsing fails,
-     * returns {@code Float.POSITIVE_INFINITY} or {@code Float.NEGATIVE_INFINITY} depending on sign.
      *
      * @return the float value represented by this object, or infinity on error
      */
     @Override
     public float floatValue() {
-        try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
-            return bigDecimal.floatValue();
-        } catch (NumberFormatException e) {
-            return isNegative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
-        }
+        return Float.parseFloat(toString());
     }
 
     /**
      * Returns the value of this {@code BigNumber} as a {@code double}.
-     * <p>
-     * Only the integer part is used for conversion. If parsing fails,
-     * returns {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} depending on sign.
      *
      * @return the double value represented by this object, or infinity on error
      */
     @Override
     public double doubleValue() {
-        try {
-            BigDecimal bigDecimal = new BigDecimal((isNegative ? "-" : "") + valueBeforeDecimal);
-            return bigDecimal.doubleValue();
-        } catch (NumberFormatException e) {
-            return isNegative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-        }
+        return Double.parseDouble(toString());
     }
 
     /**
@@ -2816,7 +3096,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      */
     public boolean hasDecimals() {
         BigNumber temp = clone().trim();
-        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimal().isEmpty();
+        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimalPoint().isEmpty();
     }
 
     /**
@@ -2890,18 +3170,17 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
         trim();
 
-        String newValueAfterDecimal = valueAfterDecimal.isBlank() || valueAfterDecimal.equals("0") ? "" : valueAfterDecimal;
+        String newValueAfterDecimal = valueAfterDecimalPoint.isBlank() || valueAfterDecimalPoint.equals("0") ? "" : valueAfterDecimalPoint;
 
         if (newValueAfterDecimal.isEmpty()) {
             decimalSeparator = "";
         }
 
-        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimal, symbols.getGroupingSeparator()).toString() : valueBeforeDecimal;
+        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimalPoint, symbols.getGroupingSeparator()).toString() : valueBeforeDecimalPoint;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
         return isNegative ? "-" + localized : localized;
     }
-
 
     /**
      * Converts this BigNumber to a BigDecimal using normalized US-format string.
@@ -2916,10 +3195,10 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
             sb.append('-');
         }
 
-        sb.append(valueBeforeDecimal);
+        sb.append(valueBeforeDecimalPoint);
 
-        if (!valueAfterDecimal.equals("0") && !valueAfterDecimal.isEmpty()) {
-            sb.append('.').append(valueAfterDecimal);
+        if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
+            sb.append('.').append(valueAfterDecimalPoint);
         }
         return new BigDecimal(sb.toString(), mathContext);
     }

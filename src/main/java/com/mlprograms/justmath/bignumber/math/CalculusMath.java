@@ -56,8 +56,8 @@ public class CalculusMath {
 
 		for (int i = 0; i <= steps; i++) {
 			BigNumber x = from.add(h.multiply(new BigNumber(String.valueOf(i))));
-			Map<String, BigNumber> vars = new HashMap<>(getCurrentVariables());
-			vars.put("x", x);
+			Map<String, String> vars = new HashMap<>(getCurrentVariables());
+			vars.put("x", x.toString());
 
 			BigNumber fx = calculator.evaluate(kExpression, vars);
 			if (i == 0 || i == steps) {

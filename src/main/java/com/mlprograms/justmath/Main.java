@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,28 +24,24 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumberMatrix;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-
-import java.util.Locale;
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.converter.UnitValue;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        System.out.println(calculatorEngine.evaluate("asin(0.25)"));
+//        UnitConverter unitConverter = new UnitConverter();
+//
+//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
+//
+//        System.out.println(convertedToBigNumber);
+//        System.out.println(convertedToUnitValue.getValue());
 
-
-        BigNumber bigNumber = new BigNumber("3242341242345", Locale.GERMAN);
-        System.out.println(bigNumber.toPrettyString());
-
-        BigNumberMatrix matrix1 = new BigNumberMatrix("1,2,3;4,5,6;7,8,9", Locale.GERMAN);
-        BigNumberMatrix matrix2 = new BigNumberMatrix("9,8,7;6,5,4;3,2,1", Locale.GERMAN);
-
-        System.out.println(matrix1.add(matrix2).toPlainDataString());
-
+        final UnitValue unitValue = new UnitValue("12L");
+        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
 
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -34,6 +34,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -147,13 +148,34 @@ public class BigNumberTest {
                 "25,7,4",
                 "100,10,0",
                 "123456789,10000,6789",
-                "-15,4,3",
+                "-15,4,1",
                 "5,2,1"
         })
         void moduloTest(String inputNum1, String inputNum2, String inputExpectedResult) {
             BigNumber num1 = new BigNumber(inputNum1, Locale.US);
             BigNumber num2 = new BigNumber(inputNum2, Locale.US);
             BigNumber result = num1.modulo(num2);
+            assertEquals(inputExpectedResult, result.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "10,3,1",
+                "25,7,4",
+                "100,10,0",
+                "123456789,10000,6789",
+                "-15,4,-3",
+                "5,2,1",
+                "-5,2,-1",
+                "5,-2,1",
+                "-5,-2,-1"
+        })
+        void remainderTest(final String inputNum1, final String inputNum2, final String inputExpectedResult) {
+            final BigNumber num1 = new BigNumber(inputNum1, Locale.US);
+            final BigNumber num2 = new BigNumber(inputNum2, Locale.US);
+
+            final BigNumber result = num1.remainder(num2);
+
             assertEquals(inputExpectedResult, result.toString());
         }
 
@@ -899,7 +921,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_linearFunction() {
             BigNumber start = new BigNumber("1");
             BigNumber end = new BigNumber("3");
-            Map<String, BigNumber> vars = Map.of("a", new BigNumber("2"));
+            Map<String, String> vars = Map.of("a", new BigNumber("2").toString());
             BigNumber result = start.summation(end, "a*k", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("12", result.toString());
         }
@@ -908,7 +930,7 @@ public class BigNumberTest {
         void summation_withExternalVariables_polynomial() {
             BigNumber start = new BigNumber("0");
             BigNumber end = new BigNumber("2");
-            Map<String, BigNumber> vars = Map.of("b", new BigNumber("1.5"), "c", new BigNumber("0.5"));
+            Map<String, String> vars = Map.of("b", new BigNumber("1.5").toString(), "c", new BigNumber("0.5").toString());
             BigNumber result = start.summation(end, "b*k^2 + c", BigNumbers.DEFAULT_MATH_CONTEXT, TrigonometricMode.RAD, Locale.US, vars);
             assertEquals("9", result.toString());
         }
@@ -1018,6 +1040,72 @@ public class BigNumberTest {
     }
 
     @Nested
+    public class StatisticMath {
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3,4,5',3",
+                "'1,2',1.5",
+                "'1.5,2.5,3.5',2.5",
+                "'-1,-2,-3',-2",
+                "'1,-1,2,-2',0",
+                "'42',42",
+                "'0,0,0',0",
+                "'5,5,5,5',5",
+                "'2,3,4',3"
+        })
+        void testAverage(String numbersCsv, String result) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber average = bigNumbers.getFirst().average(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(result, average.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3,4,5',15",
+                "'1,2',3",
+                "'1.5,2.5,3.5',7.5",
+                "'-1,-2,-3',-6",
+                "'1,-1,2,-2',0",
+                "'42',42",
+                "'0,0,0',0",
+                "'5,5,5,5',20",
+                "'2,3,4',9"
+        })
+        void testSum(String numbersCsv, String result) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber sum = bigNumbers.getFirst().sum(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(result, sum.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "'1,2,3', 2",
+                "'3,1,2', 2",
+                "'10,2,8,4,6', 6",
+                "'-5,-1,-3', -3",
+                "'1,2,3,4', 2.5",
+                "'4,1,3,2', 2.5",
+                "'10,20,30,40', 25",
+                "'-2,-4,-6,-8', -5",
+                "'1.5, 3.5, 2.5', 2.5",
+                "'2.2, 1.1, 4.4, 3.3', 2.75",
+                "'2, 2, 2', 2",
+                "'1, 1, 2, 2', 1.5"
+        })
+        void testMedian(String numbersCsv, String expectedValue) {
+            List<BigNumber> bigNumbers = stringListToBigNumberList(List.of(numbersCsv.split(",")));
+            BigNumber median = bigNumbers.getFirst().median(bigNumbers.subList(1, bigNumbers.size()));
+            assertEquals(expectedValue, median.toString());
+        }
+
+        private List<BigNumber> stringListToBigNumberList(List<String> numbers) {
+            return numbers.stream().map(BigNumber::new).toList();
+        }
+
+    }
+
+    @Nested
     public class Methods {
 
         @ParameterizedTest
@@ -1094,7 +1182,7 @@ public class BigNumberTest {
         @ParameterizedTest
         @CsvSource({
                 "180, 3.141592653589793",
-                "90, 1.570796326794896"
+                "90, 1.570796326794897"
         })
         void toRadiansTest(String deg, String expectedRad) {
             BigNumber degrees = new BigNumber(deg);
@@ -1194,12 +1282,12 @@ public class BigNumberTest {
 
         @Test
         void floatValueTest() {
-            assertEquals(123.0f, new BigNumber("123.45").floatValue());
+            assertEquals(123.45f, new BigNumber("123.45").floatValue());
         }
 
         @Test
         void doubleValueTest() {
-            assertEquals(123.0, new BigNumber("123.45").doubleValue());
+            assertEquals(123.45, new BigNumber("123.45").doubleValue());
         }
 
         @Test
@@ -1263,6 +1351,83 @@ public class BigNumberTest {
         void isNegativeTest() {
             assertTrue(new BigNumber("-5").isNegative());
             assertFalse(new BigNumber("5").isNegative());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "000, 0",
+                "0, 0",
+                "00012, 12",
+                "00012.34, 12.34",
+                "00123.00045, 123.00045"
+        })
+        void trimLeadingZerosBeforeDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimLeadingZerosBeforeDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "12.00123, 12.123",
+                "0.0007, 0.7",
+                "999.00001, 999.1"
+        })
+        void trimLeadingZerosAfterDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimLeadingZerosAfterDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "1200, 12",
+                "1200.34, 12.34",
+                "1000.0001, 1.0001",
+                "0, 0"
+        })
+        void trimTrailingZerosBeforeDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimTrailingZerosBeforeDecimalPoint();
+
+            if (expected.equals("''")) {
+                assertTrue(result.toString().isEmpty() || result.toString().equals("0"));
+            } else {
+                assertEquals(expected, result.toString());
+            }
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "12.3400, 12.34",
+                "0.1200, 0.12",
+                "999.00001, 999.00001"
+        })
+        void trimTrailingZerosAfterDecimalPointTest(String input, String expected) {
+            BigNumber number = new BigNumber(input);
+            BigNumber result = number.trimTrailingZerosAfterDecimalPoint();
+            assertEquals(expected, result.toString());
+        }
+
+        @Test
+        void trimmingMethods_returnSameInstance_forChaining() {
+            BigNumber number = new BigNumber("00012.3400");
+
+            assertSame(number, number.trimLeadingZerosBeforeDecimalPoint());
+            assertSame(number, number.trimTrailingZerosAfterDecimalPoint());
+
+            assertEquals("12.34", number.toString());
+        }
+
+        @Test
+        void signumTest() {
+            assertEquals(0, new BigNumber("0").signum());
+            assertEquals(1, new BigNumber("1").signum());
+            assertEquals(1, new BigNumber("0.123").signum());
+            assertEquals(1, new BigNumber("1.123").signum());
+            assertEquals(-1, new BigNumber("-0.123").signum());
+            assertEquals(-1, new BigNumber("-1").signum());
+            assertEquals(-1, new BigNumber("-1..123").signum());
         }
 
     }
