@@ -499,6 +499,323 @@ public interface Unit {
     }
 
     /**
+     * Volume unit identifiers (base unit: square meter).
+     *
+     * <p>
+     * This enum intentionally contains no metadata fields. Metadata is stored in the internal registry.
+     * </p>
+     */
+    enum Volume implements Unit {
+
+        /**
+         * Cubic kilometer (km^3).
+         */
+        CUBIC_KILOMETER,
+        /**
+         * Cubic meter (m^3), base unit of the VOLUME category.
+         */
+        CUBIC_METER,
+        /**
+         * Cubic decimeter (dm^3) – equals 1 liter.
+         */
+        CUBIC_DECIMETER,
+        /**
+         * Cubic centimeter (cm^3) – equals 1 milliliter.
+         */
+        CUBIC_CENTIMETER,
+        /**
+         * Cubic millimeter (mm^3).
+         */
+        CUBIC_MILLIMETER,
+
+        /**
+         * Exaliter (EL).
+         */
+        EXALITER,
+        /**
+         * Petaliter (PL).
+         */
+        PETALITER,
+        /**
+         * Teraliter (TL).
+         */
+        TERALITER,
+        /**
+         * Gigaliter (GL).
+         */
+        GIGALITER,
+        /**
+         * Megaliter (ML).
+         */
+        MEGALITER,
+        /**
+         * Kiloliter (kL).
+         */
+        KILOLITER,
+        /**
+         * Hectoliter (hL).
+         */
+        HECTOLITER,
+        /**
+         * Dekaliter (daL).
+         */
+        DEKALITER,
+        /**
+         * Liter (L, l).
+         */
+        LITER,
+        /**
+         * Deciliter (dL).
+         */
+        DECILITER,
+        /**
+         * Centiliter (cL).
+         */
+        CENTILITER,
+        /**
+         * Milliliter (mL).
+         */
+        MILLILITER,
+        /**
+         * Microliter (µL).
+         */
+        MICROLITER,
+        /**
+         * Nanoliter (nL).
+         */
+        NANOLITER,
+        /**
+         * Picoliter (pL).
+         */
+        PICOLITER,
+        /**
+         * Femtoliter (fL).
+         */
+        FEMTOLITER,
+        /**
+         * Attoliter (aL).
+         */
+        ATTOLITER,
+
+        /**
+         * Cup (metric).
+         */
+        METRIC_CUP,
+        /**
+         * Tablespoon (metric).
+         */
+        METRIC_TABLESPOON,
+        /**
+         * Teaspoon (metric).
+         */
+        METRIC_TEASPOON,
+
+        /**
+         * Gallon (US) (gal (US)).
+         */
+        US_GALLON,
+        /**
+         * Quart (US) (qt (US)).
+         */
+        US_QUART,
+        /**
+         * Pint (US) (pt (US)).
+         */
+        US_PINT,
+        /**
+         * Cup (US).
+         */
+        US_CUP,
+        /**
+         * Fluid ounce (US) (fl oz (US)).
+         */
+        US_FLUID_OUNCE,
+        /**
+         * Tablespoon (US).
+         */
+        US_TABLESPOON,
+        /**
+         * Dessertspoon (US).
+         */
+        US_DESSERTSPOON,
+        /**
+         * Teaspoon (US).
+         */
+        US_TEASPOON,
+        /**
+         * Gill (US) (gi).
+         */
+        US_GILL,
+        /**
+         * Minim (US).
+         */
+        US_MINIM,
+        /**
+         * Barrel (US) (bbl (US)).
+         */
+        US_BARREL,
+
+        /**
+         * Gallon (UK) / Imperial (gal (UK)).
+         */
+        IMPERIAL_GALLON,
+        /**
+         * Quart (UK) / Imperial (qt (UK)).
+         */
+        IMPERIAL_QUART,
+        /**
+         * Pint (UK) / Imperial (pt (UK)).
+         */
+        IMPERIAL_PINT,
+        /**
+         * Cup (UK).
+         */
+        IMPERIAL_CUP,
+        /**
+         * Fluid ounce (UK) / Imperial (fl oz (UK)).
+         */
+        IMPERIAL_FLUID_OUNCE,
+        /**
+         * Tablespoon (UK).
+         */
+        IMPERIAL_TABLESPOON,
+        /**
+         * Dessertspoon (UK).
+         */
+        IMPERIAL_DESSERTSPOON,
+        /**
+         * Teaspoon (UK).
+         */
+        IMPERIAL_TEASPOON,
+        /**
+         * Gill (UK) (gi (UK)).
+         */
+        IMPERIAL_GILL,
+        /**
+         * Minim (UK).
+         */
+        IMPERIAL_MINIM,
+        /**
+         * Barrel (UK) (bbl (UK)).
+         */
+        IMPERIAL_BARREL,
+
+        /**
+         * Cubic mile (mi^3).
+         */
+        CUBIC_MILE,
+        /**
+         * Cubic yard (yd^3).
+         */
+        CUBIC_YARD,
+        /**
+         * Cubic foot (ft^3).
+         */
+        CUBIC_FOOT,
+        /**
+         * Cubic inch (in^3).
+         */
+        CUBIC_INCH,
+
+        /**
+         * Hundred cubic foot (100 ft^3).
+         */
+        HUNDRED_CUBIC_FOOT,
+        /**
+         * Ton register (ton reg).
+         */
+        TON_REGISTER,
+        /**
+         * Acre-foot (ac*ft).
+         */
+        ACRE_FOOT,
+        /**
+         * Acre-foot (US survey).
+         */
+        ACRE_FOOT_US_SURVEY,
+        /**
+         * Acre-inch (ac*in).
+         */
+        ACRE_INCH,
+        /**
+         * Board foot.
+         */
+        BOARD_FOOT,
+        /**
+         * Stere (st) – commonly 1 m^3 (stacked wood).
+         */
+        STERE,
+        /**
+         * Dekastere – 10 stere.
+         */
+        DEKASTERE,
+        /**
+         * Decistere – 0.1 stere.
+         */
+        DECISTERE,
+        /**
+         * Cord (cd).
+         */
+        CORD,
+
+        /**
+         * Drop.
+         */
+        DROP,
+        /**
+         * Barrel (oil) (bbl (oil)).
+         */
+        OIL_BARREL,
+        /**
+         * Tun.
+         */
+        TUN,
+        /**
+         * Hogshead.
+         */
+        HOGSHEAD,
+        /**
+         * Dram (dr).
+         */
+        DRAM,
+        /**
+         * Taza (Spanish).
+         */
+        SPANISH_TAZA,
+
+        /**
+         * Cor (Biblical).
+         */
+        BIBLICAL_COR,
+        /**
+         * Homer (Biblical).
+         */
+        BIBLICAL_HOMER,
+        /**
+         * Bath (Biblical).
+         */
+        BIBLICAL_BATH,
+        /**
+         * Hin (Biblical).
+         */
+        BIBLICAL_HIN,
+        /**
+         * Cab (Biblical).
+         */
+        BIBLICAL_CAB,
+        /**
+         * Log (Biblical).
+         */
+        BIBLICAL_LOG,
+
+        /**
+         * Earth's volume.
+         */
+        EARTH_VOLUME
+
+    }
+
+    /**
      * Mass unit identifiers (base unit: kilogram).
      *
      * <p>
