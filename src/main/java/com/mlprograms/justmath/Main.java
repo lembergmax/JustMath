@@ -46,6 +46,7 @@ public class Main {
         final List<String> expressions = resolveExpressions(args);
 
         final GraphFxViewer viewer = new GraphFxViewer("JustMath Graphing Calculator");
+        viewer.show();
 
         for (String expression : expressions) {
             viewer.plotExpression(expression);
