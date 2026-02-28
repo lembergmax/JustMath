@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,24 +24,11 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
-
-public class Main {
+public final class Main {
 
     public static void main(final String[] args) {
 
-//        UnitConverter unitConverter = new UnitConverter();
-//
-//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//
-//        System.out.println(convertedToBigNumber);
-//        System.out.println(convertedToUnitValue.getValue());
 
-        final UnitValue unitValue = new UnitValue("12L");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
 
     }
 
