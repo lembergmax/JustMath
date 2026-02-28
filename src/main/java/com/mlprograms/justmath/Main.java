@@ -28,15 +28,6 @@ import com.mlprograms.justmath.graphing.fx.planar.view.GraphFxViewer;
 
 import java.util.List;
 
-/**
- * Quick start entry point for launching GraphFx visually.
- * <p>
- * Usage examples:
- * <ul>
- *     <li>No args: starts with a demo set of expressions.</li>
- *     <li>With args: each argument is interpreted as one expression, e.g. {@code x^2} {@code sin(x)}.</li>
- * </ul>
- */
 public class Main {
 
 
