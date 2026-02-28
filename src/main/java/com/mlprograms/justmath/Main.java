@@ -24,31 +24,20 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphing.evaluation.ExpressionEngine;
-import com.mlprograms.justmath.graphing.evaluation.GraphFxCalculatorEngine;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.mlprograms.justmath.graphing.fx.GraphFxWindow;
 
 public final class Main {
 
     public static void main(final String[] args) {
-        final ExpressionEngine engine = GraphFxCalculatorEngine.createDefault();
+        GraphFxWindow window = GraphFxWindow.builder()
+                .title("GraphFx")
+                .width(1200)
+                .height(800)
+                .exitPlatformOnClose(true)
+                .build();
 
-        final BigNumber simple = engine.evaluate("2*(3+4)");
-        System.out.println("2*(3+4) = " + simple);
-
-        final Map<String, String> variables = new HashMap<>();
-        variables.put("a", "5+3");
-        variables.put("b", "3");
-
-        final BigNumber withVars = engine.evaluate("2*a + b^2", variables);
-        System.out.println("2*a + b^2 (a=5+3, b=3) = " + withVars);
-
-        // Example for the future graph engine hot path: "evaluate at x".
-        final BigNumber atX = engine.compile("sin(x)").evaluateAtX(12345678.9d, Map.of());
-        System.out.println("sin(x) at x=12345678.9 = " + atX);
+        window.show();
+        window.plot("sin(x)");
     }
 
 }
