@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.eval;
+package com.mlprograms.justmath.graphing.evaluation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

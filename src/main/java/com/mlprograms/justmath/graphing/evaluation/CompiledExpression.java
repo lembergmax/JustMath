@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.eval;
+package com.mlprograms.justmath.graphing.evaluation;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 

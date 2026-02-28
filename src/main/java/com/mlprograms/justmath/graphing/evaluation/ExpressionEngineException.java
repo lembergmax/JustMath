@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.eval;
+package com.mlprograms.justmath.graphing.evaluation;
 
 /**
  * Base unchecked exception for failures inside the expression engine.

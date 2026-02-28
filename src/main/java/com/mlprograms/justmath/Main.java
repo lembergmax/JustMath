@@ -25,8 +25,8 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphing.eval.ExpressionEngine;
-import com.mlprograms.justmath.graphing.eval.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphing.evaluation.ExpressionEngine;
+import com.mlprograms.justmath.graphing.evaluation.GraphFxCalculatorEngine;
 
 import java.util.HashMap;
 import java.util.Map;
