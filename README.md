@@ -478,7 +478,7 @@ for (Unit unit : UnitElements.all()) {
 }
 ```
 
-### 📚 Supported Units (Built-In Catalog)
+### 📚 Supported Units (most common)
 
 > The built-in catalog contains **many** units (incl. scientific, historical, and domain-specific units).
 > Use `UnitElements.all()` to print the complete list.
