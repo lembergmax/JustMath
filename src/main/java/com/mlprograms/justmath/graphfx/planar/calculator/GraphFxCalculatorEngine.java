@@ -32,6 +32,10 @@ import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
 import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot;
+import com.mlprograms.justmath.graphing.api.Domain;
+import com.mlprograms.justmath.graphing.api.GraphingCalculators;
+import com.mlprograms.justmath.graphing.api.Resolution;
+import com.mlprograms.justmath.graphing.gui.GraphFxPlotAdapter;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -106,6 +110,7 @@ public final class GraphFxCalculatorEngine {
      * because it is invoked for each sampled grid point.
      */
     private final CalculatorEngine calculatorEngine;
+    private final GraphFxPlotAdapter graphFxPlotAdapter;
 
     /**
      * Creates a plot engine with a default {@link CalculatorEngine} configuration.
@@ -124,6 +129,29 @@ public final class GraphFxCalculatorEngine {
      */
     public GraphFxCalculatorEngine(final CalculatorEngine calculatorEngine) {
         this.calculatorEngine = Objects.requireNonNull(calculatorEngine, "calculatorEngine must not be null");
+        this.graphFxPlotAdapter = new GraphFxPlotAdapter(GraphingCalculators.createDefault());
+    }
+
+    /**
+     * Plots an explicit function {@code y=f(x)} via the new modular graphing core and maps the data to legacy GraphFx models.
+     *
+     * @param expression the function expression that depends on {@code x}
+     * @param viewportSnapshot viewport bounds and grid step used to derive domain and resolution
+     * @return plot result containing one polyline
+     */
+    public PlotResult evaluateFunction(final String expression, final ViewportSnapshot viewportSnapshot) {
+        validateRequest(expression, Map.of(), viewportSnapshot);
+
+        final double minX = viewportSnapshot.minX().doubleValue();
+        final double maxX = viewportSnapshot.maxX().doubleValue();
+        final double cellSize = viewportSnapshot.cellSize().doubleValue();
+
+        if (!Double.isFinite(minX) || !Double.isFinite(maxX) || !Double.isFinite(cellSize) || cellSize <= 0.0 || minX >= maxX) {
+            return new PlotResult();
+        }
+
+        final int sampleCount = Math.max(2, (int) Math.ceil((maxX - minX) / cellSize) + 1);
+        return graphFxPlotAdapter.plotFunction(expression, new Domain(minX, maxX), Resolution.fixed(sampleCount));
     }
 
     /**
