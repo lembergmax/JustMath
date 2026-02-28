@@ -22,7 +22,23 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.view;
+package com.mlprograms.justmath.graphing.fx;
 
-record VisibleWorldBounds(double minX, double maxX, double minY, double maxY) {
+import java.util.Objects;
+
+public enum ReservedVariables {
+
+    X("x"),
+    Y("y");
+
+    private final String value;
+
+    ReservedVariables(final String value) {
+        this.value = Objects.requireNonNull(value, "value must not be null");
+    }
+
+    public String getValue() {
+        return value;
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,10 +22,15 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.view;
+package com.mlprograms.justmath.graphing.fx.planar.model;
 
-class GridPaneTest {
+import java.util.List;
+import java.util.Objects;
 
-    // TODO
+public record PlotLine(List<PlotPoint> plotPoints) {
+
+    public PlotLine {
+        Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+    }
 
 }

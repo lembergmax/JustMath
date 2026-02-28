@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx;
+package com.mlprograms.justmath.graphing.fx;
 
 public final class FxTestUtils {
 

@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.view;
+package com.mlprograms.justmath.graphing.fx.planar.view;
 
-class GraphFxViewerTest {
+class GridPaneTest {
 
     // TODO
 
