@@ -26,7 +26,6 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,10 +39,9 @@ import java.util.List;
  */
 public class Main {
 
-    private static final List<String> DEFAULT_EXPRESSIONS = List.of("x^2", "sin(x)", "x^3-2*x");
 
     public static void main(final String[] args) {
-        final List<String> expressions = resolveExpressions(args);
+        final List<String> expressions = List.of("x^2", "sin(x)", "x^3-2*x");
 
         final GraphFxViewer viewer = new GraphFxViewer("JustMath Graphing Calculator");
         viewer.show();
@@ -56,15 +54,5 @@ public class Main {
         System.out.println("GraphFx started. Plotted expressions: " + String.join(", ", expressions));
     }
 
-    private static List<String> resolveExpressions(final String[] args) {
-        if (args == null || args.length == 0) {
-            return DEFAULT_EXPRESSIONS;
-        }
-
-        return Arrays.stream(args)
-                .map(String::trim)
-                .filter(expression -> !expression.isBlank())
-                .toList();
-    }
 
 }
