@@ -52,6 +52,7 @@ public class Main {
             viewer.plotExpression(expression);
         }
 
+        viewer.show();
         System.out.println("GraphFx started. Plotted expressions: " + String.join(", ", expressions));
     }
 
