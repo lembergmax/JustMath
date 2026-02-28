@@ -24,81 +24,31 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphing.api.*;
-import com.mlprograms.justmath.graphing.fx.WindowConfig;
-import com.mlprograms.justmath.graphing.fx.planar.engine.ImplicitFunctionPlotEngine;
-import com.mlprograms.justmath.graphing.fx.planar.view.GraphFxViewer;
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.graphing.eval.ExpressionEngine;
+import com.mlprograms.justmath.graphing.eval.GraphFxCalculatorEngine;
 
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Example entry point that demonstrates both:
- * <ul>
- *     <li>Headless sampling via {@link GraphingCalculator} (core module)</li>
- *     <li>Launching the JavaFX viewer via {@link GraphFxViewer} (fx module)</li>
- * </ul>
- */
 public final class Main {
 
-    /**
-     * Starts the demo.
-     *
-     * @param args CLI args (unused)
-     */
     public static void main(final String[] args) {
-        runHeadlessSamplingExample();
-        launchFxViewerExample();
-    }
+        final ExpressionEngine engine = GraphFxCalculatorEngine.createDefault();
 
-    /**
-     * Demonstrates how to sample a function without any JavaFX UI.
-     * <p>
-     * This is the library-style API: compile + sample/plot.
-     * </p>
-     */
-    private static void runHeadlessSamplingExample() {
-        final GraphingCalculator calculator = GraphingCalculators.createDefault();
+        final BigNumber simple = engine.evaluate("2*(3+4)");
+        System.out.println("2*(3+4) = " + simple);
 
-        final PlotRequest request = PlotRequest.builder("sin(x)")
-                .domain(new Domain(-10.0, 10.0))
-                .resolution(Resolution.fixed(200))
-                .variables(Map.of(
-                        // Optional constants for the expression, e.g. "a*sin(x)" with a=2
-                        // "a", 2.0
-                ))
-                .build();
+        final Map<String, String> variables = new HashMap<>();
+        variables.put("a", "5+3");
+        variables.put("b", "3");
 
-        final PlotSeries series = calculator.plot(request).series().get(0);
+        final BigNumber withVars = engine.evaluate("2*a + b^2", variables);
+        System.out.println("2*a + b^2 (a=5+3, b=3) = " + withVars);
 
-        System.out.println("Headless sampling: " + request.expression());
-        System.out.println("Samples: " + series.xValues().length);
-
-        // Print the first few points
-        for (int i = 0; i < Math.min(5, series.xValues().length); i++) {
-            System.out.printf("  x=%f  y=%f%n", series.xValues()[i], series.yValues()[i]);
-        }
-    }
-
-    /**
-     * Demonstrates how to launch the JavaFX viewer contained in the fx module.
-     * <p>
-     * In the refactored viewer, the equation is entered interactively in the text field.
-     * </p>
-     */
-    private static void launchFxViewerExample() {
-        final WindowConfig windowConfig = WindowConfig.defaultConfig()
-                .toBuilder()
-                .title("JustMath GraphFx Demo")
-                .width(1200)
-                .height(800)
-                .exitApplicationOnLastViewerClose(true)
-                .build();
-
-        final GraphFxViewer viewer = new GraphFxViewer(windowConfig, new ImplicitFunctionPlotEngine());
-        viewer.show();
-
-        System.out.println("FX Viewer started. Enter an equation in the text field and press 'Plot'.");
-        System.out.println("Examples: y^2=x^3-x  |  x^2+y^2=9  |  y=sin(x)");
+        // Example for the future graph engine hot path: "evaluate at x".
+        final BigNumber atX = engine.compile("sin(x)").evaluateAtX(12345678.9d, Map.of());
+        System.out.println("sin(x) at x=12345678.9 = " + atX);
     }
 
 }

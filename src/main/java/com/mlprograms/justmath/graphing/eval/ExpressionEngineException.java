@@ -22,27 +22,32 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.eval;
 
 /**
- * Inclusive plotting domain for x-values.
+ * Base unchecked exception for failures inside the expression engine.
  * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
- * </p>
- *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
+ * This type intentionally hides internal exceptions from the underlying calculator engine behind a stable API,
+ * while still preserving the original cause for debugging purposes.
  */
-public record Domain(double minX, double maxX) {
+public class ExpressionEngineException extends RuntimeException {
 
     /**
-     * Validates domain invariants.
+     * Creates an exception with message only.
      *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * @param message message describing the failure (must not be {@code null})
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
+    public ExpressionEngineException(final String message) {
+        super(message);
+    }
+
+    /**
+     * Creates an exception with message and cause.
+     *
+     * @param message message describing the failure (must not be {@code null})
+     * @param cause   original cause (can be {@code null})
+     */
+    public ExpressionEngineException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

@@ -22,32 +22,40 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.eval;
+
+import lombok.experimental.UtilityClass;
+
+import java.util.Objects;
 
 /**
- * Base unchecked exception for graphing failures.
+ * Utility responsible for normalizing expression input strings.
  * <p>
- * This is intentionally unchecked to keep the API ergonomic in UI environments.
- * </p>
+ * Normalization is deliberately conservative:
+ * <ul>
+ *     <li>Trims leading/trailing whitespace.</li>
+ *     <li>Rejects blank expressions.</li>
+ * </ul>
+ * <p>
+ * Future graphing layers may extend normalization (e.g. transforming {@code y = f(x)} into an implicit form),
+ * but the low-level evaluation engine stays as a minimal and predictable building block.
  */
-public class GraphingException extends RuntimeException {
+@UtilityClass
+public class ExpressionNormalizer {
 
     /**
-     * Creates an exception with a message.
+     * Normalizes a raw expression string.
      *
-     * @param message error message (may be {@code null})
+     * @param expression raw expression input (must not be {@code null})
+     * @return normalized expression (never {@code null} or blank)
+     * @throws ExpressionEngineException if the expression is {@code null} or blank
      */
-    public GraphingException(final String message) {
-        super(message);
-    }
-
-    /**
-     * Creates an exception with a message and a cause.
-     *
-     * @param message error message (may be {@code null})
-     * @param cause   underlying cause (may be {@code null})
-     */
-    public GraphingException(final String message, final Throwable cause) {
-        super(message, cause);
+    public static String normalize(final String expression) {
+        Objects.requireNonNull(expression, "expression must not be null");
+        final String normalized = expression.trim();
+        if (normalized.isEmpty()) {
+            throw new ExpressionEngineException("Expression must not be blank");
+        }
+        return normalized;
     }
 }
