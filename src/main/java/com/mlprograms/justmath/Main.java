@@ -24,20 +24,12 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphing.fx.GraphFxWindow;
-
 public final class Main {
 
     public static void main(final String[] args) {
-        GraphFxWindow window = GraphFxWindow.builder()
-                .title("GraphFx")
-                .width(1200)
-                .height(800)
-                .exitPlatformOnClose(true)
-                .build();
 
-        window.show();
-        window.plot("sin(x)");
+
+
     }
 
 }
