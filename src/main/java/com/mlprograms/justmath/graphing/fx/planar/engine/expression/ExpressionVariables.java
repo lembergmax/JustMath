@@ -22,27 +22,26 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.fx.planar.engine.expression;
+
+import lombok.experimental.UtilityClass;
+
+import java.util.Map;
 
 /**
- * Inclusive plotting domain for x-values.
- * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
- * </p>
- *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
+ * Helper for producing variable maps required by {@link com.mlprograms.justmath.calculator.CalculatorEngine}.
  */
-public record Domain(double minX, double maxX) {
+@UtilityClass
+public class ExpressionVariables {
 
     /**
-     * Validates domain invariants.
+     * Creates a variable map for x/y variables.
      *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * @param x x-value as string
+     * @param y y-value as string
+     * @return variable map
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
+    public static Map<String, String> xy(final String x, final String y) {
+        return Map.of("x", x, "y", y);
     }
 }

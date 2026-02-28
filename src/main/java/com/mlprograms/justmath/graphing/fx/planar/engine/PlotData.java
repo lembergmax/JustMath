@@ -22,27 +22,58 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.fx.planar.engine;
+
+import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.graphing.fx.planar.engine.expression.PlotExpression;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
- * Inclusive plotting domain for x-values.
+ * Immutable input data for {@link ImplicitFunctionPlotEngine}.
  * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
+ * Defines world coordinate bounds, a cell size (sampling step), and the {@link PlotExpression} that represents
+ * an equation. The engine will sample the equation on a grid and produce a contour line at value {@code 0}.
  * </p>
- *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
  */
-public record Domain(double minX, double maxX) {
+@Value
+@Builder(toBuilder = true)
+public class PlotData {
 
     /**
-     * Validates domain invariants.
-     *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * Minimum x in world coordinates.
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
-    }
+    @NonNull
+    BigNumber minX;
+
+    /**
+     * Maximum x in world coordinates.
+     */
+    @NonNull
+    BigNumber maxX;
+
+    /**
+     * Minimum y in world coordinates.
+     */
+    @NonNull
+    BigNumber minY;
+
+    /**
+     * Maximum y in world coordinates.
+     */
+    @NonNull
+    BigNumber maxY;
+
+    /**
+     * Cell size in world units; controls grid resolution.
+     */
+    @NonNull
+    BigNumber cellSize;
+
+    /**
+     * Expression representing the implicit function f(x,y) = left - right.
+     */
+    @NonNull
+    PlotExpression plotExpression;
 }

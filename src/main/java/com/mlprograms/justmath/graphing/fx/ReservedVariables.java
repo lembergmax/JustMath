@@ -24,21 +24,31 @@
 
 package com.mlprograms.justmath.graphing.fx;
 
-import java.util.Objects;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+/**
+ * Reserved variable names for plotting expressions.
+ * <p>
+ * These identifiers are used by the plotting engines to bind the independent and dependent variables.
+ * </p>
+ */
+@Getter
+@RequiredArgsConstructor
 public enum ReservedVariables {
 
+    /**
+     * Reserved independent variable for the x-axis.
+     */
     X("x"),
+
+    /**
+     * Reserved dependent variable for the y-axis.
+     */
     Y("y");
 
+    /**
+     * The raw variable name used in user expressions.
+     */
     private final String value;
-
-    ReservedVariables(final String value) {
-        this.value = Objects.requireNonNull(value, "value must not be null");
-    }
-
-    public String getValue() {
-        return value;
-    }
-
 }

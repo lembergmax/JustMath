@@ -24,5 +24,13 @@
 
 package com.mlprograms.justmath.graphing.fx.planar.view;
 
+/**
+ * Visible world-coordinate bounds for the current view.
+ *
+ * @param minX minimum x in world units
+ * @param maxX maximum x in world units
+ * @param minY minimum y in world units
+ * @param maxY maximum y in world units
+ */
 record VisibleWorldBounds(double minX, double maxX, double minY, double maxY) {
 }

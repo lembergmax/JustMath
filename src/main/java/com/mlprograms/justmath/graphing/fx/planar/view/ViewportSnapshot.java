@@ -28,8 +28,24 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 
 import java.util.Objects;
 
+/**
+ * Immutable snapshot of the current world viewport and sampling parameters.
+ * <p>
+ * This type captures the minimum/maximum world coordinates and a world-unit cell size that defines the
+ * sampling grid for the implicit contour plotter.
+ * </p>
+ *
+ * @param minX     inclusive minimum x in world units (non-null)
+ * @param maxX     inclusive maximum x in world units (non-null)
+ * @param minY     inclusive minimum y in world units (non-null)
+ * @param maxY     inclusive maximum y in world units (non-null)
+ * @param cellSize positive sampling step size in world units (non-null)
+ */
 public record ViewportSnapshot(BigNumber minX, BigNumber maxX, BigNumber minY, BigNumber maxY, BigNumber cellSize) {
 
+    /**
+     * Validates that all values are non-null.
+     */
     public ViewportSnapshot {
         Objects.requireNonNull(minX, "minX must not be null");
         Objects.requireNonNull(maxX, "maxX must not be null");
@@ -37,5 +53,4 @@ public record ViewportSnapshot(BigNumber minX, BigNumber maxX, BigNumber minY, B
         Objects.requireNonNull(maxY, "maxY must not be null");
         Objects.requireNonNull(cellSize, "cellSize must not be null");
     }
-
 }

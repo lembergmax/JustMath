@@ -24,42 +24,67 @@
 
 package com.mlprograms.justmath.graphing.fx;
 
-public record WindowConfig(String title, int width, int height, boolean exitApplicationOnLastViewerClose) {
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
+/**
+ * Configuration for {@link com.mlprograms.justmath.graphing.fx.planar.view.GraphFxViewer}.
+ * <p>
+ * This type is immutable and library-friendly. Prefer {@link #defaultConfig()} as a sensible starting point.
+ * </p>
+ */
+@Value
+@Builder(toBuilder = true)
+public class WindowConfig {
+
+    /**
+     * Default window title.
+     */
     public static final String DEFAULT_TITLE = "GraphFxViewer";
+
+    /**
+     * Default window width (pixels).
+     */
     public static final int DEFAULT_WIDTH = 1200;
+
+    /**
+     * Default window height (pixels).
+     */
     public static final int DEFAULT_HEIGHT = 800;
 
-    public WindowConfig() {
-        this(DEFAULT_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
-    }
+    /**
+     * Window title shown in the OS window chrome.
+     */
+    @NonNull
+    String title;
 
-    public WindowConfig(final String title) {
-        this(title, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
-    }
+    /**
+     * Initial window width in pixels.
+     */
+    int width;
 
-    public WindowConfig(final int width, final int height) {
-        this(DEFAULT_TITLE, width, height, true);
-    }
+    /**
+     * Initial window height in pixels.
+     */
+    int height;
 
-    public WindowConfig(final boolean exitApplicationOnLastViewerClose) {
-        this(DEFAULT_TITLE, DEFAULT_WIDTH, DEFAULT_HEIGHT, exitApplicationOnLastViewerClose);
-    }
+    /**
+     * If {@code true}, the JavaFX runtime exits when the last viewer window is closed.
+     */
+    boolean exitApplicationOnLastViewerClose;
 
-    public WindowConfig(final String title, final boolean exitApplicationOnLastViewerClose) {
-        this(title, DEFAULT_WIDTH, DEFAULT_HEIGHT, exitApplicationOnLastViewerClose);
-    }
-
-    public WindowConfig(final int width, final int height, final boolean exitApplicationOnLastViewerClose) {
-        this(DEFAULT_TITLE, width, height, exitApplicationOnLastViewerClose);
-    }
-
-    public WindowConfig(final String title, final int width, final int height) {
-        this(title, width, height, true);
-    }
-
+    /**
+     * Creates a default configuration.
+     *
+     * @return default configuration instance
+     */
     public static WindowConfig defaultConfig() {
-        return new WindowConfig("GraphFx – Pan & Zoom", DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
+        return WindowConfig.builder()
+                .title("GraphFx – Pan & Zoom")
+                .width(DEFAULT_WIDTH)
+                .height(DEFAULT_HEIGHT)
+                .exitApplicationOnLastViewerClose(true)
+                .build();
     }
-
 }

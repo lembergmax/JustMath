@@ -27,10 +27,20 @@ package com.mlprograms.justmath.graphing.fx.planar.model;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Immutable polyline consisting of multiple {@link PlotPoint} instances.
+ * <p>
+ * A polyline is used as the final render primitive for the JavaFX viewer.
+ * </p>
+ *
+ * @param plotPoints list of points in order (non-null)
+ */
 public record PlotLine(List<PlotPoint> plotPoints) {
 
+    /**
+     * Validates that the points list is non-null.
+     */
     public PlotLine {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
     }
-
 }

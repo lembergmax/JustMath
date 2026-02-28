@@ -25,259 +25,153 @@
 package com.mlprograms.justmath.graphing.fx.planar.view;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphing.api.Domain;
-import com.mlprograms.justmath.graphing.api.GraphingCalculator;
-import com.mlprograms.justmath.graphing.api.GraphingCalculators;
-import com.mlprograms.justmath.graphing.api.PlotRequest;
-import com.mlprograms.justmath.graphing.api.PlotSeries;
-import com.mlprograms.justmath.graphing.api.Resolution;
 import com.mlprograms.justmath.graphing.fx.JavaFxRuntime;
 import com.mlprograms.justmath.graphing.fx.WindowConfig;
-import com.mlprograms.justmath.graphing.fx.planar.calculator.GraphFxCalculatorEngine;
-import com.mlprograms.justmath.graphing.fx.planar.model.PlotLine;
-import com.mlprograms.justmath.graphing.fx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphing.fx.planar.engine.ImplicitFunctionPlotEngine;
+import com.mlprograms.justmath.graphing.fx.planar.engine.PlotData;
+import com.mlprograms.justmath.graphing.fx.planar.engine.expression.PlotExpression;
+import com.mlprograms.justmath.graphing.fx.planar.engine.expression.PlotExpressionFactory;
 import com.mlprograms.justmath.graphing.fx.planar.model.PlotResult;
-import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import lombok.Getter;
+import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Minimal JavaFX viewer that supports panning/zooming and re-plotting on demand.
+ * <p>
+ * This viewer implements the implicit function renderer from your existing GraphFx approach:
+ * it samples a grid for an equation like {@code y^2 = x^3 - x} and draws the contour line.
+ * </p>
+ */
 public final class GraphFxViewer {
 
-    @Getter
+    /**
+     * Plot engine used to compute plot primitives.
+     */
+    private final ImplicitFunctionPlotEngine plotEngine;
+
+    /**
+     * Window configuration.
+     */
     private final WindowConfig windowConfig;
 
-    private final GridPane gridPane;
-    private final GraphFxCalculatorEngine plotEngine;
-    private final GraphingCalculator graphingCalculator;
-    private final List<QueuedPlot> queuedPlots;
-
-    private static final int MAX_LAYOUT_RETRY_COUNT = 8;
-
-    private Stage stage;
-
-    private boolean closeWasRequested;
-    private boolean trackedByExitPolicy;
-
+    /**
+     * Creates a viewer with default config and engine.
+     */
     public GraphFxViewer() {
-        this(WindowConfig.defaultConfig());
+        this(WindowConfig.defaultConfig(), new ImplicitFunctionPlotEngine());
     }
 
-    public GraphFxViewer(final String title) {
-        this(new WindowConfig(title, WindowConfig.DEFAULT_WIDTH, WindowConfig.DEFAULT_HEIGHT, true));
+    /**
+     * Creates a viewer.
+     *
+     * @param windowConfig window configuration (must not be {@code null})
+     * @param plotEngine   plot engine (must not be {@code null})
+     */
+    public GraphFxViewer(@NonNull final WindowConfig windowConfig,
+                         @NonNull final ImplicitFunctionPlotEngine plotEngine) {
+        this.windowConfig = windowConfig;
+        this.plotEngine = plotEngine;
     }
 
-    public GraphFxViewer(final WindowConfig windowConfig) {
-        this.windowConfig = Objects.requireNonNull(windowConfig, "windowConfig must not be null");
-        this.gridPane = new GridPane();
-        this.plotEngine = new GraphFxCalculatorEngine();
-        this.graphingCalculator = GraphingCalculators.createDefault();
-        this.queuedPlots = new ArrayList<>();
-    }
-
+    /**
+     * Shows the viewer window and renders an initial equation.
+     * <p>
+     * This method is safe to call from a non-FX thread; it will bootstrap JavaFX and show the window.
+     * </p>
+     */
     public void show() {
         JavaFxRuntime.ensureStarted();
-        JavaFxRuntime.runOnFxThread(this::showOnFxThread);
+        JavaFxRuntime.runOnFxThread(this::showInternal);
     }
 
-    public void hide() {
-        JavaFxRuntime.ensureStarted();
-        JavaFxRuntime.runOnFxThread(this::hideOnFxThread);
-    }
+    /**
+     * Internal FX-thread window creation.
+     */
+    private void showInternal() {
+        final Stage stage = new Stage();
+        stage.setTitle(windowConfig.getTitle());
 
-    public void close() {
-        JavaFxRuntime.ensureStarted();
-        JavaFxRuntime.runOnFxThread(this::closeOnFxThread);
-    }
+        final CartesianPlanePane planePane = new CartesianPlanePane();
+        final BorderPane root = new BorderPane();
+        root.setCenter(planePane);
 
-    public void plotExpression(final String expression) {
-        plotExpression(expression, Map.of());
-    }
+        final TextField equationField = new TextField("y^2=x^3-x");
+        equationField.setPrefColumnCount(30);
 
-    public void plotExpression(final String expression, final Map<String, String> variables) {
-        Objects.requireNonNull(expression, "expression must not be null");
-        Objects.requireNonNull(variables, "variables must not be null");
+        final Label hint = new Label("Equation:");
+        final Button plotButton = new Button("Plot");
 
-        JavaFxRuntime.ensureStarted();
-        JavaFxRuntime.runOnFxThread(() -> plotOnFxThread(expression, variables));
-    }
+        final HBox top = new HBox(10, hint, equationField, plotButton);
+        top.setStyle("-fx-padding: 10; -fx-background-color: rgba(0,0,0,0.03);");
+        root.setTop(top);
 
-    private void showOnFxThread() {
-        if (stage == null) {
-            stage = createStage();
-        }
+        final AtomicReference<String> currentEquation = new AtomicReference<>(equationField.getText());
 
-        if (!stage.isShowing()) {
-            stage.show();
-        }
+        plotButton.setOnAction(event -> {
+            currentEquation.set(equationField.getText());
+            updatePlot(planePane, currentEquation.get());
+        });
 
-        flushQueuedPlots();
+        planePane.setOnMouseReleased(event -> updatePlot(planePane, currentEquation.get()));
+        planePane.widthProperty().addListener((obs, oldVal, newVal) -> updatePlot(planePane, currentEquation.get()));
+        planePane.heightProperty().addListener((obs, oldVal, newVal) -> updatePlot(planePane, currentEquation.get()));
 
-        stage.toFront();
-        stage.requestFocus();
-    }
+        updatePlot(planePane, currentEquation.get());
 
-    private void hideOnFxThread() {
-        if (stage == null) {
-            return;
-        }
-        stage.hide();
-    }
+        final Scene scene = new Scene(root, windowConfig.getWidth(), windowConfig.getHeight());
+        stage.setScene(scene);
 
-    private void closeOnFxThread() {
-        if (stage == null) {
-            return;
-        }
-        closeWasRequested = true;
-        stage.close();
-    }
-
-    private Stage createStage() {
-        final Stage newStage = new Stage();
-        newStage.setTitle(windowConfig.title());
-
-        final BorderPane root = new BorderPane(gridPane);
-        final Scene scene = new Scene(root, windowConfig.width(), windowConfig.height());
-        newStage.setScene(scene);
-
-        installExitPolicyHooksIfEnabled(newStage);
-
-        return newStage;
-    }
-
-    private void installExitPolicyHooksIfEnabled(final Stage stage) {
-        Objects.requireNonNull(stage, "stage must not be null");
-
-        if (!windowConfig.exitApplicationOnLastViewerClose()) {
-            return;
-        }
-
-        if (!trackedByExitPolicy) {
-            JavaFxRuntime.registerTrackedViewerOpened();
-            trackedByExitPolicy = true;
-        }
-
-        stage.setOnCloseRequest(event -> closeWasRequested = true);
-
+        JavaFxRuntime.registerTrackedViewerOpened();
         stage.setOnHidden(event -> {
-            final boolean treatAsClose = closeWasRequested;
-            closeWasRequested = false;
-
-            if (!treatAsClose) {
-                return;
-            }
-
-            this.stage = null;
-
-            if (trackedByExitPolicy) {
-                trackedByExitPolicy = false;
+            if (windowConfig.isExitApplicationOnLastViewerClose()) {
+                JavaFxRuntime.registerTrackedViewerClosedAndExitIfLast();
+            } else {
                 JavaFxRuntime.registerTrackedViewerClosedAndExitIfLast();
             }
         });
+
+        stage.show();
     }
 
-    private void plotOnFxThread(final String expression, final Map<String, String> variables) {
-        queuedPlots.add(new QueuedPlot(expression, variables));
-        if (stage != null && stage.isShowing()) {
-            flushQueuedPlots();
-        }
-    }
+    /**
+     * Computes a new plot for the current viewport and equation and updates the pane.
+     *
+     * @param pane     pane to update
+     * @param equation equation string
+     */
+    private void updatePlot(final CartesianPlanePane pane, final String equation) {
+        final VisibleWorldBounds bounds = pane.visibleWorldBounds();
 
-    private void flushQueuedPlots() {
-        final List<QueuedPlot> pending = new ArrayList<>(queuedPlots);
-        queuedPlots.clear();
+        final BigNumber minX = new BigNumber(Double.toString(bounds.minX()));
+        final BigNumber maxX = new BigNumber(Double.toString(bounds.maxX()));
+        final BigNumber minY = new BigNumber(Double.toString(bounds.minY()));
+        final BigNumber maxY = new BigNumber(Double.toString(bounds.maxY()));
 
-        for (QueuedPlot queuedPlot : pending) {
-            renderPlotWithRetry(queuedPlot, MAX_LAYOUT_RETRY_COUNT);
-        }
-    }
+        final BigNumber cellSize = new BigNumber(Double.toString(Math.max(0.01, 3.0 / pane.getPixelsPerUnit())));
 
-    private void renderPlotWithRetry(final QueuedPlot queuedPlot, final int retriesLeft) {
-        try {
-            final ViewportSnapshot viewportSnapshot = gridPane.tryCreateViewportSnapshot()
-                    .orElseThrow(() -> new IllegalStateException("ViewportSnapshot cannot be created (view not laid out yet)."));
+        final ViewportSnapshot viewport = new ViewportSnapshot(minX, maxX, minY, maxY, cellSize);
 
-            final PlotResult plotResult = evaluatePlot(queuedPlot.expression(), queuedPlot.variables(), viewportSnapshot);
-            gridPane.addPlotResult(plotResult);
-        } catch (final RuntimeException ex) {
-            if (retriesLeft > 0) {
-                Platform.runLater(() -> renderPlotWithRetry(queuedPlot, retriesLeft - 1));
-            }
-        }
-    }
+        final PlotExpressionFactory factory = new PlotExpressionFactory();
+        final PlotExpression expression = factory.create(equation);
 
-    private PlotResult evaluatePlot(final String expression, final Map<String, String> variables,
-                                    final ViewportSnapshot viewportSnapshot) {
-        try {
-            return evaluateWithGraphingApi(expression, variables, viewportSnapshot);
-        } catch (RuntimeException exception) {
-            return plotEngine.evaluate(expression, variables, viewportSnapshot);
-        }
-    }
-
-    private PlotResult evaluateWithGraphingApi(final String expression, final Map<String, String> variables,
-                                               final ViewportSnapshot viewportSnapshot) {
-        final Domain domain = new Domain(viewportSnapshot.minX().doubleValue(), viewportSnapshot.maxX().doubleValue());
-        final int sampleCount = Math.max(2, (int) Math.ceil((domain.maxX() - domain.minX()) / viewportSnapshot.cellSize().doubleValue()));
-        final Resolution resolution = Resolution.fixed(sampleCount);
-
-        final PlotRequest request = new PlotRequest.Builder(expression)
-                .domain(domain)
-                .resolution(resolution)
-                .variables(parseDoubleVariables(variables))
+        final PlotData plotData = PlotData.builder()
+                .minX(viewport.minX())
+                .maxX(viewport.maxX())
+                .minY(viewport.minY())
+                .maxY(viewport.maxY())
+                .cellSize(viewport.cellSize())
+                .plotExpression(expression)
                 .build();
 
-        final PlotSeries plotSeries = graphingCalculator.plot(request).series().getFirst();
-        final List<PlotLine> lines = convertSeriesToLines(plotSeries);
-        return new PlotResult(new ArrayList<>(), lines);
+        final PlotResult result = plotEngine.plot(plotData);
+        pane.setPlotResult(result);
     }
-
-    private Map<String, Double> parseDoubleVariables(final Map<String, String> variables) {
-        final Map<String, Double> parsed = new java.util.HashMap<>();
-        for (Map.Entry<String, String> entry : variables.entrySet()) {
-            parsed.put(entry.getKey(), Double.parseDouble(entry.getValue()));
-        }
-        return parsed;
-    }
-
-    private List<PlotLine> convertSeriesToLines(final PlotSeries plotSeries) {
-        final List<PlotLine> lines = new ArrayList<>();
-        final List<PlotPoint> activeSegment = new ArrayList<>();
-
-        for (int index = 0; index < plotSeries.xValues().length; index++) {
-            final double x = plotSeries.xValues()[index];
-            final double y = plotSeries.yValues()[index];
-
-            if (!Double.isFinite(x) || !Double.isFinite(y)) {
-                appendSegment(lines, activeSegment);
-                continue;
-            }
-
-            activeSegment.add(new PlotPoint(
-                    new BigNumber(Double.toString(x), Locale.ROOT),
-                    new BigNumber(Double.toString(y), Locale.ROOT)
-            ));
-        }
-
-        appendSegment(lines, activeSegment);
-        return lines;
-    }
-
-    private void appendSegment(final List<PlotLine> lines, final List<PlotPoint> activeSegment) {
-        if (activeSegment.size() >= 2) {
-            lines.add(new PlotLine(new ArrayList<>(activeSegment)));
-        }
-        activeSegment.clear();
-    }
-
-    private record QueuedPlot(String expression, Map<String, String> variables) {
-    }
-
 }

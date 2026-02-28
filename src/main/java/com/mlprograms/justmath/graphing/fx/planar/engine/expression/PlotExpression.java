@@ -22,27 +22,23 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.fx.planar.engine.expression;
 
 /**
- * Inclusive plotting domain for x-values.
+ * Evaluates an implicit equation f(x,y) for contour plotting.
  * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
+ * The plotting engine extracts a contour line where {@code f(x,y)=0}.
  * </p>
- *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
  */
-public record Domain(double minX, double maxX) {
+@FunctionalInterface
+public interface PlotExpression {
 
     /**
-     * Validates domain invariants.
+     * Evaluates the implicit function at (x,y).
      *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * @param x x value
+     * @param y y value
+     * @return scalar function value
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
-    }
+    double evaluate(double x, double y);
 }

@@ -28,15 +28,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Container for plot primitives produced by a plotting engine.
+ * <p>
+ * The viewer currently uses {@link #plotLines()} for drawing. {@link #plotPoints()} is provided for
+ * potential extensions (e.g. scatter plots).
+ * </p>
+ *
+ * @param plotPoints point primitives (non-null)
+ * @param plotLines  polyline primitives (non-null)
+ */
 public record PlotResult(List<PlotPoint> plotPoints, List<PlotLine> plotLines) {
 
+    /**
+     * Creates an empty plot result.
+     */
     public PlotResult() {
         this(new ArrayList<>(), new ArrayList<>());
     }
 
+    /**
+     * Validates lists are non-null.
+     */
     public PlotResult {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
         Objects.requireNonNull(plotLines, "plotLines must not be null");
     }
-
 }

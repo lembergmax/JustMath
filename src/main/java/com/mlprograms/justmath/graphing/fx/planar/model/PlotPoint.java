@@ -28,11 +28,22 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 
 import java.util.Objects;
 
+/**
+ * Immutable 2D point in world coordinates for plotting.
+ * <p>
+ * Uses {@link BigNumber} to retain high precision in the implicit contour plotter.
+ * </p>
+ *
+ * @param x x-coordinate (non-null)
+ * @param y y-coordinate (non-null)
+ */
 public record PlotPoint(BigNumber x, BigNumber y) {
 
+    /**
+     * Validates that both coordinates are non-null.
+     */
     public PlotPoint {
         Objects.requireNonNull(x, "x must not be null");
         Objects.requireNonNull(y, "y must not be null");
     }
-
 }

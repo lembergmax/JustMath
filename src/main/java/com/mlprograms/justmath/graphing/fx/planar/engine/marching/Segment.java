@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.fx.planar.engine.marching;
+
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotPoint;
+
+import java.util.Objects;
 
 /**
- * Inclusive plotting domain for x-values.
+ * Line segment between two {@link PlotPoint} endpoints.
  * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
+ * Segments are produced by Marching Squares. They are later merged into polylines.
  * </p>
  *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
+ * @param from start point
+ * @param to   end point
  */
-public record Domain(double minX, double maxX) {
+public record Segment(PlotPoint from, PlotPoint to) {
 
     /**
-     * Validates domain invariants.
-     *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * Validates that endpoints are not null.
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
+    public Segment {
+        Objects.requireNonNull(from, "from must not be null");
+        Objects.requireNonNull(to, "to must not be null");
     }
 }

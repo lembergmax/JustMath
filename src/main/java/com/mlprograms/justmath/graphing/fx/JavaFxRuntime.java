@@ -25,18 +25,43 @@
 package com.mlprograms.justmath.graphing.fx;
 
 import javafx.application.Platform;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class JavaFxRuntime {
+/**
+ * Minimal JavaFX runtime bootstrap and thread utilities.
+ * <p>
+ * This helper ensures JavaFX is started exactly once and provides safe helpers for executing tasks on the
+ * JavaFX application thread.
+ * </p>
+ */
+@UtilityClass
+public class JavaFxRuntime {
 
+    /**
+     * Lock object used to guard JavaFX startup.
+     */
     private static final Object START_LOCK = new Object();
+
+    /**
+     * Indicates whether JavaFX startup has already been performed.
+     */
     private static volatile boolean started;
 
+    /**
+     * Counter for open viewer windows tracked for the implicit-exit policy.
+     */
     private static final AtomicInteger OPEN_TRACKED_WINDOWS = new AtomicInteger(0);
 
+    /**
+     * Ensures that JavaFX is started.
+     * <p>
+     * This method is safe to call multiple times and from multiple threads.
+     * </p>
+     */
     public static void ensureStarted() {
         if (started) {
             return;
@@ -61,25 +86,45 @@ public final class JavaFxRuntime {
         }
     }
 
-    public static void runOnFxThread(final Runnable runnable) {
-        Objects.requireNonNull(runnable, "runnable must not be null");
+    /**
+     * Runs a task on the JavaFX application thread.
+     * <p>
+     * If the caller is already on the FX thread, the task is executed immediately.
+     * </p>
+     *
+     * @param runnable task to execute (must not be {@code null})
+     */
+    public static void runOnFxThread(@NonNull final Runnable runnable) {
         if (Platform.isFxApplicationThread()) {
             runnable.run();
             return;
         }
-
         Platform.runLater(runnable);
     }
 
-    public static void enqueueOnFxThread(final Runnable runnable) {
-        Objects.requireNonNull(runnable, "runnable must not be null");
+    /**
+     * Enqueues a task on the JavaFX application thread.
+     *
+     * @param runnable task to enqueue (must not be {@code null})
+     */
+    public static void enqueueOnFxThread(@NonNull final Runnable runnable) {
         Platform.runLater(runnable);
     }
 
+    /**
+     * Registers that a tracked viewer window has been opened.
+     *
+     * @return updated number of tracked windows
+     */
     public static int registerTrackedViewerOpened() {
         return OPEN_TRACKED_WINDOWS.incrementAndGet();
     }
 
+    /**
+     * Registers that a tracked viewer window has been closed and exits JavaFX if this was the last one.
+     *
+     * @return remaining number of tracked windows (never negative)
+     */
     public static int registerTrackedViewerClosedAndExitIfLast() {
         final int remaining = OPEN_TRACKED_WINDOWS.decrementAndGet();
         if (remaining <= 0) {
@@ -88,5 +133,4 @@ public final class JavaFxRuntime {
         }
         return Math.max(0, remaining);
     }
-
 }

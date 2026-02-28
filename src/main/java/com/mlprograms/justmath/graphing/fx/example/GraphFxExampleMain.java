@@ -22,27 +22,24 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphing.api;
+package com.mlprograms.justmath.graphing.fx.example;
+
+import com.mlprograms.justmath.graphing.fx.planar.view.GraphFxViewer;
 
 /**
- * Inclusive plotting domain for x-values.
+ * Example entry point showcasing the JavaFX viewer.
  * <p>
- * A domain is defined as {@code [minX, maxX]} with the invariant {@code minX < maxX}.
+ * Run this main method to open a window and interactively pan/zoom the plot.
  * </p>
- *
- * @param minX inclusive minimum x
- * @param maxX inclusive maximum x
  */
-public record Domain(double minX, double maxX) {
+public final class GraphFxExampleMain {
 
     /**
-     * Validates domain invariants.
+     * Launches the viewer.
      *
-     * @throws IllegalArgumentException if values are NaN or {@code minX >= maxX}
+     * @param args command line args
      */
-    public Domain {
-        if (Double.isNaN(minX) || Double.isNaN(maxX) || minX >= maxX) {
-            throw new IllegalArgumentException("Invalid domain: require non-NaN and minX < maxX");
-        }
+    public static void main(final String[] args) {
+        new GraphFxViewer().show();
     }
 }
