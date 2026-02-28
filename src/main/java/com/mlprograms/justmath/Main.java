@@ -24,31 +24,46 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
 import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
 
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Quick start entry point for launching GraphFx visually.
+ * <p>
+ * Usage examples:
+ * <ul>
+ *     <li>No args: starts with a demo set of expressions.</li>
+ *     <li>With args: each argument is interpreted as one expression, e.g. {@code x^2} {@code sin(x)}.</li>
+ * </ul>
+ */
 public class Main {
 
+    private static final List<String> DEFAULT_EXPRESSIONS = List.of("x^2", "sin(x)", "x^3-2*x");
+
     public static void main(final String[] args) {
+        final List<String> expressions = resolveExpressions(args);
 
-//        UnitConverter unitConverter = new UnitConverter();
-//
-//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//
-//        System.out.println(convertedToBigNumber);
-//        System.out.println(convertedToUnitValue.getValue());
+        final GraphFxViewer viewer = new GraphFxViewer("JustMath Graphing Calculator");
 
-        final UnitValue unitValue = new UnitValue("12L");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
+        for (String expression : expressions) {
+            viewer.plotExpression(expression);
+        }
 
-        GraphFxViewer viewer = new GraphFxViewer("Test");
-        viewer.plotExpression("x^2");
         viewer.show();
+        System.out.println("GraphFx started. Plotted expressions: " + String.join(", ", expressions));
+    }
 
+    private static List<String> resolveExpressions(final String[] args) {
+        if (args == null || args.length == 0) {
+            return DEFAULT_EXPRESSIONS;
+        }
 
+        return Arrays.stream(args)
+                .map(String::trim)
+                .filter(expression -> !expression.isBlank())
+                .toList();
     }
 
 }
