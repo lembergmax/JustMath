@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.model;
+package com.mlprograms.justmath.graphing.fx.planar.model;
 
 import java.util.ArrayList;
 import java.util.List;

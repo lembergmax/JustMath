@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx;
+package com.mlprograms.justmath.graphing.fx;
 
 public record WindowConfig(String title, int width, int height, boolean exitApplicationOnLastViewerClose) {
 

@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.view;
+package com.mlprograms.justmath.graphing.fx.planar.view;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
-import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
-import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotResult;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

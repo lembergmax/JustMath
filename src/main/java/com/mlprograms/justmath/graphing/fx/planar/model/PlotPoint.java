@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -22,10 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx;
+package com.mlprograms.justmath.graphing.fx.planar.model;
 
-class JavaFxRuntimeTest {
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-    // TODO
+import java.util.Objects;
+
+public record PlotPoint(BigNumber x, BigNumber y) {
+
+    public PlotPoint {
+        Objects.requireNonNull(x, "x must not be null");
+        Objects.requireNonNull(y, "y must not be null");
+    }
 
 }

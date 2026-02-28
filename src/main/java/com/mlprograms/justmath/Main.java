@@ -24,7 +24,7 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
+import com.mlprograms.justmath.graphing.fx.planar.view.GraphFxViewer;
 
 import java.util.List;
 

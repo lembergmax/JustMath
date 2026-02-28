@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.calculator;
+package com.mlprograms.justmath.graphing.fx.planar.calculator;
 
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.calculator.Tokenizer;
 import com.mlprograms.justmath.calculator.internal.Token;
-import com.mlprograms.justmath.graphfx.ReservedVariables;
+import com.mlprograms.justmath.graphing.fx.ReservedVariables;
 
 import java.util.List;
 import java.util.Objects;

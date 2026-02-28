@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.planar.view;
+package com.mlprograms.justmath.graphing.fx.planar.view;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphing.api.Domain;
@@ -31,12 +31,12 @@ import com.mlprograms.justmath.graphing.api.GraphingCalculators;
 import com.mlprograms.justmath.graphing.api.PlotRequest;
 import com.mlprograms.justmath.graphing.api.PlotSeries;
 import com.mlprograms.justmath.graphing.api.Resolution;
-import com.mlprograms.justmath.graphfx.JavaFxRuntime;
-import com.mlprograms.justmath.graphfx.WindowConfig;
-import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
-import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
-import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
-import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphing.fx.JavaFxRuntime;
+import com.mlprograms.justmath.graphing.fx.WindowConfig;
+import com.mlprograms.justmath.graphing.fx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphing.fx.planar.model.PlotResult;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
