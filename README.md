@@ -350,7 +350,12 @@ System.out.println(result);
 
 ## 📈 GraphFx (JavaFX Plotting)
 
-### TODO
+GraphFx is available as the JavaFX-based plotting layer in JustMath.
+
+For the upcoming modular, library-first graphing calculator architecture (headless + GUI mode, MVC split, caching, adaptive sampling, and migration phases), see:
+
+- [`docs/graphing-calculator-architecture-plan.md`](docs/graphing-calculator-architecture-plan.md)
+- New headless API entrypoint: `com.mlprograms.justmath.graphing.api.GraphingCalculators#createDefault()`
 
 ## ⚙️ Maven (Coming Soon)
 
