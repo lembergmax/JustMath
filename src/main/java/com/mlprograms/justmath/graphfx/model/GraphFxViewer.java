@@ -22,15 +22,10 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.model;
+
+public class GraphFxViewer {
 
 
-public final class Main {
-
-    public static void main(final String[] args) {
-
-
-
-    }
 
 }

@@ -22,15 +22,17 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.model;
 
+import com.mlprograms.justmath.bignumber.BigNumber;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-public final class Main {
+@Getter
+@RequiredArgsConstructor
+public class Point2D {
 
-    public static void main(final String[] args) {
-
-
-
-    }
+    private BigNumber x;
+    private BigNumber y;
 
 }
