@@ -62,6 +62,7 @@ import java.util.Locale;
  *   a^b ≈ exp(b * ln(|a|)), then apply sign(a) if a is negative
  * </pre>
  */
+// TODO: Optimize this shit
 public final class BasicMath {
 
     /**
