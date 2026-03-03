@@ -22,17 +22,55 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.model;
+package com.mlprograms.justmath.graphfx.viewer;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@Getter
-@RequiredArgsConstructor
-public class Point2D {
+/**
+ * Immutable world viewport definition for {@link GraphFxViewer}.
+ *
+ * <p>
+ * A viewport defines the visible world rectangle. All element coordinates are interpreted in this world coordinate
+ * system.
+ * </p>
+ */
+@Value
+@Builder(toBuilder = true)
+public class GraphFxViewport {
 
-    private BigNumber x;
-    private BigNumber y;
+    /**
+     * Default viewport used by {@link GraphFxViewer}.
+     */
+    public static final GraphFxViewport DEFAULT = GraphFxViewport.builder().build();
 
+    /**
+     * Minimum X bound (world units).
+     */
+    @Builder.Default
+    @NonNull
+    BigNumber worldMinimumXValue = new BigNumber("-10");
+
+    /**
+     * Maximum X bound (world units).
+     */
+    @Builder.Default
+    @NonNull
+    BigNumber worldMaximumXValue = new BigNumber("10");
+
+    /**
+     * Minimum Y bound (world units).
+     */
+    @Builder.Default
+    @NonNull
+    BigNumber worldMinimumYValue = new BigNumber("-10");
+
+    /**
+     * Maximum Y bound (world units).
+     */
+    @Builder.Default
+    @NonNull
+    BigNumber worldMaximumYValue = new BigNumber("10");
 }

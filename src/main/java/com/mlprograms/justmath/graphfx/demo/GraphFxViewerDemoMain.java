@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath;
+package com.mlprograms.justmath.graphfx.demo;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.graphfx.element.GraphFxLine;
@@ -33,9 +33,27 @@ import com.mlprograms.justmath.graphfx.viewer.GraphFxViewer;
 import com.mlprograms.justmath.graphfx.viewer.GraphFxViewerConfiguration;
 import com.mlprograms.justmath.graphfx.viewer.GraphFxViewport;
 
-public final class Main {
+/**
+ * Small, self-contained demo entry point for {@link GraphFxViewer}.
+ *
+ * <p>
+ * This class is meant as a usage example for library consumers. It does not participate in the rendering pipeline.
+ * </p>
+ */
+public final class GraphFxViewerDemoMain {
 
-    public static void main(final String[] args) {
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private GraphFxViewerDemoMain() {
+    }
+
+    /**
+     * Launches a demo window and renders a few example elements.
+     *
+     * @param args ignored
+     */
+    public static void main(String[] args) {
         GraphFxViewer viewer = new GraphFxViewer(
                 GraphFxViewport.builder()
                         .worldMinimumXValue(new BigNumber("-4.5"))
@@ -95,7 +113,5 @@ public final class Main {
                 .build());
 
         viewer.show("JustMath GraphFxViewer Demo", 1200, 820);
-
     }
-
 }

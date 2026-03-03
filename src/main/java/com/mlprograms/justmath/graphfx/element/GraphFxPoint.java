@@ -22,10 +22,58 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.graphfx.model;
+package com.mlprograms.justmath.graphfx.element;
 
-public class GraphFxViewer {
+import com.mlprograms.justmath.bignumber.BigNumber;
+import javafx.scene.paint.Color;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
+/**
+ * Immutable point element represented by high-precision world coordinates.
+ *
+ * <p>
+ * The viewer does not modify or compute coordinates. Coordinates are treated as authoritative input data.
+ * </p>
+ */
+@Value
+@Builder(toBuilder = true)
+public class GraphFxPoint implements GraphFxElement {
 
+    /**
+     * Display name shown next to the point.
+     *
+     * <p>
+     * This is purely a label. The viewer does not derive any values from it.
+     * </p>
+     */
+    @Builder.Default
+    @NonNull
+    String pointName = "";
 
+    /**
+     * X coordinate in world units.
+     */
+    @NonNull
+    BigNumber worldXValue;
+
+    /**
+     * Y coordinate in world units.
+     */
+    @NonNull
+    BigNumber worldYValue;
+
+    /**
+     * Point fill color.
+     */
+    @Builder.Default
+    @NonNull
+    Color pointColor = Color.BLACK;
+
+    /**
+     * Point radius in pixels.
+     */
+    @Builder.Default
+    double pointRadiusInPixels = 4.0;
 }
