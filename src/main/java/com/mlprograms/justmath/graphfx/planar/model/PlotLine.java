@@ -21,56 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graphfx.planar.model;
 
-package com.mlprograms.justmath.graphfx.viewer;
-
-import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.List;
+import java.util.Objects;
 
 /**
- * Immutable world viewport definition for {@link GraphFxViewer}.
+ * A polyline consisting of at least two {@link PlotPoint}s.
  *
  * <p>
- * A viewport defines the visible world rectangle. All element coordinates are interpreted in this world coordinate
- * system.
+ * The viewer renders this as a continuous line strip (strokePolyline).
  * </p>
+ *
+ * @param plotPoints polyline points (must not be null)
  */
-@Value
-@Builder(toBuilder = true)
-public class GraphFxViewport {
+public record PlotLine(List<PlotPoint> plotPoints) {
 
-    /**
-     * Default viewport used by {@link GraphFxViewer}.
-     */
-    public static final GraphFxViewport DEFAULT = GraphFxViewport.builder().build();
+    public PlotLine {
+        Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+    }
 
-    /**
-     * Minimum X bound (world units).
-     */
-    @Builder.Default
-    @NonNull
-    BigNumber worldMinimumXValue = new BigNumber("-10");
-
-    /**
-     * Maximum X bound (world units).
-     */
-    @Builder.Default
-    @NonNull
-    BigNumber worldMaximumXValue = new BigNumber("10");
-
-    /**
-     * Minimum Y bound (world units).
-     */
-    @Builder.Default
-    @NonNull
-    BigNumber worldMinimumYValue = new BigNumber("-10");
-
-    /**
-     * Maximum Y bound (world units).
-     */
-    @Builder.Default
-    @NonNull
-    BigNumber worldMaximumYValue = new BigNumber("10");
 }

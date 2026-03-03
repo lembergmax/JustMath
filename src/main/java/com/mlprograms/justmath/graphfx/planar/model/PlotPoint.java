@@ -21,59 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.mlprograms.justmath.graphfx.element;
+package com.mlprograms.justmath.graphfx.planar.model;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import javafx.scene.paint.Color;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+
+import java.util.Objects;
 
 /**
- * Immutable point element represented by high-precision world coordinates.
+ * Immutable 2D point for plotting in a planar coordinate system.
  *
  * <p>
- * The viewer does not modify or compute coordinates. Coordinates are treated as authoritative input data.
+ * This is a pure data object and intentionally does not contain any rendering state.
+ * Rendering is controlled by the viewer configuration.
  * </p>
+ *
+ * @param x x-coordinate in world units (must not be null)
+ * @param y y-coordinate in world units (must not be null)
  */
-@Value
-@Builder(toBuilder = true)
-public class GraphFxPoint implements GraphFxElement {
+public record PlotPoint(BigNumber x, BigNumber y) {
 
-    /**
-     * Display name shown next to the point.
-     *
-     * <p>
-     * This is purely a label. The viewer does not derive any values from it.
-     * </p>
-     */
-    @Builder.Default
-    @NonNull
-    String pointName = "";
+    public PlotPoint {
+        Objects.requireNonNull(x, "x must not be null");
+        Objects.requireNonNull(y, "y must not be null");
+    }
 
-    /**
-     * X coordinate in world units.
-     */
-    @NonNull
-    BigNumber worldXValue;
-
-    /**
-     * Y coordinate in world units.
-     */
-    @NonNull
-    BigNumber worldYValue;
-
-    /**
-     * Point fill color.
-     */
-    @Builder.Default
-    @NonNull
-    Color pointColor = Color.BLACK;
-
-    /**
-     * Point radius in pixels.
-     */
-    @Builder.Default
-    double pointRadiusInPixels = 4.0;
 }

@@ -21,18 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graphfx.planar.view;
 
-package com.mlprograms.justmath.graphfx.element;
+import com.mlprograms.justmath.bignumber.BigNumber;
 
-import com.mlprograms.justmath.graphfx.viewer.GraphFxViewer;
+import java.util.Objects;
 
 /**
- * Marker interface for drawable elements in {@link GraphFxViewer}.
+ * Immutable snapshot of the currently visible world bounds.
  *
  * <p>
- * Elements are intentionally kept as pure data objects. The viewer is responsible for rendering them.
+ * This is primarily useful if another module wants to compute plot data for exactly the visible region.
+ * The GUI module itself does not compute plot data.
  * </p>
+ *
+ * @param minX minimum visible x in world units (must not be null)
+ * @param maxX maximum visible x in world units (must not be null)
+ * @param minY minimum visible y in world units (must not be null)
+ * @param maxY maximum visible y in world units (must not be null)
  */
-public interface GraphFxElement {
-    // Marker interface.
+public record ViewportSnapshot(BigNumber minX, BigNumber maxX, BigNumber minY, BigNumber maxY) {
+
+    public ViewportSnapshot {
+        Objects.requireNonNull(minX, "minX must not be null");
+        Objects.requireNonNull(maxX, "maxX must not be null");
+        Objects.requireNonNull(minY, "minY must not be null");
+        Objects.requireNonNull(maxY, "maxY must not be null");
+    }
+
 }

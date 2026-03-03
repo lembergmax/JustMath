@@ -21,33 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.graphfx.planar.model;
 
-package com.mlprograms.justmath.graphfx.viewer;
-
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
- * Handle returned by {@link GraphFxViewer} for removing a previously added element.
+ * Container for renderable plot data.
  *
  * <p>
- * This handle is intentionally minimal: it exposes only {@link #remove()}.
+ * This object is intentionally simple: it contains only points and polylines.
+ * Any computation (marching squares, expression evaluation, …) is out of scope for this GUI module.
  * </p>
+ *
+ * @param plotPoints list of standalone points (must not be null)
+ * @param plotLines list of polylines/lines (must not be null)
  */
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public final class GraphFxPlotHandle {
+public record PlotResult(List<PlotPoint> plotPoints, List<PlotLine> plotLines) {
 
     /**
-     * Remove action supplied by the viewer.
+     * Creates an empty plot result.
      */
-    @NonNull
-    private final Runnable removeAction;
-
-    /**
-     * Removes the associated element from the viewer.
-     */
-    public void remove() {
-        removeAction.run();
+    public PlotResult() {
+        this(new ArrayList<>(), new ArrayList<>());
     }
+
+    public PlotResult {
+        Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+        Objects.requireNonNull(plotLines, "plotLines must not be null");
+    }
+
 }

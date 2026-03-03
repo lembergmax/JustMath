@@ -25,76 +25,38 @@
 package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.graphfx.element.GraphFxLine;
-import com.mlprograms.justmath.graphfx.element.GraphFxPoint;
-import com.mlprograms.justmath.graphfx.element.GraphFxPolyline;
-import com.mlprograms.justmath.graphfx.viewer.GraphFxGridConfiguration;
-import com.mlprograms.justmath.graphfx.viewer.GraphFxViewer;
-import com.mlprograms.justmath.graphfx.viewer.GraphFxViewerConfiguration;
-import com.mlprograms.justmath.graphfx.viewer.GraphFxViewport;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
+import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphfx.planar.view.GraphFxViewer;
+
+import java.util.List;
 
 public final class Main {
 
     public static void main(final String[] args) {
-        GraphFxViewer viewer = new GraphFxViewer(
-                GraphFxViewport.builder()
-                        .worldMinimumXValue(new BigNumber("-4.5"))
-                        .worldMaximumXValue(new BigNumber("4.5"))
-                        .worldMinimumYValue(new BigNumber("-3.0"))
-                        .worldMaximumYValue(new BigNumber("5.5"))
-                        .build(),
-                GraphFxGridConfiguration.builder()
-                        .gridSpacingXValue(new BigNumber("1"))
-                        .gridSpacingYValue(new BigNumber("1"))
-                        .areAxesVisible(true)
-                        .areTickLabelsVisible(true)
-                        .isGridVisible(true)
-                        .build(),
-                GraphFxViewerConfiguration.DEFAULT.toBuilder()
-                        .xAxisName("x")
-                        .yAxisName("y")
-                        .build()
+        GraphFxViewer viewer = new GraphFxViewer();
+        viewer.show();
+
+        PlotResult plot = new PlotResult(
+                List.of(
+                        new PlotPoint(new BigNumber("-2"), new BigNumber("1")),
+                        new PlotPoint(new BigNumber("0"), new BigNumber("0")),
+                        new PlotPoint(new BigNumber("2"), new BigNumber("1"))
+                ),
+                List.of(
+                        new PlotLine(List.of(
+                                new PlotPoint(new BigNumber("-4"), new BigNumber("-2")),
+                                new PlotPoint(new BigNumber("0"), new BigNumber("2")),
+                                new PlotPoint(new BigNumber("4"), new BigNumber("-2"))
+                        ))
+                )
         );
 
-        // Polyline "graph" - caller provides points; viewer only draws them.
-        viewer.addPolyline(GraphFxPolyline.builder()
-                .polylineName("Graph A (given points)")
-                .polylinePoint(GraphFxPolyline.GraphFxPolylinePoint.builder()
-                        .worldXValue(new BigNumber("-4"))
-                        .worldYValue(new BigNumber("1.3"))
-                        .build())
-                .polylinePoint(GraphFxPolyline.GraphFxPolylinePoint.builder()
-                        .worldXValue(new BigNumber("-2"))
-                        .worldYValue(new BigNumber("2"))
-                        .build())
-                .polylinePoint(GraphFxPolyline.GraphFxPolylinePoint.builder()
-                        .worldXValue(new BigNumber("0"))
-                        .worldYValue(new BigNumber("0"))
-                        .build())
-                .polylinePoint(GraphFxPolyline.GraphFxPolylinePoint.builder()
-                        .worldXValue(new BigNumber("3"))
-                        .worldYValue(new BigNumber("4"))
-                        .build())
-                .build());
-
-        // Line with an explicit label (viewer does not compute equation/value).
-        viewer.addLine(GraphFxLine.builder()
-                .lineName("L1")
-                .lineLabelText("L1: caller-provided label")
-                .startWorldXValue(new BigNumber("-4"))
-                .startWorldYValue(new BigNumber("-1"))
-                .endWorldXValue(new BigNumber("4.5"))
-                .endWorldYValue(new BigNumber("3.7"))
-                .build());
-
-        // A point with a label.
-        viewer.addPoint(GraphFxPoint.builder()
-                .pointName("P(2.5, 3.75)")
-                .worldXValue(new BigNumber("2.5"))
-                .worldYValue(new BigNumber("3.75"))
-                .build());
-
-        viewer.show("JustMath GraphFxViewer Demo", 1200, 820);
+        viewer.setPlotResult(plot);
+        viewer.fitViewport(new com.mlprograms.justmath.graphfx.planar.view.ViewportSnapshot(
+                new BigNumber("-5"), new BigNumber("5"), new BigNumber("-4"), new BigNumber("4")
+        ));
 
     }
 
