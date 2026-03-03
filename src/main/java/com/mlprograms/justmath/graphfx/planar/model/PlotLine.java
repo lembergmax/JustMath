@@ -27,18 +27,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A polyline consisting of at least two {@link PlotPoint}s.
+ * A polyline representing a plot segment.
  *
  * <p>
- * The viewer renders this as a continuous line strip (strokePolyline).
+ * A line consists of at least two points. The viewer will ignore lines with fewer points.
  * </p>
  *
- * @param plotPoints polyline points (must not be null)
+ * @param plotPoints points in world coordinates (must not be null)
  */
-public record PlotLine(List<PlotPoint> plotPoints) {
+public record PlotLine(
+        /** Polyline points in world coordinates. */
+        List<PlotPoint> plotPoints
+) {
 
+    /**
+     * Validates that the point list is present.
+     */
     public PlotLine {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
     }
-
 }

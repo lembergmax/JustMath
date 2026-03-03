@@ -42,69 +42,123 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.*;
+
 /**
- * Internal high-performance plot surface with pan/zoom, grid and axis labeling.
+ * High-performance plot surface with pan/zoom, grid, axes and axis labeling.
  *
  * <p>
- * This class only renders data from {@link PlotResult}. It does not compute plot data.
+ * This class is an internal rendering component used by {@link GraphFxViewer}. It is not designed to be instantiated
+ * directly by library users.
  * </p>
  *
- * <p><strong>Design notes (library-grade):</strong></p>
+ * <p><strong>Core responsibilities:</strong></p>
  * <ul>
- *     <li>Viewport is represented by {@code (centerWorldX, centerWorldY, pixelsPerWorldUnit)} for stability on resize.</li>
- *     <li>Rendering is coalesced (single JavaFX pulse) to avoid redraw storms.</li>
- *     <li>Grid step and label step are auto-selected based on zoom level.</li>
+ *     <li>Maintain the viewport (center + zoom) as world-space values.</li>
+ *     <li>Render background (grid, axes, labels) to a cached canvas.</li>
+ *     <li>Render plot data (lines and points) to a separate canvas.</li>
+ *     <li>Provide stable, jitter-free pan/zoom interactions.</li>
+ * </ul>
+ *
+ * <p><strong>Performance notes:</strong></p>
+ * <ul>
+ *     <li>Rendering is coalesced: multiple state changes during one JavaFX pulse cause only one redraw.</li>
+ *     <li>Background and plot data are drawn on separate canvases to avoid redundant background work.</li>
+ *     <li>Internal math uses {@link BigNumber} for viewport computations and label formatting; screen transforms use
+ *         {@code double} for speed.</li>
  * </ul>
  */
 final class GraphFxPlotSurface extends Region {
 
+    /**
+     * Epsilon used for treating values as zero in comparisons (to avoid "-0" labels).
+     */
     private static final double EPSILON_FOR_ZERO = 1e-12;
 
+    /**
+     * Canvas used for rendering the static background layer (grid, axes, labels).
+     */
     private final Canvas backgroundCanvas;
+
+    /**
+     * Canvas used for rendering the dynamic plot layer (lines, points).
+     */
     private final Canvas plotCanvas;
 
-    private final GraphicsContext backgroundGraphics;
-    private final GraphicsContext plotGraphics;
+    /**
+     * Graphics context for the background layer.
+     */
+    private final GraphicsContext backgroundGraphicsContext;
 
+    /**
+     * Graphics context for the plot layer.
+     */
+    private final GraphicsContext plotGraphicsContext;
+
+    /**
+     * The plot data currently rendered by this surface.
+     */
     private PlotResult plotResult;
 
-    private GraphFxViewerStyle style;
+    /**
+     * Current style configuration (colors, fonts, stroke widths).
+     */
+    private GraphFxViewerStyle viewerStyle;
+
+    /**
+     * Current view configuration (grid spacing, interaction toggles).
+     */
     private GraphFxViewConfiguration viewConfiguration;
 
     /**
-     * World-space center coordinates. Stored as double for stable/fast transforms.
+     * X coordinate of the viewport center in world units.
      */
-    private double centerWorldX;
-    private double centerWorldY;
+    private BigNumber centerWorldX;
 
     /**
-     * Zoom level: pixels per world unit.
+     * Y coordinate of the viewport center in world units.
      */
-    private double pixelsPerWorldUnit;
+    private BigNumber centerWorldY;
 
+    /**
+     * Zoom level (pixels per one world unit).
+     */
+    private BigNumber pixelsPerWorldUnit;
+
+    /**
+     * Last mouse position while panning (screen coordinates).
+     */
     private Point2D lastPanMousePoint;
 
+    /**
+     * Flag to coalesce renders into a single JavaFX pulse.
+     */
     private boolean renderScheduled;
 
+    /**
+     * Creates a plot surface with initial configuration.
+     *
+     * @param viewerStyle       viewer style configuration (must not be null)
+     * @param viewConfiguration view configuration (must not be null)
+     */
     GraphFxPlotSurface(
-            final GraphFxViewerStyle style,
+            final GraphFxViewerStyle viewerStyle,
             final GraphFxViewConfiguration viewConfiguration
     ) {
-        this.style = Objects.requireNonNull(style, "style must not be null");
+        this.viewerStyle = Objects.requireNonNull(viewerStyle, "viewerStyle must not be null");
         this.viewConfiguration = Objects.requireNonNull(viewConfiguration, "viewConfiguration must not be null");
 
         this.backgroundCanvas = new Canvas();
         this.plotCanvas = new Canvas();
 
-        this.backgroundGraphics = backgroundCanvas.getGraphicsContext2D();
-        this.plotGraphics = plotCanvas.getGraphicsContext2D();
+        this.backgroundGraphicsContext = backgroundCanvas.getGraphicsContext2D();
+        this.plotGraphicsContext = plotCanvas.getGraphicsContext2D();
 
         this.plotResult = new PlotResult();
 
-        // Default viewport: center at origin, reasonable zoom.
-        this.centerWorldX = 0.0;
-        this.centerWorldY = 0.0;
-        this.pixelsPerWorldUnit = 80.0;
+        this.centerWorldX = ZERO;
+        this.centerWorldY = ZERO;
+        this.pixelsPerWorldUnit = new BigNumber("80", Locale.ROOT);
 
         getChildren().addAll(backgroundCanvas, plotCanvas);
 
@@ -130,19 +184,19 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Sets a new visual style.
+     * Applies a new visual style and schedules a redraw.
      *
-     * @param style style (must not be null)
+     * @param viewerStyle new style (must not be null)
      */
-    void setStyle(final GraphFxViewerStyle style) {
-        this.style = Objects.requireNonNull(style, "style must not be null");
+    void setStyle(final GraphFxViewerStyle viewerStyle) {
+        this.viewerStyle = Objects.requireNonNull(viewerStyle, "viewerStyle must not be null");
         requestRender();
     }
 
     /**
-     * Sets view configuration (grid, pan/zoom, spacing).
+     * Applies a new view configuration and schedules a redraw.
      *
-     * @param viewConfiguration configuration (must not be null)
+     * @param viewConfiguration new configuration (must not be null)
      */
     void setViewConfiguration(final GraphFxViewConfiguration viewConfiguration) {
         this.viewConfiguration = Objects.requireNonNull(viewConfiguration, "viewConfiguration must not be null");
@@ -150,32 +204,33 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Returns the current visible world bounds as {@link ViewportSnapshot}.
+     * Creates a snapshot of the currently visible world bounds.
      *
-     * @return viewport snapshot
+     * @return immutable viewport snapshot
      */
     ViewportSnapshot snapshotViewport() {
-        double width = backgroundCanvas.getWidth();
-        double height = backgroundCanvas.getHeight();
+        final double canvasWidth = backgroundCanvas.getWidth();
+        final double canvasHeight = backgroundCanvas.getHeight();
 
-        if (!(width > 0.0) || !(height > 0.0) || !(pixelsPerWorldUnit > 0.0)) {
-            return new ViewportSnapshot(new BigNumber("0"), new BigNumber("0"), new BigNumber("0"), new BigNumber("0"));
+        if (!(canvasWidth > 0.0) || !(canvasHeight > 0.0) || !isPositive(pixelsPerWorldUnit)) {
+            return new ViewportSnapshot(ZERO, ZERO, ZERO, ZERO);
         }
 
-        double halfWorldWidth = (width / 2.0) / pixelsPerWorldUnit;
-        double halfWorldHeight = (height / 2.0) / pixelsPerWorldUnit;
+        final BigNumber halfWorldWidth = new BigNumber(Double.toString(canvasWidth), Locale.ROOT)
+                .divide(TWO, DEFAULT_MATH_CONTEXT)
+                .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        double minX = centerWorldX - halfWorldWidth;
-        double maxX = centerWorldX + halfWorldWidth;
-        double minY = centerWorldY - halfWorldHeight;
-        double maxY = centerWorldY + halfWorldHeight;
+        final BigNumber halfWorldHeight = new BigNumber(Double.toString(canvasHeight), Locale.ROOT)
+                .divide(TWO, DEFAULT_MATH_CONTEXT)
+                .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        return new ViewportSnapshot(
-                new BigNumber(Double.toString(minX), Locale.ROOT),
-                new BigNumber(Double.toString(maxX), Locale.ROOT),
-                new BigNumber(Double.toString(minY), Locale.ROOT),
-                new BigNumber(Double.toString(maxY), Locale.ROOT)
-        );
+        final BigNumber minX = centerWorldX.subtract(halfWorldWidth);
+        final BigNumber maxX = centerWorldX.add(halfWorldWidth);
+
+        final BigNumber minY = centerWorldY.subtract(halfWorldHeight);
+        final BigNumber maxY = centerWorldY.add(halfWorldHeight);
+
+        return new ViewportSnapshot(minX, maxX, minY, maxY);
     }
 
     /**
@@ -190,40 +245,43 @@ final class GraphFxPlotSurface extends Region {
     void fitViewport(final ViewportSnapshot viewportSnapshot) {
         Objects.requireNonNull(viewportSnapshot, "viewportSnapshot must not be null");
 
-        double minX = bigNumberToDouble(viewportSnapshot.minX());
-        double maxX = bigNumberToDouble(viewportSnapshot.maxX());
-        double minY = bigNumberToDouble(viewportSnapshot.minY());
-        double maxY = bigNumberToDouble(viewportSnapshot.maxY());
+        final BigNumber minX = viewportSnapshot.minX();
+        final BigNumber maxX = viewportSnapshot.maxX();
+        final BigNumber minY = viewportSnapshot.minY();
+        final BigNumber maxY = viewportSnapshot.maxY();
 
-        if (!(maxX > minX) || !(maxY > minY)) {
+        if (!(maxX.compareTo(minX) > 0) || !(maxY.compareTo(minY) > 0)) {
             return;
         }
 
-        double width = Math.max(1.0, backgroundCanvas.getWidth());
-        double height = Math.max(1.0, backgroundCanvas.getHeight());
+        final double canvasWidth = Math.max(1.0, backgroundCanvas.getWidth());
+        final double canvasHeight = Math.max(1.0, backgroundCanvas.getHeight());
 
-        double worldWidth = maxX - minX;
-        double worldHeight = maxY - minY;
+        final BigNumber worldWidth = maxX.subtract(minX);
+        final BigNumber worldHeight = maxY.subtract(minY);
 
-        double scaleX = width / worldWidth;
-        double scaleY = height / worldHeight;
+        final BigNumber pixelsPerWorldUnitX = new BigNumber(Double.toString(canvasWidth), Locale.ROOT)
+                .divide(worldWidth, DEFAULT_MATH_CONTEXT);
 
-        centerWorldX = (minX + maxX) / 2.0;
-        centerWorldY = (minY + maxY) / 2.0;
+        final BigNumber pixelsPerWorldUnitY = new BigNumber(Double.toString(canvasHeight), Locale.ROOT)
+                .divide(worldHeight, DEFAULT_MATH_CONTEXT);
 
-        pixelsPerWorldUnit = clamp(
-                Math.min(scaleX, scaleY),
-                viewConfiguration.getMinimumPixelsPerWorldUnit(),
-                viewConfiguration.getMaximumPixelsPerWorldUnit()
-        );
+        this.centerWorldX = minX.add(maxX).divide(TWO, DEFAULT_MATH_CONTEXT);
+        this.centerWorldY = minY.add(maxY).divide(TWO, DEFAULT_MATH_CONTEXT);
+
+        final BigNumber unclamped = minBigNumber(pixelsPerWorldUnitX, pixelsPerWorldUnitY);
+        this.pixelsPerWorldUnit = clampPixelsPerWorldUnit(unclamped);
 
         requestRender();
     }
 
+    /**
+     * Lays out the child canvases to fill this region.
+     */
     @Override
     protected void layoutChildren() {
-        double width = getWidth();
-        double height = getHeight();
+        final double width = getWidth();
+        final double height = getHeight();
 
         backgroundCanvas.setWidth(width);
         backgroundCanvas.setHeight(height);
@@ -231,13 +289,15 @@ final class GraphFxPlotSurface extends Region {
         plotCanvas.setWidth(width);
         plotCanvas.setHeight(height);
 
-        // Stretch to fill.
         backgroundCanvas.relocate(0, 0);
         plotCanvas.relocate(0, 0);
 
         requestRender();
     }
 
+    /**
+     * Installs mouse interactions for panning and zooming.
+     */
     private void installInteractions() {
         setOnMousePressed(event -> {
             if (!viewConfiguration.isPanEnabled()) {
@@ -257,12 +317,12 @@ final class GraphFxPlotSurface extends Region {
                 return;
             }
 
-            Point2D current = new Point2D(event.getX(), event.getY());
-            Point2D delta = current.subtract(lastPanMousePoint);
+            final Point2D currentMousePoint = new Point2D(event.getX(), event.getY());
+            final Point2D deltaPixels = currentMousePoint.subtract(lastPanMousePoint);
 
-            panByPixels(delta.getX(), delta.getY());
+            panByPixels(deltaPixels.getX(), deltaPixels.getY());
 
-            lastPanMousePoint = current;
+            lastPanMousePoint = currentMousePoint;
             requestRender();
         });
 
@@ -277,8 +337,8 @@ final class GraphFxPlotSurface extends Region {
                 return;
             }
 
-            double width = backgroundCanvas.getWidth();
-            double height = backgroundCanvas.getHeight();
+            final double width = backgroundCanvas.getWidth();
+            final double height = backgroundCanvas.getHeight();
             if (!(width > 0.0) || !(height > 0.0)) {
                 return;
             }
@@ -289,84 +349,140 @@ final class GraphFxPlotSurface extends Region {
         });
     }
 
+    /**
+     * Pans the viewport by the given pixel delta.
+     *
+     * @param deltaPixelsX horizontal drag delta in pixels (positive means dragging right)
+     * @param deltaPixelsY vertical drag delta in pixels (positive means dragging down)
+     */
     private void panByPixels(final double deltaPixelsX, final double deltaPixelsY) {
-        if (!(pixelsPerWorldUnit > 0.0)) {
+        if (!isPositive(pixelsPerWorldUnit)) {
             return;
         }
 
-        // Screen X increases to the right: dragging right means we move the "camera" left (center decreases).
-        centerWorldX -= deltaPixelsX / pixelsPerWorldUnit;
+        final BigNumber deltaWorldX = new BigNumber(Double.toString(deltaPixelsX), Locale.ROOT)
+                .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        // Screen Y increases downward: dragging down means we move the "camera" up (center increases).
-        centerWorldY += deltaPixelsY / pixelsPerWorldUnit;
+        final BigNumber deltaWorldY = new BigNumber(Double.toString(deltaPixelsY), Locale.ROOT)
+                .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
+
+        // Dragging right moves the "camera" left.
+        centerWorldX = centerWorldX.subtract(deltaWorldX);
+
+        // Dragging down moves the "camera" up.
+        centerWorldY = centerWorldY.add(deltaWorldY);
     }
 
+    /**
+     * Zooms the viewport while keeping the world coordinate under the cursor stationary.
+     *
+     * @param cursorX     cursor x in screen coordinates (pixels)
+     * @param cursorY     cursor y in screen coordinates (pixels)
+     * @param wheelDeltaY mouse wheel delta (positive for zoom in, negative for zoom out)
+     */
     private void zoomTowardsCursor(final double cursorX, final double cursorY, final double wheelDeltaY) {
-        double width = backgroundCanvas.getWidth();
-        double height = backgroundCanvas.getHeight();
-
-        double oldScale = pixelsPerWorldUnit;
-        double zoomFactor = Math.pow(viewConfiguration.getMouseWheelZoomExponent(), wheelDeltaY);
-
-        double newScale = clamp(
-                oldScale * zoomFactor,
+        final double oldScaleDouble = bigNumberToDouble(pixelsPerWorldUnit);
+        final double zoomFactor = Math.pow(viewConfiguration.getMouseWheelZoomExponent(), wheelDeltaY);
+        final double newScaleDouble = clampDouble(
+                oldScaleDouble * zoomFactor,
                 viewConfiguration.getMinimumPixelsPerWorldUnit(),
                 viewConfiguration.getMaximumPixelsPerWorldUnit()
         );
 
-        if (Math.abs(newScale - oldScale) < 1e-9) {
+        if (Math.abs(newScaleDouble - oldScaleDouble) < 1e-12) {
             return;
         }
 
+        final double width = backgroundCanvas.getWidth();
+        final double height = backgroundCanvas.getHeight();
+
         // World coordinate under cursor before zoom.
-        double worldX = screenToWorldX(cursorX, width, oldScale);
-        double worldY = screenToWorldY(cursorY, height, oldScale);
+        final double worldXBefore = screenToWorldX(cursorX, width, oldScaleDouble);
+        final double worldYBefore = screenToWorldY(cursorY, height, oldScaleDouble);
 
-        // Adjust center so that (worldX, worldY) stays under the cursor.
-        centerWorldX = worldX - (cursorX - (width / 2.0)) / newScale;
-        centerWorldY = worldY + (cursorY - (height / 2.0)) / newScale;
+        // Adjust center so that the same world coordinate stays under the cursor.
+        final double centerWorldXAfter = worldXBefore - (cursorX - (width / 2.0)) / newScaleDouble;
+        final double centerWorldYAfter = worldYBefore + (cursorY - (height / 2.0)) / newScaleDouble;
 
-        pixelsPerWorldUnit = newScale;
+        this.centerWorldX = new BigNumber(Double.toString(centerWorldXAfter), Locale.ROOT);
+        this.centerWorldY = new BigNumber(Double.toString(centerWorldYAfter), Locale.ROOT);
+        this.pixelsPerWorldUnit = clampPixelsPerWorldUnit(new BigNumber(Double.toString(newScaleDouble), Locale.ROOT));
     }
 
+    /**
+     * Converts a screen x-coordinate into a world x-coordinate.
+     *
+     * @param screenX     screen x in pixels
+     * @param canvasWidth width of the drawing surface in pixels
+     * @param scale       pixels per world unit
+     * @return world x coordinate
+     */
     private double screenToWorldX(final double screenX, final double canvasWidth, final double scale) {
-        return centerWorldX + (screenX - (canvasWidth / 2.0)) / scale;
+        return bigNumberToDouble(centerWorldX) + (screenX - (canvasWidth / 2.0)) / scale;
     }
 
+    /**
+     * Converts a screen y-coordinate into a world y-coordinate.
+     *
+     * @param screenY      screen y in pixels
+     * @param canvasHeight height of the drawing surface in pixels
+     * @param scale        pixels per world unit
+     * @return world y coordinate
+     */
     private double screenToWorldY(final double screenY, final double canvasHeight, final double scale) {
-        return centerWorldY - (screenY - (canvasHeight / 2.0)) / scale;
+        return bigNumberToDouble(centerWorldY) - (screenY - (canvasHeight / 2.0)) / scale;
     }
 
+    /**
+     * Converts a world x-coordinate into a screen x-coordinate.
+     *
+     * @param worldX      world x coordinate
+     * @param canvasWidth width of the drawing surface in pixels
+     * @return screen x coordinate in pixels
+     */
     private double worldToScreenX(final double worldX, final double canvasWidth) {
-        return (canvasWidth / 2.0) + (worldX - centerWorldX) * pixelsPerWorldUnit;
+        return (canvasWidth / 2.0) + (worldX - bigNumberToDouble(centerWorldX)) * bigNumberToDouble(pixelsPerWorldUnit);
     }
 
+    /**
+     * Converts a world y-coordinate into a screen y-coordinate.
+     *
+     * @param worldY       world y coordinate
+     * @param canvasHeight height of the drawing surface in pixels
+     * @return screen y coordinate in pixels
+     */
     private double worldToScreenY(final double worldY, final double canvasHeight) {
-        return (canvasHeight / 2.0) - (worldY - centerWorldY) * pixelsPerWorldUnit;
+        return (canvasHeight / 2.0) - (worldY - bigNumberToDouble(centerWorldY)) * bigNumberToDouble(pixelsPerWorldUnit);
     }
 
+    /**
+     * Requests a render; multiple calls before the next JavaFX pulse are coalesced.
+     */
     private void requestRender() {
         if (renderScheduled) {
             return;
         }
         renderScheduled = true;
+
         Platform.runLater(() -> {
             renderScheduled = false;
             renderNow();
         });
     }
 
+    /**
+     * Renders the current state immediately.
+     */
     private void renderNow() {
-        double width = backgroundCanvas.getWidth();
-        double height = backgroundCanvas.getHeight();
+        final double width = backgroundCanvas.getWidth();
+        final double height = backgroundCanvas.getHeight();
 
         if (!(width > 0.0) || !(height > 0.0)) {
             return;
         }
 
-        // Background layer: clear + grid + axes + labels.
-        backgroundGraphics.setFill(style.getBackgroundColor());
-        backgroundGraphics.fillRect(0, 0, width, height);
+        // Background (grid, axes, labels)
+        clearBackground(width, height);
 
         if (viewConfiguration.isGridVisible()) {
             renderGrid(width, height);
@@ -380,159 +496,329 @@ final class GraphFxPlotSurface extends Region {
             renderAxisLabels(width, height);
         }
 
-        // Plot layer: clear + lines + points.
-        plotGraphics.clearRect(0, 0, width, height);
+        // Plot layer
+        plotGraphicsContext.clearRect(0, 0, width, height);
         renderPlot(width, height);
     }
 
-    // --- in GraphFxPlotSurface ---
+    /**
+     * Clears the background canvas using {@link GraphFxViewerStyle#getBackgroundColor()}.
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     */
+    private void clearBackground(final double width, final double height) {
+        backgroundGraphicsContext.setFill(viewerStyle.getBackgroundColor());
+        backgroundGraphicsContext.fillRect(0, 0, width, height);
+    }
 
+    /**
+     * Renders grid lines aligned to world-space multiples of the computed step size.
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     */
     private void renderGrid(final double width, final double height) {
-        final GridSteps steps = computeGridSteps();
-        if (!steps.isValid()) {
+        final GridSteps gridSteps = computeGridSteps();
+        if (!gridSteps.isValid()) {
             return;
         }
 
-        final ViewportBounds bounds = computeVisibleBounds(width, height);
+        final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
 
-        // Vertical minor + major lines (anchored to 0 by using integer indices)
-        final long startXIndex = (long) Math.floor(bounds.minX / steps.minorStepWorld);
-        final long endXIndex = (long) Math.ceil(bounds.maxX / steps.minorStepWorld);
+        // Vertical lines (world x = i * minorStepWorld)
+        final long startXIndex = (long) Math.floor(viewportBounds.minX / gridSteps.minorStepWorld);
+        final long endXIndex = (long) Math.ceil(viewportBounds.maxX / gridSteps.minorStepWorld);
 
-        for (long i = startXIndex; i <= endXIndex; i++) {
-            final boolean isMajor = (Math.floorMod(i, (long) steps.majorEvery) == 0L);
-            final double x = i * steps.minorStepWorld;
+        for (long index = startXIndex; index <= endXIndex; index++) {
+            final boolean isMajor = Math.floorMod(index, (long) gridSteps.majorEvery) == 0L;
+            final double worldX = index * gridSteps.minorStepWorld;
 
-            backgroundGraphics.setStroke(isMajor ? style.getMajorGridColor() : style.getMinorGridColor());
-            final double strokeWidth = isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels();
-            backgroundGraphics.setLineWidth(strokeWidth);
+            final double strokeWidth = isMajor
+                    ? viewerStyle.getMajorGridStrokeWidthInPixels()
+                    : viewerStyle.getMinorGridStrokeWidthInPixels();
 
-            final double sx = snapForCrispStroke(worldToScreenX(x, width), strokeWidth);
-            backgroundGraphics.strokeLine(sx, 0, sx, height);
+            backgroundGraphicsContext.setStroke(isMajor ? viewerStyle.getMajorGridColor() : viewerStyle.getMinorGridColor());
+            backgroundGraphicsContext.setLineWidth(strokeWidth);
+
+            final double screenX = snapForCrispStroke(worldToScreenX(worldX, width), strokeWidth);
+            backgroundGraphicsContext.strokeLine(screenX, 0, screenX, height);
         }
 
-        // Horizontal minor + major lines
-        final long startYIndex = (long) Math.floor(bounds.minY / steps.minorStepWorld);
-        final long endYIndex = (long) Math.ceil(bounds.maxY / steps.minorStepWorld);
+        // Horizontal lines (world y = i * minorStepWorld)
+        final long startYIndex = (long) Math.floor(viewportBounds.minY / gridSteps.minorStepWorld);
+        final long endYIndex = (long) Math.ceil(viewportBounds.maxY / gridSteps.minorStepWorld);
 
-        for (long i = startYIndex; i <= endYIndex; i++) {
-            final boolean isMajor = (Math.floorMod(i, (long) steps.majorEvery) == 0L);
-            final double y = i * steps.minorStepWorld;
+        for (long index = startYIndex; index <= endYIndex; index++) {
+            final boolean isMajor = Math.floorMod(index, (long) gridSteps.majorEvery) == 0L;
+            final double worldY = index * gridSteps.minorStepWorld;
 
-            backgroundGraphics.setStroke(isMajor ? style.getMajorGridColor() : style.getMinorGridColor());
-            final double strokeWidth = isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels();
-            backgroundGraphics.setLineWidth(strokeWidth);
+            final double strokeWidth = isMajor
+                    ? viewerStyle.getMajorGridStrokeWidthInPixels()
+                    : viewerStyle.getMinorGridStrokeWidthInPixels();
 
-            final double sy = snapForCrispStroke(worldToScreenY(y, height), strokeWidth);
-            backgroundGraphics.strokeLine(0, sy, width, sy);
+            backgroundGraphicsContext.setStroke(isMajor ? viewerStyle.getMajorGridColor() : viewerStyle.getMinorGridColor());
+            backgroundGraphicsContext.setLineWidth(strokeWidth);
+
+            final double screenY = snapForCrispStroke(worldToScreenY(worldY, height), strokeWidth);
+            backgroundGraphicsContext.strokeLine(0, screenY, width, screenY);
         }
     }
 
+    /**
+     * Renders the x-axis (y=0) and y-axis (x=0) if they are visible within the current viewport.
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     */
+    private void renderAxes(final double width, final double height) {
+        final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
+
+        final boolean xAxisVisible = viewportBounds.minY <= 0.0 && viewportBounds.maxY >= 0.0;
+        final boolean yAxisVisible = viewportBounds.minX <= 0.0 && viewportBounds.maxX >= 0.0;
+
+        backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
+        backgroundGraphicsContext.setLineWidth(viewerStyle.getAxisStrokeWidthInPixels());
+
+        if (xAxisVisible) {
+            final double screenY = snapForCrispStroke(worldToScreenY(0.0, height), viewerStyle.getAxisStrokeWidthInPixels());
+            backgroundGraphicsContext.strokeLine(0, screenY, width, screenY);
+        }
+
+        if (yAxisVisible) {
+            final double screenX = snapForCrispStroke(worldToScreenX(0.0, width), viewerStyle.getAxisStrokeWidthInPixels());
+            backgroundGraphicsContext.strokeLine(screenX, 0, screenX, height);
+        }
+    }
+
+    /**
+     * Renders axis labels placed on grid intersections.
+     *
+     * <p>
+     * Labels are computed on a world-space step that is an integer multiple of the minor grid step.
+     * This ensures labels always land on grid corners and never "float" between intersections.
+     * </p>
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     */
     private void renderAxisLabels(final double width, final double height) {
-        final GridSteps steps = computeGridSteps();
-        if (!steps.isValid()) {
+        final GridSteps gridSteps = computeGridSteps();
+        if (!gridSteps.isValid()) {
             return;
         }
 
-        final ViewportBounds bounds = computeVisibleBounds(width, height);
+        final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
 
-        final boolean xAxisVisible = bounds.minY <= 0.0 && bounds.maxY >= 0.0;
-        final boolean yAxisVisible = bounds.minX <= 0.0 && bounds.maxX >= 0.0;
+        final boolean xAxisVisible = viewportBounds.minY <= 0.0 && viewportBounds.maxY >= 0.0;
+        final boolean yAxisVisible = viewportBounds.minX <= 0.0 && viewportBounds.maxX >= 0.0;
 
         if (!xAxisVisible && !yAxisVisible) {
             return;
         }
 
-        backgroundGraphics.setFont(style.getAxisLabelFont());
-        backgroundGraphics.setFill(style.getAxisLabelColor());
+        backgroundGraphicsContext.setFont(viewerStyle.getAxisLabelFont());
+        backgroundGraphicsContext.setFill(viewerStyle.getAxisLabelColor());
 
-        final double axisX = worldToScreenX(0.0, width);
-        final double axisY = worldToScreenY(0.0, height);
+        final double axisScreenX = worldToScreenX(0.0, width);
+        final double axisScreenY = worldToScreenY(0.0, height);
 
-        final double tickLength = viewConfiguration.getAxisTickLengthInPixels();
-        final double labelOffset = viewConfiguration.getAxisLabelOffsetInPixels();
+        final double tickLengthPixels = viewConfiguration.getAxisTickLengthInPixels();
+        final double labelOffsetPixels = viewConfiguration.getAxisLabelOffsetInPixels();
 
-        // We label at "labelStepWorld", which is an integer multiple of majorStepWorld
-        // => labels always sit on major grid corners/lines.
-        final double labelStepWorld = steps.labelStepWorld;
+        final double labelStepWorld = gridSteps.labelStepWorld;
 
-        // ---------- X axis ----------
+        // ---- X axis labels ----
         if (xAxisVisible) {
-            backgroundGraphics.setTextAlign(TextAlignment.CENTER);
-            backgroundGraphics.setTextBaseline(VPos.TOP);
+            backgroundGraphicsContext.setTextAlign(TextAlignment.CENTER);
+            backgroundGraphicsContext.setTextBaseline(VPos.TOP);
 
-            final long startIndex = (long) Math.floor(bounds.minX / labelStepWorld);
-            final long endIndex = (long) Math.ceil(bounds.maxX / labelStepWorld);
+            final long startIndex = (long) Math.floor(viewportBounds.minX / labelStepWorld);
+            final long endIndex = (long) Math.ceil(viewportBounds.maxX / labelStepWorld);
 
-            for (long i = startIndex; i <= endIndex; i++) {
-                final double x = i * labelStepWorld;
-                final double sx = snapForCrispStroke(worldToScreenX(x, width), 1.5);
+            for (long index = startIndex; index <= endIndex; index++) {
+                final double worldX = index * labelStepWorld;
+                final double screenX = snapForCrispStroke(worldToScreenX(worldX, width), 1.5);
 
-                if (sx < 0.0 || sx > width) {
+                if (screenX < 0.0 || screenX > width) {
                     continue;
                 }
 
-                // Tick mark on x-axis
-                backgroundGraphics.setStroke(style.getAxisColor());
-                backgroundGraphics.setLineWidth(1.5);
+                drawAxisTickOnXAxis(screenX, axisScreenY, tickLengthPixels);
 
-                final double y1 = snapForCrispStroke(axisY - tickLength / 2.0, 1.5);
-                final double y2 = snapForCrispStroke(axisY + tickLength / 2.0, 1.5);
-                backgroundGraphics.strokeLine(sx, y1, sx, y2);
-
-                // Label directly under x-axis
-                final String label = formatAxisNumber(x, style.getAxisLabelLocale());
-
-                // Avoid double "0" at origin: keep only on x-axis
-                if ("0".equals(label) || isNearZero(x)) {
-                    // keep origin label on X-axis (fine)
-                }
-
-                double labelY = axisY + tickLength / 2.0 + labelOffset;
-                labelY = clamp(labelY, 0.0, height - 2.0);
-
-                backgroundGraphics.fillText(label, sx, labelY);
+                final String label = formatAxisNumber(worldX, viewerStyle.getAxisLabelLocale());
+                final double labelY = clampDouble(axisScreenY + tickLengthPixels / 2.0 + labelOffsetPixels, 0.0, height - 2.0);
+                backgroundGraphicsContext.fillText(label, screenX, labelY);
             }
         }
 
-        // ---------- Y axis ----------
+        // ---- Y axis labels ----
         if (yAxisVisible) {
-            backgroundGraphics.setTextAlign(TextAlignment.LEFT);
-            backgroundGraphics.setTextBaseline(VPos.CENTER);
+            backgroundGraphicsContext.setTextAlign(TextAlignment.LEFT);
+            backgroundGraphicsContext.setTextBaseline(VPos.CENTER);
 
-            final long startIndex = (long) Math.floor(bounds.minY / labelStepWorld);
-            final long endIndex = (long) Math.ceil(bounds.maxY / labelStepWorld);
+            final long startIndex = (long) Math.floor(viewportBounds.minY / labelStepWorld);
+            final long endIndex = (long) Math.ceil(viewportBounds.maxY / labelStepWorld);
 
-            for (long i = startIndex; i <= endIndex; i++) {
-                final double y = i * labelStepWorld;
-                final double sy = snapForCrispStroke(worldToScreenY(y, height), 1.5);
+            for (long index = startIndex; index <= endIndex; index++) {
+                final double worldY = index * labelStepWorld;
+                final double screenY = snapForCrispStroke(worldToScreenY(worldY, height), 1.5);
 
-                if (sy < 0.0 || sy > height) {
+                if (screenY < 0.0 || screenY > height) {
                     continue;
                 }
 
-                // Tick mark on y-axis
-                backgroundGraphics.setStroke(style.getAxisColor());
-                backgroundGraphics.setLineWidth(1.5);
-
-                final double x1 = snapForCrispStroke(axisX - tickLength / 2.0, 1.5);
-                final double x2 = snapForCrispStroke(axisX + tickLength / 2.0, 1.5);
-                backgroundGraphics.strokeLine(x1, sy, x2, sy);
-
-                // Label directly right of y-axis
-                final String label = formatAxisNumber(y, style.getAxisLabelLocale());
-
-                // Avoid double "0" at origin: do NOT show 0 on Y-axis
-                if ("0".equals(label) || isNearZero(y)) {
+                // Avoid a double "0" label at the origin: keep origin label on X axis only.
+                if (isNearZero(worldY)) {
                     continue;
                 }
 
-                double labelX = axisX + tickLength / 2.0 + labelOffset;
-                labelX = clamp(labelX, 0.0, width - 2.0);
+                drawAxisTickOnYAxis(axisScreenX, screenY, tickLengthPixels);
 
-                backgroundGraphics.fillText(label, labelX, sy);
+                final String label = formatAxisNumber(worldY, viewerStyle.getAxisLabelLocale());
+                final double labelX = clampDouble(axisScreenX + tickLengthPixels / 2.0 + labelOffsetPixels, 0.0, width - 2.0);
+                backgroundGraphicsContext.fillText(label, labelX, screenY);
             }
         }
+    }
+
+    /**
+     * Draws a tick mark on the x-axis at the specified x coordinate.
+     *
+     * @param screenX          x position in pixels
+     * @param axisScreenY      y position of the x-axis in pixels
+     * @param tickLengthPixels tick length in pixels
+     */
+    private void drawAxisTickOnXAxis(final double screenX, final double axisScreenY, final double tickLengthPixels) {
+        backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
+        backgroundGraphicsContext.setLineWidth(1.5);
+
+        final double y1 = snapForCrispStroke(axisScreenY - tickLengthPixels / 2.0, 1.5);
+        final double y2 = snapForCrispStroke(axisScreenY + tickLengthPixels / 2.0, 1.5);
+
+        backgroundGraphicsContext.strokeLine(screenX, y1, screenX, y2);
+    }
+
+    /**
+     * Draws a tick mark on the y-axis at the specified y coordinate.
+     *
+     * @param axisScreenX      x position of the y-axis in pixels
+     * @param screenY          y position in pixels
+     * @param tickLengthPixels tick length in pixels
+     */
+    private void drawAxisTickOnYAxis(final double axisScreenX, final double screenY, final double tickLengthPixels) {
+        backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
+        backgroundGraphicsContext.setLineWidth(1.5);
+
+        final double x1 = snapForCrispStroke(axisScreenX - tickLengthPixels / 2.0, 1.5);
+        final double x2 = snapForCrispStroke(axisScreenX + tickLengthPixels / 2.0, 1.5);
+
+        backgroundGraphicsContext.strokeLine(x1, screenY, x2, screenY);
+    }
+
+    /**
+     * Renders plot lines and points from {@link #plotResult} to the plot canvas.
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     */
+    private void renderPlot(final double width, final double height) {
+        final List<PlotLine> plotLines = plotResult.plotLines();
+        if (!plotLines.isEmpty()) {
+            plotGraphicsContext.setStroke(viewerStyle.getPlotLineColor());
+            plotGraphicsContext.setLineWidth(viewerStyle.getPlotLineStrokeWidthInPixels());
+
+            for (final PlotLine plotLine : plotLines) {
+                if (plotLine == null) {
+                    continue;
+                }
+
+                final List<PlotPoint> plotPoints = plotLine.plotPoints();
+                if (plotPoints == null || plotPoints.size() < 2) {
+                    continue;
+                }
+
+                final double[] xPixels = new double[plotPoints.size()];
+                final double[] yPixels = new double[plotPoints.size()];
+
+                int count = 0;
+                for (final PlotPoint plotPoint : plotPoints) {
+                    if (plotPoint == null) {
+                        continue;
+                    }
+
+                    final double worldX = bigNumberToDouble(plotPoint.x());
+                    final double worldY = bigNumberToDouble(plotPoint.y());
+
+                    if (!Double.isFinite(worldX) || !Double.isFinite(worldY)) {
+                        continue;
+                    }
+
+                    xPixels[count] = worldToScreenX(worldX, width);
+                    yPixels[count] = worldToScreenY(worldY, height);
+                    count++;
+                }
+
+                if (count >= 2) {
+                    plotGraphicsContext.strokePolyline(xPixels, yPixels, count);
+                }
+            }
+        }
+
+        final List<PlotPoint> plotPoints = plotResult.plotPoints();
+        if (!plotPoints.isEmpty()) {
+            plotGraphicsContext.setFill(viewerStyle.getPlotPointColor());
+
+            final double radiusPixels = Math.max(0.5, viewerStyle.getPlotPointRadiusInPixels());
+            final double diameterPixels = radiusPixels * 2.0;
+
+            for (final PlotPoint plotPoint : plotPoints) {
+                if (plotPoint == null) {
+                    continue;
+                }
+
+                final double worldX = bigNumberToDouble(plotPoint.x());
+                final double worldY = bigNumberToDouble(plotPoint.y());
+
+                if (!Double.isFinite(worldX) || !Double.isFinite(worldY)) {
+                    continue;
+                }
+
+                final double screenX = worldToScreenX(worldX, width);
+                final double screenY = worldToScreenY(worldY, height);
+
+                plotGraphicsContext.fillOval(
+                        screenX - radiusPixels,
+                        screenY - radiusPixels,
+                        diameterPixels,
+                        diameterPixels
+                );
+            }
+        }
+    }
+
+    /**
+     * Computes visible world bounds for the current viewport.
+     *
+     * @param width  canvas width in pixels
+     * @param height canvas height in pixels
+     * @return visible bounds in world coordinates
+     */
+    private ViewportBounds computeVisibleBounds(final double width, final double height) {
+        final double pixelsPerWorldUnitDouble = bigNumberToDouble(pixelsPerWorldUnit);
+
+        final double halfWorldWidth = (width / 2.0) / pixelsPerWorldUnitDouble;
+        final double halfWorldHeight = (height / 2.0) / pixelsPerWorldUnitDouble;
+
+        final double centerX = bigNumberToDouble(centerWorldX);
+        final double centerY = bigNumberToDouble(centerWorldY);
+
+        return new ViewportBounds(
+                centerX - halfWorldWidth,
+                centerX + halfWorldWidth,
+                centerY - halfWorldHeight,
+                centerY + halfWorldHeight
+        );
     }
 
     /**
@@ -540,19 +826,20 @@ final class GraphFxPlotSurface extends Region {
      *
      * <p>
      * Key rule for stable alignment:
-     * <ul>
-     *   <li>minorStepWorld defines the grid base (all grid corners).</li>
-     *   <li>majorStepWorld is an integer multiple of minorStepWorld.</li>
-     *   <li>labelStepWorld is an integer multiple of minorStepWorld (NOT majorStepWorld),
-     *       so labels can be denser but still always land on grid corners.</li>
-     * </ul>
      * </p>
+     * <ul>
+     *     <li>{@code minorStepWorld} defines the grid base (all intersections).</li>
+     *     <li>{@code majorStepWorld} is an integer multiple of {@code minorStepWorld}.</li>
+     *     <li>{@code labelStepWorld} is an integer multiple of {@code minorStepWorld},
+     *         ensuring labels always land on grid corners.</li>
+     * </ul>
+     *
+     * @return computed grid steps
      */
     private GridSteps computeGridSteps() {
-        final double minorStepWorld = chooseNiceStep(
-                viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnit
-        );
+        final double pixelsPerWorldUnitDouble = bigNumberToDouble(pixelsPerWorldUnit);
 
+        final double minorStepWorld = chooseNiceStep(viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnitDouble);
         if (!(minorStepWorld > 0.0) || !Double.isFinite(minorStepWorld)) {
             return GridSteps.invalid();
         }
@@ -560,145 +847,38 @@ final class GraphFxPlotSurface extends Region {
         final int majorEvery = Math.max(1, viewConfiguration.getMinorLinesPerMajorLine());
         final double majorStepWorld = minorStepWorld * majorEvery;
 
-        final double minorStepPixels = minorStepWorld * pixelsPerWorldUnit;
+        final double minorStepPixels = minorStepWorld * pixelsPerWorldUnitDouble;
+        final double minimumLabelSpacingPixels = Math.max(1.0, viewConfiguration.getMinimumAxisLabelSpacingInPixels());
 
-        // ↓ This value controls label density on screen.
-        // If your labels still feel too far apart: lower this in your config (e.g. 30–40).
-        final double minLabelPixels = Math.max(1.0, viewConfiguration.getMinimumAxisLabelSpacingInPixels());
-
-        long labelEveryMinor = (long) Math.ceil(minLabelPixels / Math.max(1e-9, minorStepPixels));
+        long labelEveryMinor = (long) Math.ceil(minimumLabelSpacingPixels / Math.max(1e-9, minorStepPixels));
         if (labelEveryMinor < 1L) {
             labelEveryMinor = 1L;
         }
 
-        // label step is aligned to grid corners (minor grid intersection points)
         final double labelStepWorld = minorStepWorld * labelEveryMinor;
 
         return new GridSteps(minorStepWorld, majorEvery, majorStepWorld, labelEveryMinor, labelStepWorld);
     }
 
-    private record GridSteps(
-            double minorStepWorld,
-            int majorEvery,
-            double majorStepWorld,
-            long labelEveryMinor,
-            double labelStepWorld
-    ) {
-        static GridSteps invalid() {
-            return new GridSteps(Double.NaN, 1, Double.NaN, 1L, Double.NaN);
-        }
-
-        boolean isValid() {
-            return minorStepWorld > 0.0
-                    && majorEvery >= 1
-                    && majorStepWorld > 0.0
-                    && labelEveryMinor >= 1L
-                    && labelStepWorld > 0.0
-                    && Double.isFinite(minorStepWorld)
-                    && Double.isFinite(majorStepWorld)
-                    && Double.isFinite(labelStepWorld);
-        }
-    }
-
-    private boolean isNearZero(final double value) {
-        return Math.abs(value) < EPSILON_FOR_ZERO;
-    }
-
-    private void renderAxes(final double width, final double height) {
-        ViewportBounds bounds = computeVisibleBounds(width, height);
-
-        boolean xAxisVisible = bounds.minY <= 0.0 && bounds.maxY >= 0.0;
-        boolean yAxisVisible = bounds.minX <= 0.0 && bounds.maxX >= 0.0;
-
-        backgroundGraphics.setStroke(style.getAxisColor());
-        backgroundGraphics.setLineWidth(style.getAxisStrokeWidthInPixels());
-
-        if (xAxisVisible) {
-            double sy = snapForCrispStroke(worldToScreenY(0.0, height), style.getAxisStrokeWidthInPixels());
-            backgroundGraphics.strokeLine(0, sy, width, sy);
-        }
-        if (yAxisVisible) {
-            double sx = snapForCrispStroke(worldToScreenX(0.0, width), style.getAxisStrokeWidthInPixels());
-            backgroundGraphics.strokeLine(sx, 0, sx, height);
-        }
-    }
-
-    private void renderPlot(final double width, final double height) {
-        List<PlotLine> lines = plotResult.plotLines();
-        if (!lines.isEmpty()) {
-            plotGraphics.setStroke(style.getPlotLineColor());
-            plotGraphics.setLineWidth(style.getPlotLineStrokeWidthInPixels());
-
-            for (PlotLine line : lines) {
-                List<PlotPoint> points = line.plotPoints();
-                if (points == null || points.size() < 2) {
-                    continue;
-                }
-
-                double[] xs = new double[points.size()];
-                double[] ys = new double[points.size()];
-                int count = 0;
-
-                for (PlotPoint p : points) {
-                    double wx = bigNumberToDouble(p.x());
-                    double wy = bigNumberToDouble(p.y());
-                    if (!isFinite(wx) || !isFinite(wy)) {
-                        continue;
-                    }
-                    xs[count] = worldToScreenX(wx, width);
-                    ys[count] = worldToScreenY(wy, height);
-                    count++;
-                }
-
-                if (count >= 2) {
-                    plotGraphics.strokePolyline(xs, ys, count);
-                }
-            }
-        }
-
-        List<PlotPoint> plotPoints = plotResult.plotPoints();
-        if (!plotPoints.isEmpty()) {
-            plotGraphics.setFill(style.getPlotPointColor());
-
-            double r = Math.max(0.5, style.getPlotPointRadiusInPixels());
-            double d = r * 2.0;
-
-            for (PlotPoint p : plotPoints) {
-                double wx = bigNumberToDouble(p.x());
-                double wy = bigNumberToDouble(p.y());
-                if (!isFinite(wx) || !isFinite(wy)) {
-                    continue;
-                }
-
-                double sx = worldToScreenX(wx, width);
-                double sy = worldToScreenY(wy, height);
-
-                plotGraphics.fillOval(sx - r, sy - r, d, d);
-            }
-        }
-    }
-
-    private ViewportBounds computeVisibleBounds(final double width, final double height) {
-        double halfWorldWidth = (width / 2.0) / pixelsPerWorldUnit;
-        double halfWorldHeight = (height / 2.0) / pixelsPerWorldUnit;
-
-        return new ViewportBounds(
-                centerWorldX - halfWorldWidth,
-                centerWorldX + halfWorldWidth,
-                centerWorldY - halfWorldHeight,
-                centerWorldY + halfWorldHeight
-        );
-    }
-
+    /**
+     * Selects a "nice" step size for grid spacing.
+     *
+     * <p>
+     * The returned value is of the form {@code 1, 2, 5} multiplied by a power of 10.
+     * </p>
+     *
+     * @param rawStep raw step candidate in world units
+     * @return normalized "nice" step in world units
+     */
     private double chooseNiceStep(final double rawStep) {
         if (!(rawStep > 0.0) || Double.isNaN(rawStep) || Double.isInfinite(rawStep)) {
             return 1.0;
         }
 
-        double exponent = Math.floor(Math.log10(rawStep));
-        double base = rawStep / Math.pow(10.0, exponent);
+        final double exponent = Math.floor(Math.log10(rawStep));
+        final double base = rawStep / Math.pow(10.0, exponent);
 
-        double niceBase;
+        final double niceBase;
         if (base <= 1.0) {
             niceBase = 1.0;
         } else if (base <= 2.0) {
@@ -712,40 +892,47 @@ final class GraphFxPlotSurface extends Region {
         return niceBase * Math.pow(10.0, exponent);
     }
 
-    private double floorToStep(final double value, final double step) {
-        return Math.floor(value / step) * step;
-    }
-
-    private boolean isMultipleOf(final double value, final double step) {
-        if (!(step > 0.0)) {
-            return false;
-        }
-        double ratio = value / step;
-        double nearest = Math.rint(ratio);
-        return Math.abs(ratio - nearest) < 1e-9;
-    }
-
+    /**
+     * Snaps coordinates for crisp rendering of thin strokes.
+     *
+     * <p>
+     * For 1px-ish lines, snapping to {@code n + 0.5} tends to produce the best results.
+     * </p>
+     *
+     * @param coordinate  coordinate in pixels
+     * @param strokeWidth stroke width in pixels
+     * @return snapped coordinate
+     */
     private double snapForCrispStroke(final double coordinate, final double strokeWidth) {
-        // For odd-ish stroke widths, snapping to .5 improves crispness for 1px lines.
         if (strokeWidth <= 1.6) {
             return Math.floor(coordinate) + 0.5;
         }
         return coordinate;
     }
 
+    /**
+     * Formats an axis number in a locale-aware way.
+     *
+     * <p>
+     * This uses {@link BigNumber} for formatting to align with JustMath's numeric representation.
+     * The input is still a {@code double} because axis ticks are determined in double world units.
+     * </p>
+     *
+     * @param value  world coordinate value
+     * @param locale locale used to select the decimal separator
+     * @return formatted axis label
+     */
     private String formatAxisNumber(final double value, final Locale locale) {
-        double normalized = Math.abs(value) < EPSILON_FOR_ZERO ? 0.0 : value;
+        final double normalized = isNearZero(value) ? 0.0 : value;
 
-        // Use BigNumber as requested (string-based), but keep input stable.
-        BigNumber bn = new BigNumber(Double.toString(normalized), Locale.ROOT);
-        String raw = bn.toString();
+        final BigNumber bigNumber = new BigNumber(Double.toString(normalized), Locale.ROOT);
+        String raw = bigNumber.toString();
 
-        char decimalSeparator = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        final char decimalSeparator = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
         if (decimalSeparator != '.') {
             raw = raw.replace('.', decimalSeparator);
         }
 
-        // Avoid "-0"
         if (raw.equals("-0") || raw.equals("-0" + decimalSeparator + "0")) {
             return "0";
         }
@@ -753,21 +940,153 @@ final class GraphFxPlotSurface extends Region {
         return raw;
     }
 
+    /**
+     * Checks whether a {@code double} value should be treated as zero.
+     *
+     * @param value value to check
+     * @return {@code true} if the absolute value is smaller than {@link #EPSILON_FOR_ZERO}
+     */
+    private boolean isNearZero(final double value) {
+        return Math.abs(value) < EPSILON_FOR_ZERO;
+    }
+
+    /**
+     * Converts a {@link BigNumber} to a {@code double} for rendering computations.
+     *
+     * <p>
+     * Rendering uses double for performance. The public API still uses {@link BigNumber}.
+     * </p>
+     *
+     * @param value big number to convert (must not be null)
+     * @return parsed double value
+     */
     private double bigNumberToDouble(final BigNumber value) {
         Objects.requireNonNull(value, "value must not be null");
-        // Rendering uses double for performance. Plotting typically uses human-scale ranges.
         return Double.parseDouble(value.toString());
     }
 
-    private boolean isFinite(final double value) {
-        return Double.isFinite(value);
-    }
-
-    private double clamp(final double value, final double min, final double max) {
+    /**
+     * Clamps a primitive double value to a range.
+     *
+     * @param value candidate value
+     * @param min   minimum value
+     * @param max   maximum value
+     * @return clamped value
+     */
+    private double clampDouble(final double value, final double min, final double max) {
         return Math.max(min, Math.min(max, value));
     }
 
-    private record ViewportBounds(double minX, double maxX, double minY, double maxY) {
+    /**
+     * Returns {@code true} if the given {@link BigNumber} is strictly greater than zero.
+     *
+     * @param value big number to check (must not be null)
+     * @return {@code true} if value > 0
+     */
+    private boolean isPositive(final BigNumber value) {
+        Objects.requireNonNull(value, "value must not be null");
+        return value.compareTo(ZERO) > 0;
     }
 
+    /**
+     * Clamps a pixels-per-world-unit value to the configured min/max values.
+     *
+     * @param pixelsPerWorldUnitCandidate candidate value
+     * @return clamped value
+     */
+    private BigNumber clampPixelsPerWorldUnit(final BigNumber pixelsPerWorldUnitCandidate) {
+        Objects.requireNonNull(pixelsPerWorldUnitCandidate, "pixelsPerWorldUnitCandidate must not be null");
+
+        final BigNumber minimum = new BigNumber(Double.toString(viewConfiguration.getMinimumPixelsPerWorldUnit()), Locale.ROOT);
+        final BigNumber maximum = new BigNumber(Double.toString(viewConfiguration.getMaximumPixelsPerWorldUnit()), Locale.ROOT);
+
+        if (pixelsPerWorldUnitCandidate.compareTo(minimum) < 0) {
+            return minimum;
+        }
+        if (pixelsPerWorldUnitCandidate.compareTo(maximum) > 0) {
+            return maximum;
+        }
+        return pixelsPerWorldUnitCandidate;
+    }
+
+    /**
+     * Returns the smaller of two {@link BigNumber} values.
+     *
+     * @param first  first value (must not be null)
+     * @param second second value (must not be null)
+     * @return the minimum value
+     */
+    private BigNumber minBigNumber(final BigNumber first, final BigNumber second) {
+        Objects.requireNonNull(first, "first must not be null");
+        Objects.requireNonNull(second, "second must not be null");
+        return first.compareTo(second) <= 0 ? first : second;
+    }
+
+    /**
+     * Record holding computed grid step information for the current zoom.
+     *
+     * @param minorStepWorld  minor grid step in world units
+     * @param majorEvery      number of minor lines per major line
+     * @param majorStepWorld  major grid step in world units
+     * @param labelEveryMinor number of minor steps between labels
+     * @param labelStepWorld  label step in world units
+     */
+    private record GridSteps(
+            /** Minor grid step in world units. */
+            double minorStepWorld,
+            /** Number of minor lines per major line. */
+            int majorEvery,
+            /** Major grid step in world units. */
+            double majorStepWorld,
+            /** Number of minor steps between labels. */
+            long labelEveryMinor,
+            /** Label step in world units (aligned to minor grid). */
+            double labelStepWorld
+    ) {
+
+        /**
+         * Creates an invalid grid steps instance.
+         *
+         * @return invalid steps
+         */
+        static GridSteps invalid() {
+            return new GridSteps(Double.NaN, 1, Double.NaN, 1L, Double.NaN);
+        }
+
+        /**
+         * Returns whether this steps object is valid for rendering.
+         *
+         * @return {@code true} if all step values are finite and strictly positive
+         */
+        boolean isValid() {
+            return minorStepWorld > 0.0
+                    && majorEvery >= 1
+                    && majorStepWorld > 0.0
+                    && labelEveryMinor >= 1L
+                    && labelStepWorld > 0.0
+                    && Double.isFinite(minorStepWorld)
+                    && Double.isFinite(majorStepWorld)
+                    && Double.isFinite(labelStepWorld);
+        }
+    }
+
+    /**
+     * Simple immutable container for visible world bounds.
+     *
+     * @param minX minimum world x
+     * @param maxX maximum world x
+     * @param minY minimum world y
+     * @param maxY maximum world y
+     */
+    private record ViewportBounds(
+            /** Minimum visible world x. */
+            double minX,
+            /** Maximum visible world x. */
+            double maxX,
+            /** Minimum visible world y. */
+            double minY,
+            /** Maximum visible world y. */
+            double maxY
+    ) {
+    }
 }

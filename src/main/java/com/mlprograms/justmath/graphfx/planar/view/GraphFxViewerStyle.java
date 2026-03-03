@@ -34,7 +34,7 @@ import java.util.Locale;
  * Visual style configuration for the GraphFx planar viewer.
  *
  * <p>
- * This configuration is intentionally rendering-focused (colors, fonts, stroke widths, spacing).
+ * This configuration is intentionally rendering-focused (colors, fonts, stroke widths).
  * It does not contain plot data and does not perform any computations.
  * </p>
  */
@@ -125,5 +125,4 @@ public class GraphFxViewerStyle {
      */
     @Builder.Default
     double plotPointRadiusInPixels = 3.0;
-
 }

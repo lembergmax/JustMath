@@ -28,28 +28,43 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Container for renderable plot data.
+ * Aggregate plot data to be rendered by the viewer.
  *
  * <p>
- * This object is intentionally simple: it contains only points and polylines.
- * Any computation (marching squares, expression evaluation, …) is out of scope for this GUI module.
+ * This type is intentionally data-only. Calculation engines should produce a {@code PlotResult} and
+ * pass it into the GUI module.
  * </p>
  *
- * @param plotPoints list of standalone points (must not be null)
- * @param plotLines list of polylines/lines (must not be null)
+ * <p>
+ * The viewer can render:
+ * </p>
+ * <ul>
+ *     <li>Points (markers) via {@link #plotPoints()}</li>
+ *     <li>Lines (polylines) via {@link #plotLines()}</li>
+ * </ul>
+ *
+ * @param plotPoints points to render (must not be null)
+ * @param plotLines lines to render (must not be null)
  */
-public record PlotResult(List<PlotPoint> plotPoints, List<PlotLine> plotLines) {
+public record PlotResult(
+        /** Plot markers in world coordinates. */
+        List<PlotPoint> plotPoints,
+        /** Plot polylines in world coordinates. */
+        List<PlotLine> plotLines
+) {
 
     /**
-     * Creates an empty plot result.
+     * Creates an empty plot result (no points, no lines).
      */
     public PlotResult() {
         this(new ArrayList<>(), new ArrayList<>());
     }
 
+    /**
+     * Validates that both collections are present.
+     */
     public PlotResult {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
         Objects.requireNonNull(plotLines, "plotLines must not be null");
     }
-
 }

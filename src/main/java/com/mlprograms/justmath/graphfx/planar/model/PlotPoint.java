@@ -28,21 +28,29 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import java.util.Objects;
 
 /**
- * Immutable 2D point for plotting in a planar coordinate system.
+ * A single point in world coordinates.
  *
  * <p>
- * This is a pure data object and intentionally does not contain any rendering state.
- * Rendering is controlled by the viewer configuration.
+ * Plot points are typically rendered as small markers (dots).
+ * This record uses {@link BigNumber} to keep the public API aligned with JustMath's
+ * precision model, even though rendering internally converts to {@code double} for speed.
  * </p>
  *
  * @param x x-coordinate in world units (must not be null)
  * @param y y-coordinate in world units (must not be null)
  */
-public record PlotPoint(BigNumber x, BigNumber y) {
+public record PlotPoint(
+        /** x-coordinate in world units. */
+        BigNumber x,
+        /** y-coordinate in world units. */
+        BigNumber y
+) {
 
+    /**
+     * Validates that both coordinates are present.
+     */
     public PlotPoint {
         Objects.requireNonNull(x, "x must not be null");
         Objects.requireNonNull(y, "y must not be null");
     }
-
 }

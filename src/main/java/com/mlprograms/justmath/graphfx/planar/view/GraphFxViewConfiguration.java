@@ -30,8 +30,13 @@ import lombok.Value;
  * Grid and interaction configuration for the planar viewer.
  *
  * <p>
- * The grid step is chosen automatically from the current zoom (scale) such that the
+ * The grid step is chosen automatically from the current zoom (pixels-per-world-unit) such that the
  * on-screen pixel distance stays close to {@link #targetMinorGridSpacingInPixels}.
+ * </p>
+ *
+ * <p>
+ * A key design goal is stability while panning and zooming: grid lines and axis labels are aligned
+ * to world-space multiples of the computed step size.
  * </p>
  */
 @Value
@@ -51,7 +56,7 @@ public class GraphFxViewConfiguration {
     boolean axesVisible = true;
 
     /**
-     * Whether tick labels are rendered on the axes (at "major ticks").
+     * Whether tick labels are rendered on the axes.
      */
     @Builder.Default
     boolean axisLabelsVisible = true;
@@ -63,21 +68,27 @@ public class GraphFxViewConfiguration {
     double targetMinorGridSpacingInPixels = 90.0;
 
     /**
-     * Minor grid lines per major grid line.
+     * Number of minor grid lines per major grid line.
      *
-     * <p>Example: 5 → every 5th minor line is rendered as a major line.</p>
+     * <p>
+     * Example: 5 → every 5th minor line is rendered as a major line.
+     * </p>
      */
     @Builder.Default
     int minorLinesPerMajorLine = 5;
 
     /**
      * Minimum pixel spacing between axis labels to avoid overlaps (auto-skip).
+     *
+     * <p>
+     * Smaller values increase label density. For typical fonts, 40–60 pixels works well.
+     * </p>
      */
     @Builder.Default
-    double minimumAxisLabelSpacingInPixels = 70.0;
+    double minimumAxisLabelSpacingInPixels = 45.0;
 
     /**
-     * Tick mark length in pixels (on axes).
+     * Tick mark length in pixels (drawn on the axes at label positions).
      */
     @Builder.Default
     double axisTickLengthInPixels = 8.0;
@@ -101,7 +112,7 @@ public class GraphFxViewConfiguration {
     double maximumPixelsPerWorldUnit = 5000.0;
 
     /**
-     * Mouse wheel zoom sensitivity (higher → stronger zoom).
+     * Mouse wheel zoom sensitivity exponent used in {@code pow(exponent, wheelDelta)}.
      */
     @Builder.Default
     double mouseWheelZoomExponent = 1.0016;
@@ -117,5 +128,4 @@ public class GraphFxViewConfiguration {
      */
     @Builder.Default
     boolean zoomEnabled = true;
-
 }

@@ -28,25 +28,40 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import java.util.Objects;
 
 /**
- * Immutable snapshot of the currently visible world bounds.
+ * Immutable snapshot describing a rectangular visible region in world coordinates.
  *
  * <p>
- * This is primarily useful if another module wants to compute plot data for exactly the visible region.
- * The GUI module itself does not compute plot data.
+ * A snapshot is intended to:
  * </p>
+ * <ul>
+ *     <li>Expose the current viewer state to callers.</li>
+ *     <li>Serve as input to calculation engines (sampling, marching squares, etc.).</li>
+ *     <li>Allow restoring or fitting a viewport to a known region.</li>
+ * </ul>
  *
- * @param minX minimum visible x in world units (must not be null)
- * @param maxX maximum visible x in world units (must not be null)
- * @param minY minimum visible y in world units (must not be null)
- * @param maxY maximum visible y in world units (must not be null)
+ * @param minX minimum visible x value (must not be null)
+ * @param maxX maximum visible x value (must not be null)
+ * @param minY minimum visible y value (must not be null)
+ * @param maxY maximum visible y value (must not be null)
  */
-public record ViewportSnapshot(BigNumber minX, BigNumber maxX, BigNumber minY, BigNumber maxY) {
+public record ViewportSnapshot(
+        /** Minimum visible x value. */
+        BigNumber minX,
+        /** Maximum visible x value. */
+        BigNumber maxX,
+        /** Minimum visible y value. */
+        BigNumber minY,
+        /** Maximum visible y value. */
+        BigNumber maxY
+) {
 
+    /**
+     * Validates that all values are present.
+     */
     public ViewportSnapshot {
         Objects.requireNonNull(minX, "minX must not be null");
         Objects.requireNonNull(maxX, "maxX must not be null");
         Objects.requireNonNull(minY, "minY must not be null");
         Objects.requireNonNull(maxY, "maxY must not be null");
     }
-
 }

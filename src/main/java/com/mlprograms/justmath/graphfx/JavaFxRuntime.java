@@ -24,40 +24,56 @@
 package com.mlprograms.justmath.graphfx;
 
 import javafx.application.Platform;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Minimal and robust JavaFX runtime bootstrap for library usage.
+ * Centralized JavaFX runtime bootstrap and thread utilities for library usage.
  *
  * <p>
- * This class ensures that the JavaFX toolkit is initialized exactly once and provides
- * convenience methods to execute code on the JavaFX Application Thread.
+ * JavaFX can only be started once per JVM. A library should therefore not force users
+ * to extend {@code javafx.application.Application}. This helper provides a safe,
+ * idempotent bootstrap and a few convenience methods for scheduling work on the JavaFX thread.
  * </p>
  *
  * <p>
- * The viewer library uses {@link Platform#setImplicitExit(boolean)} with {@code false}
- * so that opening/closing windows does not kill the JavaFX runtime unexpectedly.
+ * In addition, this runtime supports a simple "exit policy" counter: if a viewer window is
+ * tracked and the last tracked window closes, JavaFX will be exited.
  * </p>
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JavaFxRuntime {
 
+    /**
+     * Global lock for {@link #ensureStarted()} to avoid racing JavaFX startup.
+     */
     private static final Object START_LOCK = new Object();
-    private static volatile boolean started;
-
-    private static final AtomicInteger OPEN_TRACKED_WINDOWS = new AtomicInteger(0);
 
     /**
-     * Ensures the JavaFX toolkit is started.
+     * Flag indicating whether the JavaFX platform has been started.
+     */
+    private static volatile boolean started;
+
+    /**
+     * Counter for viewer windows that are tracked for "exit when last closes".
+     */
+    private static final AtomicInteger OPEN_TRACKED_WINDOWS = new AtomicInteger(0);
+
+    private JavaFxRuntime() {
+        // Utility class.
+    }
+
+    /**
+     * Ensures that JavaFX is started.
      *
      * <p>
-     * Safe to call multiple times. If JavaFX is already running (e.g. started by another
-     * UI component), this method will simply mark the runtime as started.
+     * This method is safe to call multiple times and from any thread.
+     * </p>
+     *
+     * <p>
+     * It also configures JavaFX to not implicitly exit when the last window is closed,
+     * because libraries often open/close windows dynamically.
      * </p>
      */
     public static void ensureStarted() {
@@ -72,12 +88,12 @@ public final class JavaFxRuntime {
 
             Platform.setImplicitExit(false);
 
-            CompletableFuture<Void> ready = new CompletableFuture<>();
+            final CompletableFuture<Void> readySignal = new CompletableFuture<>();
             try {
-                Platform.startup(() -> ready.complete(null));
-                ready.join();
-            } catch (IllegalStateException alreadyRunning) {
-                // Toolkit already initialized by someone else.
+                Platform.startup(() -> readySignal.complete(null));
+                readySignal.join();
+            } catch (final IllegalStateException alreadyRunning) {
+                // JavaFX already started; safe to continue.
             } finally {
                 started = true;
             }
@@ -85,14 +101,17 @@ public final class JavaFxRuntime {
     }
 
     /**
-     * Runs the given task on the JavaFX Application Thread as soon as possible.
+     * Executes the given runnable on the JavaFX application thread.
+     *
+     * <p>
+     * If the caller is already on the JavaFX thread, the runnable is executed immediately.
+     * Otherwise, it is scheduled via {@link Platform#runLater(Runnable)}.
+     * </p>
      *
      * @param runnable task to execute (must not be null)
      */
     public static void runOnFxThread(final Runnable runnable) {
         Objects.requireNonNull(runnable, "runnable must not be null");
-
-        ensureStarted();
 
         if (Platform.isFxApplicationThread()) {
             runnable.run();
@@ -103,55 +122,74 @@ public final class JavaFxRuntime {
     }
 
     /**
-     * Runs the given task on the JavaFX Application Thread and blocks until it finished.
+     * Schedules the given runnable to run later on the JavaFX thread.
+     *
+     * <p>
+     * This method never executes inline, even if called on the JavaFX thread.
+     * Use {@link #runOnFxThread(Runnable)} if inline execution is desired.
+     * </p>
+     *
+     * @param runnable task to schedule (must not be null)
+     */
+    public static void enqueueOnFxThread(final Runnable runnable) {
+        Objects.requireNonNull(runnable, "runnable must not be null");
+        Platform.runLater(runnable);
+    }
+
+    /**
+     * Executes a task on the JavaFX thread and blocks the calling thread until completion.
+     *
+     * <p>
+     * This is useful for synchronous snapshot APIs. It should be used sparingly because
+     * it blocks the calling thread.
+     * </p>
      *
      * @param runnable task to execute (must not be null)
      */
     public static void runOnFxThreadAndWait(final Runnable runnable) {
         Objects.requireNonNull(runnable, "runnable must not be null");
 
-        ensureStarted();
-
         if (Platform.isFxApplicationThread()) {
             runnable.run();
             return;
         }
 
-        CompletableFuture<Void> done = new CompletableFuture<>();
+        final CompletableFuture<Void> finished = new CompletableFuture<>();
         Platform.runLater(() -> {
             try {
                 runnable.run();
-                done.complete(null);
-            } catch (RuntimeException ex) {
-                done.completeExceptionally(ex);
+                finished.complete(null);
+            } catch (final RuntimeException ex) {
+                finished.completeExceptionally(ex);
             }
         });
-
-        done.join();
+        finished.join();
     }
 
     /**
-     * Registers a viewer window as opened for "exit-on-last-close" policy.
+     * Increments the tracked viewer window counter.
      *
-     * @return current number of tracked open windows after increment
+     * @return the current number of tracked windows after incrementing
      */
     public static int registerTrackedViewerOpened() {
         return OPEN_TRACKED_WINDOWS.incrementAndGet();
     }
 
     /**
-     * Registers a viewer window as closed. If the last tracked viewer closes, the JavaFX runtime exits.
+     * Decrements the tracked viewer window counter and exits JavaFX if the last window closed.
      *
-     * @return remaining number of tracked open windows after decrement
+     * <p>
+     * When the remaining count reaches zero, JavaFX is exited via {@link Platform#exit()}.
+     * </p>
+     *
+     * @return the remaining number of tracked windows (never negative)
      */
     public static int registerTrackedViewerClosedAndExitIfLast() {
-        int remaining = OPEN_TRACKED_WINDOWS.decrementAndGet();
+        final int remaining = OPEN_TRACKED_WINDOWS.decrementAndGet();
         if (remaining <= 0) {
             OPEN_TRACKED_WINDOWS.set(0);
-            Platform.runLater(Platform::exit);
-            return 0;
+            enqueueOnFxThread(Platform::exit);
         }
-        return remaining;
+        return Math.max(0, remaining);
     }
-
 }

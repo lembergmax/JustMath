@@ -26,18 +26,42 @@ package com.mlprograms.justmath.graphfx;
 import java.util.Objects;
 
 /**
- * Window configuration used by {@code GraphFxViewer}.
+ * Immutable configuration for a {@code GraphFxViewer} window.
  *
- * @param title                         window title (must not be blank)
- * @param width                         initial width in pixels (must be > 0)
- * @param height                        initial height in pixels (must be > 0)
- * @param exitApplicationOnLastViewerClose if {@code true}, the JavaFX runtime will exit when the last tracked viewer closes
+ * <p>
+ * This type is intentionally small and stable because it is part of the public API.
+ * More rendering and interaction settings belong to view-specific configuration objects.
+ * </p>
+ *
+ * @param title window title (must not be blank)
+ * @param width initial window width in pixels (must be > 0)
+ * @param height initial window height in pixels (must be > 0)
+ * @param exitApplicationOnLastViewerClose whether JavaFX should exit once the last tracked viewer closes
  */
-public record WindowConfig(String title, int width, int height, boolean exitApplicationOnLastViewerClose) {
+public record WindowConfig(
+        /** Window title displayed in the native window chrome. */
+        String title,
+        /** Initial window width in pixels. */
+        int width,
+        /** Initial window height in pixels. */
+        int height,
+        /** Exit policy flag used by {@link com.mlprograms.justmath.graphfx.JavaFxRuntime}. */
+        boolean exitApplicationOnLastViewerClose
+) {
 
+    /**
+     * Default width for a viewer window.
+     */
     public static final int DEFAULT_WIDTH = 1200;
+
+    /**
+     * Default height for a viewer window.
+     */
     public static final int DEFAULT_HEIGHT = 800;
 
+    /**
+     * Validates and creates a new config record.
+     */
     public WindowConfig {
         Objects.requireNonNull(title, "title must not be null");
         if (title.isBlank()) {
@@ -52,10 +76,11 @@ public record WindowConfig(String title, int width, int height, boolean exitAppl
     }
 
     /**
-     * @return default configuration for a viewer window
+     * Creates a default configuration suitable for typical desktop usage.
+     *
+     * @return default window configuration
      */
     public static WindowConfig defaultConfig() {
-        return new WindowConfig("GraphFx Viewer", DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
+        return new WindowConfig("GraphFx – Pan & Zoom", DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
     }
-
 }

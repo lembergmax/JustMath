@@ -41,41 +41,84 @@ import java.util.Objects;
  * Any calculation (expression evaluation, marching squares, sampling) belongs to another module.
  * </p>
  *
- * <p><strong>Usage:</strong></p>
+ * <p><strong>Threading:</strong></p>
+ * <ul>
+ *     <li>This type is safe to call from any thread.</li>
+ *     <li>All GUI operations are executed on the JavaFX application thread.</li>
+ * </ul>
+ *
+ * <p><strong>Minimal usage:</strong></p>
  * <pre>{@code
  * GraphFxViewer viewer = new GraphFxViewer();
  * viewer.show();
  *
- * PlotResult result = new PlotResult(...);
- * viewer.setPlotResult(result);
+ * PlotResult plotResult = new PlotResult(...);
+ * viewer.setPlotResult(plotResult);
  * }</pre>
  */
 public final class GraphFxViewer {
 
+    /**
+     * Immutable window configuration.
+     */
     @Getter
     private final WindowConfig windowConfig;
 
+    /**
+     * Mutable style configuration applied to the viewer.
+     */
     @Getter
     private GraphFxViewerStyle style;
 
+    /**
+     * Mutable view configuration applied to the viewer.
+     */
     @Getter
     private GraphFxViewConfiguration viewConfiguration;
 
+    /**
+     * Internal rendering surface responsible for drawing and interactions.
+     */
     private final GraphFxPlotSurface plotSurface;
 
+    /**
+     * Lazily created JavaFX stage.
+     */
     private Stage stage;
 
+    /**
+     * Flag indicating that a close request was explicitly issued by the library user.
+     */
     private boolean closeWasRequested;
+
+    /**
+     * Flag indicating whether this viewer is tracked by the exit policy.
+     */
     private boolean trackedByExitPolicy;
 
+    /**
+     * Creates a viewer with default configuration and style.
+     */
     public GraphFxViewer() {
         this(WindowConfig.defaultConfig(), GraphFxViewerStyle.builder().build(), GraphFxViewConfiguration.builder().build());
     }
 
+    /**
+     * Creates a viewer with a custom window configuration.
+     *
+     * @param windowConfig window configuration (must not be null)
+     */
     public GraphFxViewer(final WindowConfig windowConfig) {
         this(windowConfig, GraphFxViewerStyle.builder().build(), GraphFxViewConfiguration.builder().build());
     }
 
+    /**
+     * Creates a fully configured viewer.
+     *
+     * @param windowConfig window configuration (must not be null)
+     * @param style rendering style configuration (must not be null)
+     * @param viewConfiguration grid and interaction configuration (must not be null)
+     */
     public GraphFxViewer(
             final WindowConfig windowConfig,
             final GraphFxViewerStyle style,
@@ -97,7 +140,7 @@ public final class GraphFxViewer {
     }
 
     /**
-     * Hides the viewer window (if open).
+     * Hides the viewer window if it is currently open.
      */
     public void hide() {
         JavaFxRuntime.ensureStarted();
@@ -105,7 +148,7 @@ public final class GraphFxViewer {
     }
 
     /**
-     * Closes the viewer window (if open).
+     * Closes the viewer window if it is currently open.
      */
     public void close() {
         JavaFxRuntime.ensureStarted();
@@ -119,6 +162,7 @@ public final class GraphFxViewer {
      */
     public void setPlotResult(final PlotResult plotResult) {
         Objects.requireNonNull(plotResult, "plotResult must not be null");
+
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(() -> plotSurface.setPlotResult(plotResult));
     }
@@ -134,26 +178,35 @@ public final class GraphFxViewer {
     /**
      * Fits the viewport to the given world bounds.
      *
+     * <p>
+     * The viewport keeps aspect ratio by choosing the smaller of the two scales.
+     * </p>
+     *
      * @param viewportSnapshot world bounds (must not be null)
      */
     public void fitViewport(final ViewportSnapshot viewportSnapshot) {
         Objects.requireNonNull(viewportSnapshot, "viewportSnapshot must not be null");
+
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(() -> plotSurface.fitViewport(viewportSnapshot));
     }
 
     /**
-     * @return current visible world bounds snapshot
+     * Returns a snapshot of the current visible world bounds.
+     *
+     * @return visible world bounds snapshot
      */
     public ViewportSnapshot snapshotViewport() {
         JavaFxRuntime.ensureStarted();
-        final ViewportSnapshot[] snapshot = new ViewportSnapshot[1];
-        JavaFxRuntime.runOnFxThreadAndWait(() -> snapshot[0] = plotSurface.snapshotViewport());
-        return snapshot[0];
+
+        final ViewportSnapshot[] snapshotHolder = new ViewportSnapshot[1];
+        JavaFxRuntime.runOnFxThreadAndWait(() -> snapshotHolder[0] = plotSurface.snapshotViewport());
+
+        return snapshotHolder[0];
     }
 
     /**
-     * Updates viewer style and re-renders.
+     * Updates viewer style and triggers a rerender.
      *
      * @param style new style (must not be null)
      */
@@ -166,7 +219,7 @@ public final class GraphFxViewer {
     }
 
     /**
-     * Updates view configuration (grid/interaction) and re-renders.
+     * Updates view configuration (grid/interaction) and triggers a rerender.
      *
      * @param viewConfiguration new view configuration (must not be null)
      */
@@ -178,6 +231,9 @@ public final class GraphFxViewer {
         JavaFxRuntime.runOnFxThread(() -> plotSurface.setViewConfiguration(viewConfiguration));
     }
 
+    /**
+     * Shows the stage on the JavaFX application thread.
+     */
     private void showOnFxThread() {
         if (stage == null) {
             stage = createStage();
@@ -191,6 +247,9 @@ public final class GraphFxViewer {
         stage.requestFocus();
     }
 
+    /**
+     * Hides the stage on the JavaFX application thread.
+     */
     private void hideOnFxThread() {
         if (stage == null) {
             return;
@@ -198,6 +257,9 @@ public final class GraphFxViewer {
         stage.hide();
     }
 
+    /**
+     * Closes the stage on the JavaFX application thread.
+     */
     private void closeOnFxThread() {
         if (stage == null) {
             return;
@@ -206,6 +268,11 @@ public final class GraphFxViewer {
         stage.close();
     }
 
+    /**
+     * Creates and configures the JavaFX stage for this viewer instance.
+     *
+     * @return configured stage
+     */
     private Stage createStage() {
         final Stage newStage = new Stage();
         newStage.setTitle(windowConfig.title());
@@ -222,6 +289,11 @@ public final class GraphFxViewer {
         return newStage;
     }
 
+    /**
+     * Installs exit policy hooks if enabled in {@link WindowConfig#exitApplicationOnLastViewerClose()}.
+     *
+     * @param stage stage to attach hooks to (must not be null)
+     */
     private void installExitPolicyHooksIfEnabled(final Stage stage) {
         Objects.requireNonNull(stage, "stage must not be null");
 
@@ -252,5 +324,4 @@ public final class GraphFxViewer {
             }
         });
     }
-
 }
