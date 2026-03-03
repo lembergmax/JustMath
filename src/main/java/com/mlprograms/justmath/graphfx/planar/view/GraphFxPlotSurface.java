@@ -36,6 +36,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.text.TextAlignment;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 import java.text.DecimalFormatSymbols;
 import java.util.List;
@@ -45,105 +49,183 @@ import java.util.Objects;
 import static com.mlprograms.justmath.bignumber.BigNumbers.*;
 
 /**
- * High-performance plot surface with pan/zoom, grid, axes and axis labeling.
- *
- * <p>
- * This class is an internal rendering component used by {@link GraphFxViewer}. It is not designed to be instantiated
- * directly by library users.
- * </p>
- *
- * <p><strong>Core responsibilities:</strong></p>
+ * Dedicated JavaFX {@link Region} that renders a 2D cartesian plot with:
  * <ul>
- *     <li>Maintain the viewport (center + zoom) as world-space values.</li>
- *     <li>Render background (grid, axes, labels) to a cached canvas.</li>
- *     <li>Render plot data (lines and points) to a separate canvas.</li>
- *     <li>Provide stable, jitter-free pan/zoom interactions.</li>
+ *     <li>world-to-screen coordinate mapping (viewport center + zoom)</li>
+ *     <li>grid lines, axes and axis tick labels</li>
+ *     <li>plot lines and plot points</li>
+ *     <li>mouse interactions (pan + zoom)</li>
  * </ul>
  *
- * <p><strong>Performance notes:</strong></p>
+ * <p>
+ * This class is a low-level rendering building block used by {@link GraphFxViewer}. Library users typically interact
+ * with higher-level APIs (viewer + configuration), not with this surface directly.
+ * </p>
+ *
+ * <p><strong>Precision model</strong></p>
  * <ul>
- *     <li>Rendering is coalesced: multiple state changes during one JavaFX pulse cause only one redraw.</li>
- *     <li>Background and plot data are drawn on separate canvases to avoid redundant background work.</li>
- *     <li>Internal math uses {@link BigNumber} for viewport computations and label formatting; screen transforms use
- *         {@code double} for speed.</li>
+ *     <li>All world-space state is stored as {@link BigNumber} to match the precision goals of JustMath.</li>
+ *     <li>JavaFX drawing APIs require {@code double}. Conversion happens only at the final rendering step.</li>
+ * </ul>
+ *
+ * <p><strong>Performance model</strong></p>
+ * <ul>
+ *     <li>Rendering is coalesced via {@link Platform#runLater(Runnable)} to avoid redundant redraws per pulse.</li>
+ *     <li>Background (grid/axes/labels) and plot are rendered to separate canvases.</li>
  * </ul>
  */
 final class GraphFxPlotSurface extends Region {
 
     /**
-     * Epsilon used for treating values as zero in comparisons (to avoid "-0" labels).
+     * Numeric epsilon used to decide whether a value is "close enough" to zero for display purposes.
+     *
+     * <p>
+     * This avoids rendering "-0" or jittering labels around the origin caused by floating-point conversion when
+     * a mathematically exact zero becomes a tiny non-zero double.
+     * </p>
      */
     private static final double EPSILON_FOR_ZERO = 1e-12;
 
     /**
-     * Canvas used for rendering the static background layer (grid, axes, labels).
+     * Default zoom level expressed as "pixels per one world unit".
+     *
+     * <p>
+     * Example: {@code 80} means one unit in world space corresponds to 80 screen pixels.
+     * </p>
+     */
+    private static final BigNumber DEFAULT_PIXELS_PER_WORLD_UNIT = new BigNumber("80", Locale.ROOT);
+
+    /**
+     * Canvas that holds all background visuals (solid background, grid, axes, labels).
+     *
+     * <p>
+     * Keeping background on its own canvas makes redraw cheaper when only plot data changes.
+     * </p>
      */
     private final Canvas backgroundCanvas;
 
     /**
-     * Canvas used for rendering the dynamic plot layer (lines, points).
+     * Canvas that holds all plot visuals (lines and points).
+     *
+     * <p>
+     * Keeping plot content on its own canvas allows background to remain untouched if only plot changes.
+     * </p>
      */
     private final Canvas plotCanvas;
 
     /**
-     * Graphics context for the background layer.
+     * Graphics context used for drawing onto {@link #backgroundCanvas}.
+     *
+     * <p>
+     * This is cached for performance and to avoid repeated {@code getGraphicsContext2D()} calls.
+     * </p>
      */
     private final GraphicsContext backgroundGraphicsContext;
 
     /**
-     * Graphics context for the plot layer.
+     * Graphics context used for drawing onto {@link #plotCanvas}.
+     *
+     * <p>
+     * This is cached for performance and to avoid repeated {@code getGraphicsContext2D()} calls.
+     * </p>
      */
     private final GraphicsContext plotGraphicsContext;
 
     /**
-     * The plot data currently rendered by this surface.
+     * Current plot output (lines and points) that should be rendered on {@link #plotCanvas}.
+     *
+     * <p>
+     * If no plot has been provided yet, this defaults to an empty result.
+     * </p>
      */
     private PlotResult plotResult;
 
     /**
-     * Current style configuration (colors, fonts, stroke widths).
+     * Visual style object (colors, stroke widths, fonts, locale for labels, etc.).
+     *
+     * <p>
+     * This is typically controlled by {@link GraphFxViewer} and can be swapped at runtime.
+     * </p>
      */
+    @Getter
+    @Setter(AccessLevel.PACKAGE)
     private GraphFxViewerStyle viewerStyle;
 
     /**
-     * Current view configuration (grid spacing, interaction toggles).
+     * View configuration object (interaction toggles, spacing rules, clamping, etc.).
+     *
+     * <p>
+     * This is typically controlled by {@link GraphFxViewer} and can be swapped at runtime.
+     * </p>
      */
+    @Getter
     private GraphFxViewConfiguration viewConfiguration;
 
     /**
-     * X coordinate of the viewport center in world units.
+     * X coordinate of the viewport center in world space.
+     *
+     * <p>
+     * World space is a pure mathematical coordinate system (cartesian plane).
+     * </p>
      */
     private BigNumber centerWorldX;
 
     /**
-     * Y coordinate of the viewport center in world units.
+     * Y coordinate of the viewport center in world space.
+     *
+     * <p>
+     * World space is a pure mathematical coordinate system (cartesian plane).
+     * </p>
      */
     private BigNumber centerWorldY;
 
     /**
-     * Zoom level (pixels per one world unit).
+     * Zoom level expressed as "pixels per one world unit".
+     *
+     * <p>
+     * Higher values mean zoomed in (more pixels per unit). Lower values mean zoomed out.
+     * </p>
      */
     private BigNumber pixelsPerWorldUnit;
 
     /**
-     * Last mouse position while panning (screen coordinates).
+     * Last mouse position used for panning.
+     *
+     * <p>
+     * While dragging the primary mouse button, we store the last cursor position and translate the view according
+     * to pixel deltas.
+     * </p>
      */
     private Point2D lastPanMousePoint;
 
     /**
-     * Flag to coalesce renders into a single JavaFX pulse.
+     * Flag used for render coalescing.
+     *
+     * <p>
+     * When true, a render has already been scheduled via {@link Platform#runLater(Runnable)} and subsequent requests
+     * are ignored until the render executed.
+     * </p>
      */
     private boolean renderScheduled;
 
     /**
-     * Creates a plot surface with initial configuration.
+     * Clamp helper for {@link #pixelsPerWorldUnit}, derived from {@link #viewConfiguration}.
      *
-     * @param viewerStyle       viewer style configuration (must not be null)
-     * @param viewConfiguration view configuration (must not be null)
+     * <p>
+     * This keeps zoom within a sane range and prevents extreme values that can degrade interaction or rendering.
+     * </p>
+     */
+    private PixelsPerWorldUnitClamp pixelsPerWorldUnitClamp;
+
+    /**
+     * Creates a new plot surface with the given style and view configuration.
+     *
+     * @param viewerStyle       style information (colors, stroke widths, fonts, label locale)
+     * @param viewConfiguration view configuration (interaction toggles, spacing rules, clamping bounds)
      */
     GraphFxPlotSurface(
-            final GraphFxViewerStyle viewerStyle,
-            final GraphFxViewConfiguration viewConfiguration
+            @NonNull final GraphFxViewerStyle viewerStyle,
+            @NonNull final GraphFxViewConfiguration viewConfiguration
     ) {
         this.viewerStyle = Objects.requireNonNull(viewerStyle, "viewerStyle must not be null");
         this.viewConfiguration = Objects.requireNonNull(viewConfiguration, "viewConfiguration must not be null");
@@ -158,25 +240,34 @@ final class GraphFxPlotSurface extends Region {
 
         this.centerWorldX = ZERO;
         this.centerWorldY = ZERO;
-        this.pixelsPerWorldUnit = new BigNumber("80", Locale.ROOT);
+
+        this.pixelsPerWorldUnit = DEFAULT_PIXELS_PER_WORLD_UNIT;
+        this.pixelsPerWorldUnitClamp = PixelsPerWorldUnitClamp.from(viewConfiguration);
 
         getChildren().addAll(backgroundCanvas, plotCanvas);
-
         installInteractions();
     }
 
     /**
-     * Updates the plot data and schedules a redraw.
+     * Replaces the currently rendered plot data.
      *
-     * @param plotResult plot data (must not be null)
+     * <p>
+     * Calling this method schedules a redraw. The background is still redrawn as part of a full render pass.
+     * </p>
+     *
+     * @param plotResult the new plot result to render (must not be {@code null})
      */
-    void setPlotResult(final PlotResult plotResult) {
+    void setPlotResult(@NonNull final PlotResult plotResult) {
         this.plotResult = Objects.requireNonNull(plotResult, "plotResult must not be null");
         requestRender();
     }
 
     /**
-     * Clears all plot data and schedules a redraw.
+     * Clears the current plot by replacing the plot result with an empty instance.
+     *
+     * <p>
+     * Calling this method schedules a redraw.
+     * </p>
      */
     void clearPlot() {
         this.plotResult = new PlotResult();
@@ -184,43 +275,60 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Applies a new visual style and schedules a redraw.
+     * Updates the viewer style and schedules a redraw.
      *
-     * @param viewerStyle new style (must not be null)
+     * @param viewerStyle the new style instance (must not be {@code null})
      */
-    void setStyle(final GraphFxViewerStyle viewerStyle) {
+    void setStyle(@NonNull final GraphFxViewerStyle viewerStyle) {
         this.viewerStyle = Objects.requireNonNull(viewerStyle, "viewerStyle must not be null");
         requestRender();
     }
 
     /**
-     * Applies a new view configuration and schedules a redraw.
+     * Updates the view configuration and schedules a redraw.
      *
-     * @param viewConfiguration new configuration (must not be null)
+     * <p>
+     * This also recalculates zoom clamps and immediately clamps the current zoom level.
+     * </p>
+     *
+     * @param viewConfiguration the new configuration instance (must not be {@code null})
      */
-    void setViewConfiguration(final GraphFxViewConfiguration viewConfiguration) {
+    void setViewConfiguration(@NonNull final GraphFxViewConfiguration viewConfiguration) {
         this.viewConfiguration = Objects.requireNonNull(viewConfiguration, "viewConfiguration must not be null");
+        this.pixelsPerWorldUnitClamp = PixelsPerWorldUnitClamp.from(viewConfiguration);
+        this.pixelsPerWorldUnit = pixelsPerWorldUnitClamp.clamp(pixelsPerWorldUnit);
         requestRender();
     }
 
     /**
-     * Creates a snapshot of the currently visible world bounds.
+     * Creates a snapshot of the current visible viewport bounds in world coordinates.
      *
-     * @return immutable viewport snapshot
+     * <p>
+     * The viewport is determined by:
+     * </p>
+     * <ul>
+     *     <li>canvas pixel dimensions</li>
+     *     <li>{@link #centerWorldX} and {@link #centerWorldY}</li>
+     *     <li>{@link #pixelsPerWorldUnit}</li>
+     * </ul>
+     *
+     * @return an immutable snapshot containing min/max bounds for x and y in world coordinates
      */
     ViewportSnapshot snapshotViewport() {
-        final double canvasWidth = backgroundCanvas.getWidth();
-        final double canvasHeight = backgroundCanvas.getHeight();
+        final BigNumber canvasWidthPixels = new BigNumber(backgroundCanvas.getWidth());
+        final BigNumber canvasHeightPixels = new BigNumber(backgroundCanvas.getHeight());
 
-        if (!(canvasWidth > 0.0) || !(canvasHeight > 0.0) || !isPositive(pixelsPerWorldUnit)) {
+        if (canvasWidthPixels.isNegative()
+                || canvasHeightPixels.isNegative()
+                || pixelsPerWorldUnit.isNegative()) {
             return new ViewportSnapshot(ZERO, ZERO, ZERO, ZERO);
         }
 
-        final BigNumber halfWorldWidth = new BigNumber(Double.toString(canvasWidth), Locale.ROOT)
+        final BigNumber halfWorldWidth = canvasWidthPixels
                 .divide(TWO, DEFAULT_MATH_CONTEXT)
                 .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        final BigNumber halfWorldHeight = new BigNumber(Double.toString(canvasHeight), Locale.ROOT)
+        final BigNumber halfWorldHeight = canvasHeightPixels
                 .divide(TWO, DEFAULT_MATH_CONTEXT)
                 .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
@@ -234,15 +342,19 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Fits the viewport to the given world bounds.
+     * Adjusts the viewport so that the given world-space bounds become visible.
      *
      * <p>
-     * This method keeps aspect ratio by choosing the smaller of the two scales.
+     * This sets:
      * </p>
+     * <ul>
+     *     <li>viewport center to the midpoint of the bounds</li>
+     *     <li>zoom level so the bounds fit inside the current canvas (clamped)</li>
+     * </ul>
      *
-     * @param viewportSnapshot world bounds (must not be null)
+     * @param viewportSnapshot desired world-space bounds to fit into the canvas (must not be {@code null})
      */
-    void fitViewport(final ViewportSnapshot viewportSnapshot) {
+    void fitViewport(@NonNull final ViewportSnapshot viewportSnapshot) {
         Objects.requireNonNull(viewportSnapshot, "viewportSnapshot must not be null");
 
         final BigNumber minX = viewportSnapshot.minX();
@@ -254,29 +366,30 @@ final class GraphFxPlotSurface extends Region {
             return;
         }
 
-        final double canvasWidth = Math.max(1.0, backgroundCanvas.getWidth());
-        final double canvasHeight = Math.max(1.0, backgroundCanvas.getHeight());
+        final BigNumber canvasWidthPixels = new BigNumber(Math.max(1.0, backgroundCanvas.getWidth()));
+        final BigNumber canvasHeightPixels = new BigNumber(Math.max(1.0, backgroundCanvas.getHeight()));
 
         final BigNumber worldWidth = maxX.subtract(minX);
         final BigNumber worldHeight = maxY.subtract(minY);
 
-        final BigNumber pixelsPerWorldUnitX = new BigNumber(Double.toString(canvasWidth), Locale.ROOT)
-                .divide(worldWidth, DEFAULT_MATH_CONTEXT);
-
-        final BigNumber pixelsPerWorldUnitY = new BigNumber(Double.toString(canvasHeight), Locale.ROOT)
-                .divide(worldHeight, DEFAULT_MATH_CONTEXT);
+        final BigNumber pixelsPerWorldUnitX = canvasWidthPixels.divide(worldWidth, DEFAULT_MATH_CONTEXT);
+        final BigNumber pixelsPerWorldUnitY = canvasHeightPixels.divide(worldHeight, DEFAULT_MATH_CONTEXT);
 
         this.centerWorldX = minX.add(maxX).divide(TWO, DEFAULT_MATH_CONTEXT);
         this.centerWorldY = minY.add(maxY).divide(TWO, DEFAULT_MATH_CONTEXT);
 
-        final BigNumber unclamped = minBigNumber(pixelsPerWorldUnitX, pixelsPerWorldUnitY);
-        this.pixelsPerWorldUnit = clampPixelsPerWorldUnit(unclamped);
+        final BigNumber unclamped = pixelsPerWorldUnitX.min(pixelsPerWorldUnitY);
+        this.pixelsPerWorldUnit = pixelsPerWorldUnitClamp.clamp(unclamped);
 
         requestRender();
     }
 
     /**
-     * Lays out the child canvases to fill this region.
+     * JavaFX layout hook.
+     *
+     * <p>
+     * Resizes and relocates both canvases to match this region's width and height, then schedules a redraw.
+     * </p>
      */
     @Override
     protected void layoutChildren() {
@@ -296,7 +409,15 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Installs mouse interactions for panning and zooming.
+     * Installs mouse interactions on this region based on {@link #viewConfiguration}.
+     *
+     * <p>
+     * Supported interactions:
+     * </p>
+     * <ul>
+     *     <li>Pan: left mouse drag</li>
+     *     <li>Zoom: mouse wheel (zoom towards cursor)</li>
+     * </ul>
      */
     private void installInteractions() {
         setOnMousePressed(event -> {
@@ -350,113 +471,106 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Pans the viewport by the given pixel delta.
+     * Translates the viewport center by the given pixel delta.
      *
-     * @param deltaPixelsX horizontal drag delta in pixels (positive means dragging right)
-     * @param deltaPixelsY vertical drag delta in pixels (positive means dragging down)
+     * <p>
+     * Pixel deltas are converted into world deltas using {@link #pixelsPerWorldUnit}.
+     * </p>
+     *
+     * @param deltaPixelsX delta in pixels along the X axis (positive means mouse moved right)
+     * @param deltaPixelsY delta in pixels along the Y axis (positive means mouse moved down)
      */
     private void panByPixels(final double deltaPixelsX, final double deltaPixelsY) {
-        if (!isPositive(pixelsPerWorldUnit)) {
+        if (pixelsPerWorldUnit.isNegative()) {
             return;
         }
 
-        final BigNumber deltaWorldX = new BigNumber(Double.toString(deltaPixelsX), Locale.ROOT)
+        final BigNumber deltaWorldX = new BigNumber(deltaPixelsX)
                 .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        final BigNumber deltaWorldY = new BigNumber(Double.toString(deltaPixelsY), Locale.ROOT)
+        final BigNumber deltaWorldY = new BigNumber(deltaPixelsY)
                 .divide(pixelsPerWorldUnit, DEFAULT_MATH_CONTEXT);
 
-        // Dragging right moves the "camera" left.
+        // Dragging right moves the camera left.
         centerWorldX = centerWorldX.subtract(deltaWorldX);
 
-        // Dragging down moves the "camera" up.
+        // Dragging down moves the camera up (screen Y increases downward).
         centerWorldY = centerWorldY.add(deltaWorldY);
     }
 
     /**
-     * Zooms the viewport while keeping the world coordinate under the cursor stationary.
+     * Zooms the view towards the given cursor position.
      *
-     * @param cursorX     cursor x in screen coordinates (pixels)
-     * @param cursorY     cursor y in screen coordinates (pixels)
-     * @param wheelDeltaY mouse wheel delta (positive for zoom in, negative for zoom out)
+     * <p>
+     * The method keeps the world-space coordinate currently under the cursor fixed after zooming:
+     * </p>
+     * <ul>
+     *     <li>compute world coordinate at cursor before zoom</li>
+     *     <li>apply new scale (clamped)</li>
+     *     <li>solve new center so the same world coordinate remains under the cursor</li>
+     * </ul>
+     *
+     * @param cursorX     cursor X position in canvas/region coordinates (pixels)
+     * @param cursorY     cursor Y position in canvas/region coordinates (pixels)
+     * @param wheelDeltaY scroll delta from JavaFX (positive/negative depends on wheel direction)
      */
     private void zoomTowardsCursor(final double cursorX, final double cursorY, final double wheelDeltaY) {
-        final double oldScaleDouble = bigNumberToDouble(pixelsPerWorldUnit);
+        if (pixelsPerWorldUnit.isNegative()) {
+            return;
+        }
+
         final double zoomFactor = Math.pow(viewConfiguration.getMouseWheelZoomExponent(), wheelDeltaY);
-        final double newScaleDouble = clampDouble(
-                oldScaleDouble * zoomFactor,
-                viewConfiguration.getMinimumPixelsPerWorldUnit(),
-                viewConfiguration.getMaximumPixelsPerWorldUnit()
-        );
+
+        final BigNumber oldScale = pixelsPerWorldUnit;
+        final BigNumber newScaleCandidate = oldScale.multiply(new BigNumber(zoomFactor));
+        final BigNumber newScale = pixelsPerWorldUnitClamp.clamp(newScaleCandidate);
+
+        final double oldScaleDouble = oldScale.doubleValue();
+        final double newScaleDouble = newScale.doubleValue();
 
         if (Math.abs(newScaleDouble - oldScaleDouble) < 1e-12) {
             return;
         }
 
-        final double width = backgroundCanvas.getWidth();
-        final double height = backgroundCanvas.getHeight();
+        final BigNumber widthPixels = new BigNumber(backgroundCanvas.getWidth());
+        final BigNumber heightPixels = new BigNumber(backgroundCanvas.getHeight());
 
-        // World coordinate under cursor before zoom.
-        final double worldXBefore = screenToWorldX(cursorX, width, oldScaleDouble);
-        final double worldYBefore = screenToWorldY(cursorY, height, oldScaleDouble);
+        final BigNumber cursorXPixels = new BigNumber(cursorX);
+        final BigNumber cursorYPixels = new BigNumber(cursorY);
 
-        // Adjust center so that the same world coordinate stays under the cursor.
-        final double centerWorldXAfter = worldXBefore - (cursorX - (width / 2.0)) / newScaleDouble;
-        final double centerWorldYAfter = worldYBefore + (cursorY - (height / 2.0)) / newScaleDouble;
+        final BigNumber halfWidthPixels = widthPixels.divide(TWO, DEFAULT_MATH_CONTEXT);
+        final BigNumber halfHeightPixels = heightPixels.divide(TWO, DEFAULT_MATH_CONTEXT);
 
-        this.centerWorldX = new BigNumber(Double.toString(centerWorldXAfter), Locale.ROOT);
-        this.centerWorldY = new BigNumber(Double.toString(centerWorldYAfter), Locale.ROOT);
-        this.pixelsPerWorldUnit = clampPixelsPerWorldUnit(new BigNumber(Double.toString(newScaleDouble), Locale.ROOT));
+        // worldBefore = center + (cursor - halfCanvas) / scale   (Y inverted below)
+        final BigNumber worldXBefore = centerWorldX.add(
+                cursorXPixels.subtract(halfWidthPixels).divide(oldScale, DEFAULT_MATH_CONTEXT)
+        );
+
+        final BigNumber worldYBefore = centerWorldY.subtract(
+                cursorYPixels.subtract(halfHeightPixels).divide(oldScale, DEFAULT_MATH_CONTEXT)
+        );
+
+        // centerAfter such that worldBefore stays under cursor.
+        final BigNumber centerXAfter = worldXBefore.subtract(
+                cursorXPixels.subtract(halfWidthPixels).divide(newScale, DEFAULT_MATH_CONTEXT)
+        );
+
+        // Screen Y grows downwards; world Y grows upwards -> sign differs from X.
+        final BigNumber centerYAfter = worldYBefore.add(
+                cursorYPixels.subtract(halfHeightPixels).divide(newScale, DEFAULT_MATH_CONTEXT)
+        );
+
+        this.centerWorldX = centerXAfter;
+        this.centerWorldY = centerYAfter;
+        this.pixelsPerWorldUnit = newScale;
     }
 
     /**
-     * Converts a screen x-coordinate into a world x-coordinate.
+     * Schedules a render pass on the next JavaFX pulse.
      *
-     * @param screenX     screen x in pixels
-     * @param canvasWidth width of the drawing surface in pixels
-     * @param scale       pixels per world unit
-     * @return world x coordinate
-     */
-    private double screenToWorldX(final double screenX, final double canvasWidth, final double scale) {
-        return bigNumberToDouble(centerWorldX) + (screenX - (canvasWidth / 2.0)) / scale;
-    }
-
-    /**
-     * Converts a screen y-coordinate into a world y-coordinate.
-     *
-     * @param screenY      screen y in pixels
-     * @param canvasHeight height of the drawing surface in pixels
-     * @param scale        pixels per world unit
-     * @return world y coordinate
-     */
-    private double screenToWorldY(final double screenY, final double canvasHeight, final double scale) {
-        return bigNumberToDouble(centerWorldY) - (screenY - (canvasHeight / 2.0)) / scale;
-    }
-
-    /**
-     * Converts a world x-coordinate into a screen x-coordinate.
-     *
-     * @param worldX      world x coordinate
-     * @param canvasWidth width of the drawing surface in pixels
-     * @return screen x coordinate in pixels
-     */
-    private double worldToScreenX(final double worldX, final double canvasWidth) {
-        return (canvasWidth / 2.0) + (worldX - bigNumberToDouble(centerWorldX)) * bigNumberToDouble(pixelsPerWorldUnit);
-    }
-
-    /**
-     * Converts a world y-coordinate into a screen y-coordinate.
-     *
-     * @param worldY       world y coordinate
-     * @param canvasHeight height of the drawing surface in pixels
-     * @return screen y coordinate in pixels
-     */
-    private double worldToScreenY(final double worldY, final double canvasHeight) {
-        return (canvasHeight / 2.0) - (worldY - bigNumberToDouble(centerWorldY)) * bigNumberToDouble(pixelsPerWorldUnit);
-    }
-
-    /**
-     * Requests a render; multiple calls before the next JavaFX pulse are coalesced.
+     * <p>
+     * Multiple calls before the scheduled render executes will be coalesced into a single render pass.
+     * </p>
      */
     private void requestRender() {
         if (renderScheduled) {
@@ -471,7 +585,18 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Renders the current state immediately.
+     * Performs an immediate render pass.
+     *
+     * <p>
+     * This method draws:
+     * </p>
+     * <ol>
+     *     <li>background color</li>
+     *     <li>grid (optional)</li>
+     *     <li>axes (optional)</li>
+     *     <li>axis labels (optional)</li>
+     *     <li>plot lines + points</li>
+     * </ol>
      */
     private void renderNow() {
         final double width = backgroundCanvas.getWidth();
@@ -481,7 +606,6 @@ final class GraphFxPlotSurface extends Region {
             return;
         }
 
-        // Background (grid, axes, labels)
         clearBackground(width, height);
 
         if (viewConfiguration.isGridVisible()) {
@@ -496,13 +620,12 @@ final class GraphFxPlotSurface extends Region {
             renderAxisLabels(width, height);
         }
 
-        // Plot layer
         plotGraphicsContext.clearRect(0, 0, width, height);
         renderPlot(width, height);
     }
 
     /**
-     * Clears the background canvas using {@link GraphFxViewerStyle#getBackgroundColor()}.
+     * Clears and redraws the background fill.
      *
      * @param width  canvas width in pixels
      * @param height canvas height in pixels
@@ -513,7 +636,7 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Renders grid lines aligned to world-space multiples of the computed step size.
+     * Draws the grid lines according to the current zoom and configuration.
      *
      * @param width  canvas width in pixels
      * @param height canvas height in pixels
@@ -526,13 +649,16 @@ final class GraphFxPlotSurface extends Region {
 
         final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
 
-        // Vertical lines (world x = i * minorStepWorld)
-        final long startXIndex = (long) Math.floor(viewportBounds.minX / gridSteps.minorStepWorld);
-        final long endXIndex = (long) Math.ceil(viewportBounds.maxX / gridSteps.minorStepWorld);
+        final double minorStepWorld = gridSteps.minorStepWorldDouble();
+        final long majorEvery = gridSteps.majorEvery();
+
+        // Vertical lines: world x = i * minorStepWorld
+        final long startXIndex = (long) Math.floor(viewportBounds.minX() / minorStepWorld);
+        final long endXIndex = (long) Math.ceil(viewportBounds.maxX() / minorStepWorld);
 
         for (long index = startXIndex; index <= endXIndex; index++) {
-            final boolean isMajor = Math.floorMod(index, (long) gridSteps.majorEvery) == 0L;
-            final double worldX = index * gridSteps.minorStepWorld;
+            final boolean isMajor = Math.floorMod(index, majorEvery) == 0L;
+            final BigNumber worldX = gridSteps.minorStepWorld().multiply(new BigNumber(index));
 
             final double strokeWidth = isMajor
                     ? viewerStyle.getMajorGridStrokeWidthInPixels()
@@ -545,13 +671,13 @@ final class GraphFxPlotSurface extends Region {
             backgroundGraphicsContext.strokeLine(screenX, 0, screenX, height);
         }
 
-        // Horizontal lines (world y = i * minorStepWorld)
-        final long startYIndex = (long) Math.floor(viewportBounds.minY / gridSteps.minorStepWorld);
-        final long endYIndex = (long) Math.ceil(viewportBounds.maxY / gridSteps.minorStepWorld);
+        // Horizontal lines: world y = i * minorStepWorld
+        final long startYIndex = (long) Math.floor(viewportBounds.minY() / minorStepWorld);
+        final long endYIndex = (long) Math.ceil(viewportBounds.maxY() / minorStepWorld);
 
         for (long index = startYIndex; index <= endYIndex; index++) {
-            final boolean isMajor = Math.floorMod(index, (long) gridSteps.majorEvery) == 0L;
-            final double worldY = index * gridSteps.minorStepWorld;
+            final boolean isMajor = Math.floorMod(index, majorEvery) == 0L;
+            final BigNumber worldY = gridSteps.minorStepWorld().multiply(new BigNumber(index));
 
             final double strokeWidth = isMajor
                     ? viewerStyle.getMajorGridStrokeWidthInPixels()
@@ -566,7 +692,7 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Renders the x-axis (y=0) and y-axis (x=0) if they are visible within the current viewport.
+     * Draws the X and Y axes if they are visible within the current viewport.
      *
      * @param width  canvas width in pixels
      * @param height canvas height in pixels
@@ -574,29 +700,28 @@ final class GraphFxPlotSurface extends Region {
     private void renderAxes(final double width, final double height) {
         final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
 
-        final boolean xAxisVisible = viewportBounds.minY <= 0.0 && viewportBounds.maxY >= 0.0;
-        final boolean yAxisVisible = viewportBounds.minX <= 0.0 && viewportBounds.maxX >= 0.0;
+        final boolean xAxisVisible = viewportBounds.minY() <= 0.0 && viewportBounds.maxY() >= 0.0;
+        final boolean yAxisVisible = viewportBounds.minX() <= 0.0 && viewportBounds.maxX() >= 0.0;
 
         backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
         backgroundGraphicsContext.setLineWidth(viewerStyle.getAxisStrokeWidthInPixels());
 
         if (xAxisVisible) {
-            final double screenY = snapForCrispStroke(worldToScreenY(0.0, height), viewerStyle.getAxisStrokeWidthInPixels());
+            final double screenY = snapForCrispStroke(worldToScreenY(ZERO, height), viewerStyle.getAxisStrokeWidthInPixels());
             backgroundGraphicsContext.strokeLine(0, screenY, width, screenY);
         }
 
         if (yAxisVisible) {
-            final double screenX = snapForCrispStroke(worldToScreenX(0.0, width), viewerStyle.getAxisStrokeWidthInPixels());
+            final double screenX = snapForCrispStroke(worldToScreenX(ZERO, width), viewerStyle.getAxisStrokeWidthInPixels());
             backgroundGraphicsContext.strokeLine(screenX, 0, screenX, height);
         }
     }
 
     /**
-     * Renders axis labels placed on grid intersections.
+     * Draws axis ticks and numeric labels along the axes.
      *
      * <p>
-     * Labels are computed on a world-space step that is an integer multiple of the minor grid step.
-     * This ensures labels always land on grid corners and never "float" between intersections.
+     * Label positions depend on computed grid steps and {@link GraphFxViewConfiguration} spacing rules.
      * </p>
      *
      * @param width  canvas width in pixels
@@ -610,8 +735,8 @@ final class GraphFxPlotSurface extends Region {
 
         final ViewportBounds viewportBounds = computeVisibleBounds(width, height);
 
-        final boolean xAxisVisible = viewportBounds.minY <= 0.0 && viewportBounds.maxY >= 0.0;
-        final boolean yAxisVisible = viewportBounds.minX <= 0.0 && viewportBounds.maxX >= 0.0;
+        final boolean xAxisVisible = viewportBounds.minY() <= 0.0 && viewportBounds.maxY() >= 0.0;
+        final boolean yAxisVisible = viewportBounds.minX() <= 0.0 && viewportBounds.maxX() >= 0.0;
 
         if (!xAxisVisible && !yAxisVisible) {
             return;
@@ -620,24 +745,23 @@ final class GraphFxPlotSurface extends Region {
         backgroundGraphicsContext.setFont(viewerStyle.getAxisLabelFont());
         backgroundGraphicsContext.setFill(viewerStyle.getAxisLabelColor());
 
-        final double axisScreenX = worldToScreenX(0.0, width);
-        final double axisScreenY = worldToScreenY(0.0, height);
+        final double axisScreenX = worldToScreenX(ZERO, width);
+        final double axisScreenY = worldToScreenY(ZERO, height);
 
         final double tickLengthPixels = viewConfiguration.getAxisTickLengthInPixels();
         final double labelOffsetPixels = viewConfiguration.getAxisLabelOffsetInPixels();
 
-        final double labelStepWorld = gridSteps.labelStepWorld;
+        final double labelStepWorldDouble = gridSteps.labelStepWorldDouble();
 
-        // ---- X axis labels ----
         if (xAxisVisible) {
             backgroundGraphicsContext.setTextAlign(TextAlignment.CENTER);
             backgroundGraphicsContext.setTextBaseline(VPos.TOP);
 
-            final long startIndex = (long) Math.floor(viewportBounds.minX / labelStepWorld);
-            final long endIndex = (long) Math.ceil(viewportBounds.maxX / labelStepWorld);
+            final long startIndex = (long) Math.floor(viewportBounds.minX() / labelStepWorldDouble);
+            final long endIndex = (long) Math.ceil(viewportBounds.maxX() / labelStepWorldDouble);
 
             for (long index = startIndex; index <= endIndex; index++) {
-                final double worldX = index * labelStepWorld;
+                final BigNumber worldX = gridSteps.labelStepWorld().multiply(new BigNumber(index));
                 final double screenX = snapForCrispStroke(worldToScreenX(worldX, width), 1.5);
 
                 if (screenX < 0.0 || screenX > width) {
@@ -652,24 +776,23 @@ final class GraphFxPlotSurface extends Region {
             }
         }
 
-        // ---- Y axis labels ----
         if (yAxisVisible) {
             backgroundGraphicsContext.setTextAlign(TextAlignment.LEFT);
             backgroundGraphicsContext.setTextBaseline(VPos.CENTER);
 
-            final long startIndex = (long) Math.floor(viewportBounds.minY / labelStepWorld);
-            final long endIndex = (long) Math.ceil(viewportBounds.maxY / labelStepWorld);
+            final long startIndex = (long) Math.floor(viewportBounds.minY() / labelStepWorldDouble);
+            final long endIndex = (long) Math.ceil(viewportBounds.maxY() / labelStepWorldDouble);
 
             for (long index = startIndex; index <= endIndex; index++) {
-                final double worldY = index * labelStepWorld;
+                final BigNumber worldY = gridSteps.labelStepWorld().multiply(new BigNumber(index));
                 final double screenY = snapForCrispStroke(worldToScreenY(worldY, height), 1.5);
 
                 if (screenY < 0.0 || screenY > height) {
                     continue;
                 }
 
-                // Avoid a double "0" label at the origin: keep origin label on X axis only.
-                if (isNearZero(worldY)) {
+                // Avoid double "0" at origin: keep origin label on X axis only.
+                if (isNearZero(worldY.doubleValue())) {
                     continue;
                 }
 
@@ -683,11 +806,11 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Draws a tick mark on the x-axis at the specified x coordinate.
+     * Draws a tick mark on the X axis.
      *
-     * @param screenX          x position in pixels
-     * @param axisScreenY      y position of the x-axis in pixels
-     * @param tickLengthPixels tick length in pixels
+     * @param screenX          tick position in screen coordinates (pixels)
+     * @param axisScreenY      Y coordinate of the X axis in screen coordinates (pixels)
+     * @param tickLengthPixels total tick length in pixels
      */
     private void drawAxisTickOnXAxis(final double screenX, final double axisScreenY, final double tickLengthPixels) {
         backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
@@ -700,11 +823,11 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Draws a tick mark on the y-axis at the specified y coordinate.
+     * Draws a tick mark on the Y axis.
      *
-     * @param axisScreenX      x position of the y-axis in pixels
-     * @param screenY          y position in pixels
-     * @param tickLengthPixels tick length in pixels
+     * @param axisScreenX      X coordinate of the Y axis in screen coordinates (pixels)
+     * @param screenY          tick position in screen coordinates (pixels)
+     * @param tickLengthPixels total tick length in pixels
      */
     private void drawAxisTickOnYAxis(final double axisScreenX, final double screenY, final double tickLengthPixels) {
         backgroundGraphicsContext.setStroke(viewerStyle.getAxisColor());
@@ -717,7 +840,7 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Renders plot lines and points from {@link #plotResult} to the plot canvas.
+     * Renders the plot lines and points onto {@link #plotCanvas}.
      *
      * @param width  canvas width in pixels
      * @param height canvas height in pixels
@@ -747,15 +870,15 @@ final class GraphFxPlotSurface extends Region {
                         continue;
                     }
 
-                    final double worldX = bigNumberToDouble(plotPoint.x());
-                    final double worldY = bigNumberToDouble(plotPoint.y());
+                    final double worldX = plotPoint.x().doubleValue();
+                    final double worldY = plotPoint.y().doubleValue();
 
                     if (!Double.isFinite(worldX) || !Double.isFinite(worldY)) {
                         continue;
                     }
 
-                    xPixels[count] = worldToScreenX(worldX, width);
-                    yPixels[count] = worldToScreenY(worldY, height);
+                    xPixels[count] = worldToScreenX(plotPoint.x(), width);
+                    yPixels[count] = worldToScreenY(plotPoint.y(), height);
                     count++;
                 }
 
@@ -777,15 +900,15 @@ final class GraphFxPlotSurface extends Region {
                     continue;
                 }
 
-                final double worldX = bigNumberToDouble(plotPoint.x());
-                final double worldY = bigNumberToDouble(plotPoint.y());
+                final double worldX = plotPoint.x().doubleValue();
+                final double worldY = plotPoint.y().doubleValue();
 
                 if (!Double.isFinite(worldX) || !Double.isFinite(worldY)) {
                     continue;
                 }
 
-                final double screenX = worldToScreenX(worldX, width);
-                final double screenY = worldToScreenY(worldY, height);
+                final double screenX = worldToScreenX(plotPoint.x(), width);
+                final double screenY = worldToScreenY(plotPoint.y(), height);
 
                 plotGraphicsContext.fillOval(
                         screenX - radiusPixels,
@@ -798,20 +921,25 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Computes visible world bounds for the current viewport.
+     * Computes the currently visible viewport bounds in world coordinates.
+     *
+     * <p>
+     * This method operates in {@code double} because it is used for rendering decisions (visibility, line loops)
+     * rather than high-precision math.
+     * </p>
      *
      * @param width  canvas width in pixels
      * @param height canvas height in pixels
-     * @return visible bounds in world coordinates
+     * @return bounds object containing min/max in world space (as doubles)
      */
     private ViewportBounds computeVisibleBounds(final double width, final double height) {
-        final double pixelsPerWorldUnitDouble = bigNumberToDouble(pixelsPerWorldUnit);
+        final double pixelsPerWorldUnitDouble = pixelsPerWorldUnit.doubleValue();
 
         final double halfWorldWidth = (width / 2.0) / pixelsPerWorldUnitDouble;
         final double halfWorldHeight = (height / 2.0) / pixelsPerWorldUnitDouble;
 
-        final double centerX = bigNumberToDouble(centerWorldX);
-        final double centerY = bigNumberToDouble(centerWorldY);
+        final double centerX = centerWorldX.doubleValue();
+        final double centerY = centerWorldY.doubleValue();
 
         return new ViewportBounds(
                 centerX - halfWorldWidth,
@@ -822,32 +950,35 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Computes consistent minor/major/label steps for the current zoom level.
-     *
-     * <p>
-     * Key rule for stable alignment:
-     * </p>
+     * Computes the step sizes for:
      * <ul>
-     *     <li>{@code minorStepWorld} defines the grid base (all intersections).</li>
-     *     <li>{@code majorStepWorld} is an integer multiple of {@code minorStepWorld}.</li>
-     *     <li>{@code labelStepWorld} is an integer multiple of {@code minorStepWorld},
-     *         ensuring labels always land on grid corners.</li>
+     *     <li>minor grid lines</li>
+     *     <li>major grid lines</li>
+     *     <li>axis labels</li>
      * </ul>
      *
-     * @return computed grid steps
+     * <p>
+     * A "nice number" heuristic is used (1/2/5 * 10^n), currently implemented using {@code double} arithmetic
+     * because BigNumber does not provide logarithms/powers out of the box.
+     * </p>
+     *
+     * @return computed grid steps; if invalid, {@link GridSteps#invalid()} is returned
      */
     private GridSteps computeGridSteps() {
-        final double pixelsPerWorldUnitDouble = bigNumberToDouble(pixelsPerWorldUnit);
-
-        final double minorStepWorld = chooseNiceStep(viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnitDouble);
-        if (!(minorStepWorld > 0.0) || !Double.isFinite(minorStepWorld)) {
+        final double pixelsPerWorldUnitDouble = pixelsPerWorldUnit.doubleValue();
+        if (!(pixelsPerWorldUnitDouble > 0.0) || !Double.isFinite(pixelsPerWorldUnitDouble)) {
             return GridSteps.invalid();
         }
 
-        final int majorEvery = Math.max(1, viewConfiguration.getMinorLinesPerMajorLine());
-        final double majorStepWorld = minorStepWorld * majorEvery;
+        final double rawMinorStepWorld = viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnitDouble;
+        final double minorStepWorldDouble = chooseNiceStep(rawMinorStepWorld);
 
-        final double minorStepPixels = minorStepWorld * pixelsPerWorldUnitDouble;
+        if (!(minorStepWorldDouble > 0.0) || !Double.isFinite(minorStepWorldDouble)) {
+            return GridSteps.invalid();
+        }
+
+        final long majorEvery = Math.max(1, viewConfiguration.getMinorLinesPerMajorLine());
+        final double minorStepPixels = minorStepWorldDouble * pixelsPerWorldUnitDouble;
         final double minimumLabelSpacingPixels = Math.max(1.0, viewConfiguration.getMinimumAxisLabelSpacingInPixels());
 
         long labelEveryMinor = (long) Math.ceil(minimumLabelSpacingPixels / Math.max(1e-9, minorStepPixels));
@@ -855,20 +986,27 @@ final class GraphFxPlotSurface extends Region {
             labelEveryMinor = 1L;
         }
 
-        final double labelStepWorld = minorStepWorld * labelEveryMinor;
+        final double labelStepWorldDouble = minorStepWorldDouble * labelEveryMinor;
 
-        return new GridSteps(minorStepWorld, majorEvery, majorStepWorld, labelEveryMinor, labelStepWorld);
+        return new GridSteps(
+                new BigNumber(minorStepWorldDouble),
+                minorStepWorldDouble,
+                majorEvery,
+                labelEveryMinor,
+                new BigNumber(labelStepWorldDouble),
+                labelStepWorldDouble
+        );
     }
 
     /**
-     * Selects a "nice" step size for grid spacing.
+     * Picks a "nice" step size near the given raw step.
      *
      * <p>
-     * The returned value is of the form {@code 1, 2, 5} multiplied by a power of 10.
+     * The returned value is one of {@code 1, 2, 5, 10} times a power of ten.
      * </p>
      *
-     * @param rawStep raw step candidate in world units
-     * @return normalized "nice" step in world units
+     * @param rawStep raw step size in world units (must be positive)
+     * @return a "nice" step size; returns {@code 1.0} as a safe fallback for invalid input
      */
     private double chooseNiceStep(final double rawStep) {
         if (!(rawStep > 0.0) || Double.isNaN(rawStep) || Double.isInfinite(rawStep)) {
@@ -893,15 +1031,58 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Snaps coordinates for crisp rendering of thin strokes.
+     * Converts a world X coordinate into a screen X coordinate.
      *
      * <p>
-     * For 1px-ish lines, snapping to {@code n + 0.5} tends to produce the best results.
+     * Screen space origin is at the top-left corner of the canvas.
      * </p>
      *
-     * @param coordinate  coordinate in pixels
-     * @param strokeWidth stroke width in pixels
-     * @return snapped coordinate
+     * @param worldX      world-space x coordinate (must not be {@code null})
+     * @param canvasWidth canvas width in pixels
+     * @return x coordinate in pixels relative to canvas origin (left)
+     */
+    private double worldToScreenX(@NonNull final BigNumber worldX, final double canvasWidth) {
+        final BigNumber halfWidthPixels = new BigNumber(canvasWidth).divide(TWO, DEFAULT_MATH_CONTEXT);
+
+        final BigNumber pixelOffset = worldX
+                .subtract(centerWorldX)
+                .multiply(pixelsPerWorldUnit);
+
+        return halfWidthPixels.add(pixelOffset).doubleValue();
+    }
+
+    /**
+     * Converts a world Y coordinate into a screen Y coordinate.
+     *
+     * <p>
+     * Screen Y increases downwards, while world Y increases upwards.
+     * </p>
+     *
+     * @param worldY       world-space y coordinate (must not be {@code null})
+     * @param canvasHeight canvas height in pixels
+     * @return y coordinate in pixels relative to canvas origin (top)
+     */
+    private double worldToScreenY(@NonNull final BigNumber worldY, final double canvasHeight) {
+        final BigNumber halfHeightPixels = new BigNumber(canvasHeight).divide(TWO, DEFAULT_MATH_CONTEXT);
+
+        final BigNumber pixelOffset = worldY
+                .subtract(centerWorldY)
+                .multiply(pixelsPerWorldUnit);
+
+        return halfHeightPixels.subtract(pixelOffset).doubleValue();
+    }
+
+    /**
+     * Snaps a coordinate to half-pixels for crisp 1px-ish strokes.
+     *
+     * <p>
+     * For line widths close to 1, drawing at {@code n + 0.5} avoids blurry anti-aliased lines.
+     * For thicker lines, snapping is not applied because blur is less visible and snapping could shift visuals.
+     * </p>
+     *
+     * @param coordinate  coordinate to snap (pixels)
+     * @param strokeWidth current stroke width (pixels)
+     * @return snapped coordinate (pixels)
      */
     private double snapForCrispStroke(final double coordinate, final double strokeWidth) {
         if (strokeWidth <= 1.6) {
@@ -911,22 +1092,22 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Formats an axis number in a locale-aware way.
+     * Formats a world-space number for axis labels, using the given locale's decimal separator.
      *
      * <p>
-     * This uses {@link BigNumber} for formatting to align with JustMath's numeric representation.
-     * The input is still a {@code double} because axis ticks are determined in double world units.
+     * This method currently converts the {@link BigNumber} to {@code double} and re-wraps it into a {@link BigNumber}
+     * purely for consistent formatting via {@link BigNumber#toString()}.
      * </p>
      *
-     * @param value  world coordinate value
-     * @param locale locale used to select the decimal separator
-     * @return formatted axis label
+     * @param value  value to format (must not be {@code null})
+     * @param locale locale used to select the decimal separator (must not be {@code null})
+     * @return formatted number string suitable for axis labels
      */
-    private String formatAxisNumber(final double value, final Locale locale) {
-        final double normalized = isNearZero(value) ? 0.0 : value;
+    private String formatAxisNumber(@NonNull final BigNumber value, @NonNull final Locale locale) {
+        final double valueDouble = value.doubleValue();
+        final double normalized = isNearZero(valueDouble) ? 0.0 : valueDouble;
 
-        final BigNumber bigNumber = new BigNumber(Double.toString(normalized), Locale.ROOT);
-        String raw = bigNumber.toString();
+        String raw = new BigNumber(Double.toString(normalized), Locale.ROOT).toString();
 
         final char decimalSeparator = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
         if (decimalSeparator != '.') {
@@ -941,36 +1122,21 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Checks whether a {@code double} value should be treated as zero.
+     * Checks whether the provided {@code double} is close enough to zero to be treated as zero.
      *
-     * @param value value to check
-     * @return {@code true} if the absolute value is smaller than {@link #EPSILON_FOR_ZERO}
+     * @param value input value
+     * @return {@code true} if {@code |value| < EPSILON_FOR_ZERO}, otherwise {@code false}
      */
     private boolean isNearZero(final double value) {
         return Math.abs(value) < EPSILON_FOR_ZERO;
     }
 
     /**
-     * Converts a {@link BigNumber} to a {@code double} for rendering computations.
+     * Clamps the given value into the inclusive range {@code [min, max]}.
      *
-     * <p>
-     * Rendering uses double for performance. The public API still uses {@link BigNumber}.
-     * </p>
-     *
-     * @param value big number to convert (must not be null)
-     * @return parsed double value
-     */
-    private double bigNumberToDouble(final BigNumber value) {
-        Objects.requireNonNull(value, "value must not be null");
-        return Double.parseDouble(value.toString());
-    }
-
-    /**
-     * Clamps a primitive double value to a range.
-     *
-     * @param value candidate value
-     * @param min   minimum value
-     * @param max   maximum value
+     * @param value the value to clamp
+     * @param min   inclusive lower bound
+     * @param max   inclusive upper bound
      * @return clamped value
      */
     private double clampDouble(final double value, final double min, final double max) {
@@ -978,115 +1144,120 @@ final class GraphFxPlotSurface extends Region {
     }
 
     /**
-     * Returns {@code true} if the given {@link BigNumber} is strictly greater than zero.
+     * Immutable container that groups the computed step sizes used for grid rendering and label placement.
      *
-     * @param value big number to check (must not be null)
-     * @return {@code true} if value > 0
-     */
-    private boolean isPositive(final BigNumber value) {
-        Objects.requireNonNull(value, "value must not be null");
-        return value.compareTo(ZERO) > 0;
-    }
-
-    /**
-     * Clamps a pixels-per-world-unit value to the configured min/max values.
-     *
-     * @param pixelsPerWorldUnitCandidate candidate value
-     * @return clamped value
-     */
-    private BigNumber clampPixelsPerWorldUnit(final BigNumber pixelsPerWorldUnitCandidate) {
-        Objects.requireNonNull(pixelsPerWorldUnitCandidate, "pixelsPerWorldUnitCandidate must not be null");
-
-        final BigNumber minimum = new BigNumber(Double.toString(viewConfiguration.getMinimumPixelsPerWorldUnit()), Locale.ROOT);
-        final BigNumber maximum = new BigNumber(Double.toString(viewConfiguration.getMaximumPixelsPerWorldUnit()), Locale.ROOT);
-
-        if (pixelsPerWorldUnitCandidate.compareTo(minimum) < 0) {
-            return minimum;
-        }
-        if (pixelsPerWorldUnitCandidate.compareTo(maximum) > 0) {
-            return maximum;
-        }
-        return pixelsPerWorldUnitCandidate;
-    }
-
-    /**
-     * Returns the smaller of two {@link BigNumber} values.
-     *
-     * @param first  first value (must not be null)
-     * @param second second value (must not be null)
-     * @return the minimum value
-     */
-    private BigNumber minBigNumber(final BigNumber first, final BigNumber second) {
-        Objects.requireNonNull(first, "first must not be null");
-        Objects.requireNonNull(second, "second must not be null");
-        return first.compareTo(second) <= 0 ? first : second;
-    }
-
-    /**
-     * Record holding computed grid step information for the current zoom.
-     *
-     * @param minorStepWorld  minor grid step in world units
-     * @param majorEvery      number of minor lines per major line
-     * @param majorStepWorld  major grid step in world units
-     * @param labelEveryMinor number of minor steps between labels
-     * @param labelStepWorld  label step in world units
+     * @param minorStepWorld       minor grid spacing in world units as {@link BigNumber} (precision-friendly representation)
+     * @param minorStepWorldDouble minor grid spacing in world units as {@code double} (rendering loops and indexing)
+     * @param majorEvery           every N-th minor line is treated as a major line (must be &gt;= 1)
+     * @param labelEveryMinor      labels are drawn every N-th minor step (must be &gt;= 1)
+     * @param labelStepWorld       label spacing in world units as {@link BigNumber}
+     * @param labelStepWorldDouble label spacing in world units as {@code double}
      */
     private record GridSteps(
-            /** Minor grid step in world units. */
-            double minorStepWorld,
-            /** Number of minor lines per major line. */
-            int majorEvery,
-            /** Major grid step in world units. */
-            double majorStepWorld,
-            /** Number of minor steps between labels. */
+            BigNumber minorStepWorld,
+            double minorStepWorldDouble,
+            long majorEvery,
             long labelEveryMinor,
-            /** Label step in world units (aligned to minor grid). */
-            double labelStepWorld
+            BigNumber labelStepWorld,
+            double labelStepWorldDouble
     ) {
 
         /**
-         * Creates an invalid grid steps instance.
+         * Factory for an invalid marker instance.
          *
-         * @return invalid steps
+         * <p>
+         * Used when zoom or configuration yields unusable values.
+         * </p>
+         *
+         * @return invalid grid step container
          */
         static GridSteps invalid() {
-            return new GridSteps(Double.NaN, 1, Double.NaN, 1L, Double.NaN);
+            return new GridSteps(
+                    new BigNumber(Double.NaN),
+                    Double.NaN,
+                    1L,
+                    1L,
+                    new BigNumber(Double.NaN),
+                    Double.NaN
+            );
         }
 
         /**
-         * Returns whether this steps object is valid for rendering.
+         * Validity check for computed steps.
          *
-         * @return {@code true} if all step values are finite and strictly positive
+         * @return {@code true} if all required values are finite and positive, otherwise {@code false}
          */
         boolean isValid() {
-            return minorStepWorld > 0.0
-                    && majorEvery >= 1
-                    && majorStepWorld > 0.0
+            return minorStepWorldDouble > 0.0
+                    && majorEvery >= 1L
                     && labelEveryMinor >= 1L
-                    && labelStepWorld > 0.0
-                    && Double.isFinite(minorStepWorld)
-                    && Double.isFinite(majorStepWorld)
-                    && Double.isFinite(labelStepWorld);
+                    && labelStepWorldDouble > 0.0
+                    && Double.isFinite(minorStepWorldDouble)
+                    && Double.isFinite(labelStepWorldDouble);
         }
     }
 
     /**
-     * Simple immutable container for visible world bounds.
+     * Visible viewport bounds in world coordinates (rendering-friendly doubles).
      *
-     * @param minX minimum world x
-     * @param maxX maximum world x
-     * @param minY minimum world y
-     * @param maxY maximum world y
+     * @param minX minimum X visible in world space
+     * @param maxX maximum X visible in world space
+     * @param minY minimum Y visible in world space
+     * @param maxY maximum Y visible in world space
      */
     private record ViewportBounds(
-            /** Minimum visible world x. */
             double minX,
-            /** Maximum visible world x. */
             double maxX,
-            /** Minimum visible world y. */
             double minY,
-            /** Maximum visible world y. */
             double maxY
     ) {
     }
+
+    /**
+     * Clamp helper for {@link #pixelsPerWorldUnit}, derived from {@link GraphFxViewConfiguration}.
+     *
+     * <p>
+     * This ensures zoom stays within the configured range to:
+     * </p>
+     * <ul>
+     *     <li>avoid extreme values that break label/grid spacing</li>
+     *     <li>avoid costly renders when zoom is too high (many pixels per unit)</li>
+     *     <li>avoid numerical issues when zoom is too low (almost zero pixels per unit)</li>
+     * </ul>
+     *
+     * @param minimum minimum allowed pixels-per-world-unit (inclusive)
+     * @param maximum maximum allowed pixels-per-world-unit (inclusive)
+     */
+    private record PixelsPerWorldUnitClamp(BigNumber minimum, BigNumber maximum) {
+
+        /**
+         * Creates a clamp instance based on the given configuration.
+         *
+         * @param viewConfiguration configuration source (must not be {@code null})
+         * @return clamp instance derived from config min/max
+         */
+        static PixelsPerWorldUnitClamp from(@NonNull final GraphFxViewConfiguration viewConfiguration) {
+            return new PixelsPerWorldUnitClamp(
+                    new BigNumber(viewConfiguration.getMinimumPixelsPerWorldUnit()),
+                    new BigNumber(viewConfiguration.getMaximumPixelsPerWorldUnit())
+            );
+        }
+
+        /**
+         * Clamps the given candidate zoom level into the configured range.
+         *
+         * @param candidate candidate pixels-per-world-unit value (must not be {@code null})
+         * @return clamped value (never {@code null})
+         */
+        BigNumber clamp(@NonNull final BigNumber candidate) {
+            if (candidate.compareTo(minimum) < 0) {
+                return minimum;
+            }
+            if (candidate.compareTo(maximum) > 0) {
+                return maximum;
+            }
+            return candidate;
+        }
+    }
+
 }
