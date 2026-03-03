@@ -385,40 +385,223 @@ final class GraphFxPlotSurface extends Region {
         renderPlot(width, height);
     }
 
+    // --- in GraphFxPlotSurface ---
+
     private void renderGrid(final double width, final double height) {
-        double minorStepWorld = chooseNiceStep(viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnit);
-        if (!(minorStepWorld > 0.0) || Double.isInfinite(minorStepWorld) || Double.isNaN(minorStepWorld)) {
+        final GridSteps steps = computeGridSteps();
+        if (!steps.isValid()) {
             return;
         }
 
-        int majorEvery = Math.max(1, viewConfiguration.getMinorLinesPerMajorLine());
-        double majorStepWorld = minorStepWorld * majorEvery;
+        final ViewportBounds bounds = computeVisibleBounds(width, height);
 
-        ViewportBounds bounds = computeVisibleBounds(width, height);
+        // Vertical minor + major lines (anchored to 0 by using integer indices)
+        final long startXIndex = (long) Math.floor(bounds.minX / steps.minorStepWorld);
+        final long endXIndex = (long) Math.ceil(bounds.maxX / steps.minorStepWorld);
 
-        // Vertical lines
-        double startX = floorToStep(bounds.minX, minorStepWorld);
-        for (double x = startX; x <= bounds.maxX; x += minorStepWorld) {
-            boolean isMajor = isMultipleOf(x, majorStepWorld);
+        for (long i = startXIndex; i <= endXIndex; i++) {
+            final boolean isMajor = (Math.floorMod(i, (long) steps.majorEvery) == 0L);
+            final double x = i * steps.minorStepWorld;
 
             backgroundGraphics.setStroke(isMajor ? style.getMajorGridColor() : style.getMinorGridColor());
-            backgroundGraphics.setLineWidth(isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels());
+            final double strokeWidth = isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels();
+            backgroundGraphics.setLineWidth(strokeWidth);
 
-            double sx = snapForCrispStroke(worldToScreenX(x, width), backgroundGraphics.getLineWidth());
+            final double sx = snapForCrispStroke(worldToScreenX(x, width), strokeWidth);
             backgroundGraphics.strokeLine(sx, 0, sx, height);
         }
 
-        // Horizontal lines
-        double startY = floorToStep(bounds.minY, minorStepWorld);
-        for (double y = startY; y <= bounds.maxY; y += minorStepWorld) {
-            boolean isMajor = isMultipleOf(y, majorStepWorld);
+        // Horizontal minor + major lines
+        final long startYIndex = (long) Math.floor(bounds.minY / steps.minorStepWorld);
+        final long endYIndex = (long) Math.ceil(bounds.maxY / steps.minorStepWorld);
+
+        for (long i = startYIndex; i <= endYIndex; i++) {
+            final boolean isMajor = (Math.floorMod(i, (long) steps.majorEvery) == 0L);
+            final double y = i * steps.minorStepWorld;
 
             backgroundGraphics.setStroke(isMajor ? style.getMajorGridColor() : style.getMinorGridColor());
-            backgroundGraphics.setLineWidth(isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels());
+            final double strokeWidth = isMajor ? style.getMajorGridStrokeWidthInPixels() : style.getMinorGridStrokeWidthInPixels();
+            backgroundGraphics.setLineWidth(strokeWidth);
 
-            double sy = snapForCrispStroke(worldToScreenY(y, height), backgroundGraphics.getLineWidth());
+            final double sy = snapForCrispStroke(worldToScreenY(y, height), strokeWidth);
             backgroundGraphics.strokeLine(0, sy, width, sy);
         }
+    }
+
+    private void renderAxisLabels(final double width, final double height) {
+        final GridSteps steps = computeGridSteps();
+        if (!steps.isValid()) {
+            return;
+        }
+
+        final ViewportBounds bounds = computeVisibleBounds(width, height);
+
+        final boolean xAxisVisible = bounds.minY <= 0.0 && bounds.maxY >= 0.0;
+        final boolean yAxisVisible = bounds.minX <= 0.0 && bounds.maxX >= 0.0;
+
+        if (!xAxisVisible && !yAxisVisible) {
+            return;
+        }
+
+        backgroundGraphics.setFont(style.getAxisLabelFont());
+        backgroundGraphics.setFill(style.getAxisLabelColor());
+
+        final double axisX = worldToScreenX(0.0, width);
+        final double axisY = worldToScreenY(0.0, height);
+
+        final double tickLength = viewConfiguration.getAxisTickLengthInPixels();
+        final double labelOffset = viewConfiguration.getAxisLabelOffsetInPixels();
+
+        // We label at "labelStepWorld", which is an integer multiple of majorStepWorld
+        // => labels always sit on major grid corners/lines.
+        final double labelStepWorld = steps.labelStepWorld;
+
+        // ---------- X axis ----------
+        if (xAxisVisible) {
+            backgroundGraphics.setTextAlign(TextAlignment.CENTER);
+            backgroundGraphics.setTextBaseline(VPos.TOP);
+
+            final long startIndex = (long) Math.floor(bounds.minX / labelStepWorld);
+            final long endIndex = (long) Math.ceil(bounds.maxX / labelStepWorld);
+
+            for (long i = startIndex; i <= endIndex; i++) {
+                final double x = i * labelStepWorld;
+                final double sx = snapForCrispStroke(worldToScreenX(x, width), 1.5);
+
+                if (sx < 0.0 || sx > width) {
+                    continue;
+                }
+
+                // Tick mark on x-axis
+                backgroundGraphics.setStroke(style.getAxisColor());
+                backgroundGraphics.setLineWidth(1.5);
+
+                final double y1 = snapForCrispStroke(axisY - tickLength / 2.0, 1.5);
+                final double y2 = snapForCrispStroke(axisY + tickLength / 2.0, 1.5);
+                backgroundGraphics.strokeLine(sx, y1, sx, y2);
+
+                // Label directly under x-axis
+                final String label = formatAxisNumber(x, style.getAxisLabelLocale());
+
+                // Avoid double "0" at origin: keep only on x-axis
+                if ("0".equals(label) || isNearZero(x)) {
+                    // keep origin label on X-axis (fine)
+                }
+
+                double labelY = axisY + tickLength / 2.0 + labelOffset;
+                labelY = clamp(labelY, 0.0, height - 2.0);
+
+                backgroundGraphics.fillText(label, sx, labelY);
+            }
+        }
+
+        // ---------- Y axis ----------
+        if (yAxisVisible) {
+            backgroundGraphics.setTextAlign(TextAlignment.LEFT);
+            backgroundGraphics.setTextBaseline(VPos.CENTER);
+
+            final long startIndex = (long) Math.floor(bounds.minY / labelStepWorld);
+            final long endIndex = (long) Math.ceil(bounds.maxY / labelStepWorld);
+
+            for (long i = startIndex; i <= endIndex; i++) {
+                final double y = i * labelStepWorld;
+                final double sy = snapForCrispStroke(worldToScreenY(y, height), 1.5);
+
+                if (sy < 0.0 || sy > height) {
+                    continue;
+                }
+
+                // Tick mark on y-axis
+                backgroundGraphics.setStroke(style.getAxisColor());
+                backgroundGraphics.setLineWidth(1.5);
+
+                final double x1 = snapForCrispStroke(axisX - tickLength / 2.0, 1.5);
+                final double x2 = snapForCrispStroke(axisX + tickLength / 2.0, 1.5);
+                backgroundGraphics.strokeLine(x1, sy, x2, sy);
+
+                // Label directly right of y-axis
+                final String label = formatAxisNumber(y, style.getAxisLabelLocale());
+
+                // Avoid double "0" at origin: do NOT show 0 on Y-axis
+                if ("0".equals(label) || isNearZero(y)) {
+                    continue;
+                }
+
+                double labelX = axisX + tickLength / 2.0 + labelOffset;
+                labelX = clamp(labelX, 0.0, width - 2.0);
+
+                backgroundGraphics.fillText(label, labelX, sy);
+            }
+        }
+    }
+
+    /**
+     * Computes consistent minor/major/label steps for the current zoom level.
+     *
+     * <p>
+     * Key rule for stable alignment:
+     * <ul>
+     *   <li>minorStepWorld defines the grid base (all grid corners).</li>
+     *   <li>majorStepWorld is an integer multiple of minorStepWorld.</li>
+     *   <li>labelStepWorld is an integer multiple of minorStepWorld (NOT majorStepWorld),
+     *       so labels can be denser but still always land on grid corners.</li>
+     * </ul>
+     * </p>
+     */
+    private GridSteps computeGridSteps() {
+        final double minorStepWorld = chooseNiceStep(
+                viewConfiguration.getTargetMinorGridSpacingInPixels() / pixelsPerWorldUnit
+        );
+
+        if (!(minorStepWorld > 0.0) || !Double.isFinite(minorStepWorld)) {
+            return GridSteps.invalid();
+        }
+
+        final int majorEvery = Math.max(1, viewConfiguration.getMinorLinesPerMajorLine());
+        final double majorStepWorld = minorStepWorld * majorEvery;
+
+        final double minorStepPixels = minorStepWorld * pixelsPerWorldUnit;
+
+        // ↓ This value controls label density on screen.
+        // If your labels still feel too far apart: lower this in your config (e.g. 30–40).
+        final double minLabelPixels = Math.max(1.0, viewConfiguration.getMinimumAxisLabelSpacingInPixels());
+
+        long labelEveryMinor = (long) Math.ceil(minLabelPixels / Math.max(1e-9, minorStepPixels));
+        if (labelEveryMinor < 1L) {
+            labelEveryMinor = 1L;
+        }
+
+        // label step is aligned to grid corners (minor grid intersection points)
+        final double labelStepWorld = minorStepWorld * labelEveryMinor;
+
+        return new GridSteps(minorStepWorld, majorEvery, majorStepWorld, labelEveryMinor, labelStepWorld);
+    }
+
+    private record GridSteps(
+            double minorStepWorld,
+            int majorEvery,
+            double majorStepWorld,
+            long labelEveryMinor,
+            double labelStepWorld
+    ) {
+        static GridSteps invalid() {
+            return new GridSteps(Double.NaN, 1, Double.NaN, 1L, Double.NaN);
+        }
+
+        boolean isValid() {
+            return minorStepWorld > 0.0
+                    && majorEvery >= 1
+                    && majorStepWorld > 0.0
+                    && labelEveryMinor >= 1L
+                    && labelStepWorld > 0.0
+                    && Double.isFinite(minorStepWorld)
+                    && Double.isFinite(majorStepWorld)
+                    && Double.isFinite(labelStepWorld);
+        }
+    }
+
+    private boolean isNearZero(final double value) {
+        return Math.abs(value) < EPSILON_FOR_ZERO;
     }
 
     private void renderAxes(final double width, final double height) {
@@ -437,107 +620,6 @@ final class GraphFxPlotSurface extends Region {
         if (yAxisVisible) {
             double sx = snapForCrispStroke(worldToScreenX(0.0, width), style.getAxisStrokeWidthInPixels());
             backgroundGraphics.strokeLine(sx, 0, sx, height);
-        }
-    }
-
-    private void renderAxisLabels(final double width, final double height) {
-        ViewportBounds bounds = computeVisibleBounds(width, height);
-
-        boolean xAxisVisible = bounds.minY <= 0.0 && bounds.maxY >= 0.0;
-        boolean yAxisVisible = bounds.minX <= 0.0 && bounds.maxX >= 0.0;
-
-        // Requirement from you: labels on the thick axes in the middle (x=0 / y=0).
-        // If an axis is not visible, we don't render its labels (clean + consistent).
-        if (!xAxisVisible && !yAxisVisible) {
-            return;
-        }
-
-        backgroundGraphics.setFont(style.getAxisLabelFont());
-        backgroundGraphics.setFill(style.getAxisLabelColor());
-
-        double labelStepWorld = chooseNiceStep(viewConfiguration.getMinimumAxisLabelSpacingInPixels() / pixelsPerWorldUnit);
-        if (!(labelStepWorld > 0.0) || Double.isInfinite(labelStepWorld) || Double.isNaN(labelStepWorld)) {
-            return;
-        }
-
-        double tickLen = viewConfiguration.getAxisTickLengthInPixels();
-        double labelOffset = viewConfiguration.getAxisLabelOffsetInPixels();
-
-        // X axis labels
-        if (xAxisVisible) {
-            double axisY = worldToScreenY(0.0, height);
-
-            backgroundGraphics.setTextAlign(TextAlignment.CENTER);
-            backgroundGraphics.setTextBaseline(VPos.TOP);
-
-            double startX = floorToStep(bounds.minX, labelStepWorld);
-            for (double x = startX; x <= bounds.maxX; x += labelStepWorld) {
-                double sx = worldToScreenX(x, width);
-                if (sx < 0 || sx > width) {
-                    continue;
-                }
-
-                // Major tick
-                backgroundGraphics.setStroke(style.getAxisColor());
-                backgroundGraphics.setLineWidth(1.5);
-                backgroundGraphics.strokeLine(
-                        snapForCrispStroke(sx, 1.5),
-                        snapForCrispStroke(axisY - tickLen / 2.0, 1.5),
-                        snapForCrispStroke(sx, 1.5),
-                        snapForCrispStroke(axisY + tickLen / 2.0, 1.5)
-                );
-
-                // Label
-                String label = formatAxisNumber(x, style.getAxisLabelLocale());
-                if (label.equals("0") && yAxisVisible) {
-                    // avoid double "0" at origin (we keep it on the x axis only)
-                    // if you prefer the other way, swap the condition.
-                }
-
-                double labelY = axisY + tickLen / 2.0 + labelOffset;
-                // Keep label inside canvas
-                labelY = clamp(labelY, 0.0, height - 2.0);
-
-                backgroundGraphics.fillText(label, sx, labelY);
-            }
-        }
-
-        // Y axis labels
-        if (yAxisVisible) {
-            double axisX = worldToScreenX(0.0, width);
-
-            backgroundGraphics.setTextAlign(TextAlignment.LEFT);
-            backgroundGraphics.setTextBaseline(VPos.CENTER);
-
-            double startY = floorToStep(bounds.minY, labelStepWorld);
-            for (double y = startY; y <= bounds.maxY; y += labelStepWorld) {
-                double sy = worldToScreenY(y, height);
-                if (sy < 0 || sy > height) {
-                    continue;
-                }
-
-                // Major tick
-                backgroundGraphics.setStroke(style.getAxisColor());
-                backgroundGraphics.setLineWidth(1.5);
-                backgroundGraphics.strokeLine(
-                        snapForCrispStroke(axisX - tickLen / 2.0, 1.5),
-                        snapForCrispStroke(sy, 1.5),
-                        snapForCrispStroke(axisX + tickLen / 2.0, 1.5),
-                        snapForCrispStroke(sy, 1.5)
-                );
-
-                // Label
-                String label = formatAxisNumber(y, style.getAxisLabelLocale());
-                if (label.equals("0")) {
-                    // keep "0" only on x axis (cleaner at the origin)
-                    continue;
-                }
-
-                double labelX = axisX + tickLen / 2.0 + labelOffset;
-                labelX = clamp(labelX, 0.0, width - 2.0);
-
-                backgroundGraphics.fillText(label, labelX, sy);
-            }
         }
     }
 
