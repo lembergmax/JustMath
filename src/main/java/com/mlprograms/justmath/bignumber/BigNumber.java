@@ -43,6 +43,7 @@ import java.util.Map;
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
+// TODO: Performance muss stark verbessert werden
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
  *
