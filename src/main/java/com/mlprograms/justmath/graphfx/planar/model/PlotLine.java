@@ -23,6 +23,9 @@
  */
 package com.mlprograms.justmath.graphfx.planar.model;
 
+import lombok.NonNull;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,5 +48,15 @@ public record PlotLine(
      */
     public PlotLine {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+    }
+
+    /**
+     * Convenience factory for creating a line from vararg points.
+     *
+     * @param points points in world coordinates
+     * @return new plot line
+     */
+    public static PlotLine of(@NonNull final PlotPoint... points) {
+        return new PlotLine(Arrays.asList(points));
     }
 }

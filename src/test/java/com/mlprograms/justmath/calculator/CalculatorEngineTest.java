@@ -228,6 +228,17 @@ public class CalculatorEngineTest {
         assertEquals(expectedResult, actualResult);
     }
 
+    @Test
+    void evaluateRestoresThreadLocalVariableContext() {
+        CalculatorEngine engine = new CalculatorEngine();
+
+        engine.evaluate("x+1", Map.of("x", "4"));
+        assertTrue(CalculatorEngine.getCurrentVariables().isEmpty());
+
+        engine.evaluate("2+2");
+        assertTrue(CalculatorEngine.getCurrentVariables().isEmpty());
+    }
+
     @ParameterizedTest
     @CsvSource(value = {
             // --- Einfache Durchschnittsberechnungen ---

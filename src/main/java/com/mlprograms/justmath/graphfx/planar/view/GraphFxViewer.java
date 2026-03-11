@@ -26,12 +26,16 @@ package com.mlprograms.justmath.graphfx.planar.view;
 import com.mlprograms.justmath.graphfx.JavaFxRuntime;
 import com.mlprograms.justmath.graphfx.WindowConfig;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Public entry point for the planar GraphFx GUI.
@@ -80,6 +84,8 @@ public final class GraphFxViewer {
      * Internal rendering surface responsible for drawing and interactions.
      */
     private final GraphFxPlotSurface plotSurface;
+    private final Object plotDataLock = new Object();
+    private PlotResult currentPlotResult = new PlotResult();
 
     /**
      * Lazily created JavaFX stage.
@@ -162,15 +168,78 @@ public final class GraphFxViewer {
      */
     public void setPlotResult(final PlotResult plotResult) {
         Objects.requireNonNull(plotResult, "plotResult must not be null");
+        synchronized (plotDataLock) {
+            currentPlotResult = new PlotResult(new ArrayList<>(plotResult.plotPoints()), new ArrayList<>(plotResult.plotLines()));
+        }
 
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(() -> plotSurface.setPlotResult(plotResult));
     }
 
     /**
+     * Adds a single point to the current plot and updates the viewer.
+     *
+     * @param point plot point to add
+     * @return this viewer instance for fluent usage
+     */
+    public GraphFxViewer addPoint(final PlotPoint point) {
+        Objects.requireNonNull(point, "point must not be null");
+        PlotResult updatedResult;
+
+        synchronized (plotDataLock) {
+            final List<PlotPoint> points = new ArrayList<>(currentPlotResult.plotPoints());
+            points.add(point);
+            updatedResult = new PlotResult(points, new ArrayList<>(currentPlotResult.plotLines()));
+            currentPlotResult = updatedResult;
+        }
+
+        final PlotResult resultToRender = updatedResult;
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> plotSurface.setPlotResult(resultToRender));
+        return this;
+    }
+
+    /**
+     * Adds a single point (primitive coordinates) to the current plot and updates the viewer.
+     */
+    public GraphFxViewer addPoint(final double x, final double y) {
+        return addPoint(PlotPoint.of(x, y));
+    }
+
+    /**
+     * Adds a line to the current plot and updates the viewer.
+     */
+    public GraphFxViewer addLine(final PlotLine line) {
+        Objects.requireNonNull(line, "line must not be null");
+        PlotResult updatedResult;
+
+        synchronized (plotDataLock) {
+            final List<PlotLine> lines = new ArrayList<>(currentPlotResult.plotLines());
+            lines.add(line);
+            updatedResult = new PlotResult(new ArrayList<>(currentPlotResult.plotPoints()), lines);
+            currentPlotResult = updatedResult;
+        }
+
+        final PlotResult resultToRender = updatedResult;
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> plotSurface.setPlotResult(resultToRender));
+        return this;
+    }
+
+    /**
+     * Adds a line from vararg points to the current plot and updates the viewer.
+     */
+    public GraphFxViewer addLine(final PlotPoint... points) {
+        return addLine(PlotLine.of(points));
+    }
+
+    /**
      * Clears all plot data.
      */
     public void clearPlot() {
+        synchronized (plotDataLock) {
+            currentPlotResult = new PlotResult();
+        }
         JavaFxRuntime.ensureStarted();
         JavaFxRuntime.runOnFxThread(plotSurface::clearPlot);
     }
