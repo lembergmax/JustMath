@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
@@ -68,7 +67,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * This static parser ensures consistent parsing logic across all BigNumber instances.
      */
     private static final BigNumberParser bigNumberParser = new BigNumberParser();
-    private static final Map<TrigonometricMode, CalculatorEngine> CALCULATOR_ENGINE_CACHE = new ConcurrentHashMap<>();
     /**
      * The locale defining grouping and decimal separators used by this number.
      */
@@ -109,10 +107,6 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     @NonNull
     @Setter
     private MathContext mathContext;
-
-    private static CalculatorEngine getCalculatorEngine(@NonNull final TrigonometricMode trigonometricMode) {
-        return CALCULATOR_ENGINE_CACHE.computeIfAbsent(trigonometricMode, CalculatorEngine::new);
-    }
 
     /**
      * Constructs a BigNumber from a string and locale using the default math context.
@@ -166,7 +160,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = parsedAndFormatted.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = getCalculatorEngine(trigonometricMode);
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
     }
 
     /**
@@ -233,7 +227,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = getCalculatorEngine(trigonometricMode);
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
     }
 
     /**
@@ -294,7 +288,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = bigNumber.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = getCalculatorEngine(trigonometricMode);
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
     }
 
     /**
@@ -334,7 +328,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = getCalculatorEngine(trigonometricMode);
+        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
     }
 
     /**

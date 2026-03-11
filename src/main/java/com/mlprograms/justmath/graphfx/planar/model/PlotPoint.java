@@ -24,9 +24,7 @@
 package com.mlprograms.justmath.graphfx.planar.model;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.NonNull;
 
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -54,28 +52,5 @@ public record PlotPoint(
     public PlotPoint {
         Objects.requireNonNull(x, "x must not be null");
         Objects.requireNonNull(y, "y must not be null");
-    }
-
-    /**
-     * Convenience factory for creating a point from primitive values.
-     *
-     * @param x x-coordinate in world units
-     * @param y y-coordinate in world units
-     * @return new plot point
-     */
-    public static PlotPoint of(final double x, final double y) {
-        return of(x, y, Locale.ROOT);
-    }
-
-    /**
-     * Convenience factory for creating a point from primitive values with a specific locale.
-     *
-     * @param x x-coordinate in world units
-     * @param y y-coordinate in world units
-     * @param locale locale used to create {@link BigNumber} coordinates
-     * @return new plot point
-     */
-    public static PlotPoint of(final double x, final double y, @NonNull final Locale locale) {
-        return new PlotPoint(new BigNumber(String.valueOf(x), locale), new BigNumber(String.valueOf(y), locale));
     }
 }

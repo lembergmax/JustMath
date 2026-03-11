@@ -24,7 +24,6 @@
 package com.mlprograms.justmath.graphfx.planar.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,44 +66,5 @@ public record PlotResult(
     public PlotResult {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
         Objects.requireNonNull(plotLines, "plotLines must not be null");
-    }
-
-    /**
-     * Creates a fluent builder for plot results.
-     *
-     * @return new builder
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Fluent builder that reduces boilerplate when adding points and lines.
-     */
-    public static final class Builder {
-        private final List<PlotPoint> plotPoints = new ArrayList<>();
-        private final List<PlotLine> plotLines = new ArrayList<>();
-
-        public Builder addPoint(final PlotPoint plotPoint) {
-            plotPoints.add(Objects.requireNonNull(plotPoint, "plotPoint must not be null"));
-            return this;
-        }
-
-        public Builder addPoint(final double x, final double y) {
-            return addPoint(PlotPoint.of(x, y));
-        }
-
-        public Builder addLine(final PlotLine plotLine) {
-            plotLines.add(Objects.requireNonNull(plotLine, "plotLine must not be null"));
-            return this;
-        }
-
-        public Builder addLine(final PlotPoint... points) {
-            return addLine(new PlotLine(Arrays.asList(points)));
-        }
-
-        public PlotResult build() {
-            return new PlotResult(new ArrayList<>(plotPoints), new ArrayList<>(plotLines));
-        }
     }
 }
