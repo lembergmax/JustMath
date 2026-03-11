@@ -139,7 +139,7 @@ public class CalculatorEngineUtils {
      * @param variables a map of variable names with their BigNumber values
      * @throws IllegalArgumentException if a variable token does not have a corresponding value in the map
      */
-    static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
+    static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables, @NonNull final Map<String, String> resolvedVariablesCache) {
         checkVariablesForRecursion(calculatorEngine, variables);
 
         for (int i = 0; i < tokens.size(); i++) {
@@ -153,7 +153,10 @@ public class CalculatorEngineUtils {
 
                 // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
                 // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
-                final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
+                final String evaluatedVariableValue = resolvedVariablesCache.computeIfAbsent(
+                        token.getValue(),
+                        ignored -> calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString()
+                );
                 tokens.set(i, new Token(Token.Type.NUMBER, evaluatedVariableValue));
             }
         }

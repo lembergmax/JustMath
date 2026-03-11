@@ -35,4 +35,16 @@ public record PlotPoint(BigNumber x, BigNumber y) {
         Objects.requireNonNull(y, "y must not be null");
     }
 
+    public static PlotPoint of(final BigNumber x, final BigNumber y) {
+        return new PlotPoint(x, y);
+    }
+
+    public static PlotPoint of(final double x, final double y) {
+        return new PlotPoint(new BigNumber(Double.toString(x)), new BigNumber(Double.toString(y)));
+    }
+
+    public static PlotPoint of(final String x, final String y) {
+        return new PlotPoint(new BigNumber(x), new BigNumber(y));
+    }
+
 }

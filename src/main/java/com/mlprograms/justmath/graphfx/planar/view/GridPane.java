@@ -183,6 +183,11 @@ final class GridPane extends Pane {
     }
 
     private void drawPlotResult(final GraphicsContext graphicsContext, final double width, final double height, final PlotResult plotResult) {
+        final List<PlotPoint> points = plotResult.plotPoints();
+        if (!points.isEmpty()) {
+            drawPoints(graphicsContext, width, height, points);
+        }
+
         final List<PlotLine> lines = plotResult.plotLines();
         if (lines.isEmpty()) {
             return;
@@ -198,6 +203,26 @@ final class GridPane extends Pane {
 
             graphicsContext.setStroke(Color.rgb(30, 30, 200));
             drawPolyline(graphicsContext, width, height, points);
+        }
+    }
+
+
+    private void drawPoints(final GraphicsContext graphics, final double width, final double height, final List<PlotPoint> points) {
+        graphics.setFill(Color.rgb(200, 30, 30));
+        final double radius = 3.0;
+
+        for (final PlotPoint point : points) {
+            final double worldX = point.x().doubleValue();
+            final double worldY = point.y().doubleValue();
+
+            if (!isFinite(worldX) || !isFinite(worldY)) {
+                continue;
+            }
+
+            final double screenX = worldToScreenX(worldX, scale, offsetX, width);
+            final double screenY = worldToScreenY(worldY, scale, offsetY, height);
+
+            graphics.fillOval(screenX - radius, screenY - radius, radius * 2.0, radius * 2.0);
         }
     }
 
@@ -453,6 +478,14 @@ final class GridPane extends Pane {
     void addPlotResult(final PlotResult plotResult) {
         this.plotResults.add(Objects.requireNonNull(plotResult, "plotResult must not be null"));
         redraw();
+    }
+
+    void addPlotLine(final PlotLine plotLine) {
+        addPlotResult(PlotResult.ofLine(plotLine));
+    }
+
+    void addPlotPoint(final PlotPoint plotPoint) {
+        addPlotResult(PlotResult.ofPoint(plotPoint));
     }
 
     void clearPlot() {

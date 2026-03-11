@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.graphfx.planar.model;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +32,34 @@ public record PlotLine(List<PlotPoint> plotPoints) {
 
     public PlotLine {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+        plotPoints = List.copyOf(plotPoints);
+    }
+
+    public static PlotLine of(final List<PlotPoint> plotPoints) {
+        return new PlotLine(plotPoints);
+    }
+
+    public static PlotLine of(final PlotPoint... plotPoints) {
+        Objects.requireNonNull(plotPoints, "plotPoints must not be null");
+        return new PlotLine(Arrays.asList(plotPoints));
+    }
+
+    public static PlotLine between(final PlotPoint first, final PlotPoint second) {
+        return new PlotLine(List.of(first, second));
+    }
+
+    public static PlotLine fromDoubles(final double... coordinates) {
+        Objects.requireNonNull(coordinates, "coordinates must not be null");
+        if (coordinates.length < 4 || coordinates.length % 2 != 0) {
+            throw new IllegalArgumentException("coordinates must contain pairs of x,y values and at least two points");
+        }
+
+        final PlotPoint[] points = new PlotPoint[coordinates.length / 2];
+        for (int i = 0, j = 0; i < coordinates.length; i += 2, j++) {
+            points[j] = PlotPoint.of(coordinates[i], coordinates[i + 1]);
+        }
+
+        return PlotLine.of(points);
     }
 
 }

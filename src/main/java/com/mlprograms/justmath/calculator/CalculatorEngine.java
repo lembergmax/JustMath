@@ -168,24 +168,30 @@ public class CalculatorEngine {
             return BigNumbers.ZERO;
         }
 
+        final Map<String, String> previousVariables = currentVariables.get();
+
         // Store the current variables in the thread-local storage
-        Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
+        final Map<String, String> combinedVariables = new HashMap<>(previousVariables);
         combinedVariables.putAll(variables);
         currentVariables.set(combinedVariables);
 
-        // Replace the |n| in the expression to look like abs(n)
-        String expressionWithoutAbsValueSign = replaceAbsSigns(expression);
+        try {
+            // Replace the |n| in the expression to look like abs(n)
+            final String expressionWithoutAbsValueSign = replaceAbsSigns(expression);
 
-        // Tokenize the input string
-        List<Token> tokens = tokenizer.tokenize(expressionWithoutAbsValueSign);
+            // Tokenize the input string
+            final List<Token> tokens = tokenizer.tokenize(expressionWithoutAbsValueSign);
 
-        replaceVariables(this, tokens, combinedVariables);
+            replaceVariables(this, tokens, combinedVariables, new HashMap<>());
 
-        // Parse to postfix notation using shunting yard algorithm
-        List<Token> postfix = postfixParser.toPostfix(tokens);
+            // Parse to postfix notation using shunting yard algorithm
+            final List<Token> postfix = postfixParser.toPostfix(tokens);
 
-        // Evaluate the postfix expression to a BigDecimal result
-        return evaluator.evaluate(postfix).trim();
+            // Evaluate the postfix expression to a BigDecimal result
+            return evaluator.evaluate(postfix).trim();
+        } finally {
+            currentVariables.set(previousVariables);
+        }
     }
 
     /**

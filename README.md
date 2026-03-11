@@ -352,6 +352,21 @@ System.out.println(result);
 
 GraphFx is available as the JavaFX-based plotting layer in JustMath.
 
+Simple API example:
+
+```java
+GraphFxViewer viewer = new GraphFxViewer("GraphFx Demo");
+viewer.show();
+
+viewer.addPoint(0, 0);
+viewer.addLine(-2, -1, 0, 2, 2, -1);
+viewer.plotExpression("sin(x)");
+```
+
+Recent performance improvements:
+- reduced repeated variable re-evaluation in the `CalculatorEngine`
+- proper cleanup of evaluation context state to avoid stale thread-local variables between calls
+
 For the upcoming modular, library-first graphing calculator architecture (headless + GUI mode, MVC split, caching, adaptive sampling, and migration phases), see:
 
 - [`docs/graphing-calculator-architecture-plan.md`](docs/graphing-calculator-architecture-plan.md)

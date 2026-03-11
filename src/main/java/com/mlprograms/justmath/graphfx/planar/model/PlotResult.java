@@ -31,12 +31,34 @@ import java.util.Objects;
 public record PlotResult(List<PlotPoint> plotPoints, List<PlotLine> plotLines) {
 
     public PlotResult() {
-        this(new ArrayList<>(), new ArrayList<>());
+        this(List.of(), List.of());
     }
 
     public PlotResult {
         Objects.requireNonNull(plotPoints, "plotPoints must not be null");
         Objects.requireNonNull(plotLines, "plotLines must not be null");
+        plotPoints = List.copyOf(plotPoints);
+        plotLines = List.copyOf(plotLines);
+    }
+
+    public static PlotResult ofLine(final PlotLine plotLine) {
+        return new PlotResult(List.of(), List.of(plotLine));
+    }
+
+    public static PlotResult ofPoint(final PlotPoint plotPoint) {
+        return new PlotResult(List.of(plotPoint), List.of());
+    }
+
+    public PlotResult withLine(final PlotLine plotLine) {
+        final List<PlotLine> lines = new ArrayList<>(plotLines);
+        lines.add(plotLine);
+        return new PlotResult(plotPoints, lines);
+    }
+
+    public PlotResult withPoint(final PlotPoint plotPoint) {
+        final List<PlotPoint> points = new ArrayList<>(plotPoints);
+        points.add(plotPoint);
+        return new PlotResult(points, plotLines);
     }
 
 }

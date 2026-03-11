@@ -27,12 +27,15 @@ package com.mlprograms.justmath.graphfx.planar.view;
 import com.mlprograms.justmath.graphfx.JavaFxRuntime;
 import com.mlprograms.justmath.graphfx.WindowConfig;
 import com.mlprograms.justmath.graphfx.planar.calculator.GraphFxCalculatorEngine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotLine;
+import com.mlprograms.justmath.graphfx.planar.model.PlotPoint;
 import com.mlprograms.justmath.graphfx.planar.model.PlotResult;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -80,6 +83,39 @@ public final class GraphFxViewer {
 
     public void plotExpression(final String expression) {
         plotExpression(expression, Map.of());
+    }
+
+    public void addPoint(final PlotPoint plotPoint) {
+        Objects.requireNonNull(plotPoint, "plotPoint must not be null");
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> gridPane.addPlotPoint(plotPoint));
+    }
+
+    public void addPoint(final double x, final double y) {
+        addPoint(PlotPoint.of(x, y));
+    }
+
+    public void addLine(final PlotLine plotLine) {
+        Objects.requireNonNull(plotLine, "plotLine must not be null");
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(() -> gridPane.addPlotLine(plotLine));
+    }
+
+    public void addLine(final PlotPoint... plotPoints) {
+        addLine(PlotLine.of(plotPoints));
+    }
+
+    public void addLine(final List<PlotPoint> plotPoints) {
+        addLine(PlotLine.of(plotPoints));
+    }
+
+    public void addLine(final double... coordinates) {
+        addLine(PlotLine.fromDoubles(coordinates));
+    }
+
+    public void clear() {
+        JavaFxRuntime.ensureStarted();
+        JavaFxRuntime.runOnFxThread(gridPane::clearPlot);
     }
 
     public void plotExpression(final String expression, final Map<String, String> variables) {
