@@ -143,37 +143,22 @@ public class CalculatorEngineUtils {
      */
     static void replaceVariables(@NonNull final CalculatorEngine calculatorEngine, @NonNull final List<Token> tokens, @NonNull final Map<String, String> variables) {
         checkVariablesForRecursion(calculatorEngine, variables);
-        final Map<String, String> resolvedVariables = new HashMap<>();
 
         for (int i = 0; i < tokens.size(); i++) {
             final Token token = tokens.get(i);
             if (token.getType() == Token.Type.VARIABLE) {
-                final String evaluatedVariableValue = resolveVariable(calculatorEngine, token.getValue(), variables, resolvedVariables);
+                final String value = variables.get(token.getValue());
+
+                if (value == null || value.isBlank()) {
+                    throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
+                }
+
+                // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
+                // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
+                final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
                 tokens.set(i, new Token(Token.Type.NUMBER, evaluatedVariableValue));
             }
         }
-    }
-
-    private static String resolveVariable(
-            @NonNull final CalculatorEngine calculatorEngine,
-            @NonNull final String variableName,
-            @NonNull final Map<String, String> variables,
-            @NonNull final Map<String, String> resolvedVariables
-    ) {
-        if (resolvedVariables.containsKey(variableName)) {
-            return resolvedVariables.get(variableName);
-        }
-
-        final String value = variables.get(variableName);
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Variable '" + variableName + "' is not defined.");
-        }
-
-        // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
-        // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
-        final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
-        resolvedVariables.put(variableName, evaluatedVariableValue);
-        return evaluatedVariableValue;
     }
 
     static void checkVariablesForRecursion(@NonNull final CalculatorEngine calculatorEngine, @NonNull final Map<String, String> variables) {
