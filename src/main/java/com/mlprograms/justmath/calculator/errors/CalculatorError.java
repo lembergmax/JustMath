@@ -24,32 +24,38 @@
 
 package com.mlprograms.justmath.calculator.errors;
 
-import lombok.NonNull;
-
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import lombok.NonNull;
+
 /**
- * Unveränderlicher Wertcontainer für einen konkreten Fehler der {@code CalculatorEngine}.
+ * Immutable value object that describes a single failure produced by the {@code CalculatorEngine}.
  *
  * <p>
- * Trägt:
+ * A {@code CalculatorError} carries:
  * </p>
  * <ul>
- *   <li>einen {@link CalculatorErrorCode} (strukturierte Ursache),</li>
- *   <li>benannte Parameter (z. B. {@code character}, {@code position}, {@code function}),
- *       die in der lokalisierten Meldung eingesetzt werden,</li>
- *   <li>eine technische Detailmeldung (englisch, eignet sich für Logs und {@link ErrorMode#RAW}),</li>
- *   <li>optional eine Position im Ausdruck.</li>
+ *   <li>a {@link CalculatorErrorCode} that identifies the structural cause,</li>
+ *   <li>a map of named parameters (such as {@code character}, {@code function} or
+ *       {@code variable}) that are substituted into the localized template,</li>
+ *   <li>a technical detail string in English suitable for logs and for the
+ *       {@link ErrorMode#RAW} output, and</li>
+ *   <li>an optional position inside the original expression.</li>
  * </ul>
  *
  * <p>
- * Die {@link #format(Locale, ErrorMode)}-Methode liefert je nach {@link ErrorMode} entweder
- * den technischen Detailtext oder einen lokalisierten Text aus dem Ressourcen-Bundle
- * {@code i18n/calculator_errors}.
+ * The {@link #format(Locale, ErrorMode)} method returns either the technical detail string or
+ * a localized text taken from the resource bundle {@code i18n/calculator_errors}, depending
+ * on the requested {@link ErrorMode}.
  * </p>
+ *
+ * @param code            the structured cause of this error; never {@code null}
+ * @param params          named substitution parameters for the localized template; never {@code null}
+ * @param technicalDetail technical English detail used in logs and {@link ErrorMode#RAW}; never {@code null}
+ * @param position        optional one-based position of the failure inside the expression, or {@code null}
  */
 public record CalculatorError(
         @NonNull CalculatorErrorCode code,
@@ -59,28 +65,32 @@ public record CalculatorError(
 ) {
 
     /**
-     * Basisname des Ressourcen-Bundles. Über {@link Locale}-Fallback findet
-     * {@link ResourceBundle#getBundle(String, Locale)} automatisch
-     * {@code calculator_errors_de.properties}, {@code _en.properties} oder das Default.
+     * Base name of the resource bundle that stores the localized message templates.
+     *
+     * <p>
+     * {@link ResourceBundle#getBundle(String, Locale)} resolves this base name to
+     * {@code calculator_errors_de.properties}, {@code calculator_errors_en.properties} or
+     * the default bundle, using the standard JDK locale fallback rules.
+     * </p>
      */
     public static final String BUNDLE_BASENAME = "i18n.calculator_errors";
 
     /**
-     * Erstellt einen Fehler ohne Parameter und ohne Position.
+     * Convenience constructor that creates an error without parameters and without a position.
      *
-     * @param code             der strukturierte Fehlercode
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param technicalDetail the technical English detail; must not be {@code null}
      */
     public CalculatorError(@NonNull final CalculatorErrorCode code, @NonNull final String technicalDetail) {
         this(code, Map.of(), technicalDetail, null);
     }
 
     /**
-     * Erstellt einen Fehler mit Parametern aber ohne Position.
+     * Convenience constructor that creates an error with parameters but without a position.
      *
-     * @param code             der strukturierte Fehlercode
-     * @param params           benannte Platzhalter für das Bundle
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param params          named substitution parameters for the localized template; must not be {@code null}
+     * @param technicalDetail the technical English detail; must not be {@code null}
      */
     public CalculatorError(
             @NonNull final CalculatorErrorCode code,
@@ -91,19 +101,20 @@ public record CalculatorError(
     }
 
     /**
-     * Formatiert den Fehler je nach Modus.
+     * Formats this error according to the requested mode.
      *
      * <p>
-     * Bei {@link ErrorMode#RAW} wird der technische Detailtext zurückgegeben (englisch).
-     * Bei {@link ErrorMode#USER_FRIENDLY} wird das passende Ressourcen-Bundle für die
-     * angegebene Locale geladen und das Template über einfache benannte
-     * Platzhalter-Ersetzung mit den Parametern befüllt. Fehlt ein Schlüssel im Bundle,
-     * fällt die Methode defensiv auf den technischen Text zurück.
+     * In {@link ErrorMode#RAW} the technical detail is returned verbatim (English). In
+     * {@link ErrorMode#USER_FRIENDLY} the matching resource bundle is loaded for the given
+     * locale and the localized template is filled in via simple named-placeholder
+     * substitution. If the bundle does not contain an entry for {@link #code()}, the method
+     * defensively falls back to the technical detail so that no
+     * {@link MissingResourceException} is propagated to the caller.
      * </p>
      *
-     * @param locale Ziel-Locale für die lokalisierte Meldung
-     * @param mode   gewählter Modus
-     * @return formatierter Meldungstext (nie {@code null})
+     * @param locale target locale for the localized message; must not be {@code null}
+     * @param mode   selected formatting mode; must not be {@code null}
+     * @return the formatted message text; never {@code null}
      */
     public String format(@NonNull final Locale locale, @NonNull final ErrorMode mode) {
         if (mode == ErrorMode.RAW) {
@@ -119,14 +130,19 @@ public record CalculatorError(
     }
 
     /**
-     * Ersetzt benannte Platzhalter wie {@code {character}}, {@code {position}}, {@code {function}}
-     * im Template durch die Werte aus {@code params} bzw. der separat übergebenen Position.
+     * Substitutes named placeholders such as {@code {character}}, {@code {position}} or
+     * {@code {function}} in the given template with the values from {@code params} and the
+     * separately supplied position.
      *
+     * <p>
+     * Parameters are applied first; the position is only injected when the caller did not
+     * already pass an explicit {@code position} entry in {@code params}.
+     * </p>
      *
-     * @param template Bundle-Template mit Platzhaltern in geschweiften Klammern
-     * @param params   benannte Parameter
-     * @param position optionale Position
-     * @return finaler Text
+     * @param template the localized template containing placeholders in curly braces
+     * @param params   named substitution parameters
+     * @param position optional one-based position, or {@code null} to skip position substitution
+     * @return the substituted text
      */
     private static String applyNamedParameters(
             @NonNull final String template,

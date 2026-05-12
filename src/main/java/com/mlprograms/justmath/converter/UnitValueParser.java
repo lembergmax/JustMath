@@ -24,20 +24,21 @@
 
 package com.mlprograms.justmath.converter;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.converter.exception.ConversionException;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Internal parsing utility for {@link UnitValue} inputs.
@@ -85,7 +86,9 @@ final class UnitValueParser {
             CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
     /**
-     * Vorgekompiltes Whitespace-Splitter-Pattern für {@link #splitIntoNumberTextAndUnitSymbol(String)}.
+     * Pre-compiled whitespace splitter pattern reused by
+     * {@link #splitIntoNumberTextAndUnitSymbol(String)} to avoid recompiling the regex on
+     * every call.
      */
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
 

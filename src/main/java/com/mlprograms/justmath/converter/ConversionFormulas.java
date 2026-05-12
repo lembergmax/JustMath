@@ -89,24 +89,25 @@ public class ConversionFormulas {
     }
 
     /**
-     * Erzeugt eine reziproke Umrechnungsformel der Form:
+     * Creates a reciprocal conversion formula of the form:
      *
      * <pre>
      * base = scale / value
      * </pre>
      *
      * <p>
-     * Die Umkehrung ist symmetrisch: {@code value = scale / base}.
+     * The inverse conversion is symmetric: {@code value = scale / base}.
      * </p>
      *
      * <p>
-     * Wird für Einheiten benötigt, die der Kehrwert der Basiseinheit sind — z. B.
-     * {@code L/100 km} relativ zur Basis {@code m/L} bei Kraftstoffverbrauch.
+     * This formula is required for units that represent the reciprocal of the category
+     * base unit — for example {@code L/100 km} relative to the base {@code m/L} for
+     * fuel consumption.
      * </p>
      *
-     * @param scale Skalierungsfaktor; darf weder {@code null} noch {@code 0} sein
-     * @return reziproke Umrechnungsformel; niemals {@code null}
-     * @throws IllegalArgumentException wenn {@code scale == 0}
+     * @param scale multiplicative factor used in the reciprocal mapping; must not be {@code null} and must not be zero
+     * @return a conversion formula implementing the reciprocal mapping; never {@code null}
+     * @throws IllegalArgumentException if {@code scale} is zero
      */
     public static ConversionFormula reciprocal(@NonNull final BigNumber scale) {
         return new ReciprocalConversionFormula(scale);

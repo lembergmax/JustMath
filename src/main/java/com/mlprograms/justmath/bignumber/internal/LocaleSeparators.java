@@ -24,34 +24,47 @@
 
 package com.mlprograms.justmath.bignumber.internal;
 
-import lombok.NonNull;
-
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.NonNull;
+
 /**
- * Immutable container für locale-spezifische Trennzeichen mit globalem Cache.
+ * Immutable container for locale-specific decimal and grouping separators with a process-wide cache.
  *
  * <p>
- * Vermeidet wiederholtes {@link DecimalFormatSymbols#getInstance(Locale)} in Hot-Paths
- * (Tokenizer, Parser, Number-Formatter). Pro Locale wird genau eine Instanz erzeugt
- * und in einer {@link ConcurrentHashMap} gehalten.
+ * This type avoids repeated invocations of {@link DecimalFormatSymbols#getInstance(Locale)} in
+ * hot paths such as the tokenizer, the BigNumber parser and number formatting routines. Each
+ * locale is resolved at most once and the resulting separators are kept in a
+ * {@link ConcurrentHashMap} that is shared across all callers.
  * </p>
  *
- * @param decimalSeparator  Dezimaltrennzeichen der Locale
- * @param groupingSeparator Gruppierungstrennzeichen der Locale
+ * <p>
+ * Instances are immutable and safe to share between threads.
+ * </p>
+ *
+ * @param decimalSeparator  the locale-specific decimal separator character
+ * @param groupingSeparator the locale-specific grouping (thousands) separator character
  */
 public record LocaleSeparators(char decimalSeparator, char groupingSeparator) {
 
+    /**
+     * Process-wide cache mapping each previously resolved locale to its separators.
+     */
     private static final ConcurrentHashMap<Locale, LocaleSeparators> CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Liefert die Trennzeichen für die übergebene Locale aus dem Cache; berechnet sie
-     * beim ersten Zugriff via {@link DecimalFormatSymbols#getInstance(Locale)}.
+     * Returns the cached separators for the given locale, computing them on first access
+     * via {@link DecimalFormatSymbols#getInstance(Locale)}.
      *
-     * @param locale Locale; darf nicht {@code null} sein
-     * @return gecachte Trennzeichen für diese Locale; niemals {@code null}
+     * <p>
+     * Subsequent calls for the same locale are served from the cache without any further
+     * lookup of {@link DecimalFormatSymbols}.
+     * </p>
+     *
+     * @param locale the locale to resolve separators for; must not be {@code null}
+     * @return cached decimal and grouping separators for the given locale; never {@code null}
      */
     public static LocaleSeparators forLocale(@NonNull final Locale locale) {
         return CACHE.computeIfAbsent(locale, l -> {

@@ -27,43 +27,44 @@ package com.mlprograms.justmath.calculator.exceptions;
 import com.mlprograms.justmath.calculator.errors.CalculatorError;
 import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
-import lombok.NonNull;
 
 import java.util.Map;
 
+import lombok.NonNull;
+
 /**
- * Exception für syntaktische Fehler im Ausdruck (z. B. ungültige Zeichen, Klammerfehler,
- * unbekannte Funktionen oder Variablen).
+ * Exception raised for syntactic problems in an expression, such as invalid characters,
+ * mismatched parentheses, unknown functions or undeclared variables.
  *
  * <p>
- * Existierende String-Konstruktoren bleiben aus Gründen der Rückwärtskompatibilität erhalten;
- * neuer Code sollte die typisierten Konstruktoren mit {@link CalculatorErrorCode} bevorzugen,
- * damit die Engine lokalisierte Meldungen ableiten kann.
+ * The legacy string-based constructors are kept for backwards compatibility. New code should
+ * prefer the typed constructors that take a {@link CalculatorErrorCode} so that the engine
+ * can derive localized messages.
  * </p>
  */
 public class SyntaxErrorException extends CalculatorException {
 
     /**
-     * Erstellt eine Exception mit Standard-Detailmeldung.
+     * Creates an exception with a default technical detail message.
      */
     public SyntaxErrorException() {
         super(CustomExceptionMessages.SYNTAX_ERROR, "Detailed Message was not specified.");
     }
 
     /**
-     * Legacy-Konstruktor: erzeugt eine Exception mit freier englischer Detailmeldung.
+     * Legacy constructor that creates an exception from a free-form English detail message.
      *
-     * @param detailedMessage technische Detailbeschreibung
+     * @param detailedMessage technical English detail; must not be {@code null}
      */
     public SyntaxErrorException(@NonNull final String detailedMessage) {
         super(CustomExceptionMessages.SYNTAX_ERROR, detailedMessage);
     }
 
     /**
-     * Konstruktor mit strukturiertem Fehlercode ohne Parameter.
+     * Creates an exception from a structured error code without parameters or position.
      *
-     * @param code             strukturierter Fehlercode
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
      */
     public SyntaxErrorException(
             @NonNull final CalculatorErrorCode code,
@@ -73,12 +74,13 @@ public class SyntaxErrorException extends CalculatorException {
     }
 
     /**
-     * Konstruktor mit strukturiertem Fehlercode, Parametern und optionaler Position.
+     * Creates an exception from a structured error code, named parameters and an optional
+     * position inside the expression.
      *
-     * @param code             strukturierter Fehlercode
-     * @param params           benannte Platzhalter (z. B. {@code character}, {@code function})
-     * @param technicalDetail technische, englische Detailmeldung
-     * @param position         optionale Position im Ausdruck
+     * @param code            the structured error code; must not be {@code null}
+     * @param params          named substitution parameters such as {@code character} or {@code function}; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
+     * @param position        optional one-based position inside the expression, or {@code null}
      */
     public SyntaxErrorException(
             @NonNull final CalculatorErrorCode code,

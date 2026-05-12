@@ -24,13 +24,14 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -41,8 +42,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
-import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import ch.obermuhlner.math.big.BigDecimalMath;
+import lombok.*;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
@@ -69,33 +70,48 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     private static final BigNumberParser bigNumberParser = new BigNumberParser();
 
     /**
-     * Gemeinsam genutzter Cache für {@link CalculatorEngine}-Instanzen je Kombination aus
-     * {@link MathContext} und {@link TrigonometricMode}. Vermeidet unnötige Engine-Allokationen
-     * bei jeder BigNumber-Konstruktion.
+     * Shared cache of {@link CalculatorEngine} instances keyed by the combination of
+     * {@link MathContext} and {@link TrigonometricMode}. Reusing engines avoids redundant
+     * allocations on every {@code BigNumber} construction.
      *
      * <p>
-     * Sicherheit: {@link CalculatorEngine} ist bis auf den Thread-lokalen Variablen-State
-     * effektiv zustandsfrei; der State wird in {@code evaluate} per try/finally korrekt
-     * pro Aufruf wiederhergestellt. Sharing über Threads hinweg ist somit unbedenklich.
+     * <strong>Thread-safety:</strong> {@link CalculatorEngine} is effectively stateless apart
+     * from its thread-local variable context, which {@link CalculatorEngine#evaluate} fully
+     * restores via try/finally for every invocation. Sharing instances across threads is
+     * therefore safe.
      * </p>
      */
     private static final ConcurrentHashMap<Long, CalculatorEngine> ENGINE_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Cache-Bereich für {@link #valueOf(long)}: vorgenerierte Instanzen für ganzzahlige Werte
-     * im Bereich {@code [-16, 256]} mit {@link Locale#ROOT} und {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
-     *
-     * <p>
-     * Achtung: diese Instanzen sind <strong>geteilt</strong>. Aufrufer dürfen keinen
-     * {@code @Setter} auf zurückgegebenen Cache-Instanzen ausführen, sonst wirken sich
-     * Mutationen global aus. (Volle Immutability wäre eine Breaking-Change und ist bewusst
-     * außerhalb dieses Refactors.)
-     * </p>
+     * Lower bound (inclusive) of the integer range pre-populated in {@link #SMALL_INT_CACHE}.
      */
     private static final int SMALL_INT_CACHE_MIN = -16;
+
+    /**
+     * Upper bound (inclusive) of the integer range pre-populated in {@link #SMALL_INT_CACHE}.
+     */
     private static final int SMALL_INT_CACHE_MAX = 256;
+
+    /**
+     * Pre-built {@link BigNumber} instances returned by {@link #valueOf(long)} for integer
+     * values in the range {@code [-16, 256]}. All entries are constructed with
+     * {@link Locale#US} and {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
+     *
+     * <p>
+     * <strong>Caveat:</strong> these instances are <em>shared</em>. Callers must not invoke
+     * any {@code @Setter} on the returned instances, since a mutation would affect every
+     * consumer of the cache. Full immutability would be a breaking change and is intentionally
+     * left out of the caching refactor.
+     * </p>
+     */
     private static final BigNumber[] SMALL_INT_CACHE = buildSmallIntCache();
 
+    /**
+     * Builds the {@link #SMALL_INT_CACHE} during class initialization.
+     *
+     * @return the populated cache array; never {@code null}
+     */
     private static BigNumber[] buildSmallIntCache() {
         final int size = SMALL_INT_CACHE_MAX - SMALL_INT_CACHE_MIN + 1;
         final BigNumber[] cache = new BigNumber[size];
@@ -107,8 +123,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Liefert (gegebenenfalls aus dem Cache) eine {@link CalculatorEngine}-Instanz
-     * für die übergebene Kombination aus {@link MathContext} und {@link TrigonometricMode}.
+     * Returns a {@link CalculatorEngine} instance for the supplied combination of
+     * {@link MathContext} and {@link TrigonometricMode}, reusing a cached instance whenever
+     * possible.
+     *
+     * @param mathContext       math context controlling precision and rounding; must not be {@code null}
+     * @param trigonometricMode trigonometric mode; must not be {@code null}
+     * @return a shared {@link CalculatorEngine} for the given parameters; never {@code null}
      */
     public static CalculatorEngine sharedEngine(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
         final long key = (((long) mathContext.hashCode()) << 8) ^ trigonometricMode.ordinal();
@@ -116,15 +137,15 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Factory für {@code long}-Werte. Werte in {@code [-16, 256]} werden aus einem
-     * statischen Cache zurückgegeben; größere/kleinere Werte werden neu erzeugt.
+     * Factory for {@code long} values. Values in the range {@code [-16, 256]} are served
+     * from {@link #SMALL_INT_CACHE}; values outside the range are constructed on demand.
      *
      * <p>
-     * Locale ist {@link Locale#ROOT}, {@link MathContext} ist {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
+     * The returned instance uses {@link Locale#US} and {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
      * </p>
      *
-     * @param value ganzzahliger Wert
-     * @return {@link BigNumber}
+     * @param value the integer value
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
      */
     public static BigNumber valueOf(final long value) {
         if (value >= SMALL_INT_CACHE_MIN && value <= SMALL_INT_CACHE_MAX) {
@@ -134,30 +155,31 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
     }
 
     /**
-     * Factory für {@code int}-Werte. Delegiert auf {@link #valueOf(long)}.
+     * Factory for {@code int} values. Delegates to {@link #valueOf(long)}.
      *
-     * @param value ganzzahliger Wert
-     * @return {@link BigNumber}
+     * @param value the integer value
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
      */
     public static BigNumber valueOf(final int value) {
         return valueOf((long) value);
     }
 
     /**
-     * Factory für {@link BigDecimal}-Werte.
+     * Factory for {@link BigDecimal} values. The returned instance uses {@link Locale#US}.
      *
-     * @param value Eingabewert (darf nicht {@code null} sein)
-     * @return {@link BigNumber}
+     * @param value the source value; must not be {@code null}
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
      */
     public static BigNumber valueOf(@NonNull final BigDecimal value) {
         return new BigNumber(value, Locale.US);
     }
 
     /**
-     * Factory für Strings.
+     * Factory for string values. Locale and math context are determined by the canonical
+     * {@link BigNumber#BigNumber(String)} constructor.
      *
-     * @param value String-Darstellung der Zahl
-     * @return {@link BigNumber}
+     * @param value the string representation; must not be {@code null}
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
      */
     public static BigNumber valueOf(@NonNull final String value) {
         return new BigNumber(value);

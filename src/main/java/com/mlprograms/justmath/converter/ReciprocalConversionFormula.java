@@ -26,19 +26,20 @@ package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import lombok.NonNull;
 
 import java.math.MathContext;
 
+import lombok.NonNull;
+
 /**
- * Immutable reziproke Umrechnungsformel der Form:
+ * Immutable reciprocal conversion formula of the form:
  *
  * <pre>
  * base = scale / value
  * </pre>
  *
  * <p>
- * Die Umkehrung ist symmetrisch:
+ * The inverse conversion is symmetric:
  * </p>
  *
  * <pre>
@@ -46,40 +47,38 @@ import java.math.MathContext;
  * </pre>
  *
  * <p>
- * Diese Formel wird für Einheiten benötigt, bei denen die Quelleinheit der Kehrwert der
- * Basiseinheit ist. Typisches Beispiel: Kraftstoffverbrauch — die Basis ist {@code m/L}
- * (zurückgelegte Strecke pro Liter), eine Quelleinheit wie {@code L/100 km} ist deren
- * Kehrwert. Der affine Standardansatz {@code base = value * scale + offset} kann das
- * mathematisch nicht ausdrücken; nur für {@code value = 1} liefert er zufällig den
- * richtigen Wert.
+ * This formula is required for units whose source quantity is the reciprocal of the category
+ * base quantity. The typical example is fuel consumption: the category base is {@code m/L}
+ * (distance per litre), so a source unit such as {@code L/100 km} is its reciprocal. The
+ * standard affine form {@code base = value * scale + offset} cannot express this relationship
+ * mathematically; it only happens to produce the correct value for {@code value = 1}.
  * </p>
  *
  * <p>
- * Die Klasse ist absichtlich package-private, damit die öffentliche API klein bleibt.
- * Externe Konsumenten können Instanzen über {@link ConversionFormulas#reciprocal(BigNumber)}
- * erhalten.
+ * The class is intentionally package-private to keep the public API small. External
+ * consumers obtain instances through {@link ConversionFormulas#reciprocal(BigNumber)}.
  * </p>
  *
  * <p>
- * Diese Implementierung ist unveränderlich und thread-sicher.
+ * This implementation is immutable and thread-safe.
  * </p>
  */
 final class ReciprocalConversionFormula implements ConversionFormula {
 
     /**
-     * Multiplikativer Faktor: {@code base = scale / value}.
+     * Multiplicative factor used to scale values via {@code base = scale / value}.
      *
      * <p>
-     * Darf nicht null sein, sonst wäre {@code toBase} immer null und die Umkehrung undefiniert.
+     * Must not be zero, otherwise both the forward and inverse conversions would be undefined.
      * </p>
      */
     private final BigNumber scale;
 
     /**
-     * Erzeugt eine neue reziproke Umrechnungsformel.
+     * Creates a new reciprocal conversion formula.
      *
-     * @param scale Skalierungsfaktor; darf weder {@code null} noch {@code 0} sein
-     * @throws IllegalArgumentException wenn {@code scale == 0}
+     * @param scale the scaling factor; must not be {@code null} and must not be zero
+     * @throws IllegalArgumentException if {@code scale} is zero
      */
     ReciprocalConversionFormula(@NonNull final BigNumber scale) {
         if (scale.compareTo(BigNumbers.ZERO) == 0) {
@@ -89,16 +88,16 @@ final class ReciprocalConversionFormula implements ConversionFormula {
     }
 
     /**
-     * Rechnet einen Wert in der konkreten Einheit in die Basiseinheit um:
+     * Converts a value expressed in the concrete unit into the base unit using:
      *
      * <pre>
      * base = scale / value
      * </pre>
      *
-     * @param value       Eingabewert in der konkreten Einheit; darf nicht {@code null} sein
-     * @param mathContext Mathekontext für Präzision/Rundung; darf nicht {@code null} sein
-     * @return Wert in der Basiseinheit; niemals {@code null}
-     * @throws ArithmeticException wenn {@code value == 0}
+     * @param value       input value in the concrete unit; must not be {@code null}
+     * @param mathContext math context controlling precision and rounding; must not be {@code null}
+     * @return the value expressed in the base unit; never {@code null}
+     * @throws ArithmeticException if {@code value} is zero
      */
     @Override
     public BigNumber toBase(@NonNull final BigNumber value, @NonNull final MathContext mathContext) {
@@ -106,16 +105,16 @@ final class ReciprocalConversionFormula implements ConversionFormula {
     }
 
     /**
-     * Rechnet einen Wert in der Basiseinheit zurück in die konkrete Einheit:
+     * Converts a value expressed in the base unit back to the concrete unit using:
      *
      * <pre>
      * value = scale / base
      * </pre>
      *
-     * @param baseValue   Eingabewert in der Basiseinheit; darf nicht {@code null} sein
-     * @param mathContext Mathekontext für Präzision/Rundung; darf nicht {@code null} sein
-     * @return Wert in der konkreten Einheit; niemals {@code null}
-     * @throws ArithmeticException wenn {@code baseValue == 0}
+     * @param baseValue   input value in the base unit; must not be {@code null}
+     * @param mathContext math context controlling precision and rounding; must not be {@code null}
+     * @return the value expressed in the concrete unit; never {@code null}
+     * @throws ArithmeticException if {@code baseValue} is zero
      */
     @Override
     public BigNumber fromBase(@NonNull final BigNumber baseValue, @NonNull final MathContext mathContext) {

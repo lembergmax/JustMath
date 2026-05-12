@@ -25,31 +25,33 @@
 package com.mlprograms.justmath.calculator.errors;
 
 /**
- * Steuert den Detaillierungsgrad und die Sprache der von der {@code CalculatorEngine}
- * nach außen gegebenen Fehlertexte.
+ * Controls the verbosity and language of error messages emitted by the
+ * {@code CalculatorEngine}.
  *
  * <p>
- * <strong>RAW</strong> liefert technische Meldungen (englisch, mit internen Details wie Token,
- * Positionen oder Stack-Größen). Geeignet für Logs, Debugging und Bibliotheks-Konsumenten,
- * die strukturiert mit {@link CalculatorErrorCode} arbeiten und nur den Originalkontext brauchen.
+ * <strong>{@link #RAW}</strong> emits the technical, English detail message including internal
+ * context such as tokens, positions or stack sizes. It is intended for log output, debugging
+ * and for library consumers who already use {@link CalculatorErrorCode} for structured
+ * handling and only need the original technical context.
  * </p>
  *
  * <p>
- * <strong>USER_FRIENDLY</strong> liefert lokalisierte, nutzerfreundliche Texte über die
- * Ressourcen-Bundles unter {@code i18n/calculator_errors_*.properties}. Die Auswahl der
- * Locale erfolgt über {@link com.mlprograms.justmath.calculator.CalculatorEngine#setLocale(java.util.Locale)}
- * oder pro Auswertung.
+ * <strong>{@link #USER_FRIENDLY}</strong> emits a localized, end-user oriented message taken
+ * from the resource bundles located at {@code i18n/calculator_errors_*.properties}. The
+ * effective locale is configured via
+ * {@link com.mlprograms.justmath.calculator.CalculatorEngine#setLocale(java.util.Locale)}.
  * </p>
  */
 public enum ErrorMode {
 
     /**
-     * Technische, englische Fehlermeldung mit internen Details (Standard).
+     * Technical, English error message including internal context. This is the default and
+     * preserves the behaviour of older releases that pre-date the localization layer.
      */
     RAW,
 
     /**
-     * Lokalisierte, nutzerfreundliche Fehlermeldung über das Resource-Bundle.
+     * Localized, user-facing error message taken from the resource bundle.
      */
     USER_FRIENDLY
 }

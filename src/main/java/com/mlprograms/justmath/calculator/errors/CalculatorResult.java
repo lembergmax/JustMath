@@ -26,18 +26,21 @@ package com.mlprograms.justmath.calculator.errors;
 
 import com.mlprograms.justmath.calculator.exceptions.CalculatorException;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
-import lombok.NonNull;
 
 import java.util.Optional;
 import java.util.function.Function;
 
+import lombok.NonNull;
+
 /**
- * Ergebnis einer sicheren Auswertung — entweder {@link Success} mit dem Wert,
- * oder {@link Failure} mit einem {@link CalculatorError}.
+ * Outcome of a {@code evaluateSafe} invocation — either a {@link Success} that carries the
+ * computed value or a {@link Failure} that carries a {@link CalculatorError}.
  *
  * <p>
- * Dieser Typ erlaubt Aufrufern, Fehler ohne Exceptions zu behandeln. Beispiel:
+ * This type lets callers branch on success and failure without using exceptions on the
+ * happy path. Example:
  * </p>
  * <pre>{@code
  * CalculatorResult<BigNumber> result = engine.evaluateSafe("5/0");
@@ -47,115 +50,128 @@ import java.util.function.Function;
  * }
  * }</pre>
  *
- * @param <T> Typ des Erfolgswerts
+ * @param <T> the type of the successful value
  */
 public sealed interface CalculatorResult<T> permits CalculatorResult.Success, CalculatorResult.Failure {
 
     /**
-     * Erstellt ein Erfolgsergebnis.
+     * Creates a successful result.
      *
-     * @param value der berechnete Wert
-     * @param <T>   Typ des Werts
-     * @return Erfolgsergebnis
+     * @param value the computed value; must not be {@code null}
+     * @param <T>   the type of the value
+     * @return a {@link Success} wrapping {@code value}; never {@code null}
      */
     static <T> CalculatorResult<T> success(@NonNull final T value) {
         return new Success<>(value);
     }
 
     /**
-     * Erstellt ein Fehlerergebnis.
+     * Creates a failure result.
      *
-     * @param error Fehlerbeschreibung
-     * @param <T>   Typ des erwarteten Werts
-     * @return Fehlerergebnis
+     * @param error the error describing the failure; must not be {@code null}
+     * @param <T>   the type of the expected value
+     * @return a {@link Failure} wrapping {@code error}; never {@code null}
      */
     static <T> CalculatorResult<T> failure(@NonNull final CalculatorError error) {
         return new Failure<>(error);
     }
 
     /**
-     * @return {@code true}, wenn dieses Ergebnis ein {@link Success} ist
+     * @return {@code true} if this result is a {@link Success}; {@code false} otherwise
      */
     default boolean isSuccess() {
         return this instanceof Success<T>;
     }
 
     /**
-     * @return {@code true}, wenn dieses Ergebnis ein {@link Failure} ist
+     * @return {@code true} if this result is a {@link Failure}; {@code false} otherwise
      */
     default boolean isFailure() {
         return this instanceof Failure<T>;
     }
 
     /**
-     * Gibt den Erfolgswert zurück, falls vorhanden.
+     * Returns the successful value, if present.
      *
-     * @return {@link Optional} mit dem Wert oder leer
+     * @return an {@link Optional} containing the value for {@link Success}, otherwise empty
      */
     default Optional<T> value() {
-        return this instanceof Success<T> s ? Optional.of(s.successValue()) : Optional.empty();
+        return this instanceof Success<T>(T successValue) ? Optional.of(successValue) : Optional.empty();
     }
 
     /**
-     * Gibt den Fehler zurück, falls vorhanden.
+     * Returns the failure descriptor, if present.
      *
-     * @return {@link Optional} mit dem Fehler oder leer
+     * @return an {@link Optional} containing the error for {@link Failure}, otherwise empty
      */
     default Optional<CalculatorError> error() {
-        return this instanceof Failure<T> f ? Optional.of(f.failureError()) : Optional.empty();
+        return this instanceof Failure<T>(CalculatorError failureError) ? Optional.of(failureError) : Optional.empty();
     }
 
     /**
-     * Wirft im Fehlerfall eine passende {@link CalculatorException}, sonst liefert den Wert.
+     * Returns the successful value, or throws a {@link CalculatorException} that matches the
+     * error code's category for the failure case.
      *
-     * @return der Erfolgswert
+     * <p>
+     * Failures whose code maps to {@link CustomExceptionMessages#SYNTAX_ERROR} are surfaced
+     * as a {@link SyntaxErrorException}; everything else is surfaced as a
+     * {@link ProcessingErrorException}. This preserves the exception class that callers
+     * expect from the equivalent {@code evaluate} entry points.
+     * </p>
+     *
+     * @return the successful value
+     * @throws CalculatorException if this result is a {@link Failure}
      */
     default T valueOrThrow() {
-        if (this instanceof Success<T> s) {
-            return s.successValue();
+        if (this instanceof Success<T>(T successValue)) {
+            return successValue;
         }
-        CalculatorError err = ((Failure<T>) this).failureError();
-        throw new ProcessingErrorException(err.technicalDetail());
+        final CalculatorError err = ((Failure<T>) this).failureError();
+        if (err.code().getCategory() == CustomExceptionMessages.SYNTAX_ERROR) {
+            throw new SyntaxErrorException(err.code(), err.params(), err.technicalDetail(), err.position());
+        }
+        throw new ProcessingErrorException(err.code(), err.technicalDetail());
     }
 
     /**
-     * Mappt den Erfolgswert. Im Fehlerfall bleibt das Ergebnis ein {@link Failure}.
+     * Applies the given mapper to the successful value, leaving a {@link Failure} unchanged.
      *
-     * @param mapper Abbildungsfunktion
-     * @param <R>    neuer Wertetyp
-     * @return neues {@link CalculatorResult}
+     * @param mapper mapping function applied to the successful value; must not be {@code null}
+     * @param <R>    the target type of the mapping
+     * @return a new {@link CalculatorResult} with the mapped value, or the original failure
      */
     default <R> CalculatorResult<R> map(@NonNull final Function<? super T, ? extends R> mapper) {
-        if (this instanceof Success<T> s) {
-            return new Success<>(mapper.apply(s.successValue()));
+        if (this instanceof Success<T>(T successValue)) {
+            return new Success<>(mapper.apply(successValue));
         }
         return new Failure<>(((Failure<T>) this).failureError());
     }
 
     /**
-     * Liefert die {@link CustomExceptionMessages}-Kategorie im Fehlerfall — nützlich für
-     * Konsumenten, die das alte Kategorien-Modell nutzen.
+     * Returns the {@link CustomExceptionMessages} category for the failure case. Useful for
+     * consumers that still branch on the legacy category model rather than the new
+     * {@link CalculatorErrorCode}.
      *
-     * @return Optional mit der Kategorie oder leer
+     * @return an {@link Optional} containing the category, or empty for {@link Success}
      */
     default Optional<CustomExceptionMessages> category() {
         return error().map(e -> e.code().getCategory());
     }
 
     /**
-     * Erfolgsergebnis.
+     * Successful result.
      *
-     * @param successValue der berechnete Wert
-     * @param <T>          Typ des Werts
+     * @param successValue the computed value
+     * @param <T>          the type of the value
      */
     record Success<T>(@NonNull T successValue) implements CalculatorResult<T> {
     }
 
     /**
-     * Fehlerergebnis.
+     * Failure result.
      *
-     * @param failureError Fehlerbeschreibung
-     * @param <T>          Typ des erwarteten Werts
+     * @param failureError the structured error descriptor
+     * @param <T>          the type of the expected value
      */
     record Failure<T>(@NonNull CalculatorError failureError) implements CalculatorResult<T> {
     }

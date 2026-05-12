@@ -24,9 +24,7 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,6 +32,9 @@ import java.math.MathContext;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+
+import ch.obermuhlner.math.big.BigDecimalMath;
+import lombok.NonNull;
 
 public class BigNumbers {
 
@@ -123,15 +124,15 @@ public class BigNumbers {
 	public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180", DEFAULT_MATH_CONTEXT);
 
 	/**
-	 * Cache der per {@link BigDecimalMath#pi(MathContext)} berechneten π-Werte je
-	 * {@link MathContext}. Locale ist reine Darstellungsangabe und wird nicht als Schlüssel
-	 * verwendet — der numerische Wert ist locale-unabhängig.
+	 * Cache of pi values computed via {@link BigDecimalMath#pi(MathContext)}, keyed by
+	 * {@link MathContext}. Locale only controls presentation and is intentionally not part
+	 * of the cache key: the underlying numeric value is locale-independent.
 	 */
 	private static final ConcurrentHashMap<MathContext, BigDecimal> PI_BD_CACHE = new ConcurrentHashMap<>();
 
 	/**
-	 * Cache der per {@link BigDecimalMath#e(MathContext)} berechneten e-Werte je
-	 * {@link MathContext}.
+	 * Cache of Euler's number values computed via {@link BigDecimalMath#e(MathContext)},
+	 * keyed by {@link MathContext}.
 	 */
 	private static final ConcurrentHashMap<MathContext, BigDecimal> E_BD_CACHE = new ConcurrentHashMap<>();
 

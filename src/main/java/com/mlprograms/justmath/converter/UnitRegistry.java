@@ -25,10 +25,11 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 import java.util.*;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Internal single source of truth for all built-in unit definitions.
@@ -1085,22 +1086,22 @@ class UnitRegistry {
     }
 
     /**
-     * Erzeugt einen Registry-Eintrag mit reziproker Umrechnung in die Basiseinheit:
+     * Builds a registry entry whose conversion to the base unit follows the reciprocal form:
      *
      * <pre>
      * base = scale / value
      * </pre>
      *
      * <p>
-     * Wird für Einheiten benötigt, die der Kehrwert der Basiseinheit sind — beispielsweise
-     * {@code L/100 km}, wenn die Basis {@code m/L} ist.
+     * This factory is required for units that are the reciprocal of the category base unit
+     * — for example {@code L/100 km} when the base unit is {@code m/L}.
      * </p>
      *
-     * @param unit        Einheiten-Identifier; darf nicht {@code null} sein
-     * @param displayName Anzeigename; darf nicht {@code null} sein
-     * @param symbol      Einheitensymbol; darf nicht {@code null} sein
-     * @param scaleToBase Reziproker Skalierungsfaktor; darf nicht {@code null} sein
-     * @return Registry-Eintrag; niemals {@code null}
+     * @param unit        unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
+     * @param scaleToBase reciprocal scaling factor; must not be {@code null}
+     * @return the registry entry; never {@code null}
      */
     private static UnitSpec defineReciprocal(
             @NonNull final Unit unit,

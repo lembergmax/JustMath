@@ -29,102 +29,108 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Stark typisierter Katalog aller Fehlerursachen, die in der {@code CalculatorEngine}
- * auftreten können.
+ * Strongly typed catalogue of every failure cause that can be reported by the
+ * {@code CalculatorEngine}.
  *
  * <p>
- * Jeder Code besitzt:
+ * Each code carries:
  * </p>
  * <ul>
- *   <li>einen <em>Bundle-Schlüssel</em> für die lokalisierte Meldung in
- *       {@code i18n/calculator_errors*.properties} (über {@link #getBundleKey()}),</li>
- *   <li>eine <em>Kategorie</em> aus {@link CustomExceptionMessages}, die für
- *       Rückwärtskompatibilität mit dem bestehenden {@code Throwable#getMessage()}
- *       von {@code SyntaxErrorException}/{@code ProcessingErrorException} sorgt.</li>
+ *   <li>a <em>bundle key</em> resolved against
+ *       {@code i18n/calculator_errors*.properties} (see {@link #getBundleKey()}), and</li>
+ *   <li>a <em>category</em> from {@link CustomExceptionMessages} that maps the new code back
+ *       to the legacy {@code SyntaxErrorException}/{@code ProcessingErrorException} message
+ *       contract so that {@link Throwable#getMessage()} remains backwards compatible.</li>
  * </ul>
  *
  * <p>
- * Codes ersetzen das frühere "Stringly-typed" Werfen freier Detail-Strings: Werte können
- * jetzt strukturell ausgewertet werden, ohne englische Textfragmente zu parsen.
+ * These codes replace the previous "stringly typed" approach of throwing free-form English
+ * detail strings: callers can now branch on a structural value instead of parsing English
+ * text fragments.
  * </p>
  */
 @Getter
 public enum CalculatorErrorCode {
 
     /**
-     * Ungültiges Zeichen im Ausdruck (z. B. {@code "2#3"}). Parameter:
-     * {@code character}, {@code position}.
+     * The expression contains a character that the tokenizer does not recognize
+     * (for example {@code "2#3"}). Parameters: {@code character}, {@code position}.
      */
     SYNTAX_INVALID_CHARACTER("error.syntax.invalidCharacter", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Fehlende schließende Klammer einer Funktion oder eines Ausdrucks. Parameter:
-     * {@code function} (optional).
+     * A function call or sub-expression is missing its closing parenthesis.
+     * Parameters: {@code function} (optional).
      */
     SYNTAX_MISSING_RIGHT_PAREN("error.syntax.missingRightParen", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Nicht zueinander passende Klammern (z. B. überzählige öffnende oder schließende Klammer).
+     * Mismatched parentheses (a stray opening or closing parenthesis that has no partner).
      */
     SYNTAX_UNMATCHED_PAREN("error.syntax.unmatchedParen", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Unbekannte Funktion oder unbekannter Operator. Parameter: {@code function}.
+     * The expression references an unknown function or operator. Parameter: {@code function}.
      */
     SYNTAX_UNKNOWN_FUNCTION("error.syntax.unknownFunction", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Verwendung einer Variablen, die nicht im Variablen-Map definiert wurde. Parameter:
-     * {@code variable}.
+     * The expression uses a variable that was not declared in the variable map.
+     * Parameter: {@code variable}.
      */
     SYNTAX_UNKNOWN_VARIABLE("error.syntax.unknownVariable", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Unvollständiger Ausdruck — z. B. ungerade Anzahl Betragsstriche {@code |...} oder
-     * vorzeitiges Ende des Ausdrucks.
+     * The expression is incomplete — for example it has an odd number of absolute value
+     * bars {@code |...} or ends unexpectedly.
      */
     SYNTAX_INCOMPLETE_EXPRESSION("error.syntax.incompleteExpression", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Falsche Anzahl Funktionsargumente. Parameter: {@code function}, {@code expected},
-     * {@code actual} (sofern bekannt).
+     * A function was called with the wrong number of arguments.
+     * Parameters: {@code function}, {@code expected}, {@code actual} (when available).
      */
     SYNTAX_WRONG_ARGUMENT_COUNT("error.syntax.wrongArgumentCount", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Trennzeichen ({@code ;}) an falscher Position bzw. außerhalb einer Funktion.
+     * The argument separator ({@code ;}) appears outside of a function call or in a
+     * position that is otherwise invalid.
      */
     SYNTAX_MISPLACED_SEPARATOR("error.syntax.misplacedSeparator", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Fakultätsoperator {@code !} an unzulässiger Position.
+     * The factorial operator {@code !} appears in a position where it cannot be applied.
      */
     SYNTAX_INVALID_FACTORIAL("error.syntax.invalidFactorial", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
-     * Division durch Null.
+     * The evaluator attempted to divide by zero.
      */
     PROCESSING_DIVISION_BY_ZERO("error.processing.divisionByZero", CustomExceptionMessages.PROCESSING_ERROR),
 
     /**
-     * Definitionsbereichsfehler (z. B. {@code sqrt(-4)} im reellen Bereich).
+     * The value passed to a function is outside the function's mathematical domain
+     * (for example {@code sqrt(-4)} over the reals).
      */
     PROCESSING_DOMAIN_ERROR("error.processing.domainError", CustomExceptionMessages.PROCESSING_ERROR),
 
     /**
-     * Interner, nicht weiter klassifizierbarer Verarbeitungsfehler. Fallback-Code.
+     * Fallback code used for processing failures that cannot be classified more precisely.
      */
     PROCESSING_INTERNAL("error.processing.internal", CustomExceptionMessages.PROCESSING_ERROR);
 
     /**
-     * Schlüssel im Ressourcen-Bundle {@code i18n/calculator_errors*.properties}.
+     * Key used to look up the localized template inside
+     * {@code i18n/calculator_errors*.properties}.
      */
     @NonNull
     private final String bundleKey;
 
     /**
-     * Kategorie, mit der dieser Code auf das alte {@link CustomExceptionMessages}-Modell
-     * abgebildet wird. Bestimmt den {@code Throwable#getMessage()} stabilen Hauptstring.
+     * Legacy category that this code maps onto. Determines the stable
+     * {@link Throwable#getMessage()} text exposed by
+     * {@link com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException}
+     * and {@link com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException}.
      */
     @NonNull
     private final CustomExceptionMessages category;

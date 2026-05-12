@@ -32,35 +32,36 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Gemeinsame Basisklasse aller von der {@code CalculatorEngine} geworfenen Exceptions.
+ * Common base class for every exception thrown by the {@code CalculatorEngine}.
  *
  * <p>
- * Erweitert {@link CustomErrorException} um einen strukturierten {@link CalculatorError}.
- * Dieser trägt Code, benannte Parameter und optionale Position und erlaubt nutzerfreundliche,
- * lokalisierte Formatierung via {@link CalculatorError#format}.
+ * This class extends {@link CustomErrorException} with a structured {@link CalculatorError}
+ * descriptor that carries the {@link CalculatorErrorCode}, named parameters and an optional
+ * position. The descriptor enables localized, user-facing formatting through
+ * {@link CalculatorError#format}.
  * </p>
  *
  * <p>
- * Bestehende Konsumenten, die nur {@link Throwable#getMessage()} oder
- * {@link CustomErrorException#getCustomExceptionMessages()} auswerten, bleiben kompatibel:
- * die Hauptmeldung entspricht weiterhin dem Kategorie-Default
- * (z. B. {@code "Syntax Error"}/{@code "Processing Error"}).
+ * Existing consumers that only inspect {@link Throwable#getMessage()} or
+ * {@link CustomErrorException#getCustomExceptionMessages()} remain fully compatible: the
+ * primary message still resolves to the category default (for example {@code "Syntax Error"}
+ * or {@code "Processing Error"}).
  * </p>
  */
 @Getter
 public abstract class CalculatorException extends CustomErrorException {
 
     /**
-     * Strukturierte Fehlerbeschreibung, falls vorhanden. {@code null} wenn die Exception
-     * über die alten String-Konstruktoren erzeugt wurde.
+     * Structured error descriptor when the exception was created from a typed code, or
+     * {@code null} when the exception was produced by one of the legacy string constructors.
      */
     private final CalculatorError calculatorError;
 
     /**
-     * Konstruktor für legacy String-basierte Erzeugung.
+     * Constructor used by the legacy string-based factory paths.
      *
-     * @param category        Kategorie für {@link Throwable#getMessage()}
-     * @param detailedMessage technische Detailbeschreibung
+     * @param category        category that determines {@link Throwable#getMessage()}; must not be {@code null}
+     * @param detailedMessage technical English detail; must not be {@code null}
      */
     protected CalculatorException(
             @NonNull final CustomExceptionMessages category,
@@ -71,9 +72,9 @@ public abstract class CalculatorException extends CustomErrorException {
     }
 
     /**
-     * Konstruktor mit strukturiertem Fehler.
+     * Constructor that wraps a fully populated {@link CalculatorError}.
      *
-     * @param calculatorError strukturierte Fehlerbeschreibung
+     * @param calculatorError structured error descriptor; must not be {@code null}
      */
     protected CalculatorException(@NonNull final CalculatorError calculatorError) {
         super(calculatorError.code().getCategory(), calculatorError.technicalDetail());
@@ -81,10 +82,11 @@ public abstract class CalculatorException extends CustomErrorException {
     }
 
     /**
-     * Convenience-Konstruktor mit Code und technischer Meldung — keine Parameter.
+     * Convenience constructor that builds a {@link CalculatorError} without parameters and
+     * without a position.
      *
-     * @param code             strukturierter Fehlercode
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
      */
     protected CalculatorException(
             @NonNull final CalculatorErrorCode code,

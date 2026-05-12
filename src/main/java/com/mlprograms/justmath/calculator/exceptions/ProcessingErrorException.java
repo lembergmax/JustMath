@@ -27,42 +27,44 @@ package com.mlprograms.justmath.calculator.exceptions;
 import com.mlprograms.justmath.calculator.errors.CalculatorError;
 import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
-import lombok.NonNull;
 
 import java.util.Map;
 
+import lombok.NonNull;
+
 /**
- * Exception für Verarbeitungsfehler bei der Auswertung eines bereits geparsten Ausdrucks
- * (z. B. Division durch Null, Definitionsbereichsverletzungen, interne Inkonsistenzen).
+ * Exception raised for processing problems that occur while evaluating an already parsed
+ * expression — for example division by zero, a value outside a function's mathematical
+ * domain or an internal inconsistency in the evaluator.
  *
  * <p>
- * Die legacy String-Konstruktoren bleiben erhalten; neuer Code sollte die typisierten
- * Konstruktoren mit {@link CalculatorErrorCode} bevorzugen.
+ * The legacy string-based constructors are kept for backwards compatibility. New code should
+ * prefer the typed constructors that take a {@link CalculatorErrorCode}.
  * </p>
  */
 public class ProcessingErrorException extends CalculatorException {
 
     /**
-     * Erstellt eine Exception mit Standard-Detailmeldung.
+     * Creates an exception with a default technical detail message.
      */
     public ProcessingErrorException() {
         super(CustomExceptionMessages.PROCESSING_ERROR, "Detailed Message was not specified.");
     }
 
     /**
-     * Legacy-Konstruktor: erzeugt eine Exception mit freier englischer Detailmeldung.
+     * Legacy constructor that creates an exception from a free-form English detail message.
      *
-     * @param detailedMessage technische Detailbeschreibung
+     * @param detailedMessage technical English detail; must not be {@code null}
      */
     public ProcessingErrorException(@NonNull final String detailedMessage) {
         super(CustomExceptionMessages.PROCESSING_ERROR, detailedMessage);
     }
 
     /**
-     * Konstruktor mit strukturiertem Fehlercode ohne Parameter.
+     * Creates an exception from a structured error code without parameters.
      *
-     * @param code             strukturierter Fehlercode
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
      */
     public ProcessingErrorException(
             @NonNull final CalculatorErrorCode code,
@@ -72,11 +74,11 @@ public class ProcessingErrorException extends CalculatorException {
     }
 
     /**
-     * Konstruktor mit strukturiertem Fehlercode und benannten Parametern.
+     * Creates an exception from a structured error code with named parameters.
      *
-     * @param code             strukturierter Fehlercode
-     * @param params           benannte Platzhalter
-     * @param technicalDetail technische, englische Detailmeldung
+     * @param code            the structured error code; must not be {@code null}
+     * @param params          named substitution parameters; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
      */
     public ProcessingErrorException(
             @NonNull final CalculatorErrorCode code,
