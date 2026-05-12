@@ -26,12 +26,12 @@ package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 /**
@@ -515,7 +515,7 @@ public final class BasicMath {
      * @return locale-adapted decimal string
      */
     private static String adaptPlainDecimalToLocale(final String plainDecimalString, final Locale locale) {
-        final char localeDecimalSeparator = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        final char localeDecimalSeparator = LocaleSeparators.forLocale(locale).decimalSeparator();
         if (localeDecimalSeparator == '.') {
             return plainDecimalString;
         }
@@ -578,9 +578,9 @@ public final class BasicMath {
      * @return parsed sign and sanitized number string
      */
     private static ParsedString sanitizeAndExtractSign(final String input, final Locale locale) {
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        final char groupingSeparatorCharacter = symbols.getGroupingSeparator();
-        final char localeDecimalSeparatorCharacter = symbols.getDecimalSeparator();
+        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
+        final char groupingSeparatorCharacter = sep.groupingSeparator();
+        final char localeDecimalSeparatorCharacter = sep.decimalSeparator();
 
         int sign = +1;
         String sanitized = input;

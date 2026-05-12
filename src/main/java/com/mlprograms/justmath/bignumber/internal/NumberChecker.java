@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,9 +24,7 @@
 
 package com.mlprograms.justmath.bignumber.internal;
 
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * High-performance numeric string validator for locale-aware expressions.
@@ -44,8 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Leading and trailing whitespace is ignored without allocating a trimmed string.
  */
 public final class NumberChecker {
-
-    private static final ConcurrentHashMap<Locale, LocaleSeparators> SEPARATORS_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Checks whether the given input represents a valid locale-aware number.
@@ -77,7 +73,7 @@ public final class NumberChecker {
             return false;
         }
 
-        final LocaleSeparators sep = separators(locale);
+        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
         final char decimalSep = sep.decimalSeparator();
         final char groupingSep = sep.groupingSeparator();
 
@@ -163,21 +159,6 @@ public final class NumberChecker {
     }
 
     /**
-     * Returns cached locale-specific separators for the given locale.
-     * <p>
-     * Caching avoids repeated creation of {@link DecimalFormatSymbols} objects in hot paths.
-     *
-     * @param locale the locale to resolve separators for; must not be {@code null}
-     * @return cached decimal and grouping separators for the locale
-     */
-    private static LocaleSeparators separators(final Locale locale) {
-        return SEPARATORS_CACHE.computeIfAbsent(locale, l -> {
-            final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(l);
-            return new LocaleSeparators(symbols.getDecimalSeparator(), symbols.getGroupingSeparator());
-        });
-    }
-
-    /**
      * Fast ASCII digit check.
      *
      * @param c character to test
@@ -207,15 +188,6 @@ public final class NumberChecker {
      */
     private static boolean isWhitespace(final char c) {
         return Character.isWhitespace(c);
-    }
-
-    /**
-     * Small immutable container for locale separators.
-     *
-     * @param decimalSeparator  the locale-specific decimal separator
-     * @param groupingSeparator the locale-specific grouping separator
-     */
-    private record LocaleSeparators(char decimalSeparator, char groupingSeparator) {
     }
 
 }

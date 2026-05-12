@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.converter.exception.ConversionException;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
@@ -33,8 +34,8 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.math.MathContext;
-import java.text.DecimalFormatSymbols;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
@@ -82,6 +83,11 @@ final class UnitValueParser {
      */
     private static final MathContext DEFAULT_MATH_CONTEXT =
             CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+
+    /**
+     * Vorgekompiltes Whitespace-Splitter-Pattern für {@link #splitIntoNumberTextAndUnitSymbol(String)}.
+     */
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
 
     /**
      * A list of all known unit symbols sorted by descending length.
@@ -302,7 +308,7 @@ final class UnitValueParser {
      * @throws NullPointerException    if {@code trimmedInputText} is {@code null}
      */
     private static ParsedParts splitIntoNumberTextAndUnitSymbol(@NonNull final String trimmedInputText) {
-        final String[] tokenArray = trimmedInputText.split("\\s+");
+        final String[] tokenArray = WHITESPACE_PATTERN.split(trimmedInputText);
 
         if (tokenArray.length >= 2) {
             final String unitSymbolText = tokenArray[tokenArray.length - 1].trim();
@@ -375,21 +381,27 @@ final class UnitValueParser {
             @NonNull final String rawNumberText,
             @NonNull final Locale localeForNormalization
     ) {
-        final DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance(localeForNormalization);
-        final char decimalSeparatorCharacter = decimalFormatSymbols.getDecimalSeparator();
-        final char groupingSeparatorCharacter = decimalFormatSymbols.getGroupingSeparator();
+        final LocaleSeparators sep = LocaleSeparators.forLocale(localeForNormalization);
+        final char decimalSeparatorCharacter = sep.decimalSeparator();
+        final char groupingSeparatorCharacter = sep.groupingSeparator();
 
-        final String numberTextWithoutNonBreakingSpaces = rawNumberText.replace("\u00A0", "").replace("\u202F", "");
-
-        final String numberTextWithoutGroupingSeparators = (groupingSeparatorCharacter == '\0')
-                ? numberTextWithoutNonBreakingSpaces
-                : numberTextWithoutNonBreakingSpaces.replace(String.valueOf(groupingSeparatorCharacter), "");
-
-        if (decimalSeparatorCharacter == '.') {
-            return numberTextWithoutGroupingSeparators;
+        final int length = rawNumberText.length();
+        final StringBuilder result = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            final char c = rawNumberText.charAt(i);
+            if (c == '\u00A0' || c == '\u202F') {
+                continue;
+            }
+            if (groupingSeparatorCharacter != '\0' && c == groupingSeparatorCharacter) {
+                continue;
+            }
+            if (decimalSeparatorCharacter != '.' && c == decimalSeparatorCharacter) {
+                result.append('.');
+                continue;
+            }
+            result.append(c);
         }
-
-        return numberTextWithoutGroupingSeparators.replace(decimalSeparatorCharacter, '.');
+        return result.toString();
     }
 
     /**

@@ -88,4 +88,28 @@ public class ConversionFormulas {
         return new AffineConversionFormula(scale, offset);
     }
 
+    /**
+     * Erzeugt eine reziproke Umrechnungsformel der Form:
+     *
+     * <pre>
+     * base = scale / value
+     * </pre>
+     *
+     * <p>
+     * Die Umkehrung ist symmetrisch: {@code value = scale / base}.
+     * </p>
+     *
+     * <p>
+     * Wird für Einheiten benötigt, die der Kehrwert der Basiseinheit sind — z. B.
+     * {@code L/100 km} relativ zur Basis {@code m/L} bei Kraftstoffverbrauch.
+     * </p>
+     *
+     * @param scale Skalierungsfaktor; darf weder {@code null} noch {@code 0} sein
+     * @return reziproke Umrechnungsformel; niemals {@code null}
+     * @throws IllegalArgumentException wenn {@code scale == 0}
+     */
+    public static ConversionFormula reciprocal(@NonNull final BigNumber scale) {
+        return new ReciprocalConversionFormula(scale);
+    }
+
 }

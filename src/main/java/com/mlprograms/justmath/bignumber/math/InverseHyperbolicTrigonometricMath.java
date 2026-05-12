@@ -26,11 +26,11 @@ package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
 
 import java.math.MathContext;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.*;
@@ -663,9 +663,9 @@ public final class InverseHyperbolicTrigonometricMath {
             return null;
         }
 
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        final char groupingSeparator = symbols.getGroupingSeparator();
-        final char decimalSeparator = symbols.getDecimalSeparator();
+        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
+        final char groupingSeparator = sep.groupingSeparator();
+        final char decimalSeparator = sep.decimalSeparator();
 
         String sanitized = trimmed.replace(String.valueOf(groupingSeparator), "");
         sanitized = sanitized.replace(" ", "");

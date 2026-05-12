@@ -24,12 +24,12 @@
 
 package com.mlprograms.justmath.bignumber;
 
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
@@ -124,9 +124,9 @@ class BigNumberParser {
      * @return formatted string with grouping and targetLocale decimal separator
      */
     BigNumber format(@NonNull final BigNumber number, @NonNull final Locale targetLocale) {
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(targetLocale);
-        char groupingSeparator = symbols.getGroupingSeparator();
-        char decimalSeparator = symbols.getDecimalSeparator();
+        final LocaleSeparators sep = LocaleSeparators.forLocale(targetLocale);
+        char groupingSeparator = sep.groupingSeparator();
+        char decimalSeparator = sep.decimalSeparator();
 
         String beforeDecimal = number.getValueBeforeDecimalPoint();
         String afterDecimal = number.getValueAfterDecimalPoint();
@@ -176,9 +176,9 @@ class BigNumberParser {
      * and converting the decimal separator to '.' (US format).
      */
     private String normalize(@NonNull final String value, @NonNull final Locale fromLocale) {
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(fromLocale);
-        char groupingSeparator = symbols.getGroupingSeparator();
-        char decimalSeparator = symbols.getDecimalSeparator();
+        final LocaleSeparators sep = LocaleSeparators.forLocale(fromLocale);
+        char groupingSeparator = sep.groupingSeparator();
+        char decimalSeparator = sep.decimalSeparator();
 
         String noGrouping = value.replace(String.valueOf(groupingSeparator), "");
 
@@ -336,12 +336,12 @@ class BigNumberParser {
         final boolean scientific = isScientificNotation(inputTrimmed);
 
         for (Locale locale : LocalesConfig.SUPPORTED_LOCALES) {
-            final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+            final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
 
-            if (symbols.getDecimalSeparator() != decimalCandidate) {
+            if (sep.decimalSeparator() != decimalCandidate) {
                 continue;
             }
-            if (groupingCandidate != null && symbols.getGroupingSeparator() != groupingCandidate) {
+            if (groupingCandidate != null && sep.groupingSeparator() != groupingCandidate) {
                 continue;
             }
 

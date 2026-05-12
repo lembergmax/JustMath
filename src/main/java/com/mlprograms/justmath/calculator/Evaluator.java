@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -27,6 +27,7 @@ package com.mlprograms.justmath.calculator;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
@@ -88,16 +89,20 @@ class Evaluator {
                 case STRING -> stack.push(token.getValue());
                 case OPERATOR, FUNCTION, CONSTANT -> {
                     ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
-                            .orElseThrow(() -> new SyntaxErrorException("Unknown operator or function: " + token.getValue()));
+                            .orElseThrow(() -> new SyntaxErrorException(
+                                    CalculatorErrorCode.SYNTAX_UNKNOWN_FUNCTION,
+                                    java.util.Map.of("function", token.getValue()),
+                                    "Unknown operator or function: " + token.getValue(),
+                                    null));
 
                     expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
                 }
-                default -> throw new ProcessingErrorException("Unexpected token: " + token);
+                default -> throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Unexpected token: " + token);
             }
         }
 
         if (stack.size() != 1) {
-            throw new ProcessingErrorException("Invalid expression: expected a single result, but found " + stack.size());
+            throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Invalid expression: expected a single result, but found " + stack.size());
         }
 
         Object result = stack.pop();
@@ -106,7 +111,7 @@ class Evaluator {
         if (result instanceof BigNumber bigNumber) {
             finalResult = bigNumber;
         } else {
-            throw new ProcessingErrorException("Unsupported result type: " + result);
+            throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Unsupported result type: " + result);
         }
 
         return finalResult;
