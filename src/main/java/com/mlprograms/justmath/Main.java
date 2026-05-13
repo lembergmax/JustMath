@@ -24,9 +24,13 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.errors.ErrorMode;
 import com.mlprograms.justmath.converter.Unit;
 import com.mlprograms.justmath.converter.UnitConverter;
 import com.mlprograms.justmath.converter.UnitValue;
+
+import java.util.Locale;
 
 public class Main {
 
@@ -40,8 +44,13 @@ public class Main {
 //        System.out.println(convertedToBigNumber);
 //        System.out.println(convertedToUnitValue.getValue());
 
-        final UnitValue unitValue = new UnitValue("1y");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
+        final CalculatorEngine calculatorEngine = new CalculatorEngine();
+        calculatorEngine.setLocale(Locale.GERMANY);
+        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
+        System.out.println(calculatorEngine.evaluateToString("((("));
+
+//        final UnitValue unitValue = new UnitValue("1y");
+//        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
 
     }
 

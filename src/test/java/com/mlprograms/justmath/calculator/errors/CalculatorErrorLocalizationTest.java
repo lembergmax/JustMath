@@ -136,6 +136,44 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void divisionByZeroLocalizedInGerman() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToString("5/0");
+        assertEquals("Division durch Null ist nicht erlaubt.", msg);
+    }
+
+    @Test
+    void domainErrorLocalizedInGerman() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToString("sqrt(-4)");
+        assertEquals("Wert liegt außerhalb des zulässigen Bereichs für diese Operation.", msg);
+    }
+
+    @Test
+    void prettyStringLocalizesArithmeticErrors() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToPrettyString("ln(-1)");
+        assertFalse(msg.toLowerCase().contains("exception"));
+        assertTrue(msg.startsWith("Wert liegt") || msg.startsWith("Der Ausdruck"),
+                "expected localized DE message, got: " + msg);
+    }
+
+    @Test
+    void evaluateSafeClassifiesDivisionByZero() {
+        CalculatorEngine engine = new CalculatorEngine();
+        CalculatorResult<?> result = engine.evaluateSafe("5/0");
+        assertTrue(result.isFailure());
+        assertEquals(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO,
+                result.error().orElseThrow().code());
+    }
+
+    @Test
     void unknownVariableLocalizedMessage() {
         CalculatorEngine engine = new CalculatorEngine()
                 .setLocale(Locale.GERMAN)
