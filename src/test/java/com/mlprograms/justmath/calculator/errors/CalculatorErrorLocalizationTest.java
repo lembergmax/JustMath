@@ -23,14 +23,14 @@
  */
 package com.mlprograms.justmath.calculator.errors;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.mlprograms.justmath.calculator.CalculatorEngine;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CalculatorErrorLocalizationTest {
 

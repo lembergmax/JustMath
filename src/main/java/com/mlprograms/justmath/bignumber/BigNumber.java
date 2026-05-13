@@ -61,7 +61,7 @@ import lombok.*;
  */
 @Getter
 @EqualsAndHashCode(callSuper = false, of = {"valueBeforeDecimalPoint", "valueAfterDecimalPoint", "isNegative"})
-public class BigNumber extends Number implements Comparable<BigNumber> {
+public class BigNumber extends Number implements Comparable<BigNumber>, Cloneable {
 
     /**
      * Shared instance of the parser used to convert input strings into BigNumber objects.
@@ -3341,8 +3341,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      *
      * @return a new BigNumber instance with the same value and properties as this one
      */
+    @Override
     public BigNumber clone() {
-        return new BigNumber(this);
+        try {
+            return (BigNumber) super.clone();
+        } catch (final CloneNotSupportedException cloneNotSupportedException) {
+            throw new AssertionError(cloneNotSupportedException);
+        }
     }
 
 }

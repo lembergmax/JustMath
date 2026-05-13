@@ -35,10 +35,11 @@ import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
+
+import lombok.NonNull;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -124,12 +125,6 @@ public class Tokenizer {
             buildThreeArgumentFunctionCandidates();
 
     /**
-     * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
-     * Used to alternate between opening and closing absolute value contexts during tokenization.
-     */
-    private boolean nextAbsoluteIsOpen = true;
-
-    /**
      * Scans the given token list for occurrences where a signed number directly follows
      * a closing parenthesis token (e.g. ") -5"). In such cases, the signed number token
      * is split into an operator token ('+' or '-') and a separate unsigned number token.
@@ -173,9 +168,8 @@ public class Tokenizer {
      * @throws NullPointerException     if the input string is null
      */
     public List<Token> tokenize(@NonNull final String input) {
-        // Reset instance state to avoid leakage between successive calls.
-        // The absolute-value bar parity flag must always start as "next opens".
-        this.nextAbsoluteIsOpen = true;
+        // Tracks whether the next absolute-value bar opens or closes a context.
+        boolean nextAbsoluteIsOpen = true;
 
         List<Token> tokens = new ArrayList<>();
         String expression = removeWhitespace(input);

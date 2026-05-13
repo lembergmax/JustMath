@@ -23,12 +23,14 @@
  */
 package com.mlprograms.justmath.calculator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import com.mlprograms.justmath.calculator.internal.Token;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerStatefulnessTest {
 
@@ -56,6 +58,6 @@ class TokenizerStatefulnessTest {
         List<Token> tokens = tokenizer.tokenize("2+3");
         assertFalse(tokens.isEmpty());
         // verify tokens for second simple input are sensible
-        assertEquals(Token.Type.NUMBER, tokens.get(0).getType());
+        assertEquals(Token.Type.NUMBER, tokens.getFirst().getType());
     }
 }

@@ -2538,7 +2538,7 @@ public final class BasicMath {
         ParsedDecimalNumber term = oneParts();
 
         final ParsedDecimalNumber epsilon = normalize(new ParsedDecimalNumber(+1, "1", requestedPrecision));
-        final int maxIterations = Math.min(EXP_MAX_ITERATIONS_HARD_LIMIT, Math.max(200, workingContext.getPrecision() * 6));
+        final int maxIterations = Math.clamp((long) workingContext.getPrecision() * 6, 200, EXP_MAX_ITERATIONS_HARD_LIMIT);
 
         for (int n = 1; n <= maxIterations; n++) {
             term = normalize(multiplyParsed(term, reducedExponent));

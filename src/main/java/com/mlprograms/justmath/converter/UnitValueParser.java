@@ -315,7 +315,7 @@ final class UnitValueParser {
 
         if (tokenArray.length >= 2) {
             final String unitSymbolText = tokenArray[tokenArray.length - 1].trim();
-            final String numericText = joinTokensWithSingleSpaces(tokenArray, 0, tokenArray.length - 1).trim();
+            final String numericText = joinTokensWithSingleSpaces(tokenArray, tokenArray.length - 1).trim();
 
             if (numericText.isEmpty()) {
                 throw new UnitConversionException("Missing numeric value. Expected format: '<number> <unitSymbol>'.");
@@ -436,19 +436,17 @@ final class UnitValueParser {
      * </p>
      *
      * @param tokenArray        the array of tokens; must not be {@code null}
-     * @param startIndexInclusive start index (inclusive) for the join
      * @param endIndexExclusive end index (exclusive) for the join
      * @return the joined string separated by single spaces; never {@code null}
      * @throws NullPointerException if {@code tokenArray} is {@code null}
      */
     private static String joinTokensWithSingleSpaces(
             @NonNull final String[] tokenArray,
-            final int startIndexInclusive,
             final int endIndexExclusive
     ) {
         final StringBuilder joinedTokenStringBuilder = new StringBuilder();
-        for (int currentTokenIndex = startIndexInclusive; currentTokenIndex < endIndexExclusive; currentTokenIndex++) {
-            if (currentTokenIndex > startIndexInclusive) {
+        for (int currentTokenIndex = 0; currentTokenIndex < endIndexExclusive; currentTokenIndex++) {
+            if (currentTokenIndex > 0) {
                 joinedTokenStringBuilder.append(' ');
             }
             joinedTokenStringBuilder.append(tokenArray[currentTokenIndex]);
