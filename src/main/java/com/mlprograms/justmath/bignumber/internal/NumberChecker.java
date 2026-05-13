@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.bignumber.internal;
 
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * High-performance numeric string validator for locale-aware expressions.
