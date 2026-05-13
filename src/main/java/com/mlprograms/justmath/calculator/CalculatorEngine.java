@@ -56,13 +56,85 @@ import lombok.NonNull;
  * expressions for hot, repetitive workloads.
  * </p>
  *
+ * <h2>API families</h2>
+ *
  * <p>
- * <strong>Backwards compatibility:</strong> {@link #evaluateToString(String)} and
- * {@link #evaluateToPrettyString(String)} continue to return {@code e.getMessage()} for the
- * default {@link ErrorMode#RAW} (for example {@code "Syntax Error"}). Localized error output
- * is enabled by calling {@link #setLocale(Locale)} together with
- * {@link #setErrorMode(ErrorMode)}, or by using one of the {@code evaluateSafe(...)}
- * overloads that return a {@link CalculatorResult} for explicit error handling.
+ * The engine exposes four families of {@code evaluate} methods. Pick one based on whether you
+ * want a raw {@link BigNumber} or a {@link String}, and whether failures should be signalled
+ * via an exception, an embedded error message or a typed {@link CalculatorResult}.
+ * </p>
+ *
+ * <ol>
+ *   <li><b>Core Evaluation API</b> — {@link #evaluate(String)}, {@link #evaluate(String, Map)}.<br>
+ *       Returns a {@link BigNumber}. <em>Throws</em> {@link CalculatorException} on invalid
+ *       input. Intended for internal pipelines and callers that already handle exceptions.</li>
+ *
+ *   <li><b>Text Output API</b> — {@link #evaluateToString(String)},
+ *       {@link #evaluateToPrettyString(String)} (and their {@code Map}-variants).<br>
+ *       Returns a locale-formatted {@link String}. <em>Does not throw</em>: failures are
+ *       caught and folded into the return value as a message string (the exact text depends
+ *       on the configured {@link ErrorMode}; see {@link #setErrorMode(ErrorMode)}). Inputs are
+ *       {@code @NonNull} — passing {@code null} raises {@link NullPointerException}. Intended
+ *       for simple output where the caller does not need to distinguish success from failure
+ *       programmatically.</li>
+ *
+ *   <li><b>Safe UI String API</b> — {@link #evaluateSafeToString(String)},
+ *       {@link #evaluateSafeToPrettyString(String)} (and their {@code Map}-variants).<br>
+ *       Like the Text Output API but additionally null-tolerant: the expression and the
+ *       variable map may be {@code null}. Never throws, never returns {@code null}. On failure
+ *       the return value carries a locale-aware error prefix ({@code "Error: ..."} or
+ *       {@code "Fehler: ..."}). Intended for UI labels, log lines and other fire-and-forget
+ *       rendering. <em>Not</em> suitable when the caller has to branch on success/failure —
+ *       use the Typed Result API for that.</li>
+ *
+ *   <li><b>Typed Result API</b> — {@link #evaluateSafe(String)},
+ *       {@link #evaluateToStringResult(String)}, {@link #evaluateToPrettyStringResult(String)}
+ *       (and their {@code Map}-variants).<br>
+ *       Returns a {@link CalculatorResult}: {@link CalculatorResult#isSuccess()} carries the
+ *       computed value, {@link CalculatorResult#isFailure()} carries a structured
+ *       {@link CalculatorError}. No string-prefix parsing needed. {@link #evaluateSafe(String)}
+ *       wraps a {@link BigNumber}; the {@code ...Result} variants wrap the locale-formatted
+ *       {@link String}. Intended for application logic, tests and robust error handling.</li>
+ * </ol>
+ *
+ * <h2>Locale handling</h2>
+ *
+ * <p>
+ * {@link #setLocale(Locale)} controls two things only:
+ * </p>
+ * <ul>
+ *   <li>the decimal/grouping separators used when formatting the result, and</li>
+ *   <li>the language of error messages produced by {@link ErrorMode#USER_FRIENDLY} and the
+ *       {@code "Error: " / "Fehler: "} prefix of the Safe UI String API.</li>
+ * </ul>
+ * <p>
+ * The locale <em>does not</em> change the input grammar. Expressions are always parsed with
+ * {@code .} as the decimal separator: {@code "1.5+1.5"} is valid under any locale, while
+ * {@code "1,5+1,5"} is a syntax error because {@code ,} is reserved as an argument separator
+ * (e.g. {@code summation(1;5;k)}). The {@code ToString} / {@code ToPrettyString} naming
+ * mirrors the locale-aware output:
+ * </p>
+ * <ul>
+ *   <li>{@code evaluateToString(...)} → locale-aware decimal separator, <em>no</em>
+ *       thousands grouping. Example under {@link Locale#GERMANY}:
+ *       {@code "1234.56"} → {@code "1234,56"}.</li>
+ *   <li>{@code evaluateToPrettyString(...)} → locale-aware decimal separator <em>and</em>
+ *       thousands grouping. Example under {@link Locale#GERMANY}:
+ *       {@code "1234.56"} → {@code "1.234,56"}.</li>
+ * </ul>
+ * <p>
+ * The default locale is {@link Locale#ENGLISH}, which preserves the legacy
+ * {@code .}-as-decimal output of earlier releases.
+ * </p>
+ *
+ * <h2>Backwards compatibility</h2>
+ *
+ * <p>
+ * {@link #evaluateToString(String)} and {@link #evaluateToPrettyString(String)} continue to
+ * return {@code e.getMessage()} for the default {@link ErrorMode#RAW} (for example
+ * {@code "Syntax Error"}). Localized error output is enabled by calling
+ * {@link #setLocale(Locale)} together with {@link #setErrorMode(ErrorMode)}, or by using the
+ * Typed Result API.
  * </p>
  */
 @Getter
@@ -91,7 +163,21 @@ public class CalculatorEngine {
     private final PostfixParser postfixParser;
 
     /**
-     * Locale used to render localized error messages. Defaults to {@link Locale#ENGLISH}.
+     * Locale used for output formatting and error localization. It controls:
+     * <ul>
+     *   <li>the decimal separator used by {@code evaluateToString} / {@code evaluateSafeToString}
+     *       / {@code evaluateToStringResult} (no grouping),</li>
+     *   <li>the decimal <em>and</em> grouping separators used by
+     *       {@code evaluateToPrettyString} / {@code evaluateSafeToPrettyString} /
+     *       {@code evaluateToPrettyStringResult},</li>
+     *   <li>the language of {@link ErrorMode#USER_FRIENDLY} messages and the
+     *       {@code "Error: " / "Fehler: "} prefix used by the Safe UI String API.</li>
+     * </ul>
+     * <p>
+     * Input parsing is <em>not</em> affected — expressions always use {@code .} as the decimal
+     * separator regardless of this field. Defaults to {@link Locale#ENGLISH}, which preserves
+     * the legacy {@code .}-as-decimal output of earlier releases.
+     * </p>
      */
     @NonNull
     private Locale locale = Locale.ENGLISH;
@@ -195,7 +281,30 @@ public class CalculatorEngine {
     }
 
     /**
-     * Sets the locale used for localized error messages.
+     * Sets the locale used for output formatting and error localization. The configured
+     * locale is applied to:
+     * <ul>
+     *   <li>{@link #evaluateToString(String)}, {@link #evaluateSafeToString(String)} and
+     *       {@link #evaluateToStringResult(String)} — locale-aware decimal separator,
+     *       <em>no</em> thousands grouping
+     *       (e.g. {@code "1234,56"} for {@link Locale#GERMANY},
+     *       {@code "1234.56"} for {@link Locale#US}).</li>
+     *   <li>{@link #evaluateToPrettyString(String)},
+     *       {@link #evaluateSafeToPrettyString(String)} and
+     *       {@link #evaluateToPrettyStringResult(String)} — locale-aware decimal separator
+     *       <em>and</em> thousands grouping
+     *       (e.g. {@code "1.234,56"} for {@link Locale#GERMANY},
+     *       {@code "1,234.56"} for {@link Locale#US}).</li>
+     *   <li>error messages emitted by {@link ErrorMode#USER_FRIENDLY} and the
+     *       {@code "Error: " / "Fehler: "} prefix produced by the Safe UI String API.</li>
+     * </ul>
+     *
+     * <p>
+     * Input parsing is <strong>not</strong> affected — expressions are always parsed with
+     * {@code .} as the decimal separator regardless of this setting. {@code "1.5+1.5"} is
+     * valid under any locale; {@code "1,5+1,5"} is a syntax error because {@code ,} is
+     * reserved as an argument separator (e.g. {@code summation(1;5;k)}).
+     * </p>
      *
      * @param locale target locale; must not be {@code null}
      * @return this engine for builder-style chaining
@@ -333,14 +442,26 @@ public class CalculatorEngine {
     }
 
     /**
-     * Evaluates an expression and returns its result as a string. Errors are reported as
-     * human-readable strings instead of being thrown.
+     * Evaluates an expression and returns its result as a {@link String}. Belongs to the
+     * <em>Text Output API</em>: errors are caught and folded into the return value as a
+     * message string rather than being thrown.
      *
      * <p>
-     * In the default {@link ErrorMode#RAW} the returned text matches the behaviour from
-     * before the localization layer was introduced — typically the category default such as
-     * {@code "Syntax Error"} or {@code "Processing Error"}. In {@link ErrorMode#USER_FRIENDLY}
-     * the localized message from the configured bundle is returned instead.
+     * The result uses the configured {@link #setLocale(Locale) locale}'s decimal separator
+     * but <em>no</em> thousands grouping. For example with {@link Locale#GERMANY}
+     * {@code "1234.56"} yields {@code "1234,56"} (not {@code "1.234,56"} — that grouped form
+     * is the contract of {@link #evaluateToPrettyString(String)}); with {@link Locale#US} or
+     * {@link Locale#ENGLISH} it yields {@code "1234.56"}.
+     * </p>
+     *
+     * <p>
+     * In the default {@link ErrorMode#RAW} the error text matches the legacy behaviour
+     * (category default such as {@code "Syntax Error"} or {@code "Processing Error"}). In
+     * {@link ErrorMode#USER_FRIENDLY} the localized message from the configured bundle is
+     * returned instead. The input is {@code @NonNull}: passing {@code null} raises
+     * {@link NullPointerException}. Callers that need null-tolerance should use the Safe UI
+     * String API; callers that need to branch on success/failure should use the Typed Result
+     * API.
      * </p>
      *
      * @param expression input expression; must not be {@code null}
@@ -360,7 +481,7 @@ public class CalculatorEngine {
     public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
-            return result.toString();
+            return result.toString(locale);
         } catch (final CalculatorException calculatorException) {
             return formatExceptionMessage(calculatorException);
         } catch (final Exception exception) {
@@ -369,7 +490,17 @@ public class CalculatorEngine {
     }
 
     /**
-     * Evaluates an expression and returns the result formatted for human consumption.
+     * Evaluates an expression and returns the result formatted for human consumption
+     * <em>with</em> thousands grouping. Belongs to the <em>Text Output API</em>: errors are
+     * caught and folded into the return value as a message string rather than being thrown.
+     *
+     * <p>
+     * Decimal and grouping separators follow the configured {@link #setLocale(Locale) locale}:
+     * {@code "1234.56"} renders as {@code "1.234,56"} under {@link Locale#GERMANY},
+     * {@code "1,234.56"} under {@link Locale#ENGLISH} / {@link Locale#US}, and the
+     * corresponding separators for any other JDK-supported locale. The input is
+     * {@code @NonNull}: passing {@code null} raises {@link NullPointerException}.
+     * </p>
      *
      * @param expression input expression; must not be {@code null}
      * @return formatted result, or an error message if evaluation failed
@@ -389,12 +520,126 @@ public class CalculatorEngine {
     public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
-            return result.toPrettyString();
+            return result.toPrettyString(locale);
         } catch (CalculatorException e) {
             return formatExceptionMessage(e);
         } catch (Exception e) {
             return formatExceptionMessage(classifyRuntimeException(e));
         }
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToString(String)}. Belongs to
+     * the <em>Safe UI String API</em>: accepts {@code null} as expression or variable map,
+     * never throws, never returns {@code null}. Failures are returned as a prefixed error
+     * string ({@code "Error: ..."} or, when the configured
+     * {@link #setLocale(Locale) locale} is German, {@code "Fehler: ..."}).
+     *
+     * <p>
+     * On success the result uses the configured locale's decimal separator but <em>no</em>
+     * thousands grouping (e.g. {@code "1234,56"} under {@link Locale#GERMANY},
+     * {@code "1234.56"} under {@link Locale#US}), consistent with
+     * {@link #evaluateToString(String)}. Callers that need to branch on success/failure
+     * without parsing the prefix should use {@link #evaluateToStringResult(String)} from the
+     * Typed Result API.
+     * </p>
+     *
+     * @param expression input expression; may be {@code null}
+     * @return result as a string, or a prefixed error message
+     */
+    public String evaluateSafeToString(final String expression) {
+        return evaluateSafeToString(expression, Map.of());
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToString(String, Map)}.
+     *
+     * @param expression input expression; may be {@code null}
+     * @param variables  variable bindings; may be {@code null}
+     * @return result as a string, or a prefixed error message
+     */
+    public String evaluateSafeToString(final String expression, final Map<String, String> variables) {
+        if (expression == null) {
+            return formatSafeError(new IllegalArgumentException("expression must not be null"));
+        }
+        try {
+            BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
+            return result.toString(locale);
+        } catch (final CalculatorException calculatorException) {
+            return formatSafeError(calculatorException);
+        } catch (final Exception exception) {
+            return formatSafeError(exception);
+        }
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToPrettyString(String)}.
+     * Belongs to the <em>Safe UI String API</em>: accepts {@code null}, never throws, never
+     * returns {@code null}. Failures are returned as a prefixed error string
+     * ({@code "Error: ..."} or, under a German {@link #setLocale(Locale) locale},
+     * {@code "Fehler: ..."}).
+     *
+     * <p>
+     * On success the result uses the configured locale's decimal separator <em>and</em>
+     * thousands grouping (e.g. {@code "1.234,56"} under {@link Locale#GERMANY},
+     * {@code "1,234.56"} under {@link Locale#US}), consistent with
+     * {@link #evaluateToPrettyString(String)}. Callers that need to branch on success/failure
+     * without parsing the prefix should use {@link #evaluateToPrettyStringResult(String)}
+     * from the Typed Result API.
+     * </p>
+     *
+     * @param expression input expression; may be {@code null}
+     * @return pretty-formatted result, or a prefixed error message
+     */
+    public String evaluateSafeToPrettyString(final String expression) {
+        return evaluateSafeToPrettyString(expression, Map.of());
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToPrettyString(String, Map)}.
+     *
+     * @param expression input expression; may be {@code null}
+     * @param variables  variable bindings; may be {@code null}
+     * @return pretty-formatted result, or a prefixed error message
+     */
+    public String evaluateSafeToPrettyString(final String expression, final Map<String, String> variables) {
+        if (expression == null) {
+            return formatSafeError(new IllegalArgumentException("expression must not be null"));
+        }
+        try {
+            BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
+            return result.toPrettyString(locale);
+        } catch (final CalculatorException calculatorException) {
+            return formatSafeError(calculatorException);
+        } catch (final Exception exception) {
+            return formatSafeError(exception);
+        }
+    }
+
+    /**
+     * Formats any exception caught by the {@code evaluateSafe...} string methods into a short,
+     * prefixed error string. The prefix is locale-aware: {@code "Fehler"} for German,
+     * {@code "Error"} otherwise. {@link CalculatorException}s and classifiable
+     * {@link RuntimeException}s are routed through {@link #formatExceptionMessage} so that the
+     * configured {@link ErrorMode} (RAW vs. USER_FRIENDLY) is respected.
+     *
+     * @param exception exception to format; must not be {@code null}
+     * @return short, single-line error string
+     */
+    private String formatSafeError(final Exception exception) {
+        final String prefix = "de".equalsIgnoreCase(locale.getLanguage()) ? "Fehler" : "Error";
+        String message;
+        if (exception instanceof CalculatorException calculatorException) {
+            message = formatExceptionMessage(calculatorException);
+        } else if (exception instanceof RuntimeException) {
+            message = formatExceptionMessage(classifyRuntimeException(exception));
+        } else {
+            message = exception.getMessage();
+        }
+        if (message == null || message.isBlank()) {
+            message = exception.getClass().getSimpleName();
+        }
+        return prefix + ": " + message;
     }
 
     /**
@@ -440,6 +685,81 @@ public class CalculatorEngine {
             }
             return CalculatorResult.failure(err);
         }
+    }
+
+    /**
+     * Evaluates an expression and returns a {@link CalculatorResult} that wraps the
+     * <em>locale-formatted</em> result string. Belongs to the <em>Typed Result API</em>:
+     * the typed counterpart to {@link #evaluateSafeToString(String)}, so callers can branch
+     * on {@link CalculatorResult#isSuccess()} / {@link CalculatorResult#isFailure()} without
+     * parsing an {@code "Error: "} / {@code "Fehler: "} prefix.
+     *
+     * <p>
+     * On success the wrapped string uses the configured {@link #setLocale(Locale) locale}'s
+     * decimal separator but <em>no</em> thousands grouping (e.g. {@code "1234,56"} under
+     * {@link Locale#GERMANY}, {@code "1234.56"} under {@link Locale#US}), matching
+     * {@link #evaluateToString(String)}. On failure the structured {@link CalculatorError}
+     * produced by {@link #evaluateSafe(String)} is propagated unchanged.
+     * </p>
+     *
+     * @param expression input expression; must not be {@code null}
+     * @return success carrying the formatted result, or failure carrying the structured error;
+     * never {@code null}
+     */
+    public CalculatorResult<String> evaluateToStringResult(@NonNull final String expression) {
+        return evaluateToStringResult(expression, Map.of());
+    }
+
+    /**
+     * Variant of {@link #evaluateToStringResult(String)} accepting user-defined variables.
+     *
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings; must not be {@code null}
+     * @return success carrying the formatted result, or failure carrying the structured error;
+     * never {@code null}
+     */
+    public CalculatorResult<String> evaluateToStringResult(
+            @NonNull final String expression,
+            @NonNull final Map<String, String> variables
+    ) {
+        return evaluateSafe(expression, variables).map(value -> value.toString(locale));
+    }
+
+    /**
+     * Evaluates an expression and returns a {@link CalculatorResult} that wraps the
+     * <em>pretty-formatted</em> result string — locale-aware decimal separator <em>and</em>
+     * thousands grouping per the configured {@link #setLocale(Locale) locale}
+     * (e.g. {@code "1.234,56"} under {@link Locale#GERMANY}, {@code "1,234.56"} under
+     * {@link Locale#US}). Belongs to the <em>Typed Result API</em>: the typed counterpart to
+     * {@link #evaluateSafeToPrettyString(String)}.
+     *
+     * <p>
+     * On failure the structured {@link CalculatorError} produced by
+     * {@link #evaluateSafe(String)} is propagated unchanged, so callers can branch on
+     * success/failure without parsing a prefixed error string.
+     * </p>
+     *
+     * @param expression input expression; must not be {@code null}
+     * @return success carrying the pretty-formatted result, or failure carrying the structured
+     * error; never {@code null}
+     */
+    public CalculatorResult<String> evaluateToPrettyStringResult(@NonNull final String expression) {
+        return evaluateToPrettyStringResult(expression, Map.of());
+    }
+
+    /**
+     * Variant of {@link #evaluateToPrettyStringResult(String)} accepting user-defined variables.
+     *
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings; must not be {@code null}
+     * @return success carrying the pretty-formatted result, or failure carrying the structured
+     * error; never {@code null}
+     */
+    public CalculatorResult<String> evaluateToPrettyStringResult(
+            @NonNull final String expression,
+            @NonNull final Map<String, String> variables
+    ) {
+        return evaluateSafe(expression, variables).map(value -> value.toPrettyString(locale));
     }
 
     /**

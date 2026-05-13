@@ -24,6 +24,8 @@
 
 package com.mlprograms.justmath.calculator;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
@@ -37,8 +39,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class CalculatorEngineTest {
 
@@ -437,6 +437,515 @@ public class CalculatorEngineTest {
             Map<String, String> variables = new HashMap<>();
             variables.put("a", "b+1");
             assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+    }
+
+    @Nested
+    class EvaluateSafeStringTest {
+
+        private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+
+        @Test
+        void evaluateSafeToString_validExpression_returnsResult() {
+            assertEquals("3", calculatorEngine.evaluateSafeToString("1+2"));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_validExpression_returnsResult() {
+            String pretty = calculatorEngine.evaluateSafeToPrettyString("1+2");
+            assertNotNull(pretty);
+            assertFalse(pretty.startsWith("Error"));
+            assertFalse(pretty.startsWith("Fehler"));
+        }
+
+        @Test
+        void evaluateSafeToString_emptyExpression_returnsZero() {
+            assertEquals("0", calculatorEngine.evaluateSafeToString(""));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_emptyExpression_returnsZero() {
+            assertEquals("0", calculatorEngine.evaluateSafeToPrettyString(""));
+        }
+
+        @Test
+        void evaluateSafeToString_null_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_null_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_incompleteExpression_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_incompleteExpression_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("1+");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_unknownFunction_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("unknownFunction(5)");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_unknownFunction_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("unknownFunction(5)");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_divisionByZero_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("1/0");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_divisionByZero_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("1/0");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_germanLocale_usesFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMAN);
+            String result = engine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Fehler:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_nullVariables_doesNotThrow() {
+            assertEquals("3", calculatorEngine.evaluateSafeToString("1+2", null));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_nullVariables_doesNotThrow() {
+            String pretty = calculatorEngine.evaluateSafeToPrettyString("1+2", null);
+            assertFalse(pretty.startsWith("Error"));
+        }
+
+        @Test
+        void evaluateSafeToString_neverReturnsStacktrace() {
+            String result = calculatorEngine.evaluateSafeToString("1/0");
+            assertFalse(result.contains("at com.mlprograms"), "should not contain stacktrace");
+            assertFalse(result.contains("\tat "), "should not contain stacktrace");
+        }
+
+        @Test
+        void evaluateSafeToString_neverReturnsNull() {
+            assertNotNull(calculatorEngine.evaluateSafeToString(null));
+            assertNotNull(calculatorEngine.evaluateSafeToString(""));
+            assertNotNull(calculatorEngine.evaluateSafeToString("1+"));
+            assertNotNull(calculatorEngine.evaluateSafeToString("unknownFunction(5)"));
+            assertNotNull(calculatorEngine.evaluateSafeToString("1/0"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString(null));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString(""));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("1+"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("unknownFunction(5)"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("1/0"));
+        }
+
+        @Test
+        void existingEvaluateToString_stillReturnsRawErrorWithoutPrefix() {
+            String result = calculatorEngine.evaluateToString("1+");
+            assertNotNull(result);
+            assertFalse(result.startsWith("Error:"), "existing API must not have Error: prefix");
+            assertFalse(result.startsWith("Fehler:"), "existing API must not have Fehler: prefix");
+        }
+
+    }
+
+    @Nested
+    class LocaleAwareResultFormattingTest {
+
+        @Test
+        void englishLocale_decimalUsesPoint() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.ENGLISH);
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void usLocale_prettyUsesCommaGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("1,234.56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void usLocale_safeMethodsBehaveConsistently() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("0.5", engine.evaluateSafeToString("1/2"));
+            assertEquals("1,234.56", engine.evaluateSafeToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_decimalUsesComma() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void germanLocale_prettyUsesDotGroupingCommaDecimal() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234,56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_safeMethodsAreLocaleAware() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateSafeToString("1/2"));
+            assertEquals("1.234,56", engine.evaluateSafeToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_negativeNumbers() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("-1234,56", engine.evaluateToString("-1234.56"));
+            assertEquals("-1.234,56", engine.evaluateToPrettyString("-1234.56"));
+        }
+
+        @Test
+        void germanLocale_integerWithoutDecimalSeparator() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1000", engine.evaluateToString("1000"));
+            assertEquals("1.000", engine.evaluateToPrettyString("1000"));
+        }
+
+        @Test
+        void germanLocale_largeNumberPrettyFormatting() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234.567.890,123456", engine.evaluateToPrettyString("1234567890.123456"));
+        }
+
+        @Test
+        void frenchLocale_decimalUsesComma() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.FRANCE);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void inputParsingNotAffectedByLocale() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            // Input uses '.' as decimal separator regardless of result locale.
+            assertEquals("1235", engine.evaluateToString("1234.56 + 0.44"));
+        }
+
+        @Test
+        void germanLocale_errorMessagesStillUseFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine()
+                    .setLocale(java.util.Locale.GERMANY)
+                    .setErrorMode(com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY);
+            String result = engine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Fehler:"), result);
+        }
+
+        @Test
+        void defaultLocaleIsBackwardCompatibleEnglish() {
+            CalculatorEngine engine = new CalculatorEngine();
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+            assertEquals("1,234.56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void switchingLocaleAtRuntimeReflectsInNextEvaluation() {
+            CalculatorEngine engine = new CalculatorEngine();
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+            engine.setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+            engine.setLocale(java.util.Locale.US);
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+        }
+
+    }
+
+    @Nested
+    class EvaluateStringResultTest {
+
+        private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+
+        @Test
+        void evaluateToStringResult_validExpression_returnsSuccess() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("1+2");
+            assertTrue(result.isSuccess());
+            assertEquals("3", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_validExpression_returnsSuccess() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToPrettyStringResult("1+2");
+            assertTrue(result.isSuccess());
+            assertEquals("3", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToStringResult_emptyExpression_returnsSuccessZero() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("");
+            assertTrue(result.isSuccess());
+            assertEquals("0", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_emptyExpression_returnsSuccessZero() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToPrettyStringResult("");
+            assertTrue(result.isSuccess());
+            assertEquals("0", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToStringResult_incompleteExpression_returnsFailure() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("1+");
+            assertTrue(result.isFailure());
+            assertTrue(result.value().isEmpty());
+            assertTrue(result.error().isPresent());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_incompleteExpression_returnsFailure() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToPrettyStringResult("1+");
+            assertTrue(result.isFailure());
+        }
+
+        @Test
+        void evaluateToStringResult_divisionByZero_returnsFailure() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("1/0");
+            assertTrue(result.isFailure());
+            com.mlprograms.justmath.calculator.errors.CalculatorError error = result.error().orElseThrow();
+            assertEquals(
+                    com.mlprograms.justmath.calculator.errors.CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO,
+                    error.code());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_divisionByZero_returnsFailure() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToPrettyStringResult("1/0");
+            assertTrue(result.isFailure());
+            assertEquals(
+                    com.mlprograms.justmath.calculator.errors.CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO,
+                    result.error().orElseThrow().code());
+        }
+
+        @Test
+        void evaluateToStringResult_unknownVariable_returnsFailureWithSyntaxCode() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("x+1");
+            assertTrue(result.isFailure());
+            assertEquals(
+                    com.mlprograms.justmath.calculator.errors.CalculatorErrorCode.SYNTAX_UNKNOWN_VARIABLE,
+                    result.error().orElseThrow().code());
+        }
+
+        @Test
+        void evaluateToStringResult_withVariables_returnsSuccess() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("x", "10");
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("x*2", variables);
+            assertTrue(result.isSuccess());
+            assertEquals("20", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_withVariables_returnsSuccess() {
+            Map<String, String> variables = new HashMap<>();
+            variables.put("a", "1000");
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    new CalculatorEngine().setLocale(java.util.Locale.US)
+                            .evaluateToPrettyStringResult("a*2", variables);
+            assertTrue(result.isSuccess());
+            assertEquals("2,000", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToStringResult_usLocale_decimalUsesPoint() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("0.5", engine.evaluateToStringResult("1/2").value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToStringResult_germanLocale_decimalUsesComma() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateToStringResult("1/2").value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_usLocale_usesCommaGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("1,234.56", engine.evaluateToPrettyStringResult("1234.56").value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_germanLocale_usesDotGroupingCommaDecimal() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234,56", engine.evaluateToPrettyStringResult("1234.56").value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToStringResult_failurePayloadHasNoErrorPrefix() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("1/0");
+            assertTrue(result.isFailure());
+            // No string parsing required — the Result carries the structured error directly.
+            String technical = result.error().orElseThrow().technicalDetail();
+            assertNotNull(technical);
+            assertFalse(technical.startsWith("Error:"));
+            assertFalse(technical.startsWith("Fehler:"));
+        }
+
+        @Test
+        void evaluateToStringResult_neverReturnsNull() {
+            assertNotNull(calculatorEngine.evaluateToStringResult("1+2"));
+            assertNotNull(calculatorEngine.evaluateToStringResult(""));
+            assertNotNull(calculatorEngine.evaluateToStringResult("1+"));
+            assertNotNull(calculatorEngine.evaluateToStringResult("1/0"));
+            assertNotNull(calculatorEngine.evaluateToPrettyStringResult("1+2"));
+            assertNotNull(calculatorEngine.evaluateToPrettyStringResult(""));
+            assertNotNull(calculatorEngine.evaluateToPrettyStringResult("1+"));
+            assertNotNull(calculatorEngine.evaluateToPrettyStringResult("1/0"));
+        }
+
+        @Test
+        void evaluateToStringResult_nullExpression_throwsNpe() {
+            // Typed Result variants are @NonNull on input (consistent with evaluateSafe(...)).
+            // Callers that need null-tolerance use the evaluateSafeTo... methods instead.
+            assertThrows(NullPointerException.class,
+                    () -> calculatorEngine.evaluateToStringResult(null));
+            assertThrows(NullPointerException.class,
+                    () -> calculatorEngine.evaluateToPrettyStringResult(null));
+        }
+
+        @Test
+        void evaluateToStringResult_failureValueMappedThroughMap_remainsFailure() {
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    calculatorEngine.evaluateToStringResult("1+");
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<Integer> mapped =
+                    result.map(String::length);
+            assertTrue(mapped.isFailure());
+            assertEquals(result.error().orElseThrow().code(), mapped.error().orElseThrow().code());
+        }
+
+    }
+
+    /**
+     * Pinpoint tests for the documented locale contract: {@code evaluateToString} uses the
+     * locale's decimal separator with no thousands grouping; {@code evaluateToPrettyString}
+     * uses both decimal separator and grouping. Mirrored across the Safe UI String API and
+     * the Typed Result API. Also asserts that {@code setLocale(...)} does not change the
+     * input grammar — expressions are always parsed with {@code .} as the decimal separator.
+     */
+    @Nested
+    class LocaleContractTest {
+
+        @Test
+        void evaluateToString_germany_noGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1234,56", engine.evaluateToString("1234.56"));
+        }
+
+        @Test
+        void evaluateToPrettyString_germany_withGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234,56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void evaluateToString_us_noGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("1234.56", engine.evaluateToString("1234.56"));
+        }
+
+        @Test
+        void evaluateToPrettyString_us_withGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("1,234.56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void evaluateSafeToString_germany_nullExpression_usesFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            String result = engine.evaluateSafeToString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Fehler: "), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_germany_nullExpression_usesFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            String result = engine.evaluateSafeToPrettyString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Fehler: "), result);
+        }
+
+        @Test
+        void evaluateToStringResult_incompleteExpression_isFailure() {
+            CalculatorEngine engine = new CalculatorEngine();
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    engine.evaluateToStringResult("1+");
+            assertTrue(result.isFailure());
+            assertTrue(result.error().isPresent());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_incompleteExpression_isFailure() {
+            CalculatorEngine engine = new CalculatorEngine();
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    engine.evaluateToPrettyStringResult("1+");
+            assertTrue(result.isFailure());
+            assertTrue(result.error().isPresent());
+        }
+
+        @Test
+        void evaluateToStringResult_germany_isSuccessWithLocaleDecimalNoGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    engine.evaluateToStringResult("1234.56");
+            assertTrue(result.isSuccess());
+            assertEquals("1234,56", result.value().orElseThrow());
+        }
+
+        @Test
+        void evaluateToPrettyStringResult_germany_isSuccessWithLocaleDecimalAndGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            com.mlprograms.justmath.calculator.errors.CalculatorResult<String> result =
+                    engine.evaluateToPrettyStringResult("1234.56");
+            assertTrue(result.isSuccess());
+            assertEquals("1.234,56", result.value().orElseThrow());
+        }
+
+        @Test
+        void setLocale_doesNotChangeInputDecimalSeparator_dotInputAlwaysWorks() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            // Parser contract: '.' is the decimal separator for input, regardless of locale.
+            assertEquals("3", engine.evaluateToString("1.5+1.5"));
+        }
+
+        @Test
+        void setLocale_doesNotEnableCommaAsInputDecimalSeparator() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            // Parser contract: ',' is an argument separator, not a decimal separator.
+            // "1,5+1,5" is therefore a syntax error under any locale — the Text Output API
+            // catches the exception and folds it into the returned string.
+            String result = engine.evaluateToString("1,5+1,5");
+            assertNotEquals("3", result);
         }
 
     }

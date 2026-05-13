@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -27,9 +27,12 @@ package com.mlprograms.justmath.bignumber.math;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberMatrix;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import lombok.NonNull;
+import com.mlprograms.justmath.bignumber.matrix.MatrixMessages;
 
 import java.util.Locale;
+import java.util.Map;
+
+import lombok.NonNull;
 
 public class MatrixMath {
 
@@ -133,7 +136,13 @@ public class MatrixMath {
 	 */
 	public static BigNumberMatrix multiply(@NonNull final BigNumberMatrix multiplier, @NonNull final BigNumberMatrix multiplicand) {
 		if (!multiplier.getColumns().isEqualTo(multiplicand.getRows())) {
-			throw new IllegalArgumentException("Number of columns of multiplier must equal number of rows of multiplicand.");
+			throw new IllegalArgumentException(MatrixMessages.get(multiplier.getLocale(),
+					"matrix.error.multiplyDimMismatch",
+					Map.of(
+							"leftRows", multiplier.getRows().toString(),
+							"leftCols", multiplier.getColumns().toString(),
+							"rightRows", multiplicand.getRows().toString(),
+							"rightCols", multiplicand.getColumns().toString())));
 		}
 
 		BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
@@ -256,6 +265,12 @@ public class MatrixMath {
 	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix) {
 		BigNumber n = matrix.getRows();
 
+		if (n.isEqualTo(BigNumbers.ZERO)) {
+			// Convention: the determinant of the empty 0x0 matrix is the multiplicative identity 1.
+			// This makes the recursive cofactor expansion for 1x1 inverses produce the correct result.
+			return BigNumbers.ONE;
+		}
+
 		if (n.isEqualTo(BigNumbers.ONE)) {
 			return matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
 		}
@@ -305,7 +320,8 @@ public class MatrixMath {
 		BigNumber determinant = determinant(matrix);
 
 		if (determinant.isEqualTo(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("Matrix is not invertible (determinant is zero).");
+			throw new IllegalArgumentException(
+					MatrixMessages.get(matrix.getLocale(), "matrix.error.singular"));
 		}
 
 		return new BigNumberMatrix(scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant)));
@@ -332,7 +348,8 @@ public class MatrixMath {
 	 */
 	public static BigNumberMatrix power(@NonNull final BigNumberMatrix base, @NonNull final BigNumber exponent) {
 		if (!exponent.isInteger() || exponent.isNegative()) {
-			throw new IllegalArgumentException("Matrix exponent must be a non-negative integer.");
+			throw new IllegalArgumentException(
+					MatrixMessages.get(base.getLocale(), "matrix.error.invalidExponent"));
 		}
 
 		BigNumberMatrix result = identity(base.getRows(), base.getLocale());
@@ -449,12 +466,20 @@ public class MatrixMath {
 	 * 	if the matrices have different dimensions or non-positive size
 	 */
 	private static void checkParamsForSameMatrixSize(BigNumberMatrix augend, BigNumberMatrix addend) {
+		Locale locale = augend.getLocale();
+
 		if (!augend.getRows().isEqualTo(addend.getRows()) || !augend.getColumns().isEqualTo(addend.getColumns())) {
-			throw new IllegalArgumentException("The rows and columns of both matrices must be equal.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale,
+					"matrix.error.elementWiseDimMismatch",
+					Map.of(
+							"leftRows", augend.getRows().toString(),
+							"leftCols", augend.getColumns().toString(),
+							"rightRows", addend.getRows().toString(),
+							"rightCols", addend.getColumns().toString())));
 		}
 
 		if (!augend.getRows().isGreaterThan(BigNumbers.ZERO) || !augend.getColumns().isGreaterThan(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("The rows and columns of both matrices must be greater than zero");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.zeroDim"));
 		}
 	}
 

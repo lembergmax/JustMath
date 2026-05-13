@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,6 +24,8 @@
 
 package com.mlprograms.justmath.bignumber;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -31,8 +33,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class BigNumberMatrixTest {
 
@@ -445,6 +445,317 @@ class BigNumberMatrixTest {
 
         assertMatrixEquals(original, copy);
         assertNotSame(original, copy); // deep copy
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Matrix product: dimension matrix
+    // ---------------------------------------------------------------------------------------
+
+    @ParameterizedTest(name = "[{index}] Valid matrix product {0} * {1} = {2}")
+    @CsvSource({
+            // 2x2 * 2x1 -> 2x1 (matrix times column vector)
+            "'2,5;1,3', '1;2', '12;7'",
+            // 1x2 * 2x2 -> 1x2 (row vector times matrix)
+            "'1,2', '2,5;1,3', '4,11'",
+            // 2x3 * 3x2 -> 2x2
+            "'1,2,3;4,5,6', '7,8;9,10;11,12', '58,64;139,154'",
+            // 3x2 * 2x3 -> 3x3
+            "'1,2;3,4;5,6', '7,8,9;10,11,12', '27,30,33;61,68,75;95,106,117'",
+            // 2x2 * 2x2 -> 2x2
+            "'1,2;3,4', '5,6;7,8', '19,22;43,50'"
+    })
+    void testMatrixMultiplyValidShapes(String a, String b, String expected) {
+        BigNumberMatrix result = matrix(a).multiply(matrix(b));
+        assertMatrixEquals(matrix(expected), result);
+    }
+
+    @ParameterizedTest(name = "[{index}] Invalid matrix product {0} * {1} must throw")
+    @CsvSource({
+            // 2x1 * 2x2 — column vector cannot be left of 2x2 (no auto-transpose)
+            "'1;2', '2,5;1,3'",
+            // 2x3 * 2x3 — inner dimensions mismatch
+            "'1,2,3;4,5,6', '1,2,3;4,5,6'",
+            // 3x2 * 3x2 — inner dimensions mismatch
+            "'1,2;3,4;5,6', '1,2;3,4;5,6'",
+            // 1x3 * 2x1 — inner dimensions mismatch
+            "'1,2,3', '4;5'"
+    })
+    void testMatrixMultiplyInvalidShapesThrow(String a, String b) {
+        BigNumberMatrix left = matrix(a);
+        BigNumberMatrix right = matrix(b);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> left.multiply(right));
+        // Message must include both dimensions and explain the rule.
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("dimension mismatch"),
+                () -> "Error message must mention 'dimension mismatch'. Got: " + msg);
+        assertTrue(msg.contains("Left columns must equal right rows"),
+                () -> "Error message must explain the rule. Got: " + msg);
+        assertTrue(msg.contains(left.getRows() + "x" + left.getColumns()),
+                () -> "Error message must include left shape. Got: " + msg);
+        assertTrue(msg.contains(right.getRows() + "x" + right.getColumns()),
+                () -> "Error message must include right shape. Got: " + msg);
+    }
+
+    @Test
+    void testColumnVectorTimesRowMatrixIsRejected_2x1_times_2x2() {
+        // 2x1 * 2x2 is NOT a valid matrix product. The engine must reject it (no silent auto-transpose).
+        BigNumberMatrix col = matrix("1;2");
+        BigNumberMatrix m = matrix("2,5;1,3");
+        assertThrows(IllegalArgumentException.class, () -> col.multiply(m));
+    }
+
+    @Test
+    void testRowVectorTimesMatrixIsValid_1x2_times_2x2() {
+        // The intended shape: a row vector left of a matrix.
+        BigNumberMatrix row = matrix("1,2");
+        BigNumberMatrix m = matrix("2,5;1,3");
+        BigNumberMatrix expected = matrix("4,11");
+        assertMatrixEquals(expected, row.multiply(m));
+    }
+
+    @Test
+    void testMatrixTimesColumnVectorIsValid_2x2_times_2x1() {
+        BigNumberMatrix m = matrix("2,5;1,3");
+        BigNumberMatrix col = matrix("1;2");
+        BigNumberMatrix expected = matrix("12;7");
+        assertMatrixEquals(expected, m.multiply(col));
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Element-wise dimension mismatch
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testElementWiseAddDimensionMismatchThrows() {
+        BigNumberMatrix a = matrix("1,2;3,4");
+        BigNumberMatrix b = matrix("1,2,3;4,5,6");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> a.add(b));
+        assertTrue(ex.getMessage().contains("dimension mismatch"), ex.getMessage());
+    }
+
+    @Test
+    void testElementWiseSubtractDimensionMismatchThrows() {
+        BigNumberMatrix a = matrix("1,2;3,4");
+        BigNumberMatrix b = matrix("1,2,3;4,5,6");
+        assertThrows(IllegalArgumentException.class, () -> a.subtract(b));
+    }
+
+    @Test
+    void testElementWiseDivideDimensionMismatchThrows() {
+        BigNumberMatrix a = matrix("1,2;3,4");
+        BigNumberMatrix b = matrix("1,2,3;4,5,6");
+        assertThrows(IllegalArgumentException.class, () -> a.divide(b));
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Non-square preconditions
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testDeterminantOfNonSquareThrows() {
+        assertThrows(IllegalArgumentException.class, () -> matrix("1,2,3;4,5,6").determinant());
+    }
+
+    @Test
+    void testInverseOfNonSquareThrows() {
+        assertThrows(IllegalArgumentException.class, () -> matrix("1,2,3;4,5,6").inverse());
+    }
+
+    @Test
+    void testPowerOfNonSquareThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> matrix("1,2,3;4,5,6").power(new BigNumber("2", locale)));
+    }
+
+    @Test
+    void testTraceOfNonSquareThrows() {
+        assertThrows(IllegalArgumentException.class, () -> matrix("1,2,3;4,5,6").trace());
+    }
+
+    @Test
+    void testInverseOfSingularThrows() {
+        // [[1,2],[2,4]] is singular (rows are linearly dependent).
+        assertThrows(IllegalArgumentException.class, () -> matrix("1,2;2,4").inverse());
+    }
+
+    @Test
+    void testPowerWithNegativeExponentThrows() {
+        BigNumberMatrix m = matrix("1,2;3,4");
+        assertThrows(IllegalArgumentException.class,
+                () -> m.power(new BigNumber("-1", locale)));
+    }
+
+    @Test
+    void testPowerWithNonIntegerExponentThrows() {
+        BigNumberMatrix m = matrix("1,2;3,4");
+        assertThrows(IllegalArgumentException.class,
+                () -> m.power(new BigNumber("1.5", locale)));
+    }
+
+    @Test
+    void testPowerZeroIsIdentity() {
+        BigNumberMatrix m = matrix("1,2;3,4");
+        BigNumberMatrix expected = matrix("1,0;0,1");
+        assertMatrixEquals(expected, m.power(new BigNumber("0", locale)));
+    }
+
+    @Test
+    void testInverseOf1x1Matrix() {
+        // Direct adjugate path used to mis-compute the inverse because det of the empty 0x0 minor
+        // was 0 instead of 1. Verify that [[5]] inverts to [[1/5]] = [[0.2]].
+        BigNumberMatrix m = matrix("5");
+        BigNumberMatrix inv = m.inverse();
+        // Multiplying by the original must recover the 1x1 identity.
+        BigNumberMatrix product = m.multiply(inv);
+        assertMatrixEquals(matrix("1"), product);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Determinant: 3x3
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testDeterminant3x3() {
+        // det([[6,1,1],[4,-2,5],[2,8,7]]) = -306
+        BigNumberMatrix m = matrix("6,1,1;4,-2,5;2,8,7");
+        assertEquals(new BigNumber("-306", locale).toPrettyString(),
+                m.determinant().toPrettyString());
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Scalar operations
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testScalarMultiplyDoesNotMutateOriginal() {
+        BigNumberMatrix m = matrix("1,2;3,4");
+        String before = m.toPlainDataString();
+        m.scalarMultiply(new BigNumber("10", locale));
+        assertEquals(before, m.toPlainDataString(), "scalarMultiply must not mutate the original");
+    }
+
+    @Test
+    void testTransposeDoesNotMutateOriginal() {
+        BigNumberMatrix m = matrix("1,2;3,4");
+        String before = m.toPlainDataString();
+        m.transpose();
+        assertEquals(before, m.toPlainDataString(), "transpose must not mutate the original");
+    }
+
+    @Test
+    void testAddDoesNotMutateOriginals() {
+        BigNumberMatrix a = matrix("1,2;3,4");
+        BigNumberMatrix b = matrix("5,6;7,8");
+        String beforeA = a.toPlainDataString();
+        String beforeB = b.toPlainDataString();
+        a.add(b);
+        assertEquals(beforeA, a.toPlainDataString());
+        assertEquals(beforeB, b.toPlainDataString());
+    }
+
+    @Test
+    void testMultiplyDoesNotMutateOriginals() {
+        BigNumberMatrix a = matrix("1,2;3,4");
+        BigNumberMatrix b = matrix("5,6;7,8");
+        String beforeA = a.toPlainDataString();
+        String beforeB = b.toPlainDataString();
+        a.multiply(b);
+        assertEquals(beforeA, a.toPlainDataString());
+        assertEquals(beforeB, b.toPlainDataString());
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Parser edge cases
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testParserUsesGivenLocaleForDecimalPoint() {
+        // US locale uses '.' as decimal separator. Matrix entries must be parsed with the locale.
+        BigNumberMatrix m = new BigNumberMatrix("1.5,2.5;3.5,4.5", Locale.US);
+        BigNumber sum = m.sumElements();
+        assertEquals(new BigNumber("12", Locale.US).toPrettyString(), sum.toPrettyString());
+    }
+
+    @Test
+    void testParserRejectsLeadingSeparator() {
+        assertThrows(IllegalArgumentException.class, () -> new BigNumberMatrix(";1,2;3,4", locale));
+    }
+
+    @Test
+    void testListConstructorRejectsRaggedRows() {
+        List<List<BigNumber>> ragged = new ArrayList<>();
+        ragged.add(List.of(new BigNumber("1", locale), new BigNumber("2", locale)));
+        ragged.add(List.of(new BigNumber("3", locale))); // shorter row
+        assertThrows(IllegalArgumentException.class, () -> new BigNumberMatrix(ragged, locale));
+    }
+
+    @Test
+    void testListConstructorRejectsEmpty() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new BigNumberMatrix(new ArrayList<List<BigNumber>>(), locale));
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Localized error messages (English + German)
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testMultiplyErrorIsEnglishForUSLocale() {
+        BigNumberMatrix left = new BigNumberMatrix("1;2", Locale.US);
+        BigNumberMatrix right = new BigNumberMatrix("2,5;1,3", Locale.US);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> left.multiply(right));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Matrix multiplication dimension mismatch"), msg);
+        assertTrue(msg.contains("Left columns must equal right rows"), msg);
+        assertTrue(msg.contains("2x1"), msg);
+        assertTrue(msg.contains("2x2"), msg);
+    }
+
+    @Test
+    void testMultiplyErrorIsGermanForGermanLocale() {
+        BigNumberMatrix left = new BigNumberMatrix("1;2", Locale.GERMANY);
+        BigNumberMatrix right = new BigNumberMatrix("2,5;1,3", Locale.GERMANY);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> left.multiply(right));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Matrixmultiplikation"), msg);
+        assertTrue(msg.contains("Dimensionsfehler"), msg);
+        assertTrue(msg.contains("linke Matrix") || msg.contains("Spaltenanzahl"), msg);
+    }
+
+    @Test
+    void testElementWiseErrorIsGermanForGermanLocale() {
+        BigNumberMatrix a = new BigNumberMatrix("1;2;3;4", Locale.GERMANY); // 4x1
+        BigNumberMatrix b = new BigNumberMatrix("1;2;3", Locale.GERMANY);   // 3x1
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> a.add(b));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Elementweise") || msg.contains("Dimensionsfehler"), msg);
+    }
+
+    @Test
+    void testNotSquareErrorIsGermanForGermanLocale() {
+        BigNumberMatrix m = new BigNumberMatrix("1;2;3", Locale.GERMANY); // 3x1, not square
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, m::determinant);
+        assertTrue(ex.getMessage().contains("quadratisch"), ex.getMessage());
+    }
+
+    @Test
+    void testSingularInverseErrorIsGermanForGermanLocale() {
+        // 2x2 singular matrix; rows linearly dependent.
+        BigNumberMatrix m = new BigNumberMatrix("1;2;2;4", Locale.GERMANY); // 4x1, not square -> wrong test
+        // Build a real singular matrix via the data string in US format then re-wrap with German locale.
+        BigNumberMatrix singular = new BigNumberMatrix("1,2;2,4", Locale.US);
+        // Use list ctor to rebuild with German locale so the localized error message is selected.
+        BigNumberMatrix german = new BigNumberMatrix(singular.getData(), Locale.GERMANY);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, german::inverse);
+        assertTrue(ex.getMessage().contains("nicht invertierbar"), ex.getMessage());
+    }
+
+    @Test
+    void testIndexOutOfBoundsLocalizedGerman() {
+        BigNumberMatrix m = new BigNumberMatrix("1,2;3,4", Locale.GERMANY);
+        IndexOutOfBoundsException ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> m.get(new BigNumber("5", Locale.GERMANY), new BigNumber("0", Locale.GERMANY)));
+        assertTrue(ex.getMessage().contains("Zeilenindex"), ex.getMessage());
     }
 
 }

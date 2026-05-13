@@ -1,15 +1,42 @@
+/*
+ * Copyright (c) 2026 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.bignumber.math.MatrixMath;
 import com.mlprograms.justmath.bignumber.matrix.MatrixElementConsumer;
-import lombok.Getter;
-import lombok.NonNull;
+import com.mlprograms.justmath.bignumber.matrix.MatrixMessages;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents a matrix whose elements are arbitrary-precision decimal numbers ({@link BigNumber}),
@@ -83,40 +110,73 @@ public class BigNumberMatrix implements Cloneable {
 	}
 
 	/**
-	 * Constructs a matrix from a nested list of strings, where each sublist represents a row.
-	 * All data are parsed into {@link BigNumber} using the provided locale.
+	 * Constructs a matrix from a nested list of {@link BigNumber} values, where each sublist
+	 * represents a row. All rows must have the same number of entries (the matrix must be
+	 * rectangular). The list must not be empty and the first row must not be empty.
 	 *
 	 * @param data
-	 * 	2D list of {@link BigNumber} data; all rows must have equal length
+	 * 	2D list of {@link BigNumber} entries; must be non-empty and rectangular
 	 * @param locale
-	 * 	the locale used to parse the strings into {@link BigNumber} data
+	 * 	the locale used for output formatting of the resulting matrix
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if any value is invalid or dimensions are inconsistent
+	 * 	if {@code data} is empty, any row is empty, or rows have inconsistent lengths
 	 */
 	public BigNumberMatrix(@NonNull List<List<BigNumber>> data, @NonNull Locale locale) {
+		if (data.isEmpty()) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.dataEmpty"));
+		}
+
+		int expectedCols = data.getFirst().size();
+		if (expectedCols == 0) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.rowEmpty"));
+		}
+
+		for (int i = 0; i < data.size(); i++) {
+			if (data.get(i).size() != expectedCols) {
+				throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.raggedRow",
+						Map.of(
+								"row", String.valueOf(i),
+								"actual", String.valueOf(data.get(i).size()),
+								"expected", String.valueOf(expectedCols))));
+			}
+		}
+
 		this.locale = locale;
 		this.data = data;
 		this.rows = new BigNumber(String.valueOf(data.size()), locale);
-		this.columns = new BigNumber(String.valueOf(data.getFirst().size()), locale);
+		this.columns = new BigNumber(String.valueOf(expectedCols), locale);
 	}
 
 	/**
-	 * Constructs a matrix from a semicolon-separated string representation.
-	 * Each row is separated by a semicolon (';'), and columns are separated by commas (',').
+	 * Constructs a matrix from a string representation.
+	 * <p>
+	 * Format:
+	 * <ul>
+	 *   <li>Rows are separated by semicolons ({@code ;}).</li>
+	 *   <li>Columns within a row are separated by commas ({@code ,}).</li>
+	 *   <li>Each entry is a numeric literal parsed with the given {@code locale}.</li>
+	 * </ul>
 	 * <p>
 	 * Example: {@code "1, 2; 3, 4"} becomes a 2×2 matrix.
+	 * <p>
+	 * <strong>Note on locale conflicts:</strong> because the column separator is {@code ,},
+	 * locales that use {@code ,} as the decimal separator (e.g. {@link Locale#GERMANY}) cannot
+	 * represent fractional entries in this string format. Use {@link Locale#US}-style numeric
+	 * literals (decimal point) or build the matrix via the {@link #BigNumberMatrix(List, Locale)}
+	 * constructor instead.
 	 *
 	 * @param matrixString
 	 * 	the string representation of the matrix
 	 * @param locale
-	 * 	the locale used to parse the entries into {@link BigNumber}
+	 * 	the locale used to parse the entries into {@link BigNumber} and for output formatting
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if the input format is invalid or inconsistent
+	 * 	if the input is empty, the format is invalid, rows have inconsistent column counts,
+	 * 	or any entry is empty or not a valid number for the given locale
 	 */
 	public BigNumberMatrix(@NonNull String matrixString, @NonNull Locale locale) {
-		this(parseMatrixString(matrixString), locale);
+		this(parseMatrixString(matrixString, locale), locale);
 	}
 
 	/**
@@ -149,14 +209,20 @@ public class BigNumberMatrix implements Cloneable {
 	 * 	if the input is empty, rows have inconsistent column counts,
 	 * 	or any matrix entry is empty
 	 */
-	private static List<List<BigNumber>> parseMatrixString(@NonNull final String input) {
-		List<List<BigNumber>> result = new ArrayList<>();
+	private static List<List<BigNumber>> parseMatrixString(@NonNull final String input, @NonNull final Locale locale) {
+		String trimmedInput = input.trim();
 
-		if (input.trim().endsWith(";") || input.trim().endsWith(",")) {
-			throw new IllegalArgumentException("Matrix entries must not end with ';' or ','.");
+		if (trimmedInput.isEmpty()) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.stringEmpty"));
 		}
 
-		String[] rows = input.split(";");
+		if (trimmedInput.startsWith(";") || trimmedInput.startsWith(",")
+				|| trimmedInput.endsWith(";") || trimmedInput.endsWith(",")) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.stringEdgeSeparator"));
+		}
+
+		List<List<BigNumber>> result = new ArrayList<>();
+		String[] rows = trimmedInput.split(";");
 		int expectedCols = -1;
 
 		for (String row : rows) {
@@ -165,7 +231,10 @@ public class BigNumberMatrix implements Cloneable {
 			if (expectedCols == -1) {
 				expectedCols = cols.length;
 			} else if (cols.length != expectedCols) {
-				throw new IllegalArgumentException("All rows must have same column count.");
+				throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.columnCountMismatch",
+						Map.of(
+								"actual", String.valueOf(cols.length),
+								"expected", String.valueOf(expectedCols))));
 			}
 
 			List<BigNumber> parsedRow = new ArrayList<>();
@@ -174,10 +243,17 @@ public class BigNumberMatrix implements Cloneable {
 				String trimmed = col.trim();
 
 				if (trimmed.isEmpty()) {
-					throw new IllegalArgumentException("Matrix entry must not be empty.");
+					throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.entryEmpty"));
 				}
 
-				parsedRow.add(new BigNumber(trimmed));
+				try {
+					parsedRow.add(new BigNumber(trimmed, locale));
+				} catch (RuntimeException ex) {
+					throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.invalidEntry",
+							Map.of(
+									"entry", trimmed,
+									"locale", locale.toString())), ex);
+				}
 			}
 
 			result.add(parsedRow);
@@ -215,13 +291,13 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	private void validateDimensions() {
 		if (!rows.isInteger() || !columns.isInteger() || rows.isNegative() || columns.isNegative()) {
-			throw new IllegalArgumentException("Matrix dimensions must be non-negative integers.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.invalidDimensions"));
 		}
 
 		BigNumber max = new BigNumber(String.valueOf(Integer.MAX_VALUE));
 
 		if (rows.isGreaterThan(max) || columns.isGreaterThan(max)) {
-			throw new IllegalArgumentException("Matrix size must be smaller than Integer.MAX_VALUE.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.tooLarge"));
 		}
 	}
 
@@ -323,7 +399,11 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	private void validateIndex(@NonNull final BigNumber index, @NonNull final BigNumber max, @NonNull final String type) {
 		if (!index.isInteger() || index.isNegative() || index.isGreaterThanOrEqualTo(max)) {
-			throw new IndexOutOfBoundsException(type + " index out of bounds: " + index);
+			String key = "row".equals(type)
+					? "matrix.error.rowIndexOutOfBounds"
+					: "matrix.error.columnIndexOutOfBounds";
+			throw new IndexOutOfBoundsException(
+					MatrixMessages.get(locale, key, Map.of("index", index.toString())));
 		}
 	}
 
@@ -358,22 +438,40 @@ public class BigNumberMatrix implements Cloneable {
 	}
 
 	/**
-	 * Returns the matrix product of this matrix and another.
+	 * Returns the standard <strong>matrix product</strong> of this matrix and another.
+	 * <p>
+	 * This is <em>not</em> an element-wise (Hadamard) product. For the product
+	 * {@code A.multiply(B)} to be defined, {@code A.columns} must equal {@code B.rows};
+	 * the result has dimensions {@code A.rows} × {@code B.columns}.
+	 * <p>
+	 * Examples of valid shapes:
+	 * <pre>
+	 *   (2×2) * (2×1) -&gt; (2×1)
+	 *   (1×2) * (2×2) -&gt; (1×2)
+	 *   (2×3) * (3×2) -&gt; (2×2)
+	 * </pre>
+	 * Vectors are never automatically transposed — a {@code 2×1} column vector cannot be
+	 * multiplied on the left of a {@code 2×2} matrix; that will throw.
+	 * For element-wise multiplication, multiply each element manually via
+	 * {@link #forEachElement(MatrixElementConsumer)}.
 	 *
 	 * @param other
-	 * 	the right-hand matrix of the multiplication (must have compatible dimensions)
+	 * 	the right-hand matrix of the multiplication
 	 *
-	 * @return the result of matrix multiplication
+	 * @return a new {@link BigNumberMatrix} representing the matrix product
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if dimensions are incompatible
+	 * 	if {@code this.columns != other.rows}
 	 */
 	public BigNumberMatrix multiply(@NonNull final BigNumberMatrix other) {
 		return MatrixMath.multiply(this, other);
 	}
 
 	/**
-	 * Performs element-wise division of this matrix by another matrix.
+	 * Performs element-wise (Hadamard) division of this matrix by another matrix.
+	 * <p>
+	 * This is <em>not</em> a matrix-algebraic division. It requires both matrices to have
+	 * the same dimensions and divides corresponding entries pairwise.
 	 *
 	 * @param other
 	 * 	the divisor matrix (must be the same size)
@@ -435,7 +533,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumber determinant() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Determinant is only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareDeterminant"));
 		}
 
 		return MatrixMath.determinant(this);
@@ -454,7 +552,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumberMatrix inverse() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Only square matrices can be inverted.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareInverse"));
 		}
 
 		return MatrixMath.inverse(this);
@@ -484,7 +582,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumberMatrix power(@NonNull final BigNumber exponent) {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Matrix power only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquarePower"));
 		}
 
 		return MatrixMath.power(this, exponent);
@@ -507,7 +605,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumber trace() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Trace only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareTrace"));
 		}
 
 		BigNumber sum = BigNumbers.ZERO;

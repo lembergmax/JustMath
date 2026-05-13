@@ -243,6 +243,22 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
     }
 
     /**
+     * Returns the plain string representation of this coordinate using the given {@link Locale}
+     * for both components. No digit grouping is applied.
+     * <p>
+     * Both the {@code x} and {@code y} components are formatted with the supplied locale's
+     * decimal separator, so the full pair is returned in a locale-aware form
+     * (e.g. {@code "x=1,5; y=2,5"} for {@link Locale#GERMANY}).
+     *
+     * @param locale the locale to apply for number formatting; must not be {@code null}
+     * @return a plain string representation of this coordinate using the given locale
+     */
+    @Override
+    public String toString(@NonNull final Locale locale) {
+        return toString(locale, false);
+    }
+
+    /**
      * Returns a human-readable string representation of this coordinate with digit grouping enabled,
      * using the {@link Locale} of the {@code x}-coordinate for number formatting.
      * <p>
@@ -298,8 +314,8 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
             xCoordinate = x.toPrettyString(locale);
             yCoordinate = y.toPrettyString(locale);
         } else {
-            xCoordinate = x.toString();
-            yCoordinate = y.toString();
+            xCoordinate = x.toString(locale);
+            yCoordinate = y.toString(locale);
         }
 
         return switch (type) {

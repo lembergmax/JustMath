@@ -9,6 +9,7 @@ unlimited precision**, avoiding the limitations of primitive types like `double`
 - ✅ **Virtually unlimited precision** via `BigNumber`
 - ✅ **String-based expression evaluation**
 - ✅ **Supports trigonometry, logarithms, combinatorics, summations, coordinates, factorials, and many more**
+- ✅ **Locale-aware result formatting** — `setLocale(Locale)` drives both error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`)
 
 ## 🔢 BigNumber
 
@@ -210,15 +211,34 @@ System.out.println(result);
 
 ## 🛡️ Safe Evaluation & Localized Errors
 
-In addition to the throwing `evaluate(...)` entry points, `CalculatorEngine` exposes
-**`evaluateSafe(...)`**, which never throws on calculator-level failures. Instead it returns
-a sealed **`CalculatorResult<BigNumber>`** that is either `Success` (carries the value) or
-`Failure` (carries a `CalculatorError`).
+`CalculatorEngine` exposes four families of `evaluate` methods. Pick one based on whether you
+want a raw `BigNumber` or a `String`, and whether failures should be signalled via an
+exception, an embedded error message or a typed `CalculatorResult`.
+
+| # | API family | Methods | Return type | Failure handling |
+|---|------------|---------|-------------|------------------|
+| 1 | **Core Evaluation** | `evaluate(...)` | `BigNumber` | Throws `CalculatorException` |
+| 2 | **Text Output** | `evaluateToString(...)`, `evaluateToPrettyString(...)` | `String` | Caught, folded into return string (no throw) |
+| 3 | **Safe UI String** | `evaluateSafeToString(...)`, `evaluateSafeToPrettyString(...)` | `String` | Null-tolerant, never throws, never null. Failure → `"Error: ..."` / `"Fehler: ..."` prefix |
+| 4 | **Typed Result** | `evaluateSafe(...)`, `evaluateToStringResult(...)`, `evaluateToPrettyStringResult(...)` | `CalculatorResult<BigNumber>` / `CalculatorResult<String>` | `isSuccess()` / `isFailure()`; structured `CalculatorError` on the failure branch |
+
+Pick by intent:
+
+- **Internal pipeline that handles exceptions** → family 1 (`evaluate`).
+- **Simple text output where success/failure are not branched on** → family 2 (`evaluateToString` / `Pretty`). Inputs are `@NonNull`.
+- **UI labels, log lines, fire-and-forget rendering** → family 3 (`evaluateSafeToString` / `Pretty`). Tolerates `null`, never throws, never returns `null`.
+- **Application logic, tests, robust error handling** → family 4 (`evaluateSafe`, `evaluateToStringResult`, `evaluateToPrettyStringResult`). Branch on `isSuccess()` / `isFailure()` without string-prefix parsing.
 
 Each failure is described by a **`CalculatorErrorCode`** (for example
 `SYNTAX_INVALID_CHARACTER`, `SYNTAX_UNKNOWN_VARIABLE`, `PROCESSING_DIVISION_BY_ZERO`,
 `PROCESSING_DOMAIN_ERROR`), so callers can branch on a structural value instead of parsing
 English text fragments.
+
+> **Note on "Safe":** the word appears in two unrelated places. `evaluateSafeToString` /
+> `evaluateSafeToPrettyString` are "safe" in the sense of *null-tolerant and never throws*
+> (family 3). `evaluateSafe` is "safe" in the sense of *returns a typed Result* (family 4).
+> The typed string variants drop the `Safe` prefix and use the `Result` suffix to make this
+> distinction explicit at the call site.
 
 ### 🌍 Localized Messages
 
@@ -231,6 +251,76 @@ Error messages can be rendered in two modes via **`ErrorMode`**:
 
 The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
 `setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
+
+### 🔣 Localized Result Formatting
+
+`setLocale(Locale)` controls error message language **and** the decimal/grouping separators
+used by all string-returning evaluation methods. The two formatting variants are mirrored
+across all three string-returning families (Text Output, Safe UI String, Typed Result):
+
+| Method                              | Format                                                                                |
+|-------------------------------------|---------------------------------------------------------------------------------------|
+| `evaluateToString(...)`             | Locale decimal separator, **no** grouping                                             |
+| `evaluateToPrettyString(...)`       | Locale decimal **and** grouping separators                                            |
+| `evaluateSafeToString(...)`         | Same format as `evaluateToString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
+| `evaluateSafeToPrettyString(...)`   | Same format as `evaluateToPrettyString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
+| `evaluateToStringResult(...)`       | Same format as `evaluateToString`, wrapped in `CalculatorResult<String>`              |
+| `evaluateToPrettyStringResult(...)` | Same format as `evaluateToPrettyString`, wrapped in `CalculatorResult<String>`        |
+
+Input parsing is **not** affected by the engine locale. Expressions are always parsed with
+`.` as the decimal separator and `,` reserved as an argument separator (e.g.
+`summation(1;5;k)` uses `;` for argument lists, `,` is *not* a decimal separator in input):
+
+```java
+engine.setLocale(Locale.GERMANY);
+engine.evaluateToString("1.5+1.5"); // "3"  — '.' is always the input decimal separator
+engine.evaluateToString("1,5+1,5"); // syntax error — folded into the return string
+```
+
+Default locale is `Locale.ENGLISH`, which preserves the legacy `.` / `,` output of earlier
+releases.
+
+```java
+CalculatorEngine engine = new CalculatorEngine();
+
+engine.setLocale(Locale.US);
+engine.evaluateToString("1/2");           // "0.5"
+engine.evaluateToPrettyString("1234.56"); // "1,234.56"
+
+engine.setLocale(Locale.GERMANY);
+engine.evaluateToString("1/2");           // "0,5"
+engine.evaluateToPrettyString("1234.56"); // "1.234,56"
+engine.evaluateToString("-1234.56");      // "-1234,56"
+engine.evaluateToPrettyString("1234567890.123456"); // "1.234.567.890,123456"
+
+engine.setLocale(Locale.FRANCE);
+engine.evaluateToString("1/2");           // "0,5"
+```
+
+The same formatting is honored by `BigNumber.toString(Locale)` and
+`BigNumber.toPrettyString(Locale)`, so library callers can render values in any locale without
+going through the engine.
+
+### 🎯 MultiValueResult Formatting
+
+Functions that return more than one scalar component (e.g. `Pol(...)` → `(r, θ)`,
+`Rec(...)` → `(x, y)`) are exposed as `MultiValueResult` implementations such as
+`BigNumberCoordinate`. When such a result is rendered via the engine, **both components** are
+formatted with the configured locale and both are returned in the output string:
+
+```java
+CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG)
+        .setLocale(Locale.GERMANY);
+
+engine.evaluateToString("Pol(1;2)");
+// r=2,2360...; θ=63,4349...
+
+engine.evaluateToPrettyString("Rec(2;1)");
+// x=1,9996...; y=0,0349...
+```
+
+When the same coordinate participates in a larger scalar expression, it transparently
+collapses to its `firstValue()` (e.g. `r` for polar, `x` for cartesian) before formatting.
 
 ### ✅ Example: Result-based Evaluation
 
@@ -256,6 +346,29 @@ if (result.isFailure()) {
 
 `CalculatorResult` also supports `map(...)` for chaining and `valueOrThrow()` if you prefer
 to fall back to the classical `SyntaxErrorException` / `ProcessingErrorException` contract.
+
+### ✅ Example: Typed Result-string Evaluation
+
+When the caller wants to branch on success/failure **and** receive a locale-formatted
+string in one call, use `evaluateToStringResult(...)` or `evaluateToPrettyStringResult(...)`.
+They are typed counterparts to `evaluateSafeToString` / `evaluateSafeToPrettyString` —
+no need to parse a `"Error: "` / `"Fehler: "` prefix:
+
+```java
+CalculatorEngine engine = new CalculatorEngine()
+        .setLocale(Locale.GERMANY);
+
+CalculatorResult<String> ok = engine.evaluateToPrettyStringResult("1234.56");
+ok.value().ifPresent(System.out::println);
+// 1.234,56
+
+CalculatorResult<String> bad = engine.evaluateToStringResult("1+");
+if (bad.isFailure()) {
+    CalculatorError err = bad.error().orElseThrow();
+    System.out.println(err.code());
+    // SYNTAX_INCOMPLETE_EXPRESSION
+}
+```
 
 ### ⚡ Caching
 
@@ -751,6 +864,11 @@ Cannot wait? Just download the latest jar:
     <th>Version</th>
     <th>Download</th>
     <th>Release Type</th>
+  </tr>
+  <tr>
+      <td>v1.4.3</td>
+      <td><a href="out/artifacts/justmath_jar/justmath-1.4.3.jar">JustMath v1.4.3</a></td>
+      <td>Release</td>
   </tr>
   <tr>
       <td>v1.4.2</td>
