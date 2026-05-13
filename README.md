@@ -211,15 +211,34 @@ System.out.println(result);
 
 ## 🛡️ Safe Evaluation & Localized Errors
 
-In addition to the throwing `evaluate(...)` entry points, `CalculatorEngine` exposes
-**`evaluateSafe(...)`**, which never throws on calculator-level failures. Instead it returns
-a sealed **`CalculatorResult<BigNumber>`** that is either `Success` (carries the value) or
-`Failure` (carries a `CalculatorError`).
+`CalculatorEngine` exposes four families of `evaluate` methods. Pick one based on whether you
+want a raw `BigNumber` or a `String`, and whether failures should be signalled via an
+exception, an embedded error message or a typed `CalculatorResult`.
+
+| # | API family | Methods | Return type | Failure handling |
+|---|------------|---------|-------------|------------------|
+| 1 | **Core Evaluation** | `evaluate(...)` | `BigNumber` | Throws `CalculatorException` |
+| 2 | **Text Output** | `evaluateToString(...)`, `evaluateToPrettyString(...)` | `String` | Caught, folded into return string (no throw) |
+| 3 | **Safe UI String** | `evaluateSafeToString(...)`, `evaluateSafeToPrettyString(...)` | `String` | Null-tolerant, never throws, never null. Failure → `"Error: ..."` / `"Fehler: ..."` prefix |
+| 4 | **Typed Result** | `evaluateSafe(...)`, `evaluateToStringResult(...)`, `evaluateToPrettyStringResult(...)` | `CalculatorResult<BigNumber>` / `CalculatorResult<String>` | `isSuccess()` / `isFailure()`; structured `CalculatorError` on the failure branch |
+
+Pick by intent:
+
+- **Internal pipeline that handles exceptions** → family 1 (`evaluate`).
+- **Simple text output where success/failure are not branched on** → family 2 (`evaluateToString` / `Pretty`). Inputs are `@NonNull`.
+- **UI labels, log lines, fire-and-forget rendering** → family 3 (`evaluateSafeToString` / `Pretty`). Tolerates `null`, never throws, never returns `null`.
+- **Application logic, tests, robust error handling** → family 4 (`evaluateSafe`, `evaluateToStringResult`, `evaluateToPrettyStringResult`). Branch on `isSuccess()` / `isFailure()` without string-prefix parsing.
 
 Each failure is described by a **`CalculatorErrorCode`** (for example
 `SYNTAX_INVALID_CHARACTER`, `SYNTAX_UNKNOWN_VARIABLE`, `PROCESSING_DIVISION_BY_ZERO`,
 `PROCESSING_DOMAIN_ERROR`), so callers can branch on a structural value instead of parsing
 English text fragments.
+
+> **Note on "Safe":** the word appears in two unrelated places. `evaluateSafeToString` /
+> `evaluateSafeToPrettyString` are "safe" in the sense of *null-tolerant and never throws*
+> (family 3). `evaluateSafe` is "safe" in the sense of *returns a typed Result* (family 4).
+> The typed string variants drop the `Safe` prefix and use the `Result` suffix to make this
+> distinction explicit at the call site.
 
 ### 🌍 Localized Messages
 
@@ -235,19 +254,31 @@ The active locale is configured on the engine via `setLocale(Locale)`, the error
 
 ### 🔣 Localized Result Formatting
 
-`setLocale(Locale)` not only controls error messages but also drives **locale-aware result
-formatting** for all string-returning evaluation methods:
+`setLocale(Locale)` controls error message language **and** the decimal/grouping separators
+used by all string-returning evaluation methods. The two formatting variants are mirrored
+across all three string-returning families (Text Output, Safe UI String, Typed Result):
 
-| Method                          | Format                              |
-|---------------------------------|-------------------------------------|
-| `evaluateToString(...)`         | Locale decimal separator, no grouping |
-| `evaluateToPrettyString(...)`   | Locale decimal **and** grouping separators |
-| `evaluateSafeToString(...)`     | Same as `evaluateToString`; error path keeps the `Error:` / `Fehler:` prefix |
-| `evaluateSafeToPrettyString(...)` | Same as `evaluateToPrettyString`; error path keeps the `Error:` / `Fehler:` prefix |
+| Method                              | Format                                                                                |
+|-------------------------------------|---------------------------------------------------------------------------------------|
+| `evaluateToString(...)`             | Locale decimal separator, **no** grouping                                             |
+| `evaluateToPrettyString(...)`       | Locale decimal **and** grouping separators                                            |
+| `evaluateSafeToString(...)`         | Same format as `evaluateToString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
+| `evaluateSafeToPrettyString(...)`   | Same format as `evaluateToPrettyString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
+| `evaluateToStringResult(...)`       | Same format as `evaluateToString`, wrapped in `CalculatorResult<String>`              |
+| `evaluateToPrettyStringResult(...)` | Same format as `evaluateToPrettyString`, wrapped in `CalculatorResult<String>`        |
 
-Input parsing is **not** affected — expressions are always parsed with `.` as the decimal
-separator regardless of the engine locale. Default locale is `Locale.ENGLISH`, which preserves
-the legacy `.` / `,` formatting of earlier releases.
+Input parsing is **not** affected by the engine locale. Expressions are always parsed with
+`.` as the decimal separator and `,` reserved as an argument separator (e.g.
+`summation(1;5;k)` uses `;` for argument lists, `,` is *not* a decimal separator in input):
+
+```java
+engine.setLocale(Locale.GERMANY);
+engine.evaluateToString("1.5+1.5"); // "3"  — '.' is always the input decimal separator
+engine.evaluateToString("1,5+1,5"); // syntax error — folded into the return string
+```
+
+Default locale is `Locale.ENGLISH`, which preserves the legacy `.` / `,` output of earlier
+releases.
 
 ```java
 CalculatorEngine engine = new CalculatorEngine();
@@ -315,6 +346,29 @@ if (result.isFailure()) {
 
 `CalculatorResult` also supports `map(...)` for chaining and `valueOrThrow()` if you prefer
 to fall back to the classical `SyntaxErrorException` / `ProcessingErrorException` contract.
+
+### ✅ Example: Typed Result-string Evaluation
+
+When the caller wants to branch on success/failure **and** receive a locale-formatted
+string in one call, use `evaluateToStringResult(...)` or `evaluateToPrettyStringResult(...)`.
+They are typed counterparts to `evaluateSafeToString` / `evaluateSafeToPrettyString` —
+no need to parse a `"Error: "` / `"Fehler: "` prefix:
+
+```java
+CalculatorEngine engine = new CalculatorEngine()
+        .setLocale(Locale.GERMANY);
+
+CalculatorResult<String> ok = engine.evaluateToPrettyStringResult("1234.56");
+ok.value().ifPresent(System.out::println);
+// 1.234,56
+
+CalculatorResult<String> bad = engine.evaluateToStringResult("1+");
+if (bad.isFailure()) {
+    CalculatorError err = bad.error().orElseThrow();
+    System.out.println(err.code());
+    // SYNTAX_INCOMPLETE_EXPRESSION
+}
+```
 
 ### ⚡ Caching
 
