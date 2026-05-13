@@ -753,10 +753,15 @@ Cannot wait? Just download the latest jar:
     <th>Release Type</th>
   </tr>
   <tr>
+      <td>v1.4.2</td>
+      <td><a href="out/artifacts/justmath_jar/justmath-1.4.2.jar">JustMath v1.4.2</a></td>
+      <td>Release</td>
+  </tr>
+  <tr>
       <td>v1.4.1</td>
       <td><a href="out/artifacts/justmath_jar/justmath-1.4.1.jar">JustMath v1.4.1</a></td>
       <td>Release</td>
-    </tr>  
+  </tr>
   <tr>
     <td>v1.4.0</td>
     <td><a href="out/artifacts/justmath_jar/justmath-1.4.0.jar">JustMath v1.4.0</a></td>

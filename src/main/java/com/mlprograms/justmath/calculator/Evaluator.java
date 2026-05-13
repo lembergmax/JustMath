@@ -24,24 +24,26 @@
 
 package com.mlprograms.justmath.calculator;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.Token;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
@@ -95,14 +97,20 @@ class Evaluator {
                                     "Unknown operator or function: " + token.getValue(),
                                     null));
 
-                    expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
+                    try {
+                        expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
+                    } catch (NoSuchElementException stackUnderflow) {
+                        throw new SyntaxErrorException(
+                                CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+                                "Incomplete expression: operator or function '" + token.getValue() + "' is missing an operand");
+                    }
                 }
                 default -> throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Unexpected token: " + token);
             }
         }
 
         if (stack.size() != 1) {
-            throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Invalid expression: expected a single result, but found " + stack.size());
+            throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete expression: expected a single result, but found " + stack.size());
         }
 
         Object result = stack.pop();

@@ -181,4 +181,29 @@ class CalculatorErrorLocalizationTest {
         String msg = engine.evaluateToString("x+1", java.util.Map.of());
         assertTrue(msg.toLowerCase().contains("variable"), "got: " + msg);
     }
+
+    @Test
+    void trailingOperatorClassifiedAsSyntaxError() {
+        CalculatorEngine engine = new CalculatorEngine();
+        CalculatorResult<?> result = engine.evaluateSafe("25+3.6*");
+        assertTrue(result.isFailure());
+        assertEquals(CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+                result.error().orElseThrow().code());
+    }
+
+    @Test
+    void trailingOperatorLocalizedAsIncompleteExpressionInGerman() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToString("25+3.6*");
+        assertEquals("Der Ausdruck ist unvollständig oder die Betragsstriche sind unausgeglichen.", msg);
+    }
+
+    @Test
+    void trailingOperatorRawModeReturnsSyntaxErrorCategory() {
+        CalculatorEngine engine = new CalculatorEngine();
+        String msg = engine.evaluateToString("25+3.6*");
+        assertEquals("Syntax Error", msg);
+    }
 }

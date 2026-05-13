@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,15 +24,15 @@
 
 package com.mlprograms.justmath.calculator.expression.elements.function;
 
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureScalar;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.expression.operations.function.OneArgumentTrigonometricFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
-
-import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
 public class OneArgumentTrigonometricFunction extends Function {
 
@@ -45,7 +45,7 @@ public class OneArgumentTrigonometricFunction extends Function {
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber a = ensureBigNumber(stack.pop());
+		BigNumber a = ensureScalar(stack.pop());
 		stack.push(operation.apply(a, mathContext, trigonometricMode, locale));
 	}
 

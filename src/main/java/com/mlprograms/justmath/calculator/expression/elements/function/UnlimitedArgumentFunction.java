@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -25,9 +25,10 @@
 package com.mlprograms.justmath.calculator.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.bignumber.MultiValueResult;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.expression.operations.function.UnlimitedArgumentFunctionOperation;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.util.*;
@@ -64,6 +65,9 @@ public class UnlimitedArgumentFunction extends Function {
         List<BigNumber> arguments = new ArrayList<>(argumentCount);
         for (int i = 0; i < argumentCount; i++) {
             Object value = stack.pop();
+            if (value instanceof MultiValueResult multiValueResult) {
+                value = multiValueResult.firstValue();
+            }
             if (!(value instanceof BigNumber bigNumber)) {
                 throw new ProcessingErrorException("Invalid argument type for function '" + getSymbol() + "': " + value);
             }
