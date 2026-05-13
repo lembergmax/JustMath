@@ -40,8 +40,8 @@ public class Main {
 //        System.out.println(convertedToBigNumber);
 //        System.out.println(convertedToUnitValue.getValue());
 
-        final UnitValue unitValue = new UnitValue("12L");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Volume.DROP));
+        final UnitValue unitValue = new UnitValue("1y");
+        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
 
     }
 

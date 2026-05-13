@@ -3284,8 +3284,8 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return the localized string representation of this number
      */
     private String formatToString(@NonNull final Locale locale, final boolean useGrouping) {
-        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
-        String decimalSeparator = String.valueOf(sep.decimalSeparator());
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        String decimalSeparator = String.valueOf(localeSeparators.decimalSeparator());
 
         // Read-only snapshot: do NOT mutate this instance — toString must be safe on cached/shared BigNumbers.
         final String trimmedBefore = trimLeadingZeros(valueBeforeDecimalPoint);
@@ -3297,7 +3297,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
             decimalSeparator = "";
         }
 
-        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(trimmedBefore, sep.groupingSeparator()).toString() : trimmedBefore;
+        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(trimmedBefore, localeSeparators.groupingSeparator()).toString() : trimmedBefore;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
         return isNegative ? "-" + localized : localized;
@@ -3311,17 +3311,17 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return a BigDecimal representation of this BigNumber
      */
     public BigDecimal toBigDecimal() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         if (isNegative) {
-            sb.append('-');
+            stringBuilder.append('-');
         }
 
-        sb.append(valueBeforeDecimalPoint);
+        stringBuilder.append(valueBeforeDecimalPoint);
 
         if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
-            sb.append('.').append(valueAfterDecimalPoint);
+            stringBuilder.append('.').append(valueAfterDecimalPoint);
         }
-        return new BigDecimal(sb.toString(), mathContext);
+        return new BigDecimal(stringBuilder.toString(), mathContext);
     }
 
     /**

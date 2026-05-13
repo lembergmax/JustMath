@@ -24,16 +24,17 @@
 
 package com.mlprograms.justmath.bignumber;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
+import static com.mlprograms.justmath.bignumber.internal.NumberChecker.isNumber;
+
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.internal.LocalesConfig;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
-import static com.mlprograms.justmath.bignumber.internal.NumberChecker.isNumber;
+import lombok.NonNull;
 
 /**
  * Utility class responsible for parsing numeric strings into {@link BigNumber} instances,
@@ -124,9 +125,9 @@ class BigNumberParser {
      * @return formatted string with grouping and targetLocale decimal separator
      */
     BigNumber format(@NonNull final BigNumber number, @NonNull final Locale targetLocale) {
-        final LocaleSeparators sep = LocaleSeparators.forLocale(targetLocale);
-        char groupingSeparator = sep.groupingSeparator();
-        char decimalSeparator = sep.decimalSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(targetLocale);
+        char groupingSeparator = localeSeparators.groupingSeparator();
+        char decimalSeparator = localeSeparators.decimalSeparator();
 
         String beforeDecimal = number.getValueBeforeDecimalPoint();
         String afterDecimal = number.getValueAfterDecimalPoint();
@@ -176,9 +177,9 @@ class BigNumberParser {
      * and converting the decimal separator to '.' (US format).
      */
     private String normalize(@NonNull final String value, @NonNull final Locale fromLocale) {
-        final LocaleSeparators sep = LocaleSeparators.forLocale(fromLocale);
-        char groupingSeparator = sep.groupingSeparator();
-        char decimalSeparator = sep.decimalSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(fromLocale);
+        char groupingSeparator = localeSeparators.groupingSeparator();
+        char decimalSeparator = localeSeparators.decimalSeparator();
 
         String noGrouping = value.replace(String.valueOf(groupingSeparator), "");
 
@@ -336,12 +337,12 @@ class BigNumberParser {
         final boolean scientific = isScientificNotation(inputTrimmed);
 
         for (Locale locale : LocalesConfig.SUPPORTED_LOCALES) {
-            final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
+            final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
 
-            if (sep.decimalSeparator() != decimalCandidate) {
+            if (localeSeparators.decimalSeparator() != decimalCandidate) {
                 continue;
             }
-            if (groupingCandidate != null && sep.groupingSeparator() != groupingCandidate) {
+            if (groupingCandidate != null && localeSeparators.groupingSeparator() != groupingCandidate) {
                 continue;
             }
 

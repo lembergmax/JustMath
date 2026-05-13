@@ -73,9 +73,9 @@ public final class NumberChecker {
             return false;
         }
 
-        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
-        final char decimalSep = sep.decimalSeparator();
-        final char groupingSep = sep.groupingSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        final char decimalSep = localeSeparators.decimalSeparator();
+        final char groupingSep = localeSeparators.groupingSeparator();
 
         int i = start;
 

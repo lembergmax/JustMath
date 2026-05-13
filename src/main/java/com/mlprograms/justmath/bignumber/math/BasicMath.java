@@ -28,11 +28,12 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Locale;
+
+import lombok.NonNull;
 
 /**
  * Provides core arithmetic and selected transcendental operations for {@link BigNumber} without using
@@ -578,11 +579,11 @@ public final class BasicMath {
      * @return parsed sign and sanitized number string
      */
     private static ParsedString sanitizeAndExtractSign(final String input, final Locale locale) {
-        final LocaleSeparators sep = LocaleSeparators.forLocale(locale);
-        final char groupingSeparatorCharacter = sep.groupingSeparator();
-        final char localeDecimalSeparatorCharacter = sep.decimalSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        final char groupingSeparatorCharacter = localeSeparators.groupingSeparator();
+        final char localeDecimalSeparatorCharacter = localeSeparators.decimalSeparator();
 
-        int sign = +1;
+        int sign = 1;
         String sanitized = input;
 
         final char firstCharacter = sanitized.charAt(0);
@@ -2774,7 +2775,7 @@ public final class BasicMath {
      */
     private static String expandScientificNotationToPlain(final String scientificString) {
         String normalized = scientificString.trim();
-        int sign = +1;
+        int sign = 1;
 
         if (normalized.startsWith("-")) {
             sign = -1;

@@ -54,4 +54,5 @@ public enum ErrorMode {
      * Localized, user-facing error message taken from the resource bundle.
      */
     USER_FRIENDLY
+
 }

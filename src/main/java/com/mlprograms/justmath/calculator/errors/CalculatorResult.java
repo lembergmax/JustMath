@@ -175,4 +175,5 @@ public sealed interface CalculatorResult<T> permits CalculatorResult.Success, Ca
      */
     record Failure<T>(@NonNull CalculatorError failureError) implements CalculatorResult<T> {
     }
+
 }

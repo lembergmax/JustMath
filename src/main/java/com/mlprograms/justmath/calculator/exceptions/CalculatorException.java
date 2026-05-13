@@ -94,4 +94,5 @@ public abstract class CalculatorException extends CustomErrorException {
     ) {
         this(new CalculatorError(code, technicalDetail));
     }
+
 }

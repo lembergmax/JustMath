@@ -139,4 +139,5 @@ public enum CalculatorErrorCode {
         this.bundleKey = bundleKey;
         this.category = category;
     }
+
 }

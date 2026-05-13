@@ -90,4 +90,5 @@ public class SyntaxErrorException extends CalculatorException {
     ) {
         super(new CalculatorError(code, params, technicalDetail, position));
     }
+
 }

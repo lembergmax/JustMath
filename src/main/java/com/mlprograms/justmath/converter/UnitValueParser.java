@@ -384,25 +384,25 @@ final class UnitValueParser {
             @NonNull final String rawNumberText,
             @NonNull final Locale localeForNormalization
     ) {
-        final LocaleSeparators sep = LocaleSeparators.forLocale(localeForNormalization);
-        final char decimalSeparatorCharacter = sep.decimalSeparator();
-        final char groupingSeparatorCharacter = sep.groupingSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(localeForNormalization);
+        final char decimalSeparatorCharacter = localeSeparators.decimalSeparator();
+        final char groupingSeparatorCharacter = localeSeparators.groupingSeparator();
 
         final int length = rawNumberText.length();
         final StringBuilder result = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            final char c = rawNumberText.charAt(i);
-            if (c == '\u00A0' || c == '\u202F') {
+            final char charAtI = rawNumberText.charAt(i);
+            if (charAtI == '\u00A0' || charAtI == '\u202F') {
                 continue;
             }
-            if (groupingSeparatorCharacter != '\0' && c == groupingSeparatorCharacter) {
+            if (groupingSeparatorCharacter != '\0' && charAtI == groupingSeparatorCharacter) {
                 continue;
             }
-            if (decimalSeparatorCharacter != '.' && c == decimalSeparatorCharacter) {
+            if (decimalSeparatorCharacter != '.' && charAtI == decimalSeparatorCharacter) {
                 result.append('.');
                 continue;
             }
-            result.append(c);
+            result.append(charAtI);
         }
         return result.toString();
     }

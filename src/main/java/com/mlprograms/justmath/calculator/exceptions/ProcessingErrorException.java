@@ -87,4 +87,5 @@ public class ProcessingErrorException extends CalculatorException {
     ) {
         super(new CalculatorError(code, params, technicalDetail));
     }
+
 }

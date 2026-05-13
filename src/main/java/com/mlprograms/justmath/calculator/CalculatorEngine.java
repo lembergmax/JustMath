@@ -354,10 +354,10 @@ public class CalculatorEngine {
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toString();
-        } catch (CalculatorException e) {
-            return formatExceptionMessage(e);
-        } catch (Exception e) {
-            return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
+        } catch (final CalculatorException calculatorException) {
+            return formatExceptionMessage(calculatorException);
+        } catch (final Exception exception) {
+            return Objects.requireNonNullElse(exception.getMessage(), "Syntax Error");
         }
     }
 
@@ -423,10 +423,10 @@ public class CalculatorEngine {
                         Objects.requireNonNullElse(ex.getDetailedMessage(), "Unknown processing error"));
             }
             return CalculatorResult.failure(err);
-        } catch (Exception ex) {
+        } catch (final Exception exception) {
             CalculatorError err = new CalculatorError(
                     CalculatorErrorCode.PROCESSING_INTERNAL,
-                    Objects.requireNonNullElse(ex.getMessage(), "Unknown error"));
+                    Objects.requireNonNullElse(exception.getMessage(), "Unknown error"));
             return CalculatorResult.failure(err);
         }
     }
@@ -437,20 +437,20 @@ public class CalculatorEngine {
      * category default such as {@code "Syntax Error"}); in {@link ErrorMode#USER_FRIENDLY}
      * the localized template from the resource bundle is used.
      *
-     * @param e exception to format; must not be {@code null}
+     * @param calculatorException exception to format; must not be {@code null}
      * @return formatted message; never {@code null}
      */
-    private String formatExceptionMessage(@NonNull final CalculatorException e) {
+    private String formatExceptionMessage(@NonNull final CalculatorException calculatorException) {
         if (errorMode == ErrorMode.USER_FRIENDLY) {
-            CalculatorError err = e.getCalculatorError();
-            if (err == null) {
-                err = new CalculatorError(
+            CalculatorError calculatorError = calculatorException.getCalculatorError();
+            if (calculatorError == null) {
+                calculatorError = new CalculatorError(
                         CalculatorErrorCode.PROCESSING_INTERNAL,
-                        Objects.requireNonNullElse(e.getDetailedMessage(), e.getMessage()));
+                        Objects.requireNonNullElse(calculatorException.getDetailedMessage(), calculatorException.getMessage()));
             }
-            return err.format(locale, ErrorMode.USER_FRIENDLY);
+            return calculatorError.format(locale, ErrorMode.USER_FRIENDLY);
         }
-        return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
+        return Objects.requireNonNullElse(calculatorException.getMessage(), "Syntax Error");
     }
 
     /**
@@ -508,4 +508,5 @@ public class CalculatorEngine {
             });
         }
     }
+
 }

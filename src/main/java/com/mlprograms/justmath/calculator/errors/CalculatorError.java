@@ -158,4 +158,5 @@ public record CalculatorError(
         }
         return result;
     }
+
 }
