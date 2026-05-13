@@ -398,6 +398,98 @@ public class CalculatorEngine {
     }
 
     /**
+     * Null- and exception-tolerant variant of {@link #evaluateToString(String)}. Unlike the
+     * non-safe variants this method also accepts {@code null} as expression or variable map
+     * and never propagates an exception; failures are returned as a prefixed error string
+     * (for example {@code "Error: Syntax Error"} or, when the locale is German,
+     * {@code "Fehler: ..."}).
+     *
+     * @param expression input expression; may be {@code null}
+     * @return result as a string, or a prefixed error message
+     */
+    public String evaluateSafeToString(final String expression) {
+        return evaluateSafeToString(expression, Map.of());
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToString(String, Map)}.
+     *
+     * @param expression input expression; may be {@code null}
+     * @param variables  variable bindings; may be {@code null}
+     * @return result as a string, or a prefixed error message
+     */
+    public String evaluateSafeToString(final String expression, final Map<String, String> variables) {
+        if (expression == null) {
+            return formatSafeError(new IllegalArgumentException("expression must not be null"));
+        }
+        try {
+            BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
+            return result.toString();
+        } catch (final CalculatorException calculatorException) {
+            return formatSafeError(calculatorException);
+        } catch (final Exception exception) {
+            return formatSafeError(exception);
+        }
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToPrettyString(String)}.
+     *
+     * @param expression input expression; may be {@code null}
+     * @return pretty-formatted result, or a prefixed error message
+     */
+    public String evaluateSafeToPrettyString(final String expression) {
+        return evaluateSafeToPrettyString(expression, Map.of());
+    }
+
+    /**
+     * Null- and exception-tolerant variant of {@link #evaluateToPrettyString(String, Map)}.
+     *
+     * @param expression input expression; may be {@code null}
+     * @param variables  variable bindings; may be {@code null}
+     * @return pretty-formatted result, or a prefixed error message
+     */
+    public String evaluateSafeToPrettyString(final String expression, final Map<String, String> variables) {
+        if (expression == null) {
+            return formatSafeError(new IllegalArgumentException("expression must not be null"));
+        }
+        try {
+            BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
+            return result.toPrettyString();
+        } catch (final CalculatorException calculatorException) {
+            return formatSafeError(calculatorException);
+        } catch (final Exception exception) {
+            return formatSafeError(exception);
+        }
+    }
+
+    /**
+     * Formats any exception caught by the {@code evaluateSafe...} string methods into a short,
+     * prefixed error string. The prefix is locale-aware: {@code "Fehler"} for German,
+     * {@code "Error"} otherwise. {@link CalculatorException}s and classifiable
+     * {@link RuntimeException}s are routed through {@link #formatExceptionMessage} so that the
+     * configured {@link ErrorMode} (RAW vs. USER_FRIENDLY) is respected.
+     *
+     * @param exception exception to format; must not be {@code null}
+     * @return short, single-line error string
+     */
+    private String formatSafeError(final Exception exception) {
+        final String prefix = "de".equalsIgnoreCase(locale.getLanguage()) ? "Fehler" : "Error";
+        String message;
+        if (exception instanceof CalculatorException calculatorException) {
+            message = formatExceptionMessage(calculatorException);
+        } else if (exception instanceof RuntimeException) {
+            message = formatExceptionMessage(classifyRuntimeException(exception));
+        } else {
+            message = exception.getMessage();
+        }
+        if (message == null || message.isBlank()) {
+            message = exception.getClass().getSimpleName();
+        }
+        return prefix + ": " + message;
+    }
+
+    /**
      * Evaluates an expression and returns a {@link CalculatorResult} so that callers can
      * branch on success and failure without using exceptions on the happy path.
      *

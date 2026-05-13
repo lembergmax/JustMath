@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -27,9 +27,10 @@ package com.mlprograms.justmath.bignumber.math;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberMatrix;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import lombok.NonNull;
 
 import java.util.Locale;
+
+import lombok.NonNull;
 
 public class MatrixMath {
 
@@ -133,7 +134,11 @@ public class MatrixMath {
 	 */
 	public static BigNumberMatrix multiply(@NonNull final BigNumberMatrix multiplier, @NonNull final BigNumberMatrix multiplicand) {
 		if (!multiplier.getColumns().isEqualTo(multiplicand.getRows())) {
-			throw new IllegalArgumentException("Number of columns of multiplier must equal number of rows of multiplicand.");
+			throw new IllegalArgumentException(
+					"Matrix multiplication dimension mismatch: left matrix is "
+							+ multiplier.getRows() + "x" + multiplier.getColumns()
+							+ ", right matrix is " + multiplicand.getRows() + "x" + multiplicand.getColumns()
+							+ ". Left columns must equal right rows.");
 		}
 
 		BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
@@ -255,6 +260,12 @@ public class MatrixMath {
 	 */
 	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix) {
 		BigNumber n = matrix.getRows();
+
+		if (n.isEqualTo(BigNumbers.ZERO)) {
+			// Convention: the determinant of the empty 0x0 matrix is the multiplicative identity 1.
+			// This makes the recursive cofactor expansion for 1x1 inverses produce the correct result.
+			return BigNumbers.ONE;
+		}
 
 		if (n.isEqualTo(BigNumbers.ONE)) {
 			return matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
@@ -450,11 +461,15 @@ public class MatrixMath {
 	 */
 	private static void checkParamsForSameMatrixSize(BigNumberMatrix augend, BigNumberMatrix addend) {
 		if (!augend.getRows().isEqualTo(addend.getRows()) || !augend.getColumns().isEqualTo(addend.getColumns())) {
-			throw new IllegalArgumentException("The rows and columns of both matrices must be equal.");
+			throw new IllegalArgumentException(
+					"Element-wise matrix operation dimension mismatch: left matrix is "
+							+ augend.getRows() + "x" + augend.getColumns()
+							+ ", right matrix is " + addend.getRows() + "x" + addend.getColumns()
+							+ ". Both matrices must have identical dimensions.");
 		}
 
 		if (!augend.getRows().isGreaterThan(BigNumbers.ZERO) || !augend.getColumns().isGreaterThan(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("The rows and columns of both matrices must be greater than zero");
+			throw new IllegalArgumentException("Matrix dimensions must be greater than zero.");
 		}
 	}
 

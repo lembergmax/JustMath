@@ -24,6 +24,8 @@
 
 package com.mlprograms.justmath.calculator;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
@@ -37,8 +39,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class CalculatorEngineTest {
 
@@ -437,6 +437,133 @@ public class CalculatorEngineTest {
             Map<String, String> variables = new HashMap<>();
             variables.put("a", "b+1");
             assertDoesNotThrow(() -> CalculatorEngineUtils.checkVariablesForRecursion(calculatorEngine, variables));
+        }
+
+    }
+
+    @Nested
+    class EvaluateSafeStringTest {
+
+        private final CalculatorEngine calculatorEngine = new CalculatorEngine();
+
+        @Test
+        void evaluateSafeToString_validExpression_returnsResult() {
+            assertEquals("3", calculatorEngine.evaluateSafeToString("1+2"));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_validExpression_returnsResult() {
+            String pretty = calculatorEngine.evaluateSafeToPrettyString("1+2");
+            assertNotNull(pretty);
+            assertFalse(pretty.startsWith("Error"));
+            assertFalse(pretty.startsWith("Fehler"));
+        }
+
+        @Test
+        void evaluateSafeToString_emptyExpression_returnsZero() {
+            assertEquals("0", calculatorEngine.evaluateSafeToString(""));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_emptyExpression_returnsZero() {
+            assertEquals("0", calculatorEngine.evaluateSafeToPrettyString(""));
+        }
+
+        @Test
+        void evaluateSafeToString_null_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_null_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString(null);
+            assertNotNull(result);
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_incompleteExpression_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_incompleteExpression_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("1+");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_unknownFunction_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("unknownFunction(5)");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_unknownFunction_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("unknownFunction(5)");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_divisionByZero_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToString("1/0");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_divisionByZero_returnsErrorPrefix() {
+            String result = calculatorEngine.evaluateSafeToPrettyString("1/0");
+            assertTrue(result.startsWith("Error:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_germanLocale_usesFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMAN);
+            String result = engine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Fehler:"), result);
+        }
+
+        @Test
+        void evaluateSafeToString_nullVariables_doesNotThrow() {
+            assertEquals("3", calculatorEngine.evaluateSafeToString("1+2", null));
+        }
+
+        @Test
+        void evaluateSafeToPrettyString_nullVariables_doesNotThrow() {
+            String pretty = calculatorEngine.evaluateSafeToPrettyString("1+2", null);
+            assertFalse(pretty.startsWith("Error"));
+        }
+
+        @Test
+        void evaluateSafeToString_neverReturnsStacktrace() {
+            String result = calculatorEngine.evaluateSafeToString("1/0");
+            assertFalse(result.contains("at com.mlprograms"), "should not contain stacktrace");
+            assertFalse(result.contains("\tat "), "should not contain stacktrace");
+        }
+
+        @Test
+        void evaluateSafeToString_neverReturnsNull() {
+            assertNotNull(calculatorEngine.evaluateSafeToString(null));
+            assertNotNull(calculatorEngine.evaluateSafeToString(""));
+            assertNotNull(calculatorEngine.evaluateSafeToString("1+"));
+            assertNotNull(calculatorEngine.evaluateSafeToString("unknownFunction(5)"));
+            assertNotNull(calculatorEngine.evaluateSafeToString("1/0"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString(null));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString(""));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("1+"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("unknownFunction(5)"));
+            assertNotNull(calculatorEngine.evaluateSafeToPrettyString("1/0"));
+        }
+
+        @Test
+        void existingEvaluateToString_stillReturnsRawErrorWithoutPrefix() {
+            String result = calculatorEngine.evaluateToString("1+");
+            assertNotNull(result);
+            assertFalse(result.startsWith("Error:"), "existing API must not have Error: prefix");
+            assertFalse(result.startsWith("Fehler:"), "existing API must not have Fehler: prefix");
         }
 
     }
