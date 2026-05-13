@@ -138,4 +138,41 @@ class MultiValueResultEvaluationTest {
                 "expected `" + expected + "` and `" + actual + "` to produce the same scalar result");
     }
 
+    @Test
+    void polAlone_germanLocale_bothComponentsAreLocaleFormatted() {
+        CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG).setLocale(java.util.Locale.GERMANY);
+        String rendered = engine.evaluateToString("Pol(1;2)");
+
+        assertTrue(rendered.startsWith("r="), rendered);
+        assertTrue(rendered.contains("θ="), rendered);
+        // German decimal separator is ',' — must appear in both components and never a '.' as decimal.
+        String r = rendered.substring(rendered.indexOf("r=") + 2, rendered.indexOf(";"));
+        String theta = rendered.substring(rendered.indexOf("θ=") + 2);
+        assertTrue(r.contains(","), "r component must use German decimal separator: " + r);
+        assertTrue(theta.contains(","), "θ component must use German decimal separator: " + theta);
+        assertFalse(r.contains("."), "r component must not contain '.' as decimal under GERMANY locale: " + r);
+        assertFalse(theta.contains("."), "θ component must not contain '.' as decimal under GERMANY locale: " + theta);
+    }
+
+    @Test
+    void recAlone_germanLocale_prettyFormatsBothComponents() {
+        CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG).setLocale(java.util.Locale.GERMANY);
+        String rendered = engine.evaluateToPrettyString("Rec(2;1)");
+
+        assertTrue(rendered.startsWith("x="), rendered);
+        assertTrue(rendered.contains("y="), rendered);
+        // Pretty output of Rec(2;1) contains decimals that must be formatted with German separators.
+        assertTrue(rendered.contains(","), "expected German decimal separator in: " + rendered);
+    }
+
+    @Test
+    void polAlone_englishLocale_keepsDotDecimal() {
+        CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG).setLocale(java.util.Locale.ENGLISH);
+        String rendered = engine.evaluateToString("Pol(1;2)");
+
+        assertTrue(rendered.startsWith("r="), rendered);
+        assertTrue(rendered.contains("θ="), rendered);
+        assertTrue(rendered.contains("."), "English locale must keep '.' as decimal separator: " + rendered);
+    }
+
 }

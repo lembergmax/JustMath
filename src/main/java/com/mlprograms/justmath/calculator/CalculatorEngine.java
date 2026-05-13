@@ -91,7 +91,11 @@ public class CalculatorEngine {
     private final PostfixParser postfixParser;
 
     /**
-     * Locale used to render localized error messages. Defaults to {@link Locale#ENGLISH}.
+     * Locale used for both localized error messages and locale-aware result formatting
+     * (decimal and grouping separators in {@link #evaluateToString(String)},
+     * {@link #evaluateToPrettyString(String)} and their safe variants).
+     * Defaults to {@link Locale#ENGLISH}, which preserves the legacy {@code .}/{@code ,}
+     * formatting of earlier releases.
      */
     @NonNull
     private Locale locale = Locale.ENGLISH;
@@ -195,7 +199,19 @@ public class CalculatorEngine {
     }
 
     /**
-     * Sets the locale used for localized error messages.
+     * Sets the locale used for localized error messages <em>and</em> for locale-aware result
+     * formatting. The configured locale is applied to {@link #evaluateToString(String)},
+     * {@link #evaluateToPrettyString(String)}, {@link #evaluateSafeToString(String)} and
+     * {@link #evaluateSafeToPrettyString(String)}: decimal and grouping separators follow the
+     * given locale (e.g. {@code "0,5"} / {@code "1.234,56"} for {@link Locale#GERMANY},
+     * {@code "0.5"} / {@code "1,234.56"} for {@link Locale#US}).
+     *
+     * <p>
+     * Input parsing is <strong>not</strong> affected — expressions are still parsed in the
+     * canonical {@code .}-as-decimal form regardless of this setting. Error prefixes used by
+     * the safe variants remain locale-aware ({@code "Fehler"} for German, {@code "Error"}
+     * otherwise).
+     * </p>
      *
      * @param locale target locale; must not be {@code null}
      * @return this engine for builder-style chaining
@@ -337,6 +353,13 @@ public class CalculatorEngine {
      * human-readable strings instead of being thrown.
      *
      * <p>
+     * The result is rendered using the configured {@link #setLocale(Locale) locale} (decimal
+     * separator only, no digit grouping). For example, with {@link Locale#GERMANY} the result
+     * of {@code "1/2"} is {@code "0,5"}; with {@link Locale#ENGLISH} or {@link Locale#US} it
+     * is {@code "0.5"}.
+     * </p>
+     *
+     * <p>
      * In the default {@link ErrorMode#RAW} the returned text matches the behaviour from
      * before the localization layer was introduced — typically the category default such as
      * {@code "Syntax Error"} or {@code "Processing Error"}. In {@link ErrorMode#USER_FRIENDLY}
@@ -360,7 +383,7 @@ public class CalculatorEngine {
     public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
-            return result.toString();
+            return result.toString(locale);
         } catch (final CalculatorException calculatorException) {
             return formatExceptionMessage(calculatorException);
         } catch (final Exception exception) {
@@ -369,7 +392,11 @@ public class CalculatorEngine {
     }
 
     /**
-     * Evaluates an expression and returns the result formatted for human consumption.
+     * Evaluates an expression and returns the result formatted for human consumption with
+     * digit grouping. Decimal and grouping separators follow the configured
+     * {@link #setLocale(Locale) locale}: {@code "1.234,56"} for {@link Locale#GERMANY},
+     * {@code "1,234.56"} for {@link Locale#ENGLISH}/{@link Locale#US}, and the corresponding
+     * separators for any other JDK-supported locale.
      *
      * @param expression input expression; must not be {@code null}
      * @return formatted result, or an error message if evaluation failed
@@ -389,7 +416,7 @@ public class CalculatorEngine {
     public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
-            return result.toPrettyString();
+            return result.toPrettyString(locale);
         } catch (CalculatorException e) {
             return formatExceptionMessage(e);
         } catch (Exception e) {
@@ -403,6 +430,11 @@ public class CalculatorEngine {
      * and never propagates an exception; failures are returned as a prefixed error string
      * (for example {@code "Error: Syntax Error"} or, when the locale is German,
      * {@code "Fehler: ..."}).
+     *
+     * <p>
+     * On success the result is formatted with the configured {@link #setLocale(Locale) locale}
+     * (decimal separator only, no grouping), consistent with {@link #evaluateToString(String)}.
+     * </p>
      *
      * @param expression input expression; may be {@code null}
      * @return result as a string, or a prefixed error message
@@ -424,7 +456,7 @@ public class CalculatorEngine {
         }
         try {
             BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
-            return result.toString();
+            return result.toString(locale);
         } catch (final CalculatorException calculatorException) {
             return formatSafeError(calculatorException);
         } catch (final Exception exception) {
@@ -434,6 +466,11 @@ public class CalculatorEngine {
 
     /**
      * Null- and exception-tolerant variant of {@link #evaluateToPrettyString(String)}.
+     *
+     * <p>
+     * On success the result is formatted with the configured {@link #setLocale(Locale) locale},
+     * including digit grouping, consistent with {@link #evaluateToPrettyString(String)}.
+     * </p>
      *
      * @param expression input expression; may be {@code null}
      * @return pretty-formatted result, or a prefixed error message
@@ -455,7 +492,7 @@ public class CalculatorEngine {
         }
         try {
             BigNumber result = evaluate(expression, variables == null ? Map.of() : variables);
-            return result.toPrettyString();
+            return result.toPrettyString(locale);
         } catch (final CalculatorException calculatorException) {
             return formatSafeError(calculatorException);
         } catch (final Exception exception) {

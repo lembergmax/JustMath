@@ -568,4 +568,106 @@ public class CalculatorEngineTest {
 
     }
 
+    @Nested
+    class LocaleAwareResultFormattingTest {
+
+        @Test
+        void englishLocale_decimalUsesPoint() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.ENGLISH);
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void usLocale_prettyUsesCommaGrouping() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("1,234.56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void usLocale_safeMethodsBehaveConsistently() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.US);
+            assertEquals("0.5", engine.evaluateSafeToString("1/2"));
+            assertEquals("1,234.56", engine.evaluateSafeToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_decimalUsesComma() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void germanLocale_prettyUsesDotGroupingCommaDecimal() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234,56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_safeMethodsAreLocaleAware() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateSafeToString("1/2"));
+            assertEquals("1.234,56", engine.evaluateSafeToPrettyString("1234.56"));
+        }
+
+        @Test
+        void germanLocale_negativeNumbers() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("-1234,56", engine.evaluateToString("-1234.56"));
+            assertEquals("-1.234,56", engine.evaluateToPrettyString("-1234.56"));
+        }
+
+        @Test
+        void germanLocale_integerWithoutDecimalSeparator() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1000", engine.evaluateToString("1000"));
+            assertEquals("1.000", engine.evaluateToPrettyString("1000"));
+        }
+
+        @Test
+        void germanLocale_largeNumberPrettyFormatting() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            assertEquals("1.234.567.890,123456", engine.evaluateToPrettyString("1234567890.123456"));
+        }
+
+        @Test
+        void frenchLocale_decimalUsesComma() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.FRANCE);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+        }
+
+        @Test
+        void inputParsingNotAffectedByLocale() {
+            CalculatorEngine engine = new CalculatorEngine().setLocale(java.util.Locale.GERMANY);
+            // Input uses '.' as decimal separator regardless of result locale.
+            assertEquals("1235", engine.evaluateToString("1234.56 + 0.44"));
+        }
+
+        @Test
+        void germanLocale_errorMessagesStillUseFehlerPrefix() {
+            CalculatorEngine engine = new CalculatorEngine()
+                    .setLocale(java.util.Locale.GERMANY)
+                    .setErrorMode(com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY);
+            String result = engine.evaluateSafeToString("1+");
+            assertTrue(result.startsWith("Fehler:"), result);
+        }
+
+        @Test
+        void defaultLocaleIsBackwardCompatibleEnglish() {
+            CalculatorEngine engine = new CalculatorEngine();
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+            assertEquals("1,234.56", engine.evaluateToPrettyString("1234.56"));
+        }
+
+        @Test
+        void switchingLocaleAtRuntimeReflectsInNextEvaluation() {
+            CalculatorEngine engine = new CalculatorEngine();
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+            engine.setLocale(java.util.Locale.GERMANY);
+            assertEquals("0,5", engine.evaluateToString("1/2"));
+            engine.setLocale(java.util.Locale.US);
+            assertEquals("0.5", engine.evaluateToString("1/2"));
+        }
+
+    }
+
 }

@@ -42,7 +42,7 @@ public class Main {
 //        System.out.println(convertedToUnitValue.getValue());
 
         final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        calculatorEngine.setLocale(Locale.GERMANY);
+        calculatorEngine.setLocale(Locale.FRENCH);
         calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
         System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
         System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));

@@ -3250,6 +3250,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
+     * Returns the plain string representation of this object using the given {@link Locale}.
+     * <p>
+     * No digit grouping is applied. The locale's decimal separator overrides the instance's default.
+     * Use this overload to render results in a target locale without mutating the instance.
+     *
+     * @param locale the locale to apply for number formatting; must not be {@code null}
+     * @return a plain, locale-aware string representation of this object
+     */
+    public String toString(@NonNull final Locale locale) {
+        return formatToString(locale, false);
+    }
+
+    /**
      * Returns a human-readable string representation of this object with digit grouping enabled.
      * <p>
      * The locale used for formatting is the default {@code locale} of this instance.
