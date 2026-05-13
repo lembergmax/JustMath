@@ -32,7 +32,6 @@ import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 
 import java.math.MathContext;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import lombok.NonNull;
