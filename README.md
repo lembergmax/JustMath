@@ -208,6 +208,74 @@ System.out.println(result);
 // 12.464101615...
 ```
 
+## 🛡️ Safe Evaluation & Localized Errors
+
+In addition to the throwing `evaluate(...)` entry points, `CalculatorEngine` exposes
+**`evaluateSafe(...)`**, which never throws on calculator-level failures. Instead it returns
+a sealed **`CalculatorResult<BigNumber>`** that is either `Success` (carries the value) or
+`Failure` (carries a `CalculatorError`).
+
+Each failure is described by a **`CalculatorErrorCode`** (for example
+`SYNTAX_INVALID_CHARACTER`, `SYNTAX_UNKNOWN_VARIABLE`, `PROCESSING_DIVISION_BY_ZERO`,
+`PROCESSING_DOMAIN_ERROR`), so callers can branch on a structural value instead of parsing
+English text fragments.
+
+### 🌍 Localized Messages
+
+Error messages can be rendered in two modes via **`ErrorMode`**:
+
+| Mode            | Description                                                                                              |
+|-----------------|----------------------------------------------------------------------------------------------------------|
+| `RAW`           | Technical English detail including internal context (tokens, positions, stack sizes). This is the default. |
+| `USER_FRIENDLY` | Localized, end-user oriented message taken from `i18n/calculator_errors_*.properties` (currently `en`, `de`). |
+
+The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
+`setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
+
+### ✅ Example: Result-based Evaluation
+
+```java
+CalculatorEngine engine = new CalculatorEngine()
+        .setLocale(Locale.GERMAN)
+        .setErrorMode(ErrorMode.USER_FRIENDLY);
+
+CalculatorResult<BigNumber> result = engine.evaluateSafe("5/0");
+
+if (result.isFailure()) {
+    CalculatorError err = result.error().orElseThrow();
+    System.out.println(err.code());
+    // PROCESSING_DIVISION_BY_ZERO
+
+    System.out.println(err.format(Locale.GERMAN, ErrorMode.USER_FRIENDLY));
+    // Division durch Null ist nicht erlaubt.
+} else {
+    BigNumber value = result.value().orElseThrow();
+    System.out.println(value);
+}
+```
+
+`CalculatorResult` also supports `map(...)` for chaining and `valueOrThrow()` if you prefer
+to fall back to the classical `SyntaxErrorException` / `ProcessingErrorException` contract.
+
+### ⚡ Caching
+
+`BigNumber.valueOf(...)`, the constants exposed on `BigNumbers`, and the `CalculatorEngine`
+expression pipeline use internal caches to avoid redundant work for repeated values and
+re-evaluations of the same expression — `engine.evaluate("∑(0;100;k)")` invoked twice in a
+row reuses the parsed/postfix representation on the second call.
+
+### 🧬 Cloneable BigNumber
+
+`BigNumber` implements `Cloneable` and exposes a safe `clone()` method that returns a value-
+equal copy without mutating any shared internal state — convenient when caching or passing
+`BigNumber` instances into APIs that mutate their inputs.
+
+```java
+BigNumber a = new BigNumber("3.14159");
+BigNumber b = a.clone();
+// a.equals(b) == true, but a != b
+```
+
 ## 📚 Static Utility Methods
 
 JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
@@ -683,6 +751,11 @@ Cannot wait? Just download the latest jar:
     <th>Version</th>
     <th>Download</th>
     <th>Release Type</th>
+  </tr>
+  <tr>
+    <td>v1.4.0</td>
+    <td><a href="out/artifacts/justmath_jar/justmath-1.4.0.jar">JustMath v1.4.0</a></td>
+    <td>Release</td>
   </tr>
   <tr>
     <td>v1.3.0</td>
