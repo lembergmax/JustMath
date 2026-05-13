@@ -695,4 +695,67 @@ class BigNumberMatrixTest {
                 () -> new BigNumberMatrix(new ArrayList<List<BigNumber>>(), locale));
     }
 
+    // ---------------------------------------------------------------------------------------
+    // Localized error messages (English + German)
+    // ---------------------------------------------------------------------------------------
+
+    @Test
+    void testMultiplyErrorIsEnglishForUSLocale() {
+        BigNumberMatrix left = new BigNumberMatrix("1;2", Locale.US);
+        BigNumberMatrix right = new BigNumberMatrix("2,5;1,3", Locale.US);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> left.multiply(right));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Matrix multiplication dimension mismatch"), msg);
+        assertTrue(msg.contains("Left columns must equal right rows"), msg);
+        assertTrue(msg.contains("2x1"), msg);
+        assertTrue(msg.contains("2x2"), msg);
+    }
+
+    @Test
+    void testMultiplyErrorIsGermanForGermanLocale() {
+        BigNumberMatrix left = new BigNumberMatrix("1;2", Locale.GERMANY);
+        BigNumberMatrix right = new BigNumberMatrix("2,5;1,3", Locale.GERMANY);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> left.multiply(right));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Matrixmultiplikation"), msg);
+        assertTrue(msg.contains("Dimensionsfehler"), msg);
+        assertTrue(msg.contains("linke Matrix") || msg.contains("Spaltenanzahl"), msg);
+    }
+
+    @Test
+    void testElementWiseErrorIsGermanForGermanLocale() {
+        BigNumberMatrix a = new BigNumberMatrix("1;2;3;4", Locale.GERMANY); // 4x1
+        BigNumberMatrix b = new BigNumberMatrix("1;2;3", Locale.GERMANY);   // 3x1
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> a.add(b));
+        String msg = ex.getMessage();
+        assertTrue(msg.contains("Elementweise") || msg.contains("Dimensionsfehler"), msg);
+    }
+
+    @Test
+    void testNotSquareErrorIsGermanForGermanLocale() {
+        BigNumberMatrix m = new BigNumberMatrix("1;2;3", Locale.GERMANY); // 3x1, not square
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, m::determinant);
+        assertTrue(ex.getMessage().contains("quadratisch"), ex.getMessage());
+    }
+
+    @Test
+    void testSingularInverseErrorIsGermanForGermanLocale() {
+        // 2x2 singular matrix; rows linearly dependent.
+        BigNumberMatrix m = new BigNumberMatrix("1;2;2;4", Locale.GERMANY); // 4x1, not square -> wrong test
+        // Build a real singular matrix via the data string in US format then re-wrap with German locale.
+        BigNumberMatrix singular = new BigNumberMatrix("1,2;2,4", Locale.US);
+        // Use list ctor to rebuild with German locale so the localized error message is selected.
+        BigNumberMatrix german = new BigNumberMatrix(singular.getData(), Locale.GERMANY);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, german::inverse);
+        assertTrue(ex.getMessage().contains("nicht invertierbar"), ex.getMessage());
+    }
+
+    @Test
+    void testIndexOutOfBoundsLocalizedGerman() {
+        BigNumberMatrix m = new BigNumberMatrix("1,2;3,4", Locale.GERMANY);
+        IndexOutOfBoundsException ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> m.get(new BigNumber("5", Locale.GERMANY), new BigNumber("0", Locale.GERMANY)));
+        assertTrue(ex.getMessage().contains("Zeilenindex"), ex.getMessage());
+    }
+
 }

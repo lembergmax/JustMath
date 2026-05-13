@@ -27,8 +27,10 @@ package com.mlprograms.justmath.bignumber.math;
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberMatrix;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.matrix.MatrixMessages;
 
 import java.util.Locale;
+import java.util.Map;
 
 import lombok.NonNull;
 
@@ -134,11 +136,13 @@ public class MatrixMath {
 	 */
 	public static BigNumberMatrix multiply(@NonNull final BigNumberMatrix multiplier, @NonNull final BigNumberMatrix multiplicand) {
 		if (!multiplier.getColumns().isEqualTo(multiplicand.getRows())) {
-			throw new IllegalArgumentException(
-					"Matrix multiplication dimension mismatch: left matrix is "
-							+ multiplier.getRows() + "x" + multiplier.getColumns()
-							+ ", right matrix is " + multiplicand.getRows() + "x" + multiplicand.getColumns()
-							+ ". Left columns must equal right rows.");
+			throw new IllegalArgumentException(MatrixMessages.get(multiplier.getLocale(),
+					"matrix.error.multiplyDimMismatch",
+					Map.of(
+							"leftRows", multiplier.getRows().toString(),
+							"leftCols", multiplier.getColumns().toString(),
+							"rightRows", multiplicand.getRows().toString(),
+							"rightCols", multiplicand.getColumns().toString())));
 		}
 
 		BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
@@ -316,7 +320,8 @@ public class MatrixMath {
 		BigNumber determinant = determinant(matrix);
 
 		if (determinant.isEqualTo(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("Matrix is not invertible (determinant is zero).");
+			throw new IllegalArgumentException(
+					MatrixMessages.get(matrix.getLocale(), "matrix.error.singular"));
 		}
 
 		return new BigNumberMatrix(scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant)));
@@ -343,7 +348,8 @@ public class MatrixMath {
 	 */
 	public static BigNumberMatrix power(@NonNull final BigNumberMatrix base, @NonNull final BigNumber exponent) {
 		if (!exponent.isInteger() || exponent.isNegative()) {
-			throw new IllegalArgumentException("Matrix exponent must be a non-negative integer.");
+			throw new IllegalArgumentException(
+					MatrixMessages.get(base.getLocale(), "matrix.error.invalidExponent"));
 		}
 
 		BigNumberMatrix result = identity(base.getRows(), base.getLocale());
@@ -460,16 +466,20 @@ public class MatrixMath {
 	 * 	if the matrices have different dimensions or non-positive size
 	 */
 	private static void checkParamsForSameMatrixSize(BigNumberMatrix augend, BigNumberMatrix addend) {
+		Locale locale = augend.getLocale();
+
 		if (!augend.getRows().isEqualTo(addend.getRows()) || !augend.getColumns().isEqualTo(addend.getColumns())) {
-			throw new IllegalArgumentException(
-					"Element-wise matrix operation dimension mismatch: left matrix is "
-							+ augend.getRows() + "x" + augend.getColumns()
-							+ ", right matrix is " + addend.getRows() + "x" + addend.getColumns()
-							+ ". Both matrices must have identical dimensions.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale,
+					"matrix.error.elementWiseDimMismatch",
+					Map.of(
+							"leftRows", augend.getRows().toString(),
+							"leftCols", augend.getColumns().toString(),
+							"rightRows", addend.getRows().toString(),
+							"rightCols", addend.getColumns().toString())));
 		}
 
 		if (!augend.getRows().isGreaterThan(BigNumbers.ZERO) || !augend.getColumns().isGreaterThan(BigNumbers.ZERO)) {
-			throw new IllegalArgumentException("Matrix dimensions must be greater than zero.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.zeroDim"));
 		}
 	}
 

@@ -26,10 +26,12 @@ package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.bignumber.math.MatrixMath;
 import com.mlprograms.justmath.bignumber.matrix.MatrixElementConsumer;
+import com.mlprograms.justmath.bignumber.matrix.MatrixMessages;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
@@ -122,19 +124,21 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumberMatrix(@NonNull List<List<BigNumber>> data, @NonNull Locale locale) {
 		if (data.isEmpty()) {
-			throw new IllegalArgumentException("Matrix data must contain at least one row.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.dataEmpty"));
 		}
 
 		int expectedCols = data.getFirst().size();
 		if (expectedCols == 0) {
-			throw new IllegalArgumentException("Matrix rows must contain at least one column.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.rowEmpty"));
 		}
 
 		for (int i = 0; i < data.size(); i++) {
 			if (data.get(i).size() != expectedCols) {
-				throw new IllegalArgumentException(
-						"All rows must have same column count (row " + i + " has " + data.get(i).size()
-								+ " entries, expected " + expectedCols + ").");
+				throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.raggedRow",
+						Map.of(
+								"row", String.valueOf(i),
+								"actual", String.valueOf(data.get(i).size()),
+								"expected", String.valueOf(expectedCols))));
 			}
 		}
 
@@ -209,12 +213,12 @@ public class BigNumberMatrix implements Cloneable {
 		String trimmedInput = input.trim();
 
 		if (trimmedInput.isEmpty()) {
-			throw new IllegalArgumentException("Matrix string must not be empty.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.stringEmpty"));
 		}
 
 		if (trimmedInput.startsWith(";") || trimmedInput.startsWith(",")
 				|| trimmedInput.endsWith(";") || trimmedInput.endsWith(",")) {
-			throw new IllegalArgumentException("Matrix entries must not start or end with ';' or ','.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.stringEdgeSeparator"));
 		}
 
 		List<List<BigNumber>> result = new ArrayList<>();
@@ -227,8 +231,10 @@ public class BigNumberMatrix implements Cloneable {
 			if (expectedCols == -1) {
 				expectedCols = cols.length;
 			} else if (cols.length != expectedCols) {
-				throw new IllegalArgumentException(
-						"All rows must have same column count (got " + cols.length + ", expected " + expectedCols + ").");
+				throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.columnCountMismatch",
+						Map.of(
+								"actual", String.valueOf(cols.length),
+								"expected", String.valueOf(expectedCols))));
 			}
 
 			List<BigNumber> parsedRow = new ArrayList<>();
@@ -237,14 +243,16 @@ public class BigNumberMatrix implements Cloneable {
 				String trimmed = col.trim();
 
 				if (trimmed.isEmpty()) {
-					throw new IllegalArgumentException("Matrix entry must not be empty.");
+					throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.entryEmpty"));
 				}
 
 				try {
 					parsedRow.add(new BigNumber(trimmed, locale));
 				} catch (RuntimeException ex) {
-					throw new IllegalArgumentException(
-							"Invalid matrix entry '" + trimmed + "' for locale " + locale + ".", ex);
+					throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.invalidEntry",
+							Map.of(
+									"entry", trimmed,
+									"locale", locale.toString())), ex);
 				}
 			}
 
@@ -283,13 +291,13 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	private void validateDimensions() {
 		if (!rows.isInteger() || !columns.isInteger() || rows.isNegative() || columns.isNegative()) {
-			throw new IllegalArgumentException("Matrix dimensions must be non-negative integers.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.invalidDimensions"));
 		}
 
 		BigNumber max = new BigNumber(String.valueOf(Integer.MAX_VALUE));
 
 		if (rows.isGreaterThan(max) || columns.isGreaterThan(max)) {
-			throw new IllegalArgumentException("Matrix size must be smaller than Integer.MAX_VALUE.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.tooLarge"));
 		}
 	}
 
@@ -391,7 +399,11 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	private void validateIndex(@NonNull final BigNumber index, @NonNull final BigNumber max, @NonNull final String type) {
 		if (!index.isInteger() || index.isNegative() || index.isGreaterThanOrEqualTo(max)) {
-			throw new IndexOutOfBoundsException(type + " index out of bounds: " + index);
+			String key = "row".equals(type)
+					? "matrix.error.rowIndexOutOfBounds"
+					: "matrix.error.columnIndexOutOfBounds";
+			throw new IndexOutOfBoundsException(
+					MatrixMessages.get(locale, key, Map.of("index", index.toString())));
 		}
 	}
 
@@ -521,7 +533,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumber determinant() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Determinant is only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareDeterminant"));
 		}
 
 		return MatrixMath.determinant(this);
@@ -540,7 +552,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumberMatrix inverse() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Only square matrices can be inverted.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareInverse"));
 		}
 
 		return MatrixMath.inverse(this);
@@ -570,7 +582,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumberMatrix power(@NonNull final BigNumber exponent) {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Matrix power only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquarePower"));
 		}
 
 		return MatrixMath.power(this, exponent);
@@ -593,7 +605,7 @@ public class BigNumberMatrix implements Cloneable {
 	 */
 	public BigNumber trace() {
 		if (!isSquare()) {
-			throw new IllegalArgumentException("Trace only defined for square matrices.");
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareTrace"));
 		}
 
 		BigNumber sum = BigNumbers.ZERO;
