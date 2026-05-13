@@ -846,5 +846,5 @@ notice are included** in all copies or substantial portions of the software.
 **Max Lemberg**
 🔗 [GitHub Profile](https://github.com/lembergmax)
 
-© 2025 Max Lemberg. All rights reserved.
+© 2024-2026 Max Lemberg. All rights reserved.
 Licensed under the MIT License.
