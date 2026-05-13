@@ -9,6 +9,7 @@ unlimited precision**, avoiding the limitations of primitive types like `double`
 - ✅ **Virtually unlimited precision** via `BigNumber`
 - ✅ **String-based expression evaluation**
 - ✅ **Supports trigonometry, logarithms, combinatorics, summations, coordinates, factorials, and many more**
+- ✅ **Locale-aware result formatting** — `setLocale(Locale)` drives both error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`)
 
 ## 🔢 BigNumber
 
@@ -231,6 +232,64 @@ Error messages can be rendered in two modes via **`ErrorMode`**:
 
 The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
 `setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
+
+### 🔣 Localized Result Formatting
+
+`setLocale(Locale)` not only controls error messages but also drives **locale-aware result
+formatting** for all string-returning evaluation methods:
+
+| Method                          | Format                              |
+|---------------------------------|-------------------------------------|
+| `evaluateToString(...)`         | Locale decimal separator, no grouping |
+| `evaluateToPrettyString(...)`   | Locale decimal **and** grouping separators |
+| `evaluateSafeToString(...)`     | Same as `evaluateToString`; error path keeps the `Error:` / `Fehler:` prefix |
+| `evaluateSafeToPrettyString(...)` | Same as `evaluateToPrettyString`; error path keeps the `Error:` / `Fehler:` prefix |
+
+Input parsing is **not** affected — expressions are always parsed with `.` as the decimal
+separator regardless of the engine locale. Default locale is `Locale.ENGLISH`, which preserves
+the legacy `.` / `,` formatting of earlier releases.
+
+```java
+CalculatorEngine engine = new CalculatorEngine();
+
+engine.setLocale(Locale.US);
+engine.evaluateToString("1/2");           // "0.5"
+engine.evaluateToPrettyString("1234.56"); // "1,234.56"
+
+engine.setLocale(Locale.GERMANY);
+engine.evaluateToString("1/2");           // "0,5"
+engine.evaluateToPrettyString("1234.56"); // "1.234,56"
+engine.evaluateToString("-1234.56");      // "-1234,56"
+engine.evaluateToPrettyString("1234567890.123456"); // "1.234.567.890,123456"
+
+engine.setLocale(Locale.FRANCE);
+engine.evaluateToString("1/2");           // "0,5"
+```
+
+The same formatting is honored by `BigNumber.toString(Locale)` and
+`BigNumber.toPrettyString(Locale)`, so library callers can render values in any locale without
+going through the engine.
+
+### 🎯 MultiValueResult Formatting
+
+Functions that return more than one scalar component (e.g. `Pol(...)` → `(r, θ)`,
+`Rec(...)` → `(x, y)`) are exposed as `MultiValueResult` implementations such as
+`BigNumberCoordinate`. When such a result is rendered via the engine, **both components** are
+formatted with the configured locale and both are returned in the output string:
+
+```java
+CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG)
+        .setLocale(Locale.GERMANY);
+
+engine.evaluateToString("Pol(1;2)");
+// r=2,2360...; θ=63,4349...
+
+engine.evaluateToPrettyString("Rec(2;1)");
+// x=1,9996...; y=0,0349...
+```
+
+When the same coordinate participates in a larger scalar expression, it transparently
+collapses to its `firstValue()` (e.g. `r` for polar, `x` for cartesian) before formatting.
 
 ### ✅ Example: Result-based Evaluation
 
