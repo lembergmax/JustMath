@@ -25,10 +25,11 @@
 package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 import java.util.*;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Internal single source of truth for all built-in unit definitions.
@@ -97,24 +98,24 @@ class UnitRegistry {
             define(Unit.Length.MILLIMETER, "Millimeter", "mm", "0.001"),
             define(Unit.Length.MICROMETER, "Micrometer", "µm", "0.000001"),
             define(Unit.Length.MICRON, "Micron", "um", "0.000001"),
-            define(Unit.Length.NANOMETER, "Nanometer", "nm", "9.999999999E-10"),
-            define(Unit.Length.ANGSTROM, "Angstrom", "Å", "9.999999999E-11"),
-            define(Unit.Length.PICOMETER, "Picometer", "pm", "1.E-12"),
-            define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "9.999999999E-16"),
-            define(Unit.Length.ATTOMETER, "Attometer", "am", "1.E-18"),
+            define(Unit.Length.NANOMETER, "Nanometer", "nm", "1.0E-9"),
+            define(Unit.Length.ANGSTROM, "Angstrom", "Å", "1.0E-10"),
+            define(Unit.Length.PICOMETER, "Picometer", "pm", "1.0E-12"),
+            define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "1.0E-15"),
+            define(Unit.Length.ATTOMETER, "Attometer", "am", "1.0E-18"),
 
             define(Unit.Length.PLANCK_LENGTH, "Planck Length", "lP", "1.616049999E-35"),
             define(Unit.Length.ELECTRON_RADIUS, "Electron Radius", "re", "2.81794092E-15"),
             define(Unit.Length.BOHR_RADIUS, "Bohr Radius", "a0", "5.29177249E-11"),
             define(Unit.Length.X_UNIT, "X Unit", "xu", "1.002079999E-13"),
-            define(Unit.Length.FERMI, "Fermi", "fermi", "9.999999999E-16"),
+            define(Unit.Length.FERMI, "Fermi", "fermi", "1.0E-15"),
 
             define(Unit.Length.SUN_RADIUS, "Sun Radius", "Rsun", "696000000"),
             define(Unit.Length.EARTH_EQUATORIAL_RADIUS, "Earth Equatorial Radius", "R_earth_eq", "6378160"),
             define(Unit.Length.EARTH_POLAR_RADIUS, "Earth Polar Radius", "R_earth_p", "6356777"),
             define(Unit.Length.ASTRONOMICAL_UNIT, "Astronomical Unit", "au", "149597870691"),
             define(Unit.Length.EARTH_DISTANCE_FROM_SUN, "Earth Distance from Sun", "AU", "149600000000"),
-            define(Unit.Length.KILOPARSEC, "Kiloparsec", "kpc", "30856775812799586000"),
+            define(Unit.Length.KILOPARSEC, "Kiloparsec", "kpc", "30856775812799588000"),
             define(Unit.Length.MEGAPARSEC, "Megaparsec", "Mpc", "3.085677581E+22"),
             define(Unit.Length.PARSEC, "Parsec", "pc", "30856775812799588"),
             define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580044"),
@@ -159,7 +160,7 @@ class UnitRegistry {
             define(Unit.Length.PIXEL, "Pixel", "px", "0.0002645833"),
             define(Unit.Length.POINT, "Point", "pt", "0.0003527778"),
             define(Unit.Length.PICA, "Pica", "pica", "0.0042333333"),
-            define(Unit.Length.EM, "Em", "em", "0.0042175176"),
+            define(Unit.Length.EM, "Em", "em", "0.0042333333"),
             define(Unit.Length.TWIP, "Twip", "twip", "0.0000176389"),
 
             // =========================
@@ -182,10 +183,10 @@ class UnitRegistry {
             define(Unit.Area.ELECTRON_CROSS_SECTION, "Thomson Cross Section", "σT", "6.652461599E-29"),
 
             define(Unit.Area.TOWNSHIP, "Township", "twp", "93239571.972"),
-            define(Unit.Area.SECTION, "Section", "sec", "2589988.1103"),
+            define(Unit.Area.SECTION, "Section", "sec", "2589988.110336"),
             define(Unit.Area.HOMESTEAD, "Homestead", "hstd", "647497.02758"),
 
-            define(Unit.Area.SQUARE_MILE, "Square Mile", "mi^2", "6.4516E-10"),
+            define(Unit.Area.SQUARE_MILE, "Square Mile", "mi^2", "2589988.110336"),
             define(Unit.Area.ACRE, "Acre", "ac", "4046.8564224"),
             define(Unit.Area.ROOD, "Rood", "rood", "1011.7141056"),
 
@@ -225,7 +226,7 @@ class UnitRegistry {
             define(Unit.Volume.MILLILITER, "Milliliter", "mL", "0.000001"),
             define(Unit.Volume.MICROLITER, "Microliter", "µL", "1.E-9"),
             define(Unit.Volume.NANOLITER, "Nanoliter", "nL", "1.E-12"),
-            define(Unit.Volume.PICOLITER, "Picoliter", "pL", "9.999999999E-16"),
+            define(Unit.Volume.PICOLITER, "Picoliter", "pL", "1.0E-15"),
             define(Unit.Volume.FEMTOLITER, "Femtoliter", "fL", "1.E-18"),
             define(Unit.Volume.ATTOLITER, "Attoliter", "aL", "1.E-21"),
 
@@ -259,7 +260,7 @@ class UnitRegistry {
 
             define(Unit.Volume.CUBIC_MILE, "Cubic Mile", "mi^3", "4168181825.4"),
             define(Unit.Volume.CUBIC_YARD, "Cubic Yard", "yd^3", "0.764554858"),
-            define(Unit.Volume.CUBIC_FOOT, "Cubic Foot", "ft^3", "0.0283168466"),
+            define(Unit.Volume.CUBIC_FOOT, "Cubic Foot", "ft^3", "0.028316846592"),
             define(Unit.Volume.CUBIC_INCH, "Cubic Inch", "in^3", "0.0000163871"),
 
             define(Unit.Volume.HUNDRED_CUBIC_FOOT, "Hundred Cubic Foot", "hundred_cubic_foot", "2.8316846592"),
@@ -286,7 +287,7 @@ class UnitRegistry {
             define(Unit.Volume.BIBLICAL_CAB, "Cab (Biblical)", "cab_biblical", "0.0012222222"),
             define(Unit.Volume.BIBLICAL_LOG, "Log (Biblical)", "log_biblical", "0.0003055556"),
 
-            define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.082999999E+21"),
+            define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.083E+21"),
 
             // =========================
             // MASS (base: kilogram)
@@ -350,7 +351,7 @@ class UnitRegistry {
             define(Unit.Mass.NEUTRON_MASS, "Neutron Mass", "neutron_mass", "1.6749286E-27"),
             define(Unit.Mass.DEUTERON_MASS, "Deuteron Mass", "deuteron_mass", "3.343586E-27"),
 
-            define(Unit.Mass.EARTH_MASS, "Earth's Mass", "earth_mass", "5.9760000000002E+24"),
+            define(Unit.Mass.EARTH_MASS, "Earth's Mass", "earth_mass", "5.976E+24"),
             define(Unit.Mass.SUN_MASS, "Sun's Mass", "sun_mass", "2.0E+30"),
 
             define(Unit.Mass.BIBLICAL_HEBREW_TALENT, "Talent (Biblical Hebrew)", "talent_biblical_hebrew", "34.2"),
@@ -375,7 +376,7 @@ class UnitRegistry {
             // =========================
             define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
             define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
-            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "1", "17.777777778"),
+            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "0.5555555555555555555555555556", "-17.7777777777777777777777777778"),
 
             // =========================
             // PRESSURE (base: pascal)
@@ -404,7 +405,7 @@ class UnitRegistry {
             define(Unit.Pressure.MILLIBAR, "Millibar", "mbar", "100"),
             define(Unit.Pressure.MICROBAR, "Microbar", "µbar", "0.1"),
             define(Unit.Pressure.STANDARD_ATMOSPHERE, "Standard Atmosphere", "atm", "101325"),
-            define(Unit.Pressure.TECHNICAL_ATMOSPHERE, "Atmosphere (Technical)", "at", "98066.500000003"),
+            define(Unit.Pressure.TECHNICAL_ATMOSPHERE, "Atmosphere (Technical)", "at", "98066.5"),
             define(Unit.Pressure.PSI, "Pounds per Square Inch", "psi", "6894.7572931783"),
             define(Unit.Pressure.KSI, "Kips per Square Inch", "ksi", "6894757.2931783"),
             define(Unit.Pressure.TORR, "Torr", "Torr", "133.3223684211"),
@@ -482,9 +483,9 @@ class UnitRegistry {
             define(Unit.Energy.HORSEPOWER_METRIC_HOUR, "Horsepower (Metric) Hour", "hp(metric)*h", "2647795.5"),
             define(Unit.Energy.HORSEPOWER_HOUR, "Horsepower Hour", "hp*h", "2684519.5368856"),
 
-            define(Unit.Energy.MEGAELECTRON_VOLT, "Megaelectron-Volt", "MeV", "1.6021766339999E-13"),
-            define(Unit.Energy.KILOELECTRON_VOLT, "Kiloelectron-Volt", "keV", "1.6021766339999E-16"),
-            define(Unit.Energy.ELECTRON_VOLT, "Electron-Volt", "eV", "1.6021766339999E-19"),
+            define(Unit.Energy.MEGAELECTRON_VOLT, "Megaelectron-Volt", "MeV", "1.602176634E-13"),
+            define(Unit.Energy.KILOELECTRON_VOLT, "Kiloelectron-Volt", "keV", "1.602176634E-16"),
+            define(Unit.Energy.ELECTRON_VOLT, "Electron-Volt", "eV", "1.602176634E-19"),
 
             define(Unit.Energy.HARTREE_ENERGY, "Hartree Energy", "Eh", "4.3597482E-18"),
             define(Unit.Energy.RYDBERG_CONSTANT, "Rydberg Constant", "Ry", "2.1798741E-18"),
@@ -497,8 +498,8 @@ class UnitRegistry {
             define(Unit.Energy.GRAM_FORCE_METER, "Gram-Force Meter", "gf*m", "0.00980665"),
             define(Unit.Energy.GRAM_FORCE_CENTIMETER, "Gram-Force Centimeter", "gf*cm", "9.80665E-5"),
             define(Unit.Energy.KILOGRAM_FORCE_CENTIMETER, "Kilogram-Force Centimeter", "kgf*cm", "0.0980665"),
-            define(Unit.Energy.KILOGRAM_FORCE_METER, "Kilogram-Force Meter", "kgf*m", "9.8066499997"),
-            define(Unit.Energy.KILOPOND_METER, "Kilopond Meter", "kp*m", "9.8066499997"),
+            define(Unit.Energy.KILOGRAM_FORCE_METER, "Kilogram-Force Meter", "kgf*m", "9.80665"),
+            define(Unit.Energy.KILOPOND_METER, "Kilopond Meter", "kp*m", "9.80665"),
 
             define(Unit.Energy.POUND_FORCE_FOOT, "Pound-Force Foot", "lbf*ft", "1.3558179483"),
             define(Unit.Energy.POUND_FORCE_INCH, "Pound-Force Inch", "lbf*in", "0.112984829"),
@@ -544,7 +545,7 @@ class UnitRegistry {
             define(Unit.Power.HORSEPOWER, "Horsepower", "hp", "745.6998715823"),
             define(Unit.Power.HORSEPOWER_MECHANICAL_550_FTLBF_PER_S, "Horsepower (550 ft*lbf/s)", "hp(550ft*lbf/s)", "745.6998715823"),
             define(Unit.Power.HORSEPOWER_METRIC, "Horsepower (Metric)", "hp(metric)", "735.49875"),
-            define(Unit.Power.HORSEPOWER_BOILER, "Horsepower (Boiler)", "hp(boiler)", "9809.5000000002"),
+            define(Unit.Power.HORSEPOWER_BOILER, "Horsepower (Boiler)", "hp(boiler)", "9809.5"),
             define(Unit.Power.HORSEPOWER_ELECTRIC, "Horsepower (Electric)", "hp(electric)", "746"),
             define(Unit.Power.HORSEPOWER_WATER, "Horsepower (Water)", "hp(water)", "746.043"),
             define(Unit.Power.PFERDESTAERKE, "Pferdestarke", "PS", "735.49875"),
@@ -737,14 +738,14 @@ class UnitRegistry {
             define(Unit.Speed.KNOT_UK, "Knot (UK)", "kn_UK", "0.5147733333"),
 
             define(Unit.Speed.SPEED_OF_LIGHT_VACUUM, "Velocity of Light in Vacuum", "c", "299792458"),
-            define(Unit.Speed.COSMIC_VELOCITY_FIRST, "Cosmic Velocity (First)", "v1", "7899.9999999999"),
+            define(Unit.Speed.COSMIC_VELOCITY_FIRST, "Cosmic Velocity (First)", "v1", "7900"),
             define(Unit.Speed.COSMIC_VELOCITY_SECOND, "Cosmic Velocity (Second)", "v2", "11200"),
             define(Unit.Speed.COSMIC_VELOCITY_THIRD, "Cosmic Velocity (Third)", "v3", "16670"),
             define(Unit.Speed.EARTHS_VELOCITY, "Earth's Velocity", "v_earth", "29765"),
-            define(Unit.Speed.SPEED_OF_SOUND_PURE_WATER, "Velocity of Sound in Pure Water", "v_sound_water", "1482.6999999998"),
+            define(Unit.Speed.SPEED_OF_SOUND_PURE_WATER, "Velocity of Sound in Pure Water", "v_sound_water", "1482.7"),
             define(Unit.Speed.SPEED_OF_SOUND_SEA_WATER_20C_10M, "Velocity of Sound in Sea Water (20°C, 10 Meter Deep)", "v_sound_sea", "1521.6"),
             define(Unit.Speed.MACH_20C_1ATM, "Mach (20°C, 1 atm)", "Ma(20°C)", "343.6"),
-            define(Unit.Speed.MACH_SI_STANDARD, "Mach (SI Standard)", "Ma(SI)", "295.0464000003"),
+            define(Unit.Speed.MACH_SI_STANDARD, "Mach (SI Standard)", "Ma(SI)", "295.0464"),
 
             define(Unit.Speed.METER_PER_SECOND, "Meter per Second", "m/s"),
 
@@ -762,7 +763,7 @@ class UnitRegistry {
             define(Unit.FuelConsumption.CENTIMETER_PER_LITER, "Centimeter per Liter", "cm/L", "0.01"),
 
             define(Unit.FuelConsumption.MILE_US_PER_LITER, "Mile (US) per Liter", "mi/L", "1609.344"),
-            define(Unit.FuelConsumption.NAUTICAL_MILE_PER_LITER, "Nautical Mile per Liter", "nmi/L", "1853.24496"),
+            define(Unit.FuelConsumption.NAUTICAL_MILE_PER_LITER, "Nautical Mile per Liter", "nmi/L", "1852"),
 
             define(Unit.FuelConsumption.NAUTICAL_MILE_PER_GALLON_US, "Nautical Mile per Gallon (US)", "nmi/gal(US)", "489.5755247"),
             define(Unit.FuelConsumption.KILOMETER_PER_GALLON_US, "Kilometer per Gallon (US)", "km/gal (US)", "264.1720524"),
@@ -786,12 +787,12 @@ class UnitRegistry {
             define(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_US, "Meter per Fluid Ounce (US)", "m/fl oz (US)", "33.8140227"),
             define(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_UK, "Meter per Fluid Ounce (UK)", "m/fl oz (UK)", "35.19500777"),
 
-            define(Unit.FuelConsumption.LITER_PER_METER, "Liter per Meter", "L/m", "1"),
-            define(Unit.FuelConsumption.LITER_PER_100_KILOMETER, "Liter per 100 Kilometer", "L/100 km", "100000"),
-            define(Unit.FuelConsumption.GALLON_US_PER_MILE, "Gallon (US) per Mile", "gal (US)/mi", "425.1437074976"),
-            define(Unit.FuelConsumption.GALLON_US_PER_100_MILES, "Gallon (US) per 100 Miles", "gal (US)/100 mi", "42514.370749763"),
-            define(Unit.FuelConsumption.GALLON_UK_PER_MILE, "Gallon (UK) per Mile", "gal (UK)/mi", "354.0061899559"),
-            define(Unit.FuelConsumption.GALLON_UK_PER_100_MILES, "Gallon (UK) per 100 Miles", "gal (UK)/100 mi", "35400.618995592"),
+            defineReciprocal(Unit.FuelConsumption.LITER_PER_METER, "Liter per Meter", "L/m", "1"),
+            defineReciprocal(Unit.FuelConsumption.LITER_PER_100_KILOMETER, "Liter per 100 Kilometer", "L/100 km", "100000"),
+            defineReciprocal(Unit.FuelConsumption.GALLON_US_PER_MILE, "Gallon (US) per Mile", "gal (US)/mi", "425.1437074976"),
+            defineReciprocal(Unit.FuelConsumption.GALLON_US_PER_100_MILES, "Gallon (US) per 100 Miles", "gal (US)/100 mi", "42514.370749763"),
+            defineReciprocal(Unit.FuelConsumption.GALLON_UK_PER_MILE, "Gallon (UK) per Mile", "gal (UK)/mi", "354.0061899559"),
+            defineReciprocal(Unit.FuelConsumption.GALLON_UK_PER_100_MILES, "Gallon (UK) per 100 Miles", "gal (UK)/100 mi", "35400.618995592"),
 
             define(Unit.FuelConsumption.METER_PER_LITER, "Meter per Liter", "m/L"),
 
@@ -808,18 +809,18 @@ class UnitRegistry {
             define(Unit.DataStorage.QUADRUPLE_WORD, "Quadruple-Word", "quadruple-word", "64"),
             define(Unit.DataStorage.BLOCK, "Block", "block", "4096"),
 
-            define(Unit.DataStorage.KILOBIT, "Kilobit", "Kibit", "1024"),
-            define(Unit.DataStorage.KILOBYTE, "Kilobyte", "KiB", "8192"),
-            define(Unit.DataStorage.MEGABIT, "Megabit", "Mibit", "1048576"),
-            define(Unit.DataStorage.MEGABYTE, "Megabyte", "MiB", "8388608"),
-            define(Unit.DataStorage.GIGABIT, "Gigabit", "Gibit", "1073741824"),
-            define(Unit.DataStorage.GIGABYTE, "Gigabyte", "GiB", "8589934592"),
-            define(Unit.DataStorage.TERABIT, "Terabit", "Tibit", "1099511627776"),
-            define(Unit.DataStorage.TERABYTE, "Terabyte", "TiB", "8796093022208"),
-            define(Unit.DataStorage.PETABIT, "Petabit", "Pibit", "1.1258999068426E+15"),
-            define(Unit.DataStorage.PETABYTE, "Petabyte", "PiB", "9.007199254741E+15"),
-            define(Unit.DataStorage.EXABIT, "Exabit", "Eibit", "1.1529215046068E+18"),
-            define(Unit.DataStorage.EXABYTE, "Exabyte", "EiB", "9.2233720368548E+18"),
+            define(Unit.DataStorage.KILOBIT, "Kibibit", "Kibit", "1024"),
+            define(Unit.DataStorage.KILOBYTE, "Kibibyte", "KiB", "8192"),
+            define(Unit.DataStorage.MEGABIT, "Mebibit", "Mibit", "1048576"),
+            define(Unit.DataStorage.MEGABYTE, "Mebibyte", "MiB", "8388608"),
+            define(Unit.DataStorage.GIGABIT, "Gibibit", "Gibit", "1073741824"),
+            define(Unit.DataStorage.GIGABYTE, "Gibibyte", "GiB", "8589934592"),
+            define(Unit.DataStorage.TERABIT, "Tebibit", "Tibit", "1099511627776"),
+            define(Unit.DataStorage.TERABYTE, "Tebibyte", "TiB", "8796093022208"),
+            define(Unit.DataStorage.PETABIT, "Pebibit", "Pibit", "1125899906842624"),
+            define(Unit.DataStorage.PETABYTE, "Pebibyte", "PiB", "9007199254740992"),
+            define(Unit.DataStorage.EXABIT, "Exbibit", "Eibit", "1152921504606846976"),
+            define(Unit.DataStorage.EXABYTE, "Exbibyte", "EiB", "9223372036854775808"),
 
             define(Unit.DataStorage.KILOBYTE_DECIMAL, "Kilobyte (10^3 bytes)", "kB", "8000"),
             define(Unit.DataStorage.MEGABYTE_DECIMAL, "Megabyte (10^6 bytes)", "MB", "8000000"),
@@ -1081,6 +1082,36 @@ class UnitRegistry {
         final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
 
+        return new UnitSpec(unit, definition);
+    }
+
+    /**
+     * Builds a registry entry whose conversion to the base unit follows the reciprocal form:
+     *
+     * <pre>
+     * base = scale / value
+     * </pre>
+     *
+     * <p>
+     * This factory is required for units that are the reciprocal of the category base unit
+     * — for example {@code L/100 km} when the base unit is {@code m/L}.
+     * </p>
+     *
+     * @param unit        unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
+     * @param scaleToBase reciprocal scaling factor; must not be {@code null}
+     * @return the registry entry; never {@code null}
+     */
+    private static UnitSpec defineReciprocal(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String scaleToBase
+    ) {
+        final BigNumber scale = new BigNumber(scaleToBase);
+        final ConversionFormula formula = ConversionFormulas.reciprocal(scale);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
         return new UnitSpec(unit, definition);
     }
 

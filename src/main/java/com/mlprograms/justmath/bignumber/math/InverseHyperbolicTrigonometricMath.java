@@ -24,16 +24,17 @@
 
 package com.mlprograms.justmath.bignumber.math;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.*;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import lombok.NonNull;
 
 import java.math.MathContext;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.*;
+import lombok.NonNull;
 
 /**
  * Provides inverse hyperbolic trigonometric functions for {@link BigNumber} without using
@@ -622,7 +623,7 @@ public final class InverseHyperbolicTrigonometricMath {
         }
 
         final int zeros = -exponent - 1;
-        return new BigNumber("0." + "0".repeat(Math.max(0, zeros)) + "1", locale).trim();
+        return new BigNumber("0." + "0".repeat(zeros) + "1", locale).trim();
     }
 
     /**
@@ -663,9 +664,9 @@ public final class InverseHyperbolicTrigonometricMath {
             return null;
         }
 
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        final char groupingSeparator = symbols.getGroupingSeparator();
-        final char decimalSeparator = symbols.getDecimalSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        final char groupingSeparator = localeSeparators.groupingSeparator();
+        final char decimalSeparator = localeSeparators.decimalSeparator();
 
         String sanitized = trimmed.replace(String.valueOf(groupingSeparator), "");
         sanitized = sanitized.replace(" ", "");
@@ -755,7 +756,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static String expandScientificNotationToPlain(final String scientificString) {
         String normalized = scientificString.trim();
-        int sign = +1;
+        int sign = 1;
 
         if (normalized.startsWith("-")) {
             sign = -1;

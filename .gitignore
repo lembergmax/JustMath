@@ -43,3 +43,4 @@ build/
 /.idea/artifacts/justmath_jar.xml
 /.idea/
 /out/artifacts/justmath_jar/justmath.jar
+/.claude/

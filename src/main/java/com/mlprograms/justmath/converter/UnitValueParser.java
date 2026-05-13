@@ -24,19 +24,21 @@
 
 package com.mlprograms.justmath.converter;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.converter.exception.ConversionException;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
+
+import java.math.MathContext;
+import java.util.*;
+import java.util.regex.Pattern;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import java.math.MathContext;
-import java.text.DecimalFormatSymbols;
-import java.util.*;
-
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
 /**
  * Internal parsing utility for {@link UnitValue} inputs.
@@ -82,6 +84,13 @@ final class UnitValueParser {
      */
     private static final MathContext DEFAULT_MATH_CONTEXT =
             CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+
+    /**
+     * Pre-compiled whitespace splitter pattern reused by
+     * {@link #splitIntoNumberTextAndUnitSymbol(String)} to avoid recompiling the regex on
+     * every call.
+     */
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
 
     /**
      * A list of all known unit symbols sorted by descending length.
@@ -302,11 +311,11 @@ final class UnitValueParser {
      * @throws NullPointerException    if {@code trimmedInputText} is {@code null}
      */
     private static ParsedParts splitIntoNumberTextAndUnitSymbol(@NonNull final String trimmedInputText) {
-        final String[] tokenArray = trimmedInputText.split("\\s+");
+        final String[] tokenArray = WHITESPACE_PATTERN.split(trimmedInputText);
 
         if (tokenArray.length >= 2) {
             final String unitSymbolText = tokenArray[tokenArray.length - 1].trim();
-            final String numericText = joinTokensWithSingleSpaces(tokenArray, 0, tokenArray.length - 1).trim();
+            final String numericText = joinTokensWithSingleSpaces(tokenArray, tokenArray.length - 1).trim();
 
             if (numericText.isEmpty()) {
                 throw new UnitConversionException("Missing numeric value. Expected format: '<number> <unitSymbol>'.");
@@ -375,21 +384,27 @@ final class UnitValueParser {
             @NonNull final String rawNumberText,
             @NonNull final Locale localeForNormalization
     ) {
-        final DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance(localeForNormalization);
-        final char decimalSeparatorCharacter = decimalFormatSymbols.getDecimalSeparator();
-        final char groupingSeparatorCharacter = decimalFormatSymbols.getGroupingSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(localeForNormalization);
+        final char decimalSeparatorCharacter = localeSeparators.decimalSeparator();
+        final char groupingSeparatorCharacter = localeSeparators.groupingSeparator();
 
-        final String numberTextWithoutNonBreakingSpaces = rawNumberText.replace("\u00A0", "").replace("\u202F", "");
-
-        final String numberTextWithoutGroupingSeparators = (groupingSeparatorCharacter == '\0')
-                ? numberTextWithoutNonBreakingSpaces
-                : numberTextWithoutNonBreakingSpaces.replace(String.valueOf(groupingSeparatorCharacter), "");
-
-        if (decimalSeparatorCharacter == '.') {
-            return numberTextWithoutGroupingSeparators;
+        final int length = rawNumberText.length();
+        final StringBuilder result = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            final char charAtI = rawNumberText.charAt(i);
+            if (charAtI == '\u00A0' || charAtI == '\u202F') {
+                continue;
+            }
+            if (groupingSeparatorCharacter != '\0' && charAtI == groupingSeparatorCharacter) {
+                continue;
+            }
+            if (decimalSeparatorCharacter != '.' && charAtI == decimalSeparatorCharacter) {
+                result.append('.');
+                continue;
+            }
+            result.append(charAtI);
         }
-
-        return numberTextWithoutGroupingSeparators.replace(decimalSeparatorCharacter, '.');
+        return result.toString();
     }
 
     /**
@@ -421,19 +436,17 @@ final class UnitValueParser {
      * </p>
      *
      * @param tokenArray        the array of tokens; must not be {@code null}
-     * @param startIndexInclusive start index (inclusive) for the join
      * @param endIndexExclusive end index (exclusive) for the join
      * @return the joined string separated by single spaces; never {@code null}
      * @throws NullPointerException if {@code tokenArray} is {@code null}
      */
     private static String joinTokensWithSingleSpaces(
             @NonNull final String[] tokenArray,
-            final int startIndexInclusive,
             final int endIndexExclusive
     ) {
         final StringBuilder joinedTokenStringBuilder = new StringBuilder();
-        for (int currentTokenIndex = startIndexInclusive; currentTokenIndex < endIndexExclusive; currentTokenIndex++) {
-            if (currentTokenIndex > startIndexInclusive) {
+        for (int currentTokenIndex = 0; currentTokenIndex < endIndexExclusive; currentTokenIndex++) {
+            if (currentTokenIndex > 0) {
                 joinedTokenStringBuilder.append(' ');
             }
             joinedTokenStringBuilder.append(tokenArray[currentTokenIndex]);

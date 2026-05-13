@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Max Lemberg
+ * Copyright (c) 2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -21,28 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.mlprograms.justmath.bignumber;
 
-package com.mlprograms.justmath;
+import org.junit.jupiter.api.Test;
 
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
+import java.math.BigDecimal;
 
-public class Main {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public static void main(final String[] args) {
+class BigNumberValueOfCacheTest {
 
-//        UnitConverter unitConverter = new UnitConverter();
-//
-//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//
-//        System.out.println(convertedToBigNumber);
-//        System.out.println(convertedToUnitValue.getValue());
-
-        final UnitValue unitValue = new UnitValue("1y");
-        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
-
+    @Test
+    void valueOfReturnsSameInstanceForCachedRange() {
+        for (int i = -16; i <= 256; i++) {
+            assertSame(BigNumber.valueOf(i), BigNumber.valueOf(i),
+                    "valueOf(" + i + ") should be cached");
+        }
     }
 
+    @Test
+    void valueOfOutsideCachedRangeReturnsDistinctInstances() {
+        BigNumber a = BigNumber.valueOf(1000L);
+        BigNumber b = BigNumber.valueOf(1000L);
+        assertNotSame(a, b);
+        assertEquals(a, b);
+    }
+
+    @Test
+    void valueOfIntAndLongAgreeForOverlap() {
+        assertSame(BigNumber.valueOf(5), BigNumber.valueOf(5L));
+    }
+
+    @Test
+    void valueOfBigDecimalProducesEqualNumber() {
+        BigNumber n = BigNumber.valueOf(new BigDecimal("42.5"));
+        assertEquals("42.5", n.toString());
+    }
+
+    @Test
+    void valueOfStringRoundTrips() {
+        assertEquals("7", BigNumber.valueOf("7").toString());
+    }
 }

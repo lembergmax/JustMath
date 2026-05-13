@@ -26,13 +26,14 @@ package com.mlprograms.justmath.bignumber.math;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+
+import lombok.NonNull;
 
 /**
  * Provides core arithmetic and selected transcendental operations for {@link BigNumber} without using
@@ -515,7 +516,7 @@ public final class BasicMath {
      * @return locale-adapted decimal string
      */
     private static String adaptPlainDecimalToLocale(final String plainDecimalString, final Locale locale) {
-        final char localeDecimalSeparator = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        final char localeDecimalSeparator = LocaleSeparators.forLocale(locale).decimalSeparator();
         if (localeDecimalSeparator == '.') {
             return plainDecimalString;
         }
@@ -578,11 +579,11 @@ public final class BasicMath {
      * @return parsed sign and sanitized number string
      */
     private static ParsedString sanitizeAndExtractSign(final String input, final Locale locale) {
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        final char groupingSeparatorCharacter = symbols.getGroupingSeparator();
-        final char localeDecimalSeparatorCharacter = symbols.getDecimalSeparator();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        final char groupingSeparatorCharacter = localeSeparators.groupingSeparator();
+        final char localeDecimalSeparatorCharacter = localeSeparators.decimalSeparator();
 
-        int sign = +1;
+        int sign = 1;
         String sanitized = input;
 
         final char firstCharacter = sanitized.charAt(0);
@@ -2537,7 +2538,7 @@ public final class BasicMath {
         ParsedDecimalNumber term = oneParts();
 
         final ParsedDecimalNumber epsilon = normalize(new ParsedDecimalNumber(+1, "1", requestedPrecision));
-        final int maxIterations = Math.min(EXP_MAX_ITERATIONS_HARD_LIMIT, Math.max(200, workingContext.getPrecision() * 6));
+        final int maxIterations = Math.clamp((long) workingContext.getPrecision() * 6, 200, EXP_MAX_ITERATIONS_HARD_LIMIT);
 
         for (int n = 1; n <= maxIterations; n++) {
             term = normalize(multiplyParsed(term, reducedExponent));
@@ -2774,7 +2775,7 @@ public final class BasicMath {
      */
     private static String expandScientificNotationToPlain(final String scientificString) {
         String normalized = scientificString.trim();
-        int sign = +1;
+        int sign = 1;
 
         if (normalized.startsWith("-")) {
             sign = -1;

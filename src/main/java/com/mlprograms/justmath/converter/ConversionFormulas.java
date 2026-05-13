@@ -88,4 +88,29 @@ public class ConversionFormulas {
         return new AffineConversionFormula(scale, offset);
     }
 
+    /**
+     * Creates a reciprocal conversion formula of the form:
+     *
+     * <pre>
+     * base = scale / value
+     * </pre>
+     *
+     * <p>
+     * The inverse conversion is symmetric: {@code value = scale / base}.
+     * </p>
+     *
+     * <p>
+     * This formula is required for units that represent the reciprocal of the category
+     * base unit — for example {@code L/100 km} relative to the base {@code m/L} for
+     * fuel consumption.
+     * </p>
+     *
+     * @param scale multiplicative factor used in the reciprocal mapping; must not be {@code null} and must not be zero
+     * @return a conversion formula implementing the reciprocal mapping; never {@code null}
+     * @throws IllegalArgumentException if {@code scale} is zero
+     */
+    public static ConversionFormula reciprocal(@NonNull final BigNumber scale) {
+        return new ReciprocalConversionFormula(scale);
+    }
+
 }

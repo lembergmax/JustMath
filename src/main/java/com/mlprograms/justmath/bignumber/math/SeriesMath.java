@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -115,19 +115,22 @@ public class SeriesMath {
     public static BigNumber summation(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         checkParams(kStart, kEnd, kCalculation, mathContext, externalVariables);
 
-        CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
+        final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
+
+        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
+        final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
+        combinedVariables.putAll(externalVariables);
 
         BigNumber result = BigNumbers.ZERO;
-        BigNumber kStartClone = kStart.clone();
+        // BigNumber.add(...) is non-mutating, so kStart itself is safe — no clone needed.
+        BigNumber k = kStart;
 
-        while (kStartClone.isLessThanOrEqualTo(kEnd)) {
-            Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
-            combinedVariables.putAll(externalVariables);
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, kStartClone.toString());
+        while (k.isLessThanOrEqualTo(kEnd)) {
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.add(currentCalculation);
-            kStartClone = kStartClone.add(BigNumbers.ONE);
+            k = k.add(BigNumbers.ONE);
         }
 
         return new BigNumber(result, locale, mathContext, trigonometricMode);
@@ -293,19 +296,21 @@ public class SeriesMath {
     public static BigNumber product(@NonNull final BigNumber kStart, @NonNull final BigNumber kEnd, @NonNull final String kCalculation, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale, @NonNull final Map<String, String> externalVariables) {
         checkParams(kStart, kEnd, kCalculation, mathContext, externalVariables);
 
-        CalculatorEngine calculatorEngine = new CalculatorEngine(mathContext, trigonometricMode);
+        final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
+
+        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
+        final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
+        combinedVariables.putAll(externalVariables);
 
         BigNumber result = BigNumbers.ONE;
-        BigNumber kStartClone = kStart.clone();
+        BigNumber k = kStart;
 
-        while (kStartClone.isLessThanOrEqualTo(kEnd)) {
-            Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
-            combinedVariables.putAll(externalVariables);
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, kStartClone.toString());
+        while (k.isLessThanOrEqualTo(kEnd)) {
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.multiply(currentCalculation);
-            kStartClone = kStartClone.add(BigNumbers.ONE);
+            k = k.add(BigNumbers.ONE);
         }
 
         return new BigNumber(result, locale, mathContext, trigonometricMode);

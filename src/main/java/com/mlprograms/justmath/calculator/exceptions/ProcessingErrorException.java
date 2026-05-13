@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,18 +24,68 @@
 
 package com.mlprograms.justmath.calculator.exceptions;
 
-import com.mlprograms.justmath.exceptions.CustomErrorException;
+import com.mlprograms.justmath.calculator.errors.CalculatorError;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.exceptions.CustomExceptionMessages;
+
+import java.util.Map;
+
 import lombok.NonNull;
 
-public class ProcessingErrorException extends CustomErrorException {
+/**
+ * Exception raised for processing problems that occur while evaluating an already parsed
+ * expression — for example division by zero, a value outside a function's mathematical
+ * domain or an internal inconsistency in the evaluator.
+ *
+ * <p>
+ * The legacy string-based constructors are kept for backwards compatibility. New code should
+ * prefer the typed constructors that take a {@link CalculatorErrorCode}.
+ * </p>
+ */
+public class ProcessingErrorException extends CalculatorException {
 
+    /**
+     * Creates an exception with a default technical detail message.
+     */
     public ProcessingErrorException() {
         super(CustomExceptionMessages.PROCESSING_ERROR, "Detailed Message was not specified.");
     }
 
+    /**
+     * Legacy constructor that creates an exception from a free-form English detail message.
+     *
+     * @param detailedMessage technical English detail; must not be {@code null}
+     */
     public ProcessingErrorException(@NonNull final String detailedMessage) {
         super(CustomExceptionMessages.PROCESSING_ERROR, detailedMessage);
+    }
+
+    /**
+     * Creates an exception from a structured error code without parameters.
+     *
+     * @param code            the structured error code; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
+     */
+    public ProcessingErrorException(
+            @NonNull final CalculatorErrorCode code,
+            @NonNull final String technicalDetail
+    ) {
+        super(code, technicalDetail);
+    }
+
+    /**
+     * Creates an exception from a structured error code with named parameters.
+     *
+     * @param code            the structured error code; must not be {@code null}
+     * @param params          named substitution parameters; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
+     */
+    public ProcessingErrorException(
+            @NonNull final CalculatorErrorCode code,
+            @NonNull final Map<String, String> params,
+            @NonNull final String technicalDetail
+    ) {
+        super(new CalculatorError(code, params, technicalDetail));
     }
 
 }

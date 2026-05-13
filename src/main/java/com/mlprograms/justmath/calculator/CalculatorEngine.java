@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,98 +24,159 @@
 
 package com.mlprograms.justmath.calculator;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import com.mlprograms.justmath.calculator.errors.CalculatorError;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
+import com.mlprograms.justmath.calculator.errors.CalculatorResult;
+import com.mlprograms.justmath.calculator.errors.ErrorMode;
+import com.mlprograms.justmath.calculator.exceptions.CalculatorException;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.Token;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+
+import java.math.MathContext;
+import java.util.*;
 
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.math.MathContext;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
-
 /**
- * Main entry point for evaluating mathematical expressions as strings with exact precision.
- * Converts the input to tokens, parses them to postfix (RPN), and evaluates the result.
+ * Main entry point for evaluating arbitrary-precision mathematical expressions supplied as
+ * strings.
+ *
+ * <p>
+ * The engine converts the input into tokens, parses them into postfix notation (Reverse
+ * Polish Notation) and evaluates the resulting sequence. It supports user-defined variables,
+ * {@link BigNumber} arithmetic, localized error messages and an optional cache of tokenized
+ * expressions for hot, repetitive workloads.
+ * </p>
+ *
+ * <p>
+ * <strong>Backwards compatibility:</strong> {@link #evaluateToString(String)} and
+ * {@link #evaluateToPrettyString(String)} continue to return {@code e.getMessage()} for the
+ * default {@link ErrorMode#RAW} (for example {@code "Syntax Error"}). Localized error output
+ * is enabled by calling {@link #setLocale(Locale)} together with
+ * {@link #setErrorMode(ErrorMode)}, or by using one of the {@code evaluateSafe(...)}
+ * overloads that return a {@link CalculatorResult} for explicit error handling.
+ * </p>
  */
 @Getter
 public class CalculatorEngine {
 
     /**
-     * Static thread-local storage for the current variables in the evaluation context.
-     * This allows nested evaluations to access variables from the outer context.
+     * Thread-local snapshot of the currently active variables for nested evaluations. The
+     * value is restored via try/finally in {@link #evaluate(String, Map)} so that no
+     * variable state leaks between consecutive invocations on the same thread.
      */
     private static final ThreadLocal<Map<String, String>> currentVariables = ThreadLocal.withInitial(HashMap::new);
+
     /**
-     * Tokenizer instance used to convert input expressions into tokens.
+     * Tokenizer used for lexical analysis of the input expression.
      */
     private final Tokenizer tokenizer;
+
     /**
-     * Evaluator instance used to compute the result from postfix token lists.
+     * Evaluator that consumes the postfix token list and produces the {@link BigNumber} result.
      */
     private final Evaluator evaluator;
+
     /**
-     * Parser instance used to convert infix token lists to postfix notation.
+     * Parser that converts infix tokens to postfix notation.
      */
     private final PostfixParser postfixParser;
 
     /**
-     * Constructs a CalculatorEngine with default division precision and default trigonometric mode (DEG).
+     * Locale used to render localized error messages. Defaults to {@link Locale#ENGLISH}.
+     */
+    @NonNull
+    private Locale locale = Locale.ENGLISH;
+
+    /**
+     * Current error formatting mode. Defaults to {@link ErrorMode#RAW}, which preserves the
+     * behaviour of older releases that pre-date the localization layer.
+     */
+    @NonNull
+    private ErrorMode errorMode = ErrorMode.RAW;
+
+    /**
+     * Whether the token cache is enabled. Defaults to {@code false}.
+     */
+    private boolean expressionCacheEnabled = false;
+
+    /**
+     * Maximum size (LRU capacity) of the token cache. Defaults to {@code 128}.
+     */
+    private int expressionCacheSize = 128;
+
+    /**
+     * Lazily initialized LRU cache for tokenized expressions. Keys are the normalized
+     * expression strings (after {@code replaceAbsSigns}); values are immutable token lists
+     * captured <em>before</em> variable substitution.
+     *
+     * <p>
+     * The postfix form is deliberately not cached: variable substitution mutates the token
+     * list in place, and a postfix form built before substitution would still reference the
+     * original {@code VARIABLE} tokens. Tokenization is the more expensive step, so caching
+     * tokens already eliminates the bulk of the cost while keeping the cache content
+     * variable-agnostic and therefore correct.
+     * </p>
+     */
+    private Map<String, List<Token>> expressionCache;
+
+    /**
+     * Default constructor that uses {@link BigNumbers#DEFAULT_DIVISION_PRECISION} and
+     * {@link TrigonometricMode#DEG}.
      */
     public CalculatorEngine() {
         this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
     }
 
     /**
-     * Constructs a CalculatorEngine with the specified division precision and default trigonometric mode (DEG).
+     * Creates an engine with an explicit division precision and the default trigonometric mode.
      *
-     * @param divisionPrecision the precision for division operations
+     * @param divisionPrecision precision used for division operations
      */
     public CalculatorEngine(int divisionPrecision) {
         this(getDefaultMathContext(divisionPrecision), TrigonometricMode.DEG);
     }
 
     /**
-     * Constructs a CalculatorEngine with the specified division precision and trigonometric mode.
+     * Creates an engine with an explicit division precision and trigonometric mode.
      *
-     * @param divisionPrecision the precision for division operations
-     * @param trigonometricMode the trigonometric mode (DEG or RAD)
+     * @param divisionPrecision precision used for division operations
+     * @param trigonometricMode trigonometric mode (DEG, RAD, GRAD); must not be {@code null}
      */
     public CalculatorEngine(int divisionPrecision, @NonNull TrigonometricMode trigonometricMode) {
         this(getDefaultMathContext(divisionPrecision), trigonometricMode);
     }
 
     /**
-     * Constructs a CalculatorEngine with the specified MathContext and default trigonometric mode (DEG).
+     * Creates an engine with the given {@link MathContext} and the default trigonometric mode.
      *
-     * @param mathContext the MathContext specifying precision and rounding mode
+     * @param mathContext math context; must not be {@code null}
      */
     public CalculatorEngine(@NonNull MathContext mathContext) {
         this(mathContext, TrigonometricMode.DEG);
     }
 
     /**
-     * Constructs a CalculatorEngine with the specified trigonometric mode and default MathContext (precision 1000).
+     * Creates an engine with the given trigonometric mode and the default math context.
      *
-     * @param trigonometricMode the trigonometric mode (DEG or RAD)
+     * @param trigonometricMode trigonometric mode; must not be {@code null}
      */
     public CalculatorEngine(@NonNull TrigonometricMode trigonometricMode) {
         this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), trigonometricMode);
     }
 
     /**
-     * Constructs a CalculatorEngine with the specified MathContext and trigonometric mode.
-     * Initializes the tokenizer, evaluator, and parser components.
+     * Canonical constructor.
      *
-     * @param mathContext       the MathContext specifying precision and rounding mode
-     * @param trigonometricMode the trigonometric mode (DEG or RAD)
+     * @param mathContext       math context controlling precision and rounding; must not be {@code null}
+     * @param trigonometricMode trigonometric mode; must not be {@code null}
      */
     public CalculatorEngine(@NonNull MathContext mathContext, @NonNull TrigonometricMode trigonometricMode) {
         this.tokenizer = new Tokenizer();
@@ -124,106 +185,327 @@ public class CalculatorEngine {
     }
 
     /**
-     * Gets the current variables in the evaluation context.
-     * This includes variables from outer evaluation contexts in nested evaluations.
+     * Returns a defensive copy of the variables currently active on the calling thread.
      *
-     * @return a map of variable names with their BigNumber values
+     * @return copy of the active variables; never {@code null}
      */
     public static Map<String, String> getCurrentVariables() {
         return new HashMap<>(currentVariables.get());
     }
 
     /**
-     * Evaluates a given mathematical expression with full BigDecimal precision.
+     * Sets the locale used for localized error messages.
      *
-     * @param expression input string expression (e.g. "3.5 + sqrt(2)")
-     * @return result as string, rounded if necessary
+     * @param locale target locale; must not be {@code null}
+     * @return this engine for builder-style chaining
+     */
+    public CalculatorEngine setLocale(@NonNull final Locale locale) {
+        this.locale = locale;
+        return this;
+    }
+
+    /**
+     * Sets the error formatting mode.
+     *
+     * @param errorMode {@link ErrorMode#RAW} or {@link ErrorMode#USER_FRIENDLY}; must not be {@code null}
+     * @return this engine for builder-style chaining
+     */
+    public CalculatorEngine setErrorMode(@NonNull final ErrorMode errorMode) {
+        this.errorMode = errorMode;
+        return this;
+    }
+
+    /**
+     * Enables or disables the expression cache. Disabling clears the cache.
+     *
+     * @param enabled {@code true} to enable caching of tokenized expressions
+     * @return this engine for builder-style chaining
+     */
+    public CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
+        this.expressionCacheEnabled = enabled;
+        if (!enabled) {
+            this.expressionCache = null;
+        }
+        return this;
+    }
+
+    /**
+     * Sets the maximum size of the expression cache. The existing cache is discarded so that
+     * the new capacity takes effect on the next access.
+     *
+     * @param size new maximum number of cached entries; must be greater than zero
+     * @return this engine for builder-style chaining
+     * @throws IllegalArgumentException if {@code size} is not strictly positive
+     */
+    public CalculatorEngine setExpressionCacheSize(final int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("expressionCacheSize must be positive");
+        }
+        this.expressionCacheSize = size;
+        this.expressionCache = null;
+        return this;
+    }
+
+    /**
+     * Evaluates an expression with no user-defined variables.
+     *
+     * @param expression input expression; must not be {@code null}
+     * @return the result as a {@link BigNumber}
      */
     public BigNumber evaluate(@NonNull String expression) {
         return evaluate(expression, Map.of());
     }
 
     /**
-     * Evaluates a mathematical expression with optional variable substitution.
+     * Evaluates an expression in the context of the given variable map.
      *
-     * @param expression the input string expression to evaluate
-     * @param variables  a map of variable names with their BigNumber values
-     * @return the result as a BigNumber, trimmed of trailing zeros
+     * <p>
+     * The thread-local variable context is captured before the call and restored via
+     * try/finally afterwards, so that nested evaluations and subsequent calls on the same
+     * thread never observe leaked state — even when this method throws.
+     * </p>
+     *
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings (name → expression); must not be {@code null}
+     * @return the result as a {@link BigNumber}
      */
     public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         if (expression.isBlank()) {
             return BigNumbers.ZERO;
         }
 
-        // Store the current variables in the thread-local storage
-        Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
+        Map<String, String> previous = currentVariables.get();
+        Map<String, String> combinedVariables = new HashMap<>(previous);
         combinedVariables.putAll(variables);
         currentVariables.set(combinedVariables);
 
-        // Replace the |n| in the expression to look like abs(n)
-        String expressionWithoutAbsValueSign = replaceAbsSigns(expression);
+        try {
+            String normalized;
+            try {
+                normalized = replaceAbsSigns(expression);
+            } catch (IllegalArgumentException iae) {
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+                        Map.of(),
+                        iae.getMessage() == null ? "Incomplete expression" : iae.getMessage(),
+                        null);
+            }
 
-        // Tokenize the input string
-        List<Token> tokens = tokenizer.tokenize(expressionWithoutAbsValueSign);
+            List<Token> tokens;
+            List<Token> cachedTokens = expressionCacheEnabled ? lookupCache(normalized) : null;
+            if (cachedTokens != null) {
+                tokens = new ArrayList<>(cachedTokens);
+            } else {
+                tokens = tokenizer.tokenize(normalized);
+                if (expressionCacheEnabled) {
+                    storeCache(normalized, List.copyOf(tokens));
+                }
+            }
 
-        replaceVariables(this, tokens, combinedVariables);
+            try {
+                replaceVariables(this, tokens, combinedVariables);
+            } catch (IllegalArgumentException iae) {
+                String msg = Objects.requireNonNullElse(iae.getMessage(), "Variable is not defined");
+                String variableName = extractVariableName(msg);
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_UNKNOWN_VARIABLE,
+                        variableName == null ? Map.of() : Map.of("variable", variableName),
+                        msg,
+                        null);
+            }
 
-        // Parse to postfix notation using shunting yard algorithm
-        List<Token> postfix = postfixParser.toPostfix(tokens);
-
-        // Evaluate the postfix expression to a BigDecimal result
-        return evaluator.evaluate(postfix).trim();
+            List<Token> postfix = postfixParser.toPostfix(tokens);
+            return evaluator.evaluate(postfix).trim();
+        } finally {
+            if (previous.isEmpty()) {
+                currentVariables.remove();
+            } else {
+                currentVariables.set(previous);
+            }
+        }
     }
 
     /**
-     * Evaluates a mathematical expression and returns the result as a string.
+     * Evaluates an expression and returns its result as a string. Errors are reported as
+     * human-readable strings instead of being thrown.
      *
-     * @param expression the mathematical expression to evaluate
-     * @return the result as a string or an error message if an exception occurs
+     * <p>
+     * In the default {@link ErrorMode#RAW} the returned text matches the behaviour from
+     * before the localization layer was introduced — typically the category default such as
+     * {@code "Syntax Error"} or {@code "Processing Error"}. In {@link ErrorMode#USER_FRIENDLY}
+     * the localized message from the configured bundle is returned instead.
+     * </p>
+     *
+     * @param expression input expression; must not be {@code null}
+     * @return result as a string, or an error message if evaluation failed
      */
     public String evaluateToString(@NonNull String expression) {
         return evaluateToString(expression, Map.of());
     }
 
     /**
-     * Evaluates a mathematical expression with variables and returns the result as a string.
+     * Evaluates an expression with the given variable map and returns its result as a string.
      *
-     * @param expression the mathematical expression to evaluate
-     * @param variables  a map of variable names and their BigNumber values
-     * @return the result as a string or an error message if an exception occurs
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings; must not be {@code null}
+     * @return result as a string, or an error message if evaluation failed
      */
     public String evaluateToString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toString();
-        } catch (Exception e) {
-            return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
+        } catch (final CalculatorException calculatorException) {
+            return formatExceptionMessage(calculatorException);
+        } catch (final Exception exception) {
+            return Objects.requireNonNullElse(exception.getMessage(), "Syntax Error");
         }
     }
 
     /**
-     * Evaluates a mathematical expression and returns the result as a formatted string.
+     * Evaluates an expression and returns the result formatted for human consumption.
      *
-     * @param expression the mathematical expression to evaluate
-     * @return the formatted result as a string or an error message if an exception occurs
+     * @param expression input expression; must not be {@code null}
+     * @return formatted result, or an error message if evaluation failed
      */
     public String evaluateToPrettyString(@NonNull String expression) {
         return evaluateToPrettyString(expression, Map.of());
     }
 
     /**
-     * Evaluates a mathematical expression with variables and returns the result as a formatted string.
+     * Evaluates an expression with the given variable map and returns the result formatted
+     * for human consumption.
      *
-     * @param expression the mathematical expression to evaluate
-     * @param variables  a map of variable names and their BigNumber values
-     * @return the formatted result as a string or an error message if an exception occurs
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings; must not be {@code null}
+     * @return formatted result, or an error message if evaluation failed
      */
     public String evaluateToPrettyString(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         try {
             BigNumber result = evaluate(expression, variables);
             return result.toPrettyString();
+        } catch (CalculatorException e) {
+            return formatExceptionMessage(e);
         } catch (Exception e) {
             return Objects.requireNonNullElse(e.getMessage(), "Syntax Error");
+        }
+    }
+
+    /**
+     * Evaluates an expression and returns a {@link CalculatorResult} so that callers can
+     * branch on success and failure without using exceptions on the happy path.
+     *
+     * @param expression input expression; must not be {@code null}
+     * @return success or failure result; never {@code null}
+     */
+    public CalculatorResult<BigNumber> evaluateSafe(@NonNull final String expression) {
+        return evaluateSafe(expression, Map.of());
+    }
+
+    /**
+     * Evaluates an expression with the given variable map and returns a {@link CalculatorResult}.
+     *
+     * @param expression input expression; must not be {@code null}
+     * @param variables  variable bindings; must not be {@code null}
+     * @return success or failure result; never {@code null}
+     */
+    public CalculatorResult<BigNumber> evaluateSafe(
+            @NonNull final String expression,
+            @NonNull final Map<String, String> variables
+    ) {
+        try {
+            BigNumber result = evaluate(expression, variables);
+            return CalculatorResult.success(result);
+        } catch (CalculatorException ex) {
+            CalculatorError err = ex.getCalculatorError();
+            if (err == null) {
+                err = new CalculatorError(
+                        CalculatorErrorCode.PROCESSING_INTERNAL,
+                        Objects.requireNonNullElse(ex.getDetailedMessage(), "Unknown processing error"));
+            }
+            return CalculatorResult.failure(err);
+        } catch (final Exception exception) {
+            CalculatorError err = new CalculatorError(
+                    CalculatorErrorCode.PROCESSING_INTERNAL,
+                    Objects.requireNonNullElse(exception.getMessage(), "Unknown error"));
+            return CalculatorResult.failure(err);
+        }
+    }
+
+    /**
+     * Formats a {@link CalculatorException} according to the current {@link ErrorMode}. In
+     * {@link ErrorMode#RAW} the legacy {@link Throwable#getMessage()} value is returned (the
+     * category default such as {@code "Syntax Error"}); in {@link ErrorMode#USER_FRIENDLY}
+     * the localized template from the resource bundle is used.
+     *
+     * @param calculatorException exception to format; must not be {@code null}
+     * @return formatted message; never {@code null}
+     */
+    private String formatExceptionMessage(@NonNull final CalculatorException calculatorException) {
+        if (errorMode == ErrorMode.USER_FRIENDLY) {
+            CalculatorError calculatorError = calculatorException.getCalculatorError();
+            if (calculatorError == null) {
+                calculatorError = new CalculatorError(
+                        CalculatorErrorCode.PROCESSING_INTERNAL,
+                        Objects.requireNonNullElse(calculatorException.getDetailedMessage(), calculatorException.getMessage()));
+            }
+            return calculatorError.format(locale, ErrorMode.USER_FRIENDLY);
+        }
+        return Objects.requireNonNullElse(calculatorException.getMessage(), "Syntax Error");
+    }
+
+    /**
+     * Extracts the variable name from the legacy detail message
+     * {@code "Variable 'x' is not defined."} by locating the apostrophe-delimited token.
+     *
+     * @param message source message; must not be {@code null}
+     * @return the extracted variable name, or {@code null} if the message does not match the
+     * expected pattern
+     */
+    private static String extractVariableName(@NonNull final String message) {
+        int first = message.indexOf('\'');
+        int last = message.lastIndexOf('\'');
+        if (first >= 0 && last > first) {
+            return message.substring(first + 1, last);
+        }
+        return null;
+    }
+
+    /**
+     * Looks up a cached token list, initializing the cache lazily if necessary.
+     *
+     * @param key normalized expression string; must not be {@code null}
+     * @return cached token list, or {@code null} if no entry exists
+     */
+    private synchronized List<Token> lookupCache(@NonNull final String key) {
+        ensureCache();
+        return expressionCache.get(key);
+    }
+
+    /**
+     * Stores an immutable token list in the cache, initializing it lazily if necessary.
+     *
+     * @param key   normalized expression string; must not be {@code null}
+     * @param value immutable token list captured before variable substitution; must not be {@code null}
+     */
+    private synchronized void storeCache(@NonNull final String key, @NonNull final List<Token> value) {
+        ensureCache();
+        expressionCache.put(key, value);
+    }
+
+    /**
+     * Lazily creates the LRU cache. The capacity is captured once at creation time;
+     * subsequent calls to {@link #setExpressionCacheSize(int)} discard the existing cache so
+     * that this method can rebuild it with the new capacity.
+     */
+    private void ensureCache() {
+        if (expressionCache == null) {
+            final int cap = expressionCacheSize;
+            expressionCache = Collections.synchronizedMap(new LinkedHashMap<>(cap, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, List<Token>> eldest) {
+                    return size() > cap;
+                }
+            });
         }
     }
 

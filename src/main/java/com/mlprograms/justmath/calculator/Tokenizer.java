@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
@@ -34,10 +35,11 @@ import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
+
+import lombok.NonNull;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -123,12 +125,6 @@ public class Tokenizer {
             buildThreeArgumentFunctionCandidates();
 
     /**
-     * Tracks whether the next encountered absolute value sign (|) should be treated as an opening or closing.
-     * Used to alternate between opening and closing absolute value contexts during tokenization.
-     */
-    private boolean nextAbsoluteIsOpen = true;
-
-    /**
      * Scans the given token list for occurrences where a signed number directly follows
      * a closing parenthesis token (e.g. ") -5"). In such cases, the signed number token
      * is split into an operator token ('+' or '-') and a separate unsigned number token.
@@ -172,6 +168,9 @@ public class Tokenizer {
      * @throws NullPointerException     if the input string is null
      */
     public List<Token> tokenize(@NonNull final String input) {
+        // Tracks whether the next absolute-value bar opens or closes a context.
+        boolean nextAbsoluteIsOpen = true;
+
         List<Token> tokens = new ArrayList<>();
         String expression = removeWhitespace(input);
         int index = 0;
@@ -208,14 +207,22 @@ public class Tokenizer {
                 int functionStart = index + symbol.length();
                 int closingParenthesis = findClosingParenthesis(expression, functionStart);
                 if (closingParenthesis < 0) {
-                    throw new SyntaxErrorException("Unmatched '(' in function: " + symbol);
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_MISSING_RIGHT_PAREN,
+                            Map.of("function", symbol),
+                            "Unmatched '(' in function: " + symbol,
+                            null);
                 }
 
                 String inside = expression.substring(functionStart + 1, closingParenthesis);
 
                 String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
                 if (parts.length != 3) {
-                    throw new SyntaxErrorException("Function '" + symbol + "' must have three arguments");
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT,
+                            Map.of("function", symbol, "expected", "3", "actual", String.valueOf(parts.length)),
+                            "Function '" + symbol + "' must have three arguments",
+                            null);
                 }
 
                 tokens.add(new Token(Token.Type.NUMBER, parts[0]));
@@ -229,7 +236,11 @@ public class Tokenizer {
                 if (lengthOfMatch > 0) {
                     index += lengthOfMatch;
                 } else {
-                    throw new SyntaxErrorException("Invalid character at position " + index + ": " + character);
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                            Map.of("character", String.valueOf(character)),
+                            "Invalid character at position " + index + ": " + character,
+                            index);
                 }
             }
         }
@@ -859,7 +870,11 @@ public class Tokenizer {
                                     || previous.getType() == Token.Type.RIGHT_PAREN
                                     || previous.getType() == Token.Type.VARIABLE
                                     || previous.getType() == Token.Type.CONSTANT)) {
-                        throw new SyntaxErrorException("Factorial '!' must follow a number, constant, variable, or closing parenthesis");
+                        throw new SyntaxErrorException(
+                                CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL,
+                                Map.of(),
+                                "Factorial '!' must follow a number, constant, variable, or closing parenthesis",
+                                null);
                     }
 
                     tokens.add(new Token(Token.Type.OPERATOR, ExpressionElements.OP_FACTORIAL));

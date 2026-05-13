@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,6 +24,7 @@
 
 package com.mlprograms.justmath.calculator;
 
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
@@ -118,7 +119,7 @@ class PostfixParser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new SyntaxErrorException("Mismatched parentheses");
+                        throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_UNMATCHED_PAREN, "Mismatched parentheses");
                     }
 
                     operatorStack.pop();
@@ -140,7 +141,7 @@ class PostfixParser {
                         output.add(operatorStack.pop());
                     }
                     if (operatorStack.isEmpty()) {
-                        throw new SyntaxErrorException("Misplaced semicolon or mismatched parentheses");
+                        throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR, "Misplaced semicolon or mismatched parentheses");
                     }
 
                     if (!argumentCountStack.isEmpty()) {
@@ -160,7 +161,7 @@ class PostfixParser {
         while (!operatorStack.isEmpty()) {
             Token top = operatorStack.pop();
             if (top.getType() == Token.Type.LEFT_PAREN || top.getType() == Token.Type.RIGHT_PAREN) {
-                throw new SyntaxErrorException("Mismatched parentheses");
+                throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_UNMATCHED_PAREN, "Mismatched parentheses");
             }
             output.add(top);
         }

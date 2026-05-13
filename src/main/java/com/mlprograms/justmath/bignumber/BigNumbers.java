@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,14 +24,17 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
-import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+
+import ch.obermuhlner.math.big.BigDecimalMath;
+import lombok.NonNull;
 
 public class BigNumbers {
 
@@ -121,6 +124,19 @@ public class BigNumbers {
 	public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180", DEFAULT_MATH_CONTEXT);
 
 	/**
+	 * Cache of pi values computed via {@link BigDecimalMath#pi(MathContext)}, keyed by
+	 * {@link MathContext}. Locale only controls presentation and is intentionally not part
+	 * of the cache key: the underlying numeric value is locale-independent.
+	 */
+	private static final ConcurrentHashMap<MathContext, BigDecimal> PI_BD_CACHE = new ConcurrentHashMap<>();
+
+	/**
+	 * Cache of Euler's number values computed via {@link BigDecimalMath#e(MathContext)},
+	 * keyed by {@link MathContext}.
+	 */
+	private static final ConcurrentHashMap<MathContext, BigDecimal> E_BD_CACHE = new ConcurrentHashMap<>();
+
+	/**
 	 * Generates a uniformly distributed random integer {@link BigNumber} within the range [min, max).
 	 * <p>
 	 * Mathematically: returns a value x such that {@code min ≤ x < max}, where x is an integer.
@@ -179,7 +195,8 @@ public class BigNumbers {
 	 * @return a {@link BigNumber} representing the value of e
 	 */
 	public static BigNumber e(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.e(mathContext).toPlainString(), locale, mathContext);
+		final BigDecimal value = E_BD_CACHE.computeIfAbsent(mathContext, BigDecimalMath::e);
+		return new BigNumber(value.toPlainString(), locale, mathContext);
 	}
 
 	/**
@@ -208,7 +225,8 @@ public class BigNumbers {
 	 * @return a {@link BigNumber} representing the value of pi
 	 */
 	public static BigNumber pi(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.pi(mathContext).toPlainString(), locale, mathContext);
+		final BigDecimal value = PI_BD_CACHE.computeIfAbsent(mathContext, BigDecimalMath::pi);
+		return new BigNumber(value.toPlainString(), locale, mathContext);
 	}
 
 }

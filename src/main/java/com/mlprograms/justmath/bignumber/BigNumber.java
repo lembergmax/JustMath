@@ -24,24 +24,26 @@
 
 package com.mlprograms.justmath.bignumber;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+
+import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.*;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
-import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import ch.obermuhlner.math.big.BigDecimalMath;
+import lombok.*;
 
 /**
  * Represents a locale-aware, high-precision numerical value supporting advanced mathematical operations.
@@ -59,13 +61,129 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
  */
 @Getter
 @EqualsAndHashCode(callSuper = false, of = {"valueBeforeDecimalPoint", "valueAfterDecimalPoint", "isNegative"})
-public class BigNumber extends Number implements Comparable<BigNumber> {
+public class BigNumber extends Number implements Comparable<BigNumber>, Cloneable {
 
     /**
      * Shared instance of the parser used to convert input strings into BigNumber objects.
      * This static parser ensures consistent parsing logic across all BigNumber instances.
      */
     private static final BigNumberParser bigNumberParser = new BigNumberParser();
+
+    /**
+     * Shared cache of {@link CalculatorEngine} instances keyed by the combination of
+     * {@link MathContext} and {@link TrigonometricMode}. Reusing engines avoids redundant
+     * allocations on every {@code BigNumber} construction.
+     *
+     * <p>
+     * <strong>Thread-safety:</strong> {@link CalculatorEngine} is effectively stateless apart
+     * from its thread-local variable context, which {@link CalculatorEngine#evaluate} fully
+     * restores via try/finally for every invocation. Sharing instances across threads is
+     * therefore safe.
+     * </p>
+     */
+    private static final ConcurrentHashMap<Long, CalculatorEngine> ENGINE_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * Lower bound (inclusive) of the integer range pre-populated in {@link #SMALL_INT_CACHE}.
+     */
+    private static final int SMALL_INT_CACHE_MIN = -16;
+
+    /**
+     * Upper bound (inclusive) of the integer range pre-populated in {@link #SMALL_INT_CACHE}.
+     */
+    private static final int SMALL_INT_CACHE_MAX = 256;
+
+    /**
+     * Pre-built {@link BigNumber} instances returned by {@link #valueOf(long)} for integer
+     * values in the range {@code [-16, 256]}. All entries are constructed with
+     * {@link Locale#US} and {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
+     *
+     * <p>
+     * <strong>Caveat:</strong> these instances are <em>shared</em>. Callers must not invoke
+     * any {@code @Setter} on the returned instances, since a mutation would affect every
+     * consumer of the cache. Full immutability would be a breaking change and is intentionally
+     * left out of the caching refactor.
+     * </p>
+     */
+    private static final BigNumber[] SMALL_INT_CACHE = buildSmallIntCache();
+
+    /**
+     * Builds the {@link #SMALL_INT_CACHE} during class initialization.
+     *
+     * @return the populated cache array; never {@code null}
+     */
+    private static BigNumber[] buildSmallIntCache() {
+        final int size = SMALL_INT_CACHE_MAX - SMALL_INT_CACHE_MIN + 1;
+        final BigNumber[] cache = new BigNumber[size];
+        for (int i = 0; i < size; i++) {
+            final int value = i + SMALL_INT_CACHE_MIN;
+            cache[i] = new BigNumber(String.valueOf(value), Locale.US, DEFAULT_MATH_CONTEXT);
+        }
+        return cache;
+    }
+
+    /**
+     * Returns a {@link CalculatorEngine} instance for the supplied combination of
+     * {@link MathContext} and {@link TrigonometricMode}, reusing a cached instance whenever
+     * possible.
+     *
+     * @param mathContext       math context controlling precision and rounding; must not be {@code null}
+     * @param trigonometricMode trigonometric mode; must not be {@code null}
+     * @return a shared {@link CalculatorEngine} for the given parameters; never {@code null}
+     */
+    public static CalculatorEngine sharedEngine(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+        final long key = (((long) mathContext.hashCode()) << 8) ^ trigonometricMode.ordinal();
+        return ENGINE_CACHE.computeIfAbsent(key, k -> new CalculatorEngine(mathContext, trigonometricMode));
+    }
+
+    /**
+     * Factory for {@code long} values. Values in the range {@code [-16, 256]} are served
+     * from {@link #SMALL_INT_CACHE}; values outside the range are constructed on demand.
+     *
+     * <p>
+     * The returned instance uses {@link Locale#US} and {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
+     * </p>
+     *
+     * @param value the integer value
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
+     */
+    public static BigNumber valueOf(final long value) {
+        if (value >= SMALL_INT_CACHE_MIN && value <= SMALL_INT_CACHE_MAX) {
+            return SMALL_INT_CACHE[(int) (value - SMALL_INT_CACHE_MIN)];
+        }
+        return new BigNumber(Long.toString(value), Locale.US, DEFAULT_MATH_CONTEXT);
+    }
+
+    /**
+     * Factory for {@code int} values. Delegates to {@link #valueOf(long)}.
+     *
+     * @param value the integer value
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
+     */
+    public static BigNumber valueOf(final int value) {
+        return valueOf((long) value);
+    }
+
+    /**
+     * Factory for {@link BigDecimal} values. The returned instance uses {@link Locale#US}.
+     *
+     * @param value the source value; must not be {@code null}
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
+     */
+    public static BigNumber valueOf(@NonNull final BigDecimal value) {
+        return new BigNumber(value, Locale.US);
+    }
+
+    /**
+     * Factory for string values. Locale and math context are determined by the canonical
+     * {@link BigNumber#BigNumber(String)} constructor.
+     *
+     * @param value the string representation; must not be {@code null}
+     * @return a {@link BigNumber} representing {@code value}; never {@code null}
+     */
+    public static BigNumber valueOf(@NonNull final String value) {
+        return new BigNumber(value);
+    }
     /**
      * The locale defining grouping and decimal separators used by this number.
      */
@@ -159,7 +277,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = parsedAndFormatted.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
     }
 
     /**
@@ -226,7 +344,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
 
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
     }
 
     /**
@@ -287,7 +405,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = bigNumber.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
     }
 
     /**
@@ -327,7 +445,7 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = new CalculatorEngine(trigonometricMode);
+        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
     }
 
     /**
@@ -3166,17 +3284,20 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return the localized string representation of this number
      */
     private String formatToString(@NonNull final Locale locale, final boolean useGrouping) {
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        String decimalSeparator = String.valueOf(symbols.getDecimalSeparator());
-        trim();
+        final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
+        String decimalSeparator = String.valueOf(localeSeparators.decimalSeparator());
 
-        String newValueAfterDecimal = valueAfterDecimalPoint.isBlank() || valueAfterDecimalPoint.equals("0") ? "" : valueAfterDecimalPoint;
+        // Read-only snapshot: do NOT mutate this instance — toString must be safe on cached/shared BigNumbers.
+        final String trimmedBefore = trimLeadingZeros(valueBeforeDecimalPoint);
+        final String trimmedAfter = trimTrailingZeros(valueAfterDecimalPoint);
+
+        String newValueAfterDecimal = trimmedAfter.isBlank() || trimmedAfter.equals("0") ? "" : trimmedAfter;
 
         if (newValueAfterDecimal.isEmpty()) {
             decimalSeparator = "";
         }
 
-        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(valueBeforeDecimalPoint, symbols.getGroupingSeparator()).toString() : valueBeforeDecimalPoint;
+        String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(trimmedBefore, localeSeparators.groupingSeparator()).toString() : trimmedBefore;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
         return isNegative ? "-" + localized : localized;
@@ -3190,17 +3311,17 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      * @return a BigDecimal representation of this BigNumber
      */
     public BigDecimal toBigDecimal() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         if (isNegative) {
-            sb.append('-');
+            stringBuilder.append('-');
         }
 
-        sb.append(valueBeforeDecimalPoint);
+        stringBuilder.append(valueBeforeDecimalPoint);
 
         if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
-            sb.append('.').append(valueAfterDecimalPoint);
+            stringBuilder.append('.').append(valueAfterDecimalPoint);
         }
-        return new BigDecimal(sb.toString(), mathContext);
+        return new BigDecimal(stringBuilder.toString(), mathContext);
     }
 
     /**
@@ -3220,8 +3341,13 @@ public class BigNumber extends Number implements Comparable<BigNumber> {
      *
      * @return a new BigNumber instance with the same value and properties as this one
      */
+    @Override
     public BigNumber clone() {
-        return new BigNumber(this);
+        try {
+            return (BigNumber) super.clone();
+        } catch (final CloneNotSupportedException cloneNotSupportedException) {
+            throw new AssertionError(cloneNotSupportedException);
+        }
     }
 
 }
