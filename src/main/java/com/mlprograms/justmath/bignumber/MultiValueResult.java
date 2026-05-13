@@ -22,33 +22,29 @@
  * SOFTWARE.
  */
 
-package com.mlprograms.justmath.calculator.expression.elements.function;
+package com.mlprograms.justmath.bignumber;
 
-import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureScalar;
+/**
+ * Marker for evaluator results that carry more than one scalar component
+ * (for example the {@code (r, θ)} pair returned by {@code Pol(...)} or the
+ * {@code (x, y)} pair returned by {@code Rec(...)}).
+ *
+ * <p>When such a value participates in a larger scalar expression — for
+ * instance as an operand of {@code +}, {@code -}, {@code *}, {@code /},
+ * {@code ^}, or as an argument to a function that expects a single number —
+ * it is automatically coerced to its {@link #firstValue() first component}.
+ * Implementations decide what "first" means for their domain
+ * (e.g. {@code r} for polar, {@code x} for cartesian).</p>
+ */
+public interface MultiValueResult {
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.expression.operations.function.ThreeArgumentFunctionOperation;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-
-import java.math.MathContext;
-import java.util.Deque;
-import java.util.Locale;
-
-public class ThreeArgumentFunction extends Function {
-
-	private final ThreeArgumentFunctionOperation operation;
-
-	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
-		super(symbol, precedence);
-		this.operation = operation;
-	}
-
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		String c = String.valueOf(stack.pop());
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
-	}
+    /**
+     * Returns the first scalar component of this multi-value result as a
+     * plain {@link BigNumber}. The returned value must not itself be a
+     * multi-value result.
+     *
+     * @return the first scalar component; never {@code null}
+     */
+    BigNumber firstValue();
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,16 +24,16 @@
 
 package com.mlprograms.justmath.calculator.expression.elements.operator;
 
+import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureScalar;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.operations.operator.SimpleBinaryOperatorOperation;
+import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
-
-import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.ensureBigNumber;
 
 public class SimpleBinaryOperator extends ExpressionElement {
 
@@ -46,8 +46,8 @@ public class SimpleBinaryOperator extends ExpressionElement {
 
 	@Override
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureBigNumber(stack.pop());
-		BigNumber a = ensureBigNumber(stack.pop());
+		BigNumber b = ensureScalar(stack.pop());
+		BigNumber a = ensureScalar(stack.pop());
 		stack.push(operation.apply(a, b, locale));
 	}
 

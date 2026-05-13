@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,17 +24,19 @@
 
 package com.mlprograms.justmath.bignumber.math.utils;
 
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
+
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
+import com.mlprograms.justmath.bignumber.MultiValueResult;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
-import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
+import lombok.NonNull;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.
@@ -131,12 +133,49 @@ public class MathUtils {
      * @return the object cast to {@link BigNumber} if it is an instance
      * @throws IllegalArgumentException if the object is not a {@link BigNumber}
      */
+    @Deprecated(forRemoval = true)
     public static BigNumber ensureBigNumber(Object object) {
         if (object instanceof BigNumber bigNumber) {
             return bigNumber;
         }
 
         throw new IllegalArgumentException("Expected BigNumber but got: " + object);
+    }
+
+    /**
+     * Ensures that the provided object can be used as a scalar {@link BigNumber}.
+     * <p>
+     * Operators and functions that participate in a normal scalar expression
+     * (addition, subtraction, multiplication, division, power, single-argument
+     * functions, ...) call this helper instead of {@link #ensureBigNumber(Object)}
+     * to support transparent use of multi-value results.
+     * </p>
+     *
+     * <ul>
+     *   <li>If the object implements {@link MultiValueResult} (for example a
+     *       {@link BigNumberCoordinate} returned by {@code Pol(...)} or
+     *       {@code Rec(...)}), its {@link MultiValueResult#firstValue() first
+     *       value} is returned as a plain {@code BigNumber}. This is what allows
+     *       expressions like {@code Pol(1;2)+3} or {@code Pol(1;2)+Rec(2;1)} to
+     *       evaluate correctly.</li>
+     *   <li>If the object is already a plain {@link BigNumber}, it is returned
+     *       unchanged.</li>
+     *   <li>Any other type triggers an {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * @param object the value popped from the evaluation stack
+     * @return a scalar {@link BigNumber} that can be fed into arithmetic operations
+     * @throws IllegalArgumentException if the value cannot be reduced to a scalar
+     */
+    public static BigNumber ensureScalar(Object object) {
+        if (object instanceof MultiValueResult multiValueResult) {
+            return multiValueResult.firstValue();
+        }
+        if (object instanceof BigNumber bigNumber) {
+            return bigNumber;
+        }
+
+        throw new IllegalArgumentException("Expected scalar BigNumber but got: " + object);
     }
 
 }

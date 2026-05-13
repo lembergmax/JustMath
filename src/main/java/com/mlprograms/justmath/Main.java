@@ -26,9 +26,6 @@ package com.mlprograms.justmath;
 
 import com.mlprograms.justmath.calculator.CalculatorEngine;
 import com.mlprograms.justmath.calculator.errors.ErrorMode;
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
 
 import java.util.Locale;
 
@@ -47,7 +44,10 @@ public class Main {
         final CalculatorEngine calculatorEngine = new CalculatorEngine();
         calculatorEngine.setLocale(Locale.GERMANY);
         calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
-        System.out.println(calculatorEngine.evaluateToString("((("));
+        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
+        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
+        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
+        System.out.println(calculatorEngine.evaluateToString("Rec(2;1)"));
 
 //        final UnitValue unitValue = new UnitValue("1y");
 //        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));

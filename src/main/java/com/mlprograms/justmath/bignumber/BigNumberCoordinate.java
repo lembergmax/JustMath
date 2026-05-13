@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -25,10 +25,11 @@
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
-import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.Locale;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * An immutable data structure representing a 2D coordinate with arbitrary precision,
@@ -60,7 +61,7 @@ import java.util.Locale;
  * </p>
  */
 @Getter
-public class BigNumberCoordinate extends BigNumber {
+public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
 
     /**
      * Type of this coordinate. Determines how {@code x} and {@code y} are interpreted:
@@ -207,6 +208,21 @@ public class BigNumberCoordinate extends BigNumber {
         x = x.trim();
         y = y.trim();
         return this;
+    }
+
+    /**
+     * Returns the first scalar component of this coordinate as a plain
+     * {@link BigNumber}. For {@link CoordinateType#POLAR} this is the radius
+     * {@code r}; for {@link CoordinateType#CARTESIAN} it is the {@code x}
+     * coordinate. The returned instance is a fresh {@code BigNumber} (not a
+     * {@code BigNumberCoordinate}) so it behaves as a normal scalar in
+     * downstream arithmetic and formatting.
+     *
+     * @return the first scalar component; never {@code null}
+     */
+    @Override
+    public BigNumber firstValue() {
+        return new BigNumber(x, locale);
     }
 
     /**
