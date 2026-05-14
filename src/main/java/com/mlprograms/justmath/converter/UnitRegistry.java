@@ -878,10 +878,22 @@ class UnitRegistry {
      */
     private static final Map<Class<? extends Unit>, List<Unit>> BY_GROUP;
 
+    /**
+     * Map from unit group type to its canonical base unit (the unit defined with a
+     * scale-to-base of {@code 1} and offset-to-base of {@code 0}).
+     *
+     * <p>
+     * The base unit is the identity unit for the group's conversion algebra and serves as the
+     * stable default when no other selection is available.
+     * </p>
+     */
+    private static final Map<Class<? extends Unit>, Unit> BY_GROUP_BASE;
+
     static {
         final Map<Unit, UnitDefinition> byUnit = new LinkedHashMap<>();
         final Map<String, Unit> bySymbol = new HashMap<>();
         final Map<Class<? extends Unit>, List<Unit>> byGroup = new LinkedHashMap<>();
+        final Map<Class<? extends Unit>, Unit> byGroupBase = new LinkedHashMap<>();
 
         for (final UnitSpec spec : BUILT_IN) {
             final Unit unit = spec.unit();
@@ -901,6 +913,25 @@ class UnitRegistry {
 
             final Class<? extends Unit> groupType = groupTypeOf(unit);
             byGroup.computeIfAbsent(groupType, ignored -> new ArrayList<>()).add(unit);
+
+            if (spec.base()) {
+                final Unit previousBase = byGroupBase.put(groupType, unit);
+                if (previousBase != null) {
+                    throw new IllegalStateException(
+                            "Multiple base units declared for group " + groupType.getSimpleName()
+                                    + ": " + previousBase + " and " + unit
+                    );
+                }
+            }
+        }
+
+        for (final Class<? extends Unit> groupType : byGroup.keySet()) {
+            if (!byGroupBase.containsKey(groupType)) {
+                throw new IllegalStateException(
+                        "No base unit declared for group " + groupType.getSimpleName()
+                                + ". Use the three-argument define(unit, name, symbol) overload to declare exactly one base unit per group."
+                );
+            }
         }
 
         BY_UNIT = Map.copyOf(byUnit);
@@ -911,6 +942,7 @@ class UnitRegistry {
             immutableGroupMap.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
         BY_GROUP = Map.copyOf(immutableGroupMap);
+        BY_GROUP_BASE = Map.copyOf(byGroupBase);
     }
 
     /**
@@ -1002,6 +1034,46 @@ class UnitRegistry {
     }
 
     /**
+     * Returns the canonical base unit of the given group.
+     *
+     * <p>
+     * The base unit is the identity unit for the group's conversion algebra
+     * (e.g., {@code Meter} for {@code Length}, {@code Celsius} for {@code Temperature}).
+     * </p>
+     *
+     * @param groupType the group type (e.g., {@code Unit.Length.class}); must not be {@code null}
+     * @return the base unit of the group; never {@code null}
+     * @throws IllegalArgumentException if {@code groupType} is unknown
+     */
+    static Unit baseUnitOf(@NonNull final Class<? extends Unit> groupType) {
+        final Unit base = BY_GROUP_BASE.get(groupType);
+        if (base == null) {
+            throw new IllegalArgumentException("Unknown unit group: " + groupType.getName());
+        }
+        return base;
+    }
+
+    /**
+     * Returns the canonical base unit of the group containing the given unit.
+     *
+     * @param unit any unit of the target group; must not be {@code null}
+     * @return the base unit of {@code unit}'s group; never {@code null}
+     */
+    static Unit baseUnitOf(@NonNull final Unit unit) {
+        return baseUnitOf(groupTypeOf(unit));
+    }
+
+    /**
+     * Returns the group type (e.g., {@code Unit.Length.class}) of the given unit.
+     *
+     * @param unit the unit; must not be {@code null}
+     * @return the declaring group type; never {@code null}
+     */
+    static Class<? extends Unit> groupOf(@NonNull final Unit unit) {
+        return groupTypeOf(unit);
+    }
+
+    /**
      * Creates one declarative built-in definition entry.
      *
      * <p>
@@ -1022,7 +1094,11 @@ class UnitRegistry {
             @NonNull final String displayName,
             @NonNull final String symbol
     ) {
-        return define(unit, displayName, symbol, "1", "0");
+        final BigNumber scale = new BigNumber("1");
+        final BigNumber offset = new BigNumber("0");
+        final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+        return new UnitSpec(unit, definition, true);
     }
 
     /**
@@ -1082,7 +1158,7 @@ class UnitRegistry {
         final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
 
-        return new UnitSpec(unit, definition);
+        return new UnitSpec(unit, definition, false);
     }
 
     /**
@@ -1112,7 +1188,7 @@ class UnitRegistry {
         final BigNumber scale = new BigNumber(scaleToBase);
         final ConversionFormula formula = ConversionFormulas.reciprocal(scale);
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
-        return new UnitSpec(unit, definition);
+        return new UnitSpec(unit, definition, false);
     }
 
     /**
@@ -1136,7 +1212,8 @@ class UnitRegistry {
     }
 
     /**
-     * Internal immutable pair of a unit identifier and its {@link UnitDefinition}.
+     * Internal immutable triple of a unit identifier, its {@link UnitDefinition}, and a flag
+     * indicating whether this unit is the canonical base unit of its group.
      *
      * <p>
      * This is purely a registry construction artifact to keep {@link #BUILT_IN} readable.
@@ -1144,8 +1221,10 @@ class UnitRegistry {
      *
      * @param unit       the unit identifier
      * @param definition the unit definition
+     * @param base       {@code true} if this unit is the canonical base unit of its group;
+     *                   {@code false} otherwise
      */
-    private record UnitSpec(Unit unit, UnitDefinition definition) {
+    private record UnitSpec(Unit unit, UnitDefinition definition, boolean base) {
     }
 
 }

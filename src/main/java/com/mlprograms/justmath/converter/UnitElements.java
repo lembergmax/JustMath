@@ -26,14 +26,15 @@ package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 import java.math.MathContext;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Public lookup and conversion facade for built-in unit definitions.
@@ -130,6 +131,44 @@ public class UnitElements {
      */
     public static List<Unit> all() {
         return UnitRegistry.allUnits();
+    }
+
+    /**
+     * Returns the canonical base unit of the given group.
+     *
+     * <p>
+     * The base unit is the identity unit for the group's conversion algebra and serves as the
+     * stable default when no other selection is available. Examples: {@code Length -> Meter},
+     * {@code Mass -> Kilogram}, {@code Temperature -> Celsius}, {@code FuelConsumption -> Meter per Liter},
+     * {@code DataStorage -> Bit}.
+     * </p>
+     *
+     * @param groupType the group type (e.g., {@code Unit.Length.class}); must not be {@code null}
+     * @return the base unit of the group; never {@code null}
+     * @throws IllegalArgumentException if {@code groupType} is unknown
+     */
+    public static Unit getBaseUnit(@NonNull final Class<? extends Unit> groupType) {
+        return UnitRegistry.baseUnitOf(groupType);
+    }
+
+    /**
+     * Returns the canonical base unit of the group containing the given unit.
+     *
+     * @param unit any unit of the target group; must not be {@code null}
+     * @return the base unit of {@code unit}'s group; never {@code null}
+     */
+    public static Unit getBaseUnit(@NonNull final Unit unit) {
+        return UnitRegistry.baseUnitOf(unit);
+    }
+
+    /**
+     * Returns the group type (e.g., {@code Unit.Length.class}) of the given unit.
+     *
+     * @param unit the unit; must not be {@code null}
+     * @return the declaring group type; never {@code null}
+     */
+    public static Class<? extends Unit> getGroup(@NonNull final Unit unit) {
+        return UnitRegistry.groupOf(unit);
     }
 
     /**
