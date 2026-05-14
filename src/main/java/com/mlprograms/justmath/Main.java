@@ -24,6 +24,9 @@
 
 package com.mlprograms.justmath;
 
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitConverter;
+
 public class Main {
 
     public static void main(final String[] args) {
@@ -50,6 +53,8 @@ public class Main {
 //        System.out.println(
 //                UnitElements.getRegistry().entrySet().stream().filter(unit -> unit.getValue().toString().equals("0"))
 //        );
+
+        System.out.println(new UnitConverter().convert("15", Unit.Speed.KILOMETER_PER_HOUR, Unit.Speed.METER_PER_SECOND));
 
     }
 
