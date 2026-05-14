@@ -145,7 +145,7 @@ class UnitRegistry {
             define(Unit.Length.HANDBREADTH, "Handbreadth", "hb", "0.0762"),
             define(Unit.Length.NAIL_COTH, "Nail (cloth)", "nail", "0.05715"),
             define(Unit.Length.FINGERBREADTH, "Fingerbreadth", "fb", "0.01905"),
-            define(Unit.Length.BARLEYCORN, "Barleycorn", "barleycorn", "0.0084666667"),
+            defineFraction(Unit.Length.BARLEYCORN, "Barleycorn", "barleycorn", "0.0254", "3"),
             define(Unit.Length.YARD, "Yard", "yd", "0.9144"),
             define(Unit.Length.FEET, "Foot", "ft", "0.3048"),
             define(Unit.Length.INCH, "Inch", "in", "0.0254"),
@@ -157,11 +157,11 @@ class UnitRegistry {
             define(Unit.Length.ARPENT, "Arpent", "arp", "58.5216"),
             define(Unit.Length.KEN, "Ken", "ken", "2.11836"),
 
-            define(Unit.Length.PIXEL, "Pixel", "px", "0.0002645833"),
-            define(Unit.Length.POINT, "Point", "pt", "0.0003527778"),
-            define(Unit.Length.PICA, "Pica", "pica", "0.0042333333"),
-            define(Unit.Length.EM, "Em", "em", "0.0042333333"),
-            define(Unit.Length.TWIP, "Twip", "twip", "0.0000176389"),
+            defineFraction(Unit.Length.PIXEL, "Pixel", "px", "0.0254", "96"),
+            defineFraction(Unit.Length.POINT, "Point", "pt", "0.0254", "72"),
+            defineFraction(Unit.Length.PICA, "Pica", "pica", "0.0254", "6"),
+            defineFraction(Unit.Length.EM, "Em", "em", "0.0254", "6"),
+            defineFraction(Unit.Length.TWIP, "Twip", "twip", "0.0254", "1440"),
 
             // =========================
             // AREA (base: square meter)
@@ -234,58 +234,58 @@ class UnitRegistry {
             define(Unit.Volume.METRIC_TABLESPOON, "Tablespoon (Metric)", "tbsp_metric", "0.000015"),
             define(Unit.Volume.METRIC_TEASPOON, "Teaspoon (Metric)", "tsp_metric", "0.000005"),
 
-            define(Unit.Volume.US_GALLON, "Gallon (United States)", "gal_us", "0.0037854118"),
-            define(Unit.Volume.US_QUART, "Quart (United States)", "qt_us", "0.0009463529"),
-            define(Unit.Volume.US_PINT, "Pint (United States)", "pt_us", "0.0004731765"),
-            define(Unit.Volume.US_CUP, "Cup (United States)", "cup_us", "0.0002365882"),
-            define(Unit.Volume.US_FLUID_OUNCE, "Fluid Ounce (United States)", "floz_us", "0.0000295735"),
-            define(Unit.Volume.US_TABLESPOON, "Tablespoon (United States)", "tbsp_us", "0.0000147868"),
-            define(Unit.Volume.US_DESSERTSPOON, "Dessertspoon (United States)", "dsp_us", "0.0000098578"),
-            define(Unit.Volume.US_TEASPOON, "Teaspoon (United States)", "tsp_us", "0.0000049289"),
-            define(Unit.Volume.US_GILL, "Gill (United States)", "gi_us", "0.0001182941"),
-            define(Unit.Volume.US_MINIM, "Minim (United States)", "minim_us", "6.161151992E-8"),
-            define(Unit.Volume.US_BARREL, "Barrel (United States)", "bbl_us", "0.1192404712"),
+            define(Unit.Volume.US_GALLON, "Gallon (United States)", "gal_us", "0.003785411784"),
+            define(Unit.Volume.US_QUART, "Quart (United States)", "qt_us", "0.000946352946"),
+            define(Unit.Volume.US_PINT, "Pint (United States)", "pt_us", "0.000473176473"),
+            define(Unit.Volume.US_CUP, "Cup (United States)", "cup_us", "0.0002365882365"),
+            define(Unit.Volume.US_FLUID_OUNCE, "Fluid Ounce (United States)", "floz_us", "0.0000295735295625"),
+            define(Unit.Volume.US_TABLESPOON, "Tablespoon (United States)", "tbsp_us", "0.00001478676478125"),
+            defineFraction(Unit.Volume.US_DESSERTSPOON, "Dessertspoon (United States)", "dsp_us", "0.003785411784", "384"),
+            defineFraction(Unit.Volume.US_TEASPOON, "Teaspoon (United States)", "tsp_us", "0.003785411784", "768"),
+            define(Unit.Volume.US_GILL, "Gill (United States)", "gi_us", "0.00011829411825"),
+            defineFraction(Unit.Volume.US_MINIM, "Minim (United States)", "minim_us", "0.003785411784", "61440"),
+            define(Unit.Volume.US_BARREL, "Barrel (United States)", "bbl_us", "0.119240471196"),
 
             define(Unit.Volume.IMPERIAL_GALLON, "Gallon (United Kingdom)", "gal_uk", "0.00454609"),
             define(Unit.Volume.IMPERIAL_QUART, "Quart (United Kingdom)", "qt_uk", "0.0011365225"),
-            define(Unit.Volume.IMPERIAL_PINT, "Pint (United Kingdom)", "pt_uk", "0.0005682613"),
-            define(Unit.Volume.IMPERIAL_CUP, "Cup (United Kingdom)", "cup_uk", "0.0002841306"),
-            define(Unit.Volume.IMPERIAL_FLUID_OUNCE, "Fluid Ounce (United Kingdom)", "floz_uk", "0.0000284131"),
-            define(Unit.Volume.IMPERIAL_TABLESPOON, "Tablespoon (United Kingdom)", "tbsp_uk", "0.0000177582"),
-            define(Unit.Volume.IMPERIAL_DESSERTSPOON, "Dessertspoon (United Kingdom)", "dsp_uk", "0.0000118388"),
-            define(Unit.Volume.IMPERIAL_TEASPOON, "Teaspoon (United Kingdom)", "tsp_uk", "0.0000059194"),
-            define(Unit.Volume.IMPERIAL_GILL, "Gill (United Kingdom)", "gi_uk", "0.0001420653"),
-            define(Unit.Volume.IMPERIAL_MINIM, "Minim (United Kingdom)", "minim_uk", "5.91938802E-8"),
+            define(Unit.Volume.IMPERIAL_PINT, "Pint (United Kingdom)", "pt_uk", "0.00056826125"),
+            define(Unit.Volume.IMPERIAL_CUP, "Cup (United Kingdom)", "cup_uk", "0.000284130625"),
+            define(Unit.Volume.IMPERIAL_FLUID_OUNCE, "Fluid Ounce (United Kingdom)", "floz_uk", "0.0000284130625"),
+            define(Unit.Volume.IMPERIAL_TABLESPOON, "Tablespoon (United Kingdom)", "tbsp_uk", "0.0000177581640625"),
+            defineFraction(Unit.Volume.IMPERIAL_DESSERTSPOON, "Dessertspoon (United Kingdom)", "dsp_uk", "0.00454609", "384"),
+            defineFraction(Unit.Volume.IMPERIAL_TEASPOON, "Teaspoon (United Kingdom)", "tsp_uk", "0.00454609", "768"),
+            define(Unit.Volume.IMPERIAL_GILL, "Gill (United Kingdom)", "gi_uk", "0.0001420653125"),
+            defineFraction(Unit.Volume.IMPERIAL_MINIM, "Minim (United Kingdom)", "minim_uk", "0.00454609", "76800"),
             define(Unit.Volume.IMPERIAL_BARREL, "Barrel (United Kingdom)", "bbl_uk", "0.16365924"),
 
-            define(Unit.Volume.CUBIC_MILE, "Cubic Mile", "mi^3", "4168181825.4"),
-            define(Unit.Volume.CUBIC_YARD, "Cubic Yard", "yd^3", "0.764554858"),
+            define(Unit.Volume.CUBIC_MILE, "Cubic Mile", "mi^3", "4168181825.440579584"),
+            define(Unit.Volume.CUBIC_YARD, "Cubic Yard", "yd^3", "0.764554857984"),
             define(Unit.Volume.CUBIC_FOOT, "Cubic Foot", "ft^3", "0.028316846592"),
-            define(Unit.Volume.CUBIC_INCH, "Cubic Inch", "in^3", "0.0000163871"),
+            define(Unit.Volume.CUBIC_INCH, "Cubic Inch", "in^3", "0.000016387064"),
 
             define(Unit.Volume.HUNDRED_CUBIC_FOOT, "Hundred Cubic Foot", "hundred_cubic_foot", "2.8316846592"),
             define(Unit.Volume.TON_REGISTER, "Ton Register", "ton_reg", "2.8316846592"),
-            define(Unit.Volume.ACRE_FOOT, "Acre-Foot", "ac*ft", "1233.4818375"),
-            define(Unit.Volume.ACRE_INCH, "Acre-Inch", "ac*in", "102.79015313"),
-            define(Unit.Volume.BOARD_FOOT, "Board Foot", "board_foot", "0.0023597372"),
+            define(Unit.Volume.ACRE_FOOT, "Acre-Foot", "ac*ft", "1233.48183754752"),
+            define(Unit.Volume.ACRE_INCH, "Acre-Inch", "ac*in", "102.79015312896"),
+            define(Unit.Volume.BOARD_FOOT, "Board Foot", "board_foot", "0.002359737216"),
             define(Unit.Volume.STERE, "Stere", "stere", "1"),
             define(Unit.Volume.DEKASTERE, "Dekastere", "dekastere", "10"),
             define(Unit.Volume.DECISTERE, "Decistere", "decistere", "0.1"),
-            define(Unit.Volume.CORD, "Cord", "cord", "3.6245563638"),
+            define(Unit.Volume.CORD, "Cord", "cord", "3.624556363776"),
 
             define(Unit.Volume.DROP, "Drop", "drop", "5.E-8"),
-            define(Unit.Volume.OIL_BARREL, "Barrel (Oil)", "bbl_oil", "0.1589872949"),
-            define(Unit.Volume.TUN, "Tun", "tun", "0.9539237696"),
-            define(Unit.Volume.HOGSHEAD, "Hogshead", "hogshead", "0.2384809424"),
-            define(Unit.Volume.DRAM, "Dram", "dr", "0.0000036967"),
-            define(Unit.Volume.SPANISH_TAZA, "Taza (Spanish)", "taza", "0.0002365882"),
+            define(Unit.Volume.OIL_BARREL, "Barrel (Oil)", "bbl_oil", "0.158987294928"),
+            define(Unit.Volume.TUN, "Tun", "tun", "0.953923769568"),
+            define(Unit.Volume.HOGSHEAD, "Hogshead", "hogshead", "0.238480942392"),
+            define(Unit.Volume.DRAM, "Dram", "dr", "0.0000036966911953125"),
+            define(Unit.Volume.SPANISH_TAZA, "Taza (Spanish)", "taza", "0.0002365882365"),
 
             define(Unit.Volume.BIBLICAL_COR, "Cor (Biblical)", "cor_biblical", "0.22"),
             define(Unit.Volume.BIBLICAL_HOMER, "Homer (Biblical)", "homer_biblical", "0.22"),
             define(Unit.Volume.BIBLICAL_BATH, "Bath (Biblical)", "bath_biblical", "0.022"),
-            define(Unit.Volume.BIBLICAL_HIN, "Hin (Biblical)", "hin_biblical", "0.0036666667"),
-            define(Unit.Volume.BIBLICAL_CAB, "Cab (Biblical)", "cab_biblical", "0.0012222222"),
-            define(Unit.Volume.BIBLICAL_LOG, "Log (Biblical)", "log_biblical", "0.0003055556"),
+            defineFraction(Unit.Volume.BIBLICAL_HIN, "Hin (Biblical)", "hin_biblical", "0.022", "6"),
+            defineFraction(Unit.Volume.BIBLICAL_CAB, "Cab (Biblical)", "cab_biblical", "0.022", "18"),
+            defineFraction(Unit.Volume.BIBLICAL_LOG, "Log (Biblical)", "log_biblical", "0.022", "72"),
 
             define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.083E+21"),
 
@@ -316,15 +316,15 @@ class UnitRegistry {
             define(Unit.Mass.ATTOGRAM, "Attogram", "ag", "1.0E-21"),
 
             define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
-            define(Unit.Mass.GRAIN, "Grain", "gr", "6.47989E-5"),
-            define(Unit.Mass.PENNYWEIGHT, "Pennyweight", "dwt", "0.0015551738"),
+            define(Unit.Mass.GRAIN, "Grain", "gr", "0.00006479891"),
+            define(Unit.Mass.PENNYWEIGHT, "Pennyweight", "dwt", "0.00155517384"),
             define(Unit.Mass.SCRUPLE_APOTHECARY, "Scruple (Apothecary)", "℈", "0.0012959782"),
             define(Unit.Mass.POUND_TROY_APOTHECARY, "Pound (Troy or Apothecary)", "lb_t", "0.3732417216"),
 
             define(Unit.Mass.LONG_TON, "Ton (Long)", "LT", "1016.0469088"),
             define(Unit.Mass.SHORT_TON, "Ton (Short)", "ST", "907.18474"),
             define(Unit.Mass.POUND, "Pound", "lb", "0.45359237"),
-            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.0283495231"),
+            define(Unit.Mass.OUNCE, "Ounce", "oz", "0.028349523125"),
 
             define(Unit.Mass.HUNDREDWEIGHT_UNITED_STATES, "Hundredweight (United States)", "cwt(US)", "45.359237"),
             define(Unit.Mass.HUNDREDWEIGHT_UNITED_KINGDOM, "Hundredweight (United Kingdom)", "cwt(UK)", "50.80234544"),
@@ -338,8 +338,8 @@ class UnitRegistry {
             define(Unit.Mass.SLUG, "Slug", "slug", "14.5939029372"),
             define(Unit.Mass.KILOPOUND, "Kilopound", "klb", "453.59237"),
 
-            define(Unit.Mass.ASSAY_TON_UNITED_STATES, "Ton (Assay) (United States)", "AT(US)", "0.02916667"),
-            define(Unit.Mass.ASSAY_TON_UNITED_KINGDOM, "Ton (Assay) (United Kingdom)", "AT(UK)", "0.0326666667"),
+            defineFraction(Unit.Mass.ASSAY_TON_UNITED_STATES, "Ton (Assay) (United States)", "AT(US)", "0.175", "6"),
+            defineFraction(Unit.Mass.ASSAY_TON_UNITED_KINGDOM, "Ton (Assay) (United Kingdom)", "AT(UK)", "0.098", "3"),
 
             define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.6605402E-27"),
             define(Unit.Mass.DALTON, "Dalton", "Da", "1.6605300000013E-27"),
@@ -550,36 +550,36 @@ class UnitRegistry {
             define(Unit.Power.HORSEPOWER_WATER, "Horsepower (Water)", "hp(water)", "746.043"),
             define(Unit.Power.PFERDESTAERKE, "Pferdestarke", "PS", "735.49875"),
 
-            define(Unit.Power.BTU_IT_PER_HOUR, "Btu (IT) per Hour", "Btu/h", "0.2930710702"),
-            define(Unit.Power.BTU_IT_PER_MINUTE, "Btu (IT) per Minute", "Btu/min", "17.5842642103"),
+            defineFraction(Unit.Power.BTU_IT_PER_HOUR, "Btu (IT) per Hour", "Btu/h", "1055.05585262", "3600"),
+            defineFraction(Unit.Power.BTU_IT_PER_MINUTE, "Btu (IT) per Minute", "Btu/min", "1055.05585262", "60"),
             define(Unit.Power.BTU_IT_PER_SECOND, "Btu (IT) per Second", "Btu/s", "1055.05585262"),
-            define(Unit.Power.BTU_TH_PER_HOUR, "Btu (th) per Hour", "Btu(th)/h", "0.292875"),
-            define(Unit.Power.BTU_TH_PER_MINUTE, "Btu (th) per Minute", "Btu(th)/min", "17.5724999996"),
+            defineFraction(Unit.Power.BTU_TH_PER_HOUR, "Btu (th) per Hour", "Btu(th)/h", "1054.3499999744", "3600"),
+            defineFraction(Unit.Power.BTU_TH_PER_MINUTE, "Btu (th) per Minute", "Btu(th)/min", "1054.3499999744", "60"),
             define(Unit.Power.BTU_TH_PER_SECOND, "Btu (th) per Second", "Btu(th)/s", "1054.3499999744"),
 
-            define(Unit.Power.MEGA_BTU_IT_PER_HOUR, "Mega Btu (IT) per Hour", "MBtu/h", "293071.07017222"),
-            define(Unit.Power.MBH, "MBH", "MBH", "293.0710701722"),
+            defineFraction(Unit.Power.MEGA_BTU_IT_PER_HOUR, "Mega Btu (IT) per Hour", "MBtu/h", "1055055852.62", "3600"),
+            defineFraction(Unit.Power.MBH, "MBH", "MBH", "1055055.85262", "3600"),
             define(Unit.Power.TON_REFRIGERATION, "Ton (Refrigeration)", "TR", "3516.8528420667"),
 
-            define(Unit.Power.KILOCALORIE_IT_PER_HOUR, "Kilocalorie (IT) per Hour", "kcal(IT)/h", "1.163"),
-            define(Unit.Power.KILOCALORIE_IT_PER_MINUTE, "Kilocalorie (IT) per Minute", "kcal(IT)/min", "69.78"),
+            defineFraction(Unit.Power.KILOCALORIE_IT_PER_HOUR, "Kilocalorie (IT) per Hour", "kcal(IT)/h", "4186.8", "3600"),
+            defineFraction(Unit.Power.KILOCALORIE_IT_PER_MINUTE, "Kilocalorie (IT) per Minute", "kcal(IT)/min", "4186.8", "60"),
             define(Unit.Power.KILOCALORIE_IT_PER_SECOND, "Kilocalorie (IT) per Second", "kcal(IT)/s", "4186.8"),
-            define(Unit.Power.KILOCALORIE_TH_PER_HOUR, "Kilocalorie (th) per Hour", "kcal(th)/h", "1.1622222222"),
-            define(Unit.Power.KILOCALORIE_TH_PER_MINUTE, "Kilocalorie (th) per Minute", "kcal(th)/min", "69.7333333333"),
+            defineFraction(Unit.Power.KILOCALORIE_TH_PER_HOUR, "Kilocalorie (th) per Hour", "kcal(th)/h", "4184", "3600"),
+            defineFraction(Unit.Power.KILOCALORIE_TH_PER_MINUTE, "Kilocalorie (th) per Minute", "kcal(th)/min", "4184", "60"),
             define(Unit.Power.KILOCALORIE_TH_PER_SECOND, "Kilocalorie (th) per Second", "kcal(th)/s", "4184"),
 
-            define(Unit.Power.CALORIE_IT_PER_HOUR, "Calorie (IT) per Hour", "cal/h", "0.001163"),
-            define(Unit.Power.CALORIE_IT_PER_MINUTE, "Calorie (IT) per Minute", "cal/min", "0.06978"),
+            defineFraction(Unit.Power.CALORIE_IT_PER_HOUR, "Calorie (IT) per Hour", "cal/h", "4.1868", "3600"),
+            defineFraction(Unit.Power.CALORIE_IT_PER_MINUTE, "Calorie (IT) per Minute", "cal/min", "4.1868", "60"),
             define(Unit.Power.CALORIE_IT_PER_SECOND, "Calorie (IT) per Second", "cal/s", "4.1868"),
-            define(Unit.Power.CALORIE_TH_PER_HOUR, "Calorie (th) per Hour", "cal(th)/h", "0.0011622222"),
-            define(Unit.Power.CALORIE_TH_PER_MINUTE, "Calorie (th) per Minute", "cal(th)/min", "0.0697333333"),
+            defineFraction(Unit.Power.CALORIE_TH_PER_HOUR, "Calorie (th) per Hour", "cal(th)/h", "4.184", "3600"),
+            defineFraction(Unit.Power.CALORIE_TH_PER_MINUTE, "Calorie (th) per Minute", "cal(th)/min", "4.184", "60"),
             define(Unit.Power.CALORIE_TH_PER_SECOND, "Calorie (th) per Second", "cal(th)/s", "4.184"),
 
-            define(Unit.Power.FOOT_POUND_FORCE_PER_HOUR, "Foot Pound-Force per Hour", "ft*lbf/h", "0.0003766161"),
-            define(Unit.Power.FOOT_POUND_FORCE_PER_MINUTE, "Foot Pound-Force per Minute", "ft*lbf/min", "0.0225969658"),
+            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_HOUR, "Foot Pound-Force per Hour", "ft*lbf/h", "1.3558179483", "3600"),
+            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_MINUTE, "Foot Pound-Force per Minute", "ft*lbf/min", "1.3558179483", "60"),
             define(Unit.Power.FOOT_POUND_FORCE_PER_SECOND, "Foot Pound-Force per Second", "ft*lbf/s", "1.3558179483"),
-            define(Unit.Power.POUND_FOOT_PER_HOUR, "Pound-Foot per Hour", "lbf*ft/h", "0.0003766161"),
-            define(Unit.Power.POUND_FOOT_PER_MINUTE, "Pound-Foot per Minute", "lbf*ft/min", "0.0225969658"),
+            defineFraction(Unit.Power.POUND_FOOT_PER_HOUR, "Pound-Foot per Hour", "lbf*ft/h", "1.3558179483", "3600"),
+            defineFraction(Unit.Power.POUND_FOOT_PER_MINUTE, "Pound-Foot per Minute", "lbf*ft/min", "1.3558179483", "60"),
             define(Unit.Power.POUND_FOOT_PER_SECOND, "Pound-Foot per Second", "lbf*ft/s", "1.3558179483"),
 
             define(Unit.Power.ERG_PER_SECOND, "Erg per Second", "erg/s", "1.0E-7"),
@@ -607,10 +607,10 @@ class UnitRegistry {
             define(Unit.Power.FEMTOJOULE_PER_SECOND, "Femtojoule per Second", "fJ/s", "1.0E-15"),
             define(Unit.Power.ATTOJOULE_PER_SECOND, "Attojoule per Second", "aJ/s", "1.0E-18"),
 
-            define(Unit.Power.JOULE_PER_HOUR, "Joule per Hour", "J/h", "0.0002777778"),
-            define(Unit.Power.JOULE_PER_MINUTE, "Joule per Minute", "J/min", "0.0166666667"),
-            define(Unit.Power.KILOJOULE_PER_HOUR, "Kilojoule per Hour", "kJ/h", "0.2777777778"),
-            define(Unit.Power.KILOJOULE_PER_MINUTE, "Kilojoule per Minute", "kJ/min", "16.6666666667"),
+            defineFraction(Unit.Power.JOULE_PER_HOUR, "Joule per Hour", "J/h", "1", "3600"),
+            defineFraction(Unit.Power.JOULE_PER_MINUTE, "Joule per Minute", "J/min", "1", "60"),
+            defineFraction(Unit.Power.KILOJOULE_PER_HOUR, "Kilojoule per Hour", "kJ/h", "1000", "3600"),
+            defineFraction(Unit.Power.KILOJOULE_PER_MINUTE, "Kilojoule per Minute", "kJ/min", "1000", "60"),
 
             // =========================
             // TIME (base: second)
@@ -644,8 +644,8 @@ class UnitRegistry {
             define(Unit.Time.YEAR_SIDEREAL, "Year (Sidereal)", "year (sidereal)", "31558149.54"),
 
             define(Unit.Time.DAY_SIDEREAL, "Day (Sidereal)", "day (sidereal)", "86164.09"),
-            define(Unit.Time.HOUR_SIDEREAL, "Hour (Sidereal)", "hour (sidereal)", "3590.1704166667"),
-            define(Unit.Time.MINUTE_SIDEREAL, "Minute (Sidereal)", "minute (sidereal)", "59.8361736111"),
+            defineFraction(Unit.Time.HOUR_SIDEREAL, "Hour (Sidereal)", "hour (sidereal)", "86164.09", "24"),
+            defineFraction(Unit.Time.MINUTE_SIDEREAL, "Minute (Sidereal)", "minute (sidereal)", "86164.09", "1440"),
             define(Unit.Time.SECOND_SIDEREAL, "Second (Sidereal)", "second (sidereal)", "0.9972695602"),
 
             define(Unit.Time.FORTNIGHT, "Fortnight", "fortnight", "1209600"),
@@ -708,34 +708,34 @@ class UnitRegistry {
             // =========================
             // SPEED (base: meter per second)
             // =========================
-            define(Unit.Speed.KILOMETER_PER_HOUR, "Kilometer per Hour", "km/h", "0.2777777778"),
+            defineFraction(Unit.Speed.KILOMETER_PER_HOUR, "Kilometer per Hour", "km/h", "1000", "3600"),
             define(Unit.Speed.MILE_PER_HOUR, "Mile per Hour", "mi/h", "0.44704"),
-            define(Unit.Speed.METER_PER_HOUR, "Meter per Hour", "m/h", "0.0002777778"),
-            define(Unit.Speed.METER_PER_MINUTE, "Meter per Minute", "m/min", "0.0166666667"),
-            define(Unit.Speed.KILOMETER_PER_MINUTE, "Kilometer per Minute", "km/min", "16.6666666667"),
+            defineFraction(Unit.Speed.METER_PER_HOUR, "Meter per Hour", "m/h", "1", "3600"),
+            defineFraction(Unit.Speed.METER_PER_MINUTE, "Meter per Minute", "m/min", "1", "60"),
+            defineFraction(Unit.Speed.KILOMETER_PER_MINUTE, "Kilometer per Minute", "km/min", "1000", "60"),
             define(Unit.Speed.KILOMETER_PER_SECOND, "Kilometer per Second", "km/s", "1000"),
 
-            define(Unit.Speed.CENTIMETER_PER_HOUR, "Centimeter per Hour", "cm/h", "2.7777777777778E-6"),
-            define(Unit.Speed.CENTIMETER_PER_MINUTE, "Centimeter per Minute", "cm/min", "0.0001666667"),
+            defineFraction(Unit.Speed.CENTIMETER_PER_HOUR, "Centimeter per Hour", "cm/h", "1", "360000"),
+            defineFraction(Unit.Speed.CENTIMETER_PER_MINUTE, "Centimeter per Minute", "cm/min", "1", "6000"),
             define(Unit.Speed.CENTIMETER_PER_SECOND, "Centimeter per Second", "cm/s", "0.01"),
 
-            define(Unit.Speed.MILLIMETER_PER_HOUR, "Millimeter per Hour", "mm/h", "2.7777777777778E-7"),
-            define(Unit.Speed.MILLIMETER_PER_MINUTE, "Millimeter per Minute", "mm/min", "1.66667E-5"),
+            defineFraction(Unit.Speed.MILLIMETER_PER_HOUR, "Millimeter per Hour", "mm/h", "1", "3600000"),
+            defineFraction(Unit.Speed.MILLIMETER_PER_MINUTE, "Millimeter per Minute", "mm/min", "1", "60000"),
             define(Unit.Speed.MILLIMETER_PER_SECOND, "Millimeter per Second", "mm/s", "0.001"),
 
-            define(Unit.Speed.FOOT_PER_HOUR, "Foot per Hour", "ft/h", "8.46667E-5"),
-            define(Unit.Speed.FOOT_PER_MINUTE, "Foot per Minute", "ft/min", "0.00508"),
+            defineFraction(Unit.Speed.FOOT_PER_HOUR, "Foot per Hour", "ft/h", "0.3048", "3600"),
+            defineFraction(Unit.Speed.FOOT_PER_MINUTE, "Foot per Minute", "ft/min", "0.3048", "60"),
             define(Unit.Speed.FOOT_PER_SECOND, "Foot per Second", "ft/s", "0.3048"),
 
-            define(Unit.Speed.YARD_PER_HOUR, "Yard per Hour", "yd/h", "0.000254"),
-            define(Unit.Speed.YARD_PER_MINUTE, "Yard per Minute", "yd/min", "0.01524"),
+            defineFraction(Unit.Speed.YARD_PER_HOUR, "Yard per Hour", "yd/h", "0.9144", "3600"),
+            defineFraction(Unit.Speed.YARD_PER_MINUTE, "Yard per Minute", "yd/min", "0.9144", "60"),
             define(Unit.Speed.YARD_PER_SECOND, "Yard per Second", "yd/s", "0.9144"),
 
-            define(Unit.Speed.MILE_PER_MINUTE, "Mile per Minute", "mi/min", "26.8224"),
+            defineFraction(Unit.Speed.MILE_PER_MINUTE, "Mile per Minute", "mi/min", "1609.344", "60"),
             define(Unit.Speed.MILE_PER_SECOND, "Mile per Second", "mi/s", "1609.344"),
 
-            define(Unit.Speed.KNOT, "Knot", "kn", "0.5144444444"),
-            define(Unit.Speed.KNOT_UK, "Knot (UK)", "kn_UK", "0.5147733333"),
+            defineFraction(Unit.Speed.KNOT, "Knot", "kn", "1852", "3600"),
+            defineFraction(Unit.Speed.KNOT_UK, "Knot (UK)", "kn_UK", "1853.184", "3600"),
 
             define(Unit.Speed.SPEED_OF_LIGHT_VACUUM, "Velocity of Light in Vacuum", "c", "299792458"),
             define(Unit.Speed.COSMIC_VELOCITY_FIRST, "Cosmic Velocity (First)", "v1", "7900"),
@@ -765,34 +765,34 @@ class UnitRegistry {
             define(Unit.FuelConsumption.MILE_US_PER_LITER, "Mile (US) per Liter", "mi/L", "1609.344"),
             define(Unit.FuelConsumption.NAUTICAL_MILE_PER_LITER, "Nautical Mile per Liter", "nmi/L", "1852"),
 
-            define(Unit.FuelConsumption.NAUTICAL_MILE_PER_GALLON_US, "Nautical Mile per Gallon (US)", "nmi/gal(US)", "489.5755247"),
-            define(Unit.FuelConsumption.KILOMETER_PER_GALLON_US, "Kilometer per Gallon (US)", "km/gal (US)", "264.1720524"),
-            define(Unit.FuelConsumption.METER_PER_GALLON_US, "Meter per Gallon (US)", "m/gal (US)", "0.2641720524"),
-            define(Unit.FuelConsumption.METER_PER_GALLON_UK, "Meter per Gallon (UK)", "m/gal (UK)", "0.2199687986"),
-            define(Unit.FuelConsumption.MILE_PER_GALLON_US, "Mile per Gallon (US)", "mi/gal (US)", "425.1437075"),
-            define(Unit.FuelConsumption.MILE_PER_GALLON_UK, "Mile per Gallon (UK)", "mi/gal (UK)", "354.00619"),
+            defineFraction(Unit.FuelConsumption.NAUTICAL_MILE_PER_GALLON_US, "Nautical Mile per Gallon (US)", "nmi/gal(US)", "1852", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.KILOMETER_PER_GALLON_US, "Kilometer per Gallon (US)", "km/gal (US)", "1000", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_GALLON_US, "Meter per Gallon (US)", "m/gal (US)", "1", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_GALLON_UK, "Meter per Gallon (UK)", "m/gal (UK)", "1", "4.54609"),
+            defineFraction(Unit.FuelConsumption.MILE_PER_GALLON_US, "Mile per Gallon (US)", "mi/gal (US)", "1609.344", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.MILE_PER_GALLON_UK, "Mile per Gallon (UK)", "mi/gal (UK)", "1609.344", "4.54609"),
 
             define(Unit.FuelConsumption.METER_PER_CUBIC_METER, "Meter per Cubic Meter", "m/m^3", "0.001"),
             define(Unit.FuelConsumption.METER_PER_CUBIC_CENTIMETER, "Meter per Cubic Centimeter", "m/cm^3", "1000"),
-            define(Unit.FuelConsumption.METER_PER_CUBIC_YARD, "Meter per Cubic Yard", "m/yd^3", "0.0013079506"),
-            define(Unit.FuelConsumption.METER_PER_CUBIC_FOOT, "Meter per Cubic Foot", "m/ft^3", "0.0353146667"),
-            define(Unit.FuelConsumption.METER_PER_CUBIC_INCH, "Meter per Cubic Inch", "m/in^3", "61.02374409"),
+            defineFraction(Unit.FuelConsumption.METER_PER_CUBIC_YARD, "Meter per Cubic Yard", "m/yd^3", "1", "764.554857984"),
+            defineFraction(Unit.FuelConsumption.METER_PER_CUBIC_FOOT, "Meter per Cubic Foot", "m/ft^3", "1", "28.316846592"),
+            defineFraction(Unit.FuelConsumption.METER_PER_CUBIC_INCH, "Meter per Cubic Inch", "m/in^3", "1", "0.016387064"),
 
-            define(Unit.FuelConsumption.METER_PER_QUART_US, "Meter per Quart (US)", "m/qt (US)", "1.056688209"),
-            define(Unit.FuelConsumption.METER_PER_QUART_UK, "Meter per Quart (UK)", "m/qt (UK)", "0.8798751948"),
-            define(Unit.FuelConsumption.METER_PER_PINT_US, "Meter per Pint (US)", "m/pt (US)", "2.113376419"),
-            define(Unit.FuelConsumption.METER_PER_PINT_UK, "Meter per Pint (UK)", "m/pt (UK)", "1.759750389"),
-            define(Unit.FuelConsumption.METER_PER_CUP_US, "Meter per Cup (US)", "m/cup (US)", "4.226752838"),
-            define(Unit.FuelConsumption.METER_PER_CUP_UK, "Meter per Cup (UK)", "m/cup (UK)", "3.519500777"),
-            define(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_US, "Meter per Fluid Ounce (US)", "m/fl oz (US)", "33.8140227"),
-            define(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_UK, "Meter per Fluid Ounce (UK)", "m/fl oz (UK)", "35.19500777"),
+            defineFraction(Unit.FuelConsumption.METER_PER_QUART_US, "Meter per Quart (US)", "m/qt (US)", "4", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_QUART_UK, "Meter per Quart (UK)", "m/qt (UK)", "4", "4.54609"),
+            defineFraction(Unit.FuelConsumption.METER_PER_PINT_US, "Meter per Pint (US)", "m/pt (US)", "8", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_PINT_UK, "Meter per Pint (UK)", "m/pt (UK)", "8", "4.54609"),
+            defineFraction(Unit.FuelConsumption.METER_PER_CUP_US, "Meter per Cup (US)", "m/cup (US)", "16", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_CUP_UK, "Meter per Cup (UK)", "m/cup (UK)", "16", "4.54609"),
+            defineFraction(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_US, "Meter per Fluid Ounce (US)", "m/fl oz (US)", "128", "3.785411784"),
+            defineFraction(Unit.FuelConsumption.METER_PER_FLUID_OUNCE_UK, "Meter per Fluid Ounce (UK)", "m/fl oz (UK)", "160", "4.54609"),
 
             defineReciprocal(Unit.FuelConsumption.LITER_PER_METER, "Liter per Meter", "L/m", "1"),
             defineReciprocal(Unit.FuelConsumption.LITER_PER_100_KILOMETER, "Liter per 100 Kilometer", "L/100 km", "100000"),
-            defineReciprocal(Unit.FuelConsumption.GALLON_US_PER_MILE, "Gallon (US) per Mile", "gal (US)/mi", "425.1437074976"),
-            defineReciprocal(Unit.FuelConsumption.GALLON_US_PER_100_MILES, "Gallon (US) per 100 Miles", "gal (US)/100 mi", "42514.370749763"),
-            defineReciprocal(Unit.FuelConsumption.GALLON_UK_PER_MILE, "Gallon (UK) per Mile", "gal (UK)/mi", "354.0061899559"),
-            defineReciprocal(Unit.FuelConsumption.GALLON_UK_PER_100_MILES, "Gallon (UK) per 100 Miles", "gal (UK)/100 mi", "35400.618995592"),
+            defineReciprocalFraction(Unit.FuelConsumption.GALLON_US_PER_MILE, "Gallon (US) per Mile", "gal (US)/mi", "1609.344", "3.785411784"),
+            defineReciprocalFraction(Unit.FuelConsumption.GALLON_US_PER_100_MILES, "Gallon (US) per 100 Miles", "gal (US)/100 mi", "160934.4", "3.785411784"),
+            defineReciprocalFraction(Unit.FuelConsumption.GALLON_UK_PER_MILE, "Gallon (UK) per Mile", "gal (UK)/mi", "1609.344", "4.54609"),
+            defineReciprocalFraction(Unit.FuelConsumption.GALLON_UK_PER_100_MILES, "Gallon (UK) per 100 Miles", "gal (UK)/100 mi", "160934.4", "4.54609"),
 
             define(Unit.FuelConsumption.METER_PER_LITER, "Meter per Liter", "m/L"),
 
@@ -878,10 +878,22 @@ class UnitRegistry {
      */
     private static final Map<Class<? extends Unit>, List<Unit>> BY_GROUP;
 
+    /**
+     * Map from unit group type to its canonical base unit (the unit defined with a
+     * scale-to-base of {@code 1} and offset-to-base of {@code 0}).
+     *
+     * <p>
+     * The base unit is the identity unit for the group's conversion algebra and serves as the
+     * stable default when no other selection is available.
+     * </p>
+     */
+    private static final Map<Class<? extends Unit>, Unit> BY_GROUP_BASE;
+
     static {
         final Map<Unit, UnitDefinition> byUnit = new LinkedHashMap<>();
         final Map<String, Unit> bySymbol = new HashMap<>();
         final Map<Class<? extends Unit>, List<Unit>> byGroup = new LinkedHashMap<>();
+        final Map<Class<? extends Unit>, Unit> byGroupBase = new LinkedHashMap<>();
 
         for (final UnitSpec spec : BUILT_IN) {
             final Unit unit = spec.unit();
@@ -901,6 +913,25 @@ class UnitRegistry {
 
             final Class<? extends Unit> groupType = groupTypeOf(unit);
             byGroup.computeIfAbsent(groupType, ignored -> new ArrayList<>()).add(unit);
+
+            if (spec.base()) {
+                final Unit previousBase = byGroupBase.put(groupType, unit);
+                if (previousBase != null) {
+                    throw new IllegalStateException(
+                            "Multiple base units declared for group " + groupType.getSimpleName()
+                                    + ": " + previousBase + " and " + unit
+                    );
+                }
+            }
+        }
+
+        for (final Class<? extends Unit> groupType : byGroup.keySet()) {
+            if (!byGroupBase.containsKey(groupType)) {
+                throw new IllegalStateException(
+                        "No base unit declared for group " + groupType.getSimpleName()
+                                + ". Use the three-argument define(unit, name, symbol) overload to declare exactly one base unit per group."
+                );
+            }
         }
 
         BY_UNIT = Map.copyOf(byUnit);
@@ -911,6 +942,7 @@ class UnitRegistry {
             immutableGroupMap.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
         BY_GROUP = Map.copyOf(immutableGroupMap);
+        BY_GROUP_BASE = Map.copyOf(byGroupBase);
     }
 
     /**
@@ -1002,6 +1034,46 @@ class UnitRegistry {
     }
 
     /**
+     * Returns the canonical base unit of the given group.
+     *
+     * <p>
+     * The base unit is the identity unit for the group's conversion algebra
+     * (e.g., {@code Meter} for {@code Length}, {@code Celsius} for {@code Temperature}).
+     * </p>
+     *
+     * @param groupType the group type (e.g., {@code Unit.Length.class}); must not be {@code null}
+     * @return the base unit of the group; never {@code null}
+     * @throws IllegalArgumentException if {@code groupType} is unknown
+     */
+    static Unit baseUnitOf(@NonNull final Class<? extends Unit> groupType) {
+        final Unit base = BY_GROUP_BASE.get(groupType);
+        if (base == null) {
+            throw new IllegalArgumentException("Unknown unit group: " + groupType.getName());
+        }
+        return base;
+    }
+
+    /**
+     * Returns the canonical base unit of the group containing the given unit.
+     *
+     * @param unit any unit of the target group; must not be {@code null}
+     * @return the base unit of {@code unit}'s group; never {@code null}
+     */
+    static Unit baseUnitOf(@NonNull final Unit unit) {
+        return baseUnitOf(groupTypeOf(unit));
+    }
+
+    /**
+     * Returns the group type (e.g., {@code Unit.Length.class}) of the given unit.
+     *
+     * @param unit the unit; must not be {@code null}
+     * @return the declaring group type; never {@code null}
+     */
+    static Class<? extends Unit> groupOf(@NonNull final Unit unit) {
+        return groupTypeOf(unit);
+    }
+
+    /**
      * Creates one declarative built-in definition entry.
      *
      * <p>
@@ -1022,7 +1094,11 @@ class UnitRegistry {
             @NonNull final String displayName,
             @NonNull final String symbol
     ) {
-        return define(unit, displayName, symbol, "1", "0");
+        final BigNumber scale = new BigNumber("1");
+        final BigNumber offset = new BigNumber("0");
+        final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+        return new UnitSpec(unit, definition, true);
     }
 
     /**
@@ -1082,7 +1158,47 @@ class UnitRegistry {
         final ConversionFormula formula = ConversionFormulas.affine(scale, offset);
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
 
-        return new UnitSpec(unit, definition);
+        return new UnitSpec(unit, definition, false);
+    }
+
+    /**
+     * Creates one declarative built-in definition entry whose scale-to-base factor is expressed
+     * as an exact rational number:
+     *
+     * <pre>
+     * base = value * numerator / denominator
+     * </pre>
+     *
+     * <p>
+     * Prefer this factory over {@link #define(Unit, String, String, String)} for any unit whose
+     * conversion factor has no finite decimal representation (e.g. {@code 1/3}, {@code 1000/3600}
+     * for {@code km/h -> m/s}, or {@code 1/60} for any per-minute derivative of a per-second base).
+     * Storing the factor as an exact ratio avoids the rounding artifacts that arise from a
+     * pre-rounded decimal scale such as {@code 0.2777777778}; the division is deferred and
+     * executed at conversion time using the active {@link java.math.MathContext}.
+     * </p>
+     *
+     * @param unit        the unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
+     * @param numerator   numerator of the scale factor into base unit; must not be {@code null}
+     * @param denominator denominator of the scale factor into base unit; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
+     */
+    private static UnitSpec defineFraction(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String numerator,
+            @NonNull final String denominator
+    ) {
+        final BigNumber num = new BigNumber(numerator);
+        final BigNumber den = new BigNumber(denominator);
+
+        final ConversionFormula formula = ConversionFormulas.linear(num, den);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+
+        return new UnitSpec(unit, definition, false);
     }
 
     /**
@@ -1112,7 +1228,43 @@ class UnitRegistry {
         final BigNumber scale = new BigNumber(scaleToBase);
         final ConversionFormula formula = ConversionFormulas.reciprocal(scale);
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
-        return new UnitSpec(unit, definition);
+        return new UnitSpec(unit, definition, false);
+    }
+
+    /**
+     * Builds a registry entry whose conversion to the base unit follows the exact rational
+     * reciprocal form:
+     *
+     * <pre>
+     * base = numerator / (value * denominator)
+     * </pre>
+     *
+     * <p>
+     * Prefer this factory over {@link #defineReciprocal(Unit, String, String, String)} when
+     * the reciprocal scale has no finite decimal representation (e.g.
+     * {@code mile / US_gallon = 1609.344 / 3.785411784}). Storing the scale as an exact ratio
+     * avoids the rounding artifacts that arise from a pre-rounded decimal scale.
+     * </p>
+     *
+     * @param unit        unit identifier; must not be {@code null}
+     * @param displayName human-readable display name; must not be {@code null}
+     * @param symbol      unit symbol; must not be {@code null}
+     * @param numerator   numerator of the reciprocal scale; must not be {@code null}
+     * @param denominator denominator of the reciprocal scale; must not be {@code null}
+     * @return the registry entry; never {@code null}
+     */
+    private static UnitSpec defineReciprocalFraction(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String numerator,
+            @NonNull final String denominator
+    ) {
+        final BigNumber num = new BigNumber(numerator);
+        final BigNumber den = new BigNumber(denominator);
+        final ConversionFormula formula = ConversionFormulas.reciprocal(num, den);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+        return new UnitSpec(unit, definition, false);
     }
 
     /**
@@ -1136,7 +1288,8 @@ class UnitRegistry {
     }
 
     /**
-     * Internal immutable pair of a unit identifier and its {@link UnitDefinition}.
+     * Internal immutable triple of a unit identifier, its {@link UnitDefinition}, and a flag
+     * indicating whether this unit is the canonical base unit of its group.
      *
      * <p>
      * This is purely a registry construction artifact to keep {@link #BUILT_IN} readable.
@@ -1144,8 +1297,10 @@ class UnitRegistry {
      *
      * @param unit       the unit identifier
      * @param definition the unit definition
+     * @param base       {@code true} if this unit is the canonical base unit of its group;
+     *                   {@code false} otherwise
      */
-    private record UnitSpec(Unit unit, UnitDefinition definition) {
+    private record UnitSpec(Unit unit, UnitDefinition definition, boolean base) {
     }
 
 }

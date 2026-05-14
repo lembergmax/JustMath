@@ -26,6 +26,9 @@ package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
+
+import java.math.MathContext;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -62,6 +65,31 @@ public class ConversionFormulas {
      */
     public static ConversionFormula linear(@NonNull final BigNumber scale) {
         return affine(scale, BigNumbers.ZERO);
+    }
+
+    /**
+     * Creates an exact rational linear conversion formula of the form:
+     *
+     * <pre>
+     * base = value * numerator / denominator
+     * </pre>
+     *
+     * <p>
+     * Use this factory when the conversion factor has no finite decimal representation
+     * (e.g. {@code 1/3}, {@code 1000/3600} for {@code km/h -> m/s}, or {@code 1/60} for
+     * {@code min -> s} derived units). Storing the factor as an exact ratio avoids
+     * accumulated rounding errors that arise from pre-rounded decimal scale factors:
+     * the division is deferred and performed at conversion time using the caller-supplied
+     * {@link MathContext}.
+     * </p>
+     *
+     * @param numerator   numerator of the scale factor into the base unit; must not be {@code null} and must not be zero
+     * @param denominator denominator of the scale factor into the base unit; must not be {@code null} and must not be zero
+     * @return a conversion formula implementing the exact rational linear mapping; never {@code null}
+     * @throws IllegalArgumentException if {@code numerator} or {@code denominator} is zero
+     */
+    public static ConversionFormula linear(@NonNull final BigNumber numerator, @NonNull final BigNumber denominator) {
+        return new RationalConversionFormula(numerator, denominator);
     }
 
     /**
@@ -111,6 +139,30 @@ public class ConversionFormulas {
      */
     public static ConversionFormula reciprocal(@NonNull final BigNumber scale) {
         return new ReciprocalConversionFormula(scale);
+    }
+
+    /**
+     * Creates an exact rational reciprocal conversion formula of the form:
+     *
+     * <pre>
+     * base = numerator / (value * denominator)
+     * </pre>
+     *
+     * <p>
+     * Use this factory for reciprocal units (e.g. {@code gallon/mile}, {@code L/100 km}) whose
+     * scale is itself a non-terminating ratio (e.g. {@code 1609.344 / 3.785411784}). Storing
+     * the scale as an exact rational pair avoids the rounding artifacts that arise from a
+     * pre-rounded decimal scale: the division is deferred and executed at conversion time
+     * with the caller-supplied {@link MathContext}.
+     * </p>
+     *
+     * @param numerator   numerator of the reciprocal scale; must not be {@code null} and must not be zero
+     * @param denominator denominator of the reciprocal scale; must not be {@code null} and must not be zero
+     * @return a conversion formula implementing the exact rational reciprocal mapping; never {@code null}
+     * @throws IllegalArgumentException if {@code numerator} or {@code denominator} is zero
+     */
+    public static ConversionFormula reciprocal(@NonNull final BigNumber numerator, @NonNull final BigNumber denominator) {
+        return new RationalReciprocalConversionFormula(numerator, denominator);
     }
 
 }

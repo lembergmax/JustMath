@@ -24,10 +24,8 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.calculator.errors.ErrorMode;
-
-import java.util.Locale;
+import com.mlprograms.justmath.converter.Unit;
+import com.mlprograms.justmath.converter.UnitConverter;
 
 public class Main {
 
@@ -41,16 +39,22 @@ public class Main {
 //        System.out.println(convertedToBigNumber);
 //        System.out.println(convertedToUnitValue.getValue());
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        calculatorEngine.setLocale(Locale.FRENCH);
-        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
-        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
-        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
-        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
-        System.out.println(calculatorEngine.evaluateToString("Rec(2;1)"));
+//        final CalculatorEngine calculatorEngine = new CalculatorEngine();
+//        calculatorEngine.setLocale(Locale.FRENCH);
+//        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
+//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
+//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
+//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
+//        System.out.println(calculatorEngine.evaluateToString("Rec(2;1)"));
 
 //        final UnitValue unitValue = new UnitValue("1y");
 //        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
+
+//        System.out.println(
+//                UnitElements.getRegistry().entrySet().stream().filter(unit -> unit.getValue().toString().equals("0"))
+//        );
+
+        System.out.println(new UnitConverter().convert("15", Unit.Speed.KILOMETER_PER_HOUR, Unit.Speed.METER_PER_SECOND));
 
     }
 

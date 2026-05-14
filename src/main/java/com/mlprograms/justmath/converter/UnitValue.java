@@ -26,16 +26,17 @@ package com.mlprograms.justmath.converter;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.math.MathContext;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Immutable value object that couples a numeric {@link BigNumber} with a {@link Unit}.
@@ -276,14 +277,51 @@ public final class UnitValue implements Comparable<UnitValue> {
      * Creates a human-readable representation using a resolved unit symbol.
      *
      * <p>
-     * The numeric format depends on {@link BigNumber#toString()}.
-     * If you require localized formatting, apply it to {@link #value} externally.
+     * The numeric format follows the {@link Locale} stored on the underlying {@link BigNumber}
+     * (i.e. {@link BigNumber#toString()}). For an explicit display locale, prefer
+     * {@link #toDisplayString(Locale)} — converter UIs should pass the user's display locale
+     * to guarantee comma-vs-dot decimal rendering matches the rest of the app.
      * </p>
      *
-     * @return formatted string such as {@code "12.5 km"}; never {@code null}
+     * @return formatted string such as {@code "12.5 km"} (or {@code "12,5 km"} for German); never {@code null}
      */
     public String toDisplayString() {
         return value + " " + toUnitSymbol();
+    }
+
+    /**
+     * Creates a human-readable representation using a resolved unit symbol and the given
+     * {@link Locale} for numeric formatting.
+     *
+     * <p>
+     * Use this overload from a converter UI to render results consistently with the
+     * surrounding app — e.g. {@code Locale.GERMANY} produces {@code "12,5 km"} while
+     * {@code Locale.US} produces {@code "12.5 km"}. This bypasses whatever locale the
+     * underlying {@link BigNumber} happens to carry from its construction or arithmetic
+     * pipeline, so display formatting cannot drift away from the active UI locale.
+     * </p>
+     *
+     * @param locale the display locale for numeric formatting; must not be {@code null}
+     * @return formatted string such as {@code "12,5 km"}; never {@code null}
+     */
+    public String toDisplayString(@NonNull final Locale locale) {
+        return value.toString(locale) + " " + toUnitSymbol();
+    }
+
+    /**
+     * Creates a human-readable representation using a resolved unit symbol and the given
+     * {@link Locale} with digit grouping enabled (pretty-printing).
+     *
+     * <p>
+     * Example: {@code 1234567.89 km} formatted with {@link Locale#GERMANY} becomes
+     * {@code "1.234.567,89 km"}; with {@link Locale#US} it becomes {@code "1,234,567.89 km"}.
+     * </p>
+     *
+     * @param locale the display locale for numeric formatting; must not be {@code null}
+     * @return pretty-printed string; never {@code null}
+     */
+    public String toPrettyDisplayString(@NonNull final Locale locale) {
+        return value.toPrettyString(locale) + " " + toUnitSymbol();
     }
 
     /**
@@ -297,6 +335,21 @@ public final class UnitValue implements Comparable<UnitValue> {
      */
     public String toCompactString() {
         return value + toUnitSymbol();
+    }
+
+    /**
+     * Creates a compact representation without whitespace between number and unit symbol,
+     * using the given {@link Locale} for numeric formatting.
+     *
+     * <p>
+     * Example: with {@link Locale#GERMANY} -> {@code "12,5km"}.
+     * </p>
+     *
+     * @param locale the display locale for numeric formatting; must not be {@code null}
+     * @return compact, locale-aware string representation; never {@code null}
+     */
+    public String toCompactString(@NonNull final Locale locale) {
+        return value.toString(locale) + toUnitSymbol();
     }
 
     /**
