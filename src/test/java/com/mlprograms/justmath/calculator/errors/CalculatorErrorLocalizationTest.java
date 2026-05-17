@@ -242,6 +242,18 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void leadingFactorialIsSyntaxErrorNotProcessingError() {
+        CalculatorEngine raw = new CalculatorEngine();
+        for (String expr : new String[]{"!5", "!", "!sqrt(4)"}) {
+            CalculatorResult<?> result = raw.evaluateSafe(expr);
+            assertTrue(result.isFailure(), expr);
+            assertEquals(CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL,
+                    result.error().orElseThrow().code(), "wrong code for " + expr);
+            assertEquals("Syntax Error", raw.evaluateToString(expr), "wrong RAW for " + expr);
+        }
+    }
+
+    @Test
     void everyCodeHasCategoryAndGenericFallbackEntries() {
         for (Locale locale : new Locale[]{Locale.ENGLISH, Locale.GERMAN}) {
             ResourceBundle bundle = ResourceBundle.getBundle(CalculatorError.BUNDLE_BASENAME, locale);

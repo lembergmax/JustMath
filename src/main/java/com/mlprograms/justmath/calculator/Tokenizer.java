@@ -863,13 +863,23 @@ public class Tokenizer {
 
             if (VALID_OPERATORS_AND_FUNCTIONS.contains(candidate)) {
                 if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
-                    // must not be in the beginning or after another expressionElement
+                    // must not be in the beginning or after another expressionElement.
+                    // Check emptiness BEFORE getLast(): a leading '!' (empty token list)
+                    // would otherwise raise an uncaught NoSuchElementException that is
+                    // misclassified as a generic processing error instead of a syntax error.
+                    if (tokens.isEmpty()) {
+                        throw new SyntaxErrorException(
+                                CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL,
+                                Map.of(),
+                                "Factorial '!' must follow a number, constant, variable, or closing parenthesis",
+                                null);
+                    }
+
                     Token previous = tokens.getLast();
-                    if (tokens.isEmpty() ||
-                            !(previous.getType() == Token.Type.NUMBER
-                                    || previous.getType() == Token.Type.RIGHT_PAREN
-                                    || previous.getType() == Token.Type.VARIABLE
-                                    || previous.getType() == Token.Type.CONSTANT)) {
+                    if (!(previous.getType() == Token.Type.NUMBER
+                            || previous.getType() == Token.Type.RIGHT_PAREN
+                            || previous.getType() == Token.Type.VARIABLE
+                            || previous.getType() == Token.Type.CONSTANT)) {
                         throw new SyntaxErrorException(
                                 CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL,
                                 Map.of(),

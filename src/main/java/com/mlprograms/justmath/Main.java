@@ -43,7 +43,8 @@ public class Main {
 
         final CalculatorEngine calculatorEngine = new CalculatorEngine();
         calculatorEngine.setLocale(Locale.GERMAN);
-        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
+        calculatorEngine.setErrorMode(ErrorMode.RAW);
+        System.out.println(calculatorEngine.evaluateToString("!5"));
         System.out.println(calculatorEngine.evaluateToString("5000ß!sqrt()"));
         System.out.println(calculatorEngine.evaluateToString("5000!sqrt()"));
         System.out.println(calculatorEngine.evaluateToString("5000!*"));
