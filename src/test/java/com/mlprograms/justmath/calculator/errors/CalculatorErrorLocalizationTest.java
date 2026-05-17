@@ -222,6 +222,53 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void structuralValidatorAcceptsValidExpressionsUnchanged() {
+        CalculatorEngine engine = new CalculatorEngine();
+        String[][] cases = {
+                {"1+2", "3"}, {"-1234.56", "-1234.56"}, {"1/2", "0.5"},
+                {"2sin(30)", "1"}, {"2(3+4)", "14"}, {"(2+3)!", "120"},
+                {"sqrt(16)", "4"}, {"summation(1;5;k)", "15"}, {"avg(2;4;6)", "4"},
+                {"sum(1;2;3;4)", "10"}, {"abs(0-7)", "7"}, {"3*-2", "-6"},
+                {"5--3", "8"}, {"rootn(27;3)", "3"},
+        };
+        for (String[] c : cases) {
+            assertEquals(c[1], engine.evaluateToString(c[0]), "valid expression broke: " + c[0]);
+        }
+    }
+
+    @Test
+    void structuralValidatorRejectsMalformedExpressionsWithSpecificCodes() {
+        CalculatorEngine engine = new CalculatorEngine();
+        Object[][] cases = {
+                {"*5", CalculatorErrorCode.SYNTAX_LEADING_OPERATOR},
+                {"/3", CalculatorErrorCode.SYNTAX_LEADING_OPERATOR},
+                {"5+", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                {"50000!/", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                {"50000!*", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                {"()", CalculatorErrorCode.SYNTAX_EMPTY_PARENTHESES},
+                {"sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
+                {"5000!sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
+                {"!5", CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL},
+                {"2!3", CalculatorErrorCode.SYNTAX_UNEXPECTED_END},
+                {"rootn(27)", CalculatorErrorCode.SYNTAX_MISSING_OPERAND},
+                {"sqrt(1;2)", CalculatorErrorCode.SYNTAX_UNEXPECTED_END},
+                {"(2+3", CalculatorErrorCode.SYNTAX_UNMATCHED_PAREN},
+                {"2+3)", CalculatorErrorCode.SYNTAX_UNMATCHED_PAREN},
+                {"5;3", CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR},
+        };
+        for (Object[] c : cases) {
+            String expr = (String) c[0];
+            long start = System.nanoTime();
+            CalculatorResult<?> result = engine.evaluateSafe(expr);
+            long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+            assertTrue(result.isFailure(), "expected failure for: " + expr);
+            assertEquals(c[1], result.error().orElseThrow().code(), "wrong code for: " + expr);
+            assertTrue(elapsedMs < 2_000,
+                    "did not fail fast (" + elapsedMs + " ms) for: " + expr);
+        }
+    }
+
+    @Test
     void emptyFunctionArgumentAfterFactorialFailsFastWithSpecificMessage() {
         CalculatorEngine engine = new CalculatorEngine();
         long start = System.nanoTime();

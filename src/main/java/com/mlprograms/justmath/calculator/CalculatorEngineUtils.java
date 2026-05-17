@@ -28,8 +28,15 @@ import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.Constant;
+import com.mlprograms.justmath.calculator.expression.elements.function.CoordinateFunction;
+import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
+import com.mlprograms.justmath.calculator.expression.elements.function.TwoArgumentFunction;
+import com.mlprograms.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
+import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
 
@@ -207,23 +214,67 @@ public class CalculatorEngineUtils {
     }
 
     /**
-     * Rejects an expression whose last meaningful token is a binary operator (e.g. the
-     * trailing {@code /} in {@code 50000!/}). Such an expression can never reduce to a
-     * value because the operator is missing its right operand.
+     * Structural validation of the <em>final</em> (post implicit-multiplication) infix
+     * token list, run <em>before</em> variable substitution and the evaluator. It
+     * rejects the structural defects that the postfix form can no longer see because
+     * the shunting-yard parser discards parentheses:
+     * <ul>
+     *   <li>an empty parenthesis pair after a function — {@code sqrt()} — every
+     *       function here needs at least one argument
+     *       ({@link CalculatorErrorCode#SYNTAX_EMPTY_FUNCTION_ARGUMENT});</li>
+     *   <li>a bare empty parenthesis pair {@code ()}
+     *       ({@link CalculatorErrorCode#SYNTAX_EMPTY_PARENTHESES});</li>
+     *   <li>a leading binary operator — {@code *5}, {@code /3} — (unary {@code +}/{@code -}
+     *       are allowed) ({@link CalculatorErrorCode#SYNTAX_LEADING_OPERATOR});</li>
+     *   <li>a trailing binary operator — {@code 5+}, {@code 50000!/}
+     *       ({@link CalculatorErrorCode#SYNTAX_TRAILING_OPERATOR}).</li>
+     * </ul>
      *
      * <p>
-     * This check runs <em>before</em> the postfix evaluator. Without it the evaluator
-     * would first execute everything to the left of the dangling operator — including
-     * an arbitrarily expensive {@code !} (factorial) — only to fail afterwards with a
-     * stack-underflow syntax error. Failing fast here avoids that wasted computation.
+     * Catching these here means an expensive left-hand subexpression (such as a large
+     * {@code !}) is never computed for an expression that cannot yield a result, and the
+     * user gets a precise message instead of a wrong value or a generic error.
+     * Everything that survives this check is handled by the arity dry-run
+     * {@link #validatePostfixArity(List)}.
      * </p>
      *
      * @param tokens the tokenized (infix) expression; must not be {@code null}
-     * @throws SyntaxErrorException if the final token is a binary operator
+     * @throws SyntaxErrorException on any of the structural defects listed above
      */
-    static void validateNoTrailingBinaryOperator(@NonNull final List<Token> tokens) {
+    static void validateInfixStructure(@NonNull final List<Token> tokens) {
         if (tokens.isEmpty()) {
             return;
+        }
+
+        for (int i = 0; i + 1 < tokens.size(); i++) {
+            if (tokens.get(i).getType() == Token.Type.LEFT_PAREN
+                    && tokens.get(i + 1).getType() == Token.Type.RIGHT_PAREN) {
+                if (i > 0 && tokens.get(i - 1).getType() == Token.Type.FUNCTION) {
+                    final String function = tokens.get(i - 1).getValue();
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT,
+                            Map.of("function", function),
+                            "Function '" + function + "' was called without an argument",
+                            null);
+                }
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_EMPTY_PARENTHESES,
+                        Map.of(),
+                        "Empty parentheses '()' with no content",
+                        null);
+            }
+        }
+
+        final Token first = tokens.get(0);
+        if (first.getType() == Token.Type.OPERATOR
+                && isBinaryOperatorSymbol(first.getValue())
+                && !isUnarySignSymbol(first.getValue())) {
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.SYNTAX_LEADING_OPERATOR,
+                    Map.of("operator", first.getValue()),
+                    "Expression starts with operator '" + first.getValue()
+                            + "' which is missing its left operand",
+                    null);
         }
 
         final Token last = tokens.get(tokens.size() - 1);
@@ -238,33 +289,155 @@ public class CalculatorEngineUtils {
     }
 
     /**
-     * Rejects a function call with an empty parenthesis pair (e.g. {@code "sqrt()"} or
-     * the {@code sqrt()} inside {@code "5000!sqrt()"}). Every function in this engine
-     * requires at least one argument, so an empty call can never produce a value.
+     * Arity-aware dry run over the postfix (RPN) token list. It mirrors the operand
+     * stack of {@link Evaluator} using <em>counts only</em> — no arithmetic is
+     * performed — so it detects an under-supplied operator/function or leftover
+     * operands <em>before</em> the evaluator computes anything (no wasted
+     * {@code 50000!}).
+     *
+     * <ul>
+     *   <li>operator/function with too few operands →
+     *       {@link CalculatorErrorCode#SYNTAX_MISSING_OPERAND} (parameter
+     *       {@code operator});</li>
+     *   <li>a variadic function whose declared argument count exceeds the available
+     *       operands → {@link CalculatorErrorCode#SYNTAX_WRONG_ARGUMENT_COUNT};</li>
+     *   <li>more than one value left at the end (missing operator between
+     *       sub-expressions, too many function arguments) →
+     *       {@link CalculatorErrorCode#SYNTAX_UNEXPECTED_END}.</li>
+     * </ul>
      *
      * <p>
-     * Like {@link #validateNoTrailingBinaryOperator(List)} this runs <em>before</em> the
-     * evaluator. Without it the postfix parser silently drops the empty parentheses, the
-     * evaluator applies the function to whatever happens to be on the stack (e.g. an
-     * arbitrarily expensive {@code 5000!}) and returns a wrong result instead of an
-     * error.
+     * Unknown symbols are skipped so that {@link Evaluator} can raise the precise
+     * {@code SYNTAX_UNKNOWN_FUNCTION}. The check is deliberately conservative: when an
+     * injected variadic argument count cannot be read it consumes a single operand
+     * instead of guessing, so a valid expression is never rejected.
      * </p>
      *
-     * @param tokens the tokenized (infix) expression; must not be {@code null}
-     * @throws SyntaxErrorException if a {@code FUNCTION ( )} sequence is found
+     * @param postfix the postfix token list produced by the shunting-yard parser;
+     *                must not be {@code null}
+     * @throws SyntaxErrorException if the token stream cannot reduce to a single value
      */
-    static void validateNoEmptyFunctionArgument(@NonNull final List<Token> tokens) {
-        for (int i = 0; i + 2 < tokens.size(); i++) {
-            if (tokens.get(i).getType() == Token.Type.FUNCTION
-                    && tokens.get(i + 1).getType() == Token.Type.LEFT_PAREN
-                    && tokens.get(i + 2).getType() == Token.Type.RIGHT_PAREN) {
-                final String function = tokens.get(i).getValue();
-                throw new SyntaxErrorException(
-                        CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT,
-                        Map.of("function", function),
-                        "Function '" + function + "' was called without an argument",
-                        null);
+    static void validatePostfixArity(@NonNull final List<Token> postfix) {
+        // Stack of operand "value hints": the literal int for NUMBER tokens (used to
+        // read the variadic argument-count token the parser injects), {@code null}
+        // otherwise. An ArrayList is used because it tolerates null entries
+        // (ArrayDeque does not).
+        final List<Integer> stack = new java.util.ArrayList<>();
+
+        for (final Token token : postfix) {
+            switch (token.getType()) {
+                case NUMBER -> stack.add(parseIntOrNull(token.getValue()));
+                case STRING, VARIABLE, CONSTANT -> stack.add(null);
+                case OPERATOR, FUNCTION -> {
+                    final ExpressionElement element =
+                            ExpressionElements.findBySymbol(token.getValue()).orElse(null);
+                    if (element == null) {
+                        // Unknown symbol: let the evaluator raise SYNTAX_UNKNOWN_FUNCTION.
+                        return;
+                    }
+                    if (element instanceof Constant) {
+                        stack.add(null);
+                        continue;
+                    }
+                    if (element instanceof UnlimitedArgumentFunction) {
+                        if (stack.isEmpty()) {
+                            throw missingOperand(token.getValue());
+                        }
+                        final Integer count = stack.remove(stack.size() - 1);
+                        final int consume = (count == null) ? 1 : Math.max(count, 0);
+                        if (count != null && stack.size() < consume) {
+                            throw new SyntaxErrorException(
+                                    CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT,
+                                    Map.of("function", token.getValue(),
+                                            "expected", String.valueOf(consume),
+                                            "actual", String.valueOf(stack.size())),
+                                    "Function '" + token.getValue() + "' expected " + consume
+                                            + " arguments but only " + stack.size() + " are available",
+                                    null);
+                        }
+                        final int toRemove = Math.min(consume, stack.size());
+                        for (int k = 0; k < toRemove; k++) {
+                            stack.remove(stack.size() - 1);
+                        }
+                        stack.add(null);
+                        continue;
+                    }
+                    final int need = operandCountOf(element);
+                    if (stack.size() < need) {
+                        throw missingOperand(token.getValue());
+                    }
+                    for (int k = 0; k < need; k++) {
+                        stack.remove(stack.size() - 1);
+                    }
+                    stack.add(null);
+                }
+                default -> {
+                    // SEMICOLON / parentheses never appear in postfix output.
+                }
             }
+        }
+
+        if (stack.size() != 1) {
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.SYNTAX_UNEXPECTED_END,
+                    Map.of(),
+                    "Incomplete expression: expected a single result but found " + stack.size(),
+                    null);
+        }
+    }
+
+    /**
+     * Builds a {@link SyntaxErrorException} for an operator or function that is missing
+     * an operand during the arity dry run.
+     *
+     * @param symbol the operator/function symbol; must not be {@code null}
+     * @return the prepared exception
+     */
+    private static SyntaxErrorException missingOperand(final String symbol) {
+        return new SyntaxErrorException(
+                CalculatorErrorCode.SYNTAX_MISSING_OPERAND,
+                Map.of("operator", symbol),
+                "Incomplete expression: operator or function '" + symbol + "' is missing an operand",
+                null);
+    }
+
+    /**
+     * Returns the number of operands the given non-variadic, non-constant element
+     * consumes from the stack.
+     *
+     * @param element the resolved expression element; must not be {@code null}
+     * @return {@code 1}, {@code 2} or {@code 3}
+     */
+    private static int operandCountOf(@NonNull final ExpressionElement element) {
+        if (element instanceof PostfixUnaryOperator) {
+            return 1;
+        }
+        if (element instanceof BinaryOperator
+                || element instanceof SimpleBinaryOperator
+                || element instanceof TwoArgumentFunction
+                || element instanceof CoordinateFunction) {
+            return 2;
+        }
+        if (element instanceof ThreeArgumentFunction) {
+            return 3;
+        }
+        // Remaining functions (sqrt, sin, ln, abs, gamma, …) take exactly one argument.
+        return 1;
+    }
+
+    /**
+     * Parses a token value as a non-negative {@code int}, returning {@code null} when
+     * it is not a plain integer literal (used to read the variadic argument-count token
+     * the shunting-yard parser injects before unlimited functions).
+     *
+     * @param value the token value; must not be {@code null}
+     * @return the parsed integer, or {@code null} if not a plain integer
+     */
+    private static Integer parseIntOrNull(@NonNull final String value) {
+        try {
+            return Integer.valueOf(value.trim());
+        } catch (NumberFormatException notAnInt) {
+            return null;
         }
     }
 
@@ -279,6 +452,17 @@ public class CalculatorEngineUtils {
         return ExpressionElements.findBySymbol(symbol)
                 .map(element -> element instanceof BinaryOperator || element instanceof SimpleBinaryOperator)
                 .orElse(false);
+    }
+
+    /**
+     * Whether the symbol is {@code +} or {@code -}, which are valid as a unary sign at
+     * the start of an expression (e.g. {@code -5}).
+     *
+     * @param symbol the operator symbol
+     * @return {@code true} for {@code "+"} or {@code "-"}
+     */
+    private static boolean isUnarySignSymbol(final String symbol) {
+        return ExpressionElements.OP_PLUS.equals(symbol) || ExpressionElements.OP_MINUS.equals(symbol);
     }
 
     /**

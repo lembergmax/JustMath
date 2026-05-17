@@ -99,6 +99,18 @@ public enum CalculatorErrorCode {
     SYNTAX_MISSING_OPERAND("error.syntax.missingOperand", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
+     * The expression starts with a binary operator that has no left-hand operand
+     * (for example {@code "*5"} or {@code "/3"}). Parameter: {@code operator}.
+     */
+    SYNTAX_LEADING_OPERATOR("error.syntax.leadingOperator", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
+
+    /**
+     * An empty pair of parentheses {@code ()} appears where a value is required and it
+     * is not a function call.
+     */
+    SYNTAX_EMPTY_PARENTHESES("error.syntax.emptyParentheses", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
+
+    /**
      * A function was called with an empty parenthesis pair (e.g. {@code "sqrt()"}).
      * Every function in this engine requires at least one argument. Parameter:
      * {@code function}.

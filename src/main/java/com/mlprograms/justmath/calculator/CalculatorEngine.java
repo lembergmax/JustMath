@@ -406,17 +406,30 @@ public class CalculatorEngine {
             if (cachedTokens != null) {
                 tokens = new ArrayList<>(cachedTokens);
             } else {
-                tokens = tokenizer.tokenize(normalized);
+                try {
+                    tokens = tokenizer.tokenize(normalized);
+                } catch (final CalculatorException calculatorException) {
+                    throw calculatorException;
+                } catch (final RuntimeException tokenizerFailure) {
+                    // Any unchecked failure from the tokenizer is a malformed-input
+                    // problem, not an internal processing error: classify it as a
+                    // syntax error so it never surfaces as "Processing Error".
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+                            Map.of(),
+                            Objects.requireNonNullElse(tokenizerFailure.getMessage(),
+                                    "Malformed expression"),
+                            null);
+                }
                 if (expressionCacheEnabled) {
                     storeCache(normalized, List.copyOf(tokens));
                 }
             }
 
-            // Reject a dangling trailing binary operator (e.g. "50000!/") before the
-            // evaluator runs, so an expensive left-hand subexpression like a large
-            // factorial is never computed for an expression that cannot yield a result.
-            validateNoTrailingBinaryOperator(tokens);
-            validateNoEmptyFunctionArgument(tokens);
+            // Structural pre-checks run BEFORE variable substitution and the evaluator,
+            // so an expensive subexpression (e.g. a large factorial) is never computed
+            // for an expression that cannot yield a result.
+            validateInfixStructure(tokens);
 
             try {
                 replaceVariables(this, tokens, combinedVariables);
@@ -430,7 +443,23 @@ public class CalculatorEngine {
                         null);
             }
 
-            List<Token> postfix = postfixParser.toPostfix(tokens);
+            final List<Token> postfix;
+            try {
+                postfix = postfixParser.toPostfix(tokens);
+            } catch (final CalculatorException calculatorException) {
+                throw calculatorException;
+            } catch (final RuntimeException parserFailure) {
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+                        Map.of(),
+                        Objects.requireNonNullElse(parserFailure.getMessage(), "Malformed expression"),
+                        null);
+            }
+
+            // Arity dry run: reject under-supplied operators / leftover operands before
+            // the evaluator performs any (potentially expensive) computation.
+            validatePostfixArity(postfix);
+
             try {
                 return evaluator.evaluate(postfix).trim();
             } catch (final CalculatorException calculatorException) {
