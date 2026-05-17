@@ -222,6 +222,26 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void emptyFunctionArgumentAfterFactorialFailsFastWithSpecificMessage() {
+        CalculatorEngine engine = new CalculatorEngine();
+        long start = System.nanoTime();
+        CalculatorResult<?> result = engine.evaluateSafe("5000!sqrt()");
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertTrue(result.isFailure());
+        assertEquals(CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT,
+                result.error().orElseThrow().code());
+        assertTrue(elapsedMs < 2_000,
+                "empty-function pre-check did not short-circuit; took " + elapsedMs + " ms");
+
+        String de = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY)
+                .evaluateToString("5000!sqrt()");
+        assertEquals("Funktion 'sqrt' wurde ohne Argument aufgerufen.", de);
+    }
+
+    @Test
     void everyCodeHasCategoryAndGenericFallbackEntries() {
         for (Locale locale : new Locale[]{Locale.ENGLISH, Locale.GERMAN}) {
             ResourceBundle bundle = ResourceBundle.getBundle(CalculatorError.BUNDLE_BASENAME, locale);

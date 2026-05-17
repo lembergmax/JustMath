@@ -416,6 +416,7 @@ public class CalculatorEngine {
             // evaluator runs, so an expensive left-hand subexpression like a large
             // factorial is never computed for an expression that cannot yield a result.
             validateNoTrailingBinaryOperator(tokens);
+            validateNoEmptyFunctionArgument(tokens);
 
             try {
                 replaceVariables(this, tokens, combinedVariables);

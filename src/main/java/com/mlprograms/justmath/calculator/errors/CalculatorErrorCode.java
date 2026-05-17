@@ -99,6 +99,13 @@ public enum CalculatorErrorCode {
     SYNTAX_MISSING_OPERAND("error.syntax.missingOperand", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
+     * A function was called with an empty parenthesis pair (e.g. {@code "sqrt()"}).
+     * Every function in this engine requires at least one argument. Parameter:
+     * {@code function}.
+     */
+    SYNTAX_EMPTY_FUNCTION_ARGUMENT("error.syntax.emptyFunctionArgument", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
+
+    /**
      * The expression did not reduce to a single result (dangling operands / missing
      * operator between sub-expressions).
      */

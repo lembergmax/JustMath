@@ -238,6 +238,37 @@ public class CalculatorEngineUtils {
     }
 
     /**
+     * Rejects a function call with an empty parenthesis pair (e.g. {@code "sqrt()"} or
+     * the {@code sqrt()} inside {@code "5000!sqrt()"}). Every function in this engine
+     * requires at least one argument, so an empty call can never produce a value.
+     *
+     * <p>
+     * Like {@link #validateNoTrailingBinaryOperator(List)} this runs <em>before</em> the
+     * evaluator. Without it the postfix parser silently drops the empty parentheses, the
+     * evaluator applies the function to whatever happens to be on the stack (e.g. an
+     * arbitrarily expensive {@code 5000!}) and returns a wrong result instead of an
+     * error.
+     * </p>
+     *
+     * @param tokens the tokenized (infix) expression; must not be {@code null}
+     * @throws SyntaxErrorException if a {@code FUNCTION ( )} sequence is found
+     */
+    static void validateNoEmptyFunctionArgument(@NonNull final List<Token> tokens) {
+        for (int i = 0; i + 2 < tokens.size(); i++) {
+            if (tokens.get(i).getType() == Token.Type.FUNCTION
+                    && tokens.get(i + 1).getType() == Token.Type.LEFT_PAREN
+                    && tokens.get(i + 2).getType() == Token.Type.RIGHT_PAREN) {
+                final String function = tokens.get(i).getValue();
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT,
+                        Map.of("function", function),
+                        "Function '" + function + "' was called without an argument",
+                        null);
+            }
+        }
+    }
+
+    /**
      * Determines whether the given operator symbol denotes a binary operator (two
      * operands), as opposed to the postfix unary {@code !} factorial operator.
      *
