@@ -46,14 +46,19 @@ import lombok.NoArgsConstructor;
 public class PostfixParser {
 
     /**
-     * Checks if the given expression element is a right-associative operator.
-     * Currently, only the power operator (^) is considered right-associative.
+     * Checks if the given expression element is a right-associative operator. The
+     * power operator ({@code ^}) and the prefix unary operators are right-associative
+     * (the latter so that chained signs such as {@code --5} stack as
+     * {@code -(-(5))} instead of underflowing).
      *
      * @param expressionElement the expression element to check
      * @return true if the operator is right-associative, false otherwise
      */
     private static boolean isRightAssociativeOperator(ExpressionElement expressionElement) {
-        return expressionElement.getSymbol().equals(ExpressionElements.OP_POWER);
+        final String symbol = expressionElement.getSymbol();
+        return symbol.equals(ExpressionElements.OP_POWER)
+                || symbol.equals(ExpressionElements.OP_UNARY_MINUS)
+                || symbol.equals(ExpressionElements.OP_UNARY_PLUS);
     }
 
     /**

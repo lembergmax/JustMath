@@ -177,10 +177,21 @@ public class Tokenizer {
 
         while (index < expression.length()) {
             char character = expression.charAt(index);
+
+            // A whitespace boundary marker only forces a token split; consume and skip.
+            if (character == WHITESPACE_BOUNDARY) {
+                index++;
+                continue;
+            }
+
             Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
+            } else if (isUnarySignStart(expression, index, tokens)) {
+                tokens.add(new Token(Token.Type.OPERATOR,
+                        character == '-' ? ExpressionElements.OP_UNARY_MINUS : ExpressionElements.OP_UNARY_PLUS));
+                index++;
             } else if (isLeftParenthesis(character)) {
                 tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(character)));
                 index++;
@@ -568,6 +579,84 @@ public class Tokenizer {
     }
 
     /**
+     * Boundary marker injected by {@link #removeWhitespace(String)} where whitespace
+     * separates two operand characters. It is a non-typeable control character that
+     * acts purely as a hard token boundary and is skipped by the main scan loop.
+     */
+    private static final char WHITESPACE_BOUNDARY = '';
+
+    /**
+     * Decides whether a {@code '+'} or {@code '-'} at {@code index} is a <em>prefix
+     * unary</em> sign applied to a following non-numeric operand (a parenthesised
+     * group, a function call, a constant or a variable) — e.g. the leading {@code -}
+     * in {@code -(3+4)}, {@code -sin(0)}, {@code -x} or {@code 2*-(1+1)}.
+     *
+     * <p>
+     * A signed <em>number</em> literal (e.g. {@code -5}) is still folded into the
+     * number by {@link #isSignedNumberStart(String, int, List)} and is therefore
+     * excluded here. After a {@code NUMBER}, {@code RIGHT_PAREN}, {@code CONSTANT} or
+     * {@code VARIABLE} the sign is binary; after the postfix factorial {@code !} it is
+     * binary too ({@code 3!-2}); otherwise (start, after {@code (}, a binary/prefix
+     * operator, a function or {@code ;}) it is unary.
+     * </p>
+     *
+     * @param expression the full (whitespace-normalised) expression; must not be {@code null}
+     * @param index      position of the candidate sign character
+     * @param tokens     tokens produced so far; must not be {@code null}
+     * @return {@code true} if the sign should be emitted as a prefix unary operator
+     */
+    private boolean isUnarySignStart(final String expression, final int index, final List<Token> tokens) {
+        final char c = expression.charAt(index);
+        if (c != '+' && c != '-') {
+            return false;
+        }
+        if (isSignedNumberStart(expression, index, tokens)) {
+            return false;
+        }
+        if (tokens.isEmpty()) {
+            return true;
+        }
+        final Token previous = tokens.get(tokens.size() - 1);
+        switch (previous.getType()) {
+            case NUMBER, RIGHT_PAREN, CONSTANT, VARIABLE -> {
+                return false;
+            }
+            case OPERATOR -> {
+                // Binary after the postfix factorial ("3!-2"); unary after any other
+                // operator, including a preceding prefix unary ("--x").
+                return !ExpressionElements.OP_FACTORIAL.equals(previous.getValue());
+            }
+            default -> {
+                // LEFT_PAREN, FUNCTION, SEMICOLON
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Whether {@code c} can be part of an operand literal (digit, ASCII letter or the
+     * decimal point) — used to decide whether whitespace between two such characters
+     * is a forbidden silent merge such as {@code "3 4"}.
+     *
+     * @param c the character to test
+     * @return {@code true} for {@code 0-9}, {@code A-Z}, {@code a-z} or {@code '.'}
+     */
+    private static boolean isOperandChar(final char c) {
+        return (c >= '0' && c <= '9') || isAsciiLetter(c) || c == '.';
+    }
+
+    /**
+     * Whether {@code c} is an ASCII letter ({@code A-Z} or {@code a-z}); the permitted
+     * character set for variable names.
+     *
+     * @param c the character to test
+     * @return {@code true} for {@code A-Z} or {@code a-z}
+     */
+    private static boolean isAsciiLetter(final char c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+    }
+
+    /**
      * Build an array of candidates representing registered three-argument functions.
      *
      * <p>This method performs two passes over the {@link ExpressionElements#getRegistry()}:
@@ -667,10 +756,28 @@ public class Tokenizer {
             final char charAt = input.charAt(i);
             if (!Character.isWhitespace(charAt)) {
                 stringBuilder.append(charAt);
+                continue;
             }
+            // Whitespace is a separator, not a no-op: when it sits directly between
+            // two operand characters (letter/digit/'.' on BOTH sides) the operands
+            // must not silently merge ("3 4" must not become "34"). A boundary
+            // sentinel is inserted so they stay separate tokens; the structural
+            // validator then reports the missing operator.
+            int j = i;
+            while (j < length && Character.isWhitespace(input.charAt(j))) {
+                j++;
+            }
+            if (j < length && stringBuilder.length() > 0
+                    && isOperandChar(stringBuilder.charAt(stringBuilder.length() - 1))
+                    && isOperandChar(input.charAt(j))) {
+                stringBuilder.append(WHITESPACE_BOUNDARY);
+            }
+            i = j - 1;
         }
 
-        return stringBuilder.length() == length ? input : stringBuilder.toString();
+        // Note: a space may be replaced 1:1 by the boundary sentinel, so the length
+        // can stay equal while the content changed — always return the rebuilt string.
+        return stringBuilder.toString();
     }
 
     /**
@@ -899,7 +1006,11 @@ public class Tokenizer {
         }
 
         StringBuilder variable = new StringBuilder();
-        while (startIndex < expression.length() && Character.isLetter(expression.charAt(startIndex))) {
+        // Variable names are restricted to ASCII letters. Registered non-ASCII symbols
+        // (pi, the square-root sign, Greek letters, etc.) are matched earlier via the
+        // registry; any remaining non-ASCII character is a genuine invalid character
+        // and is reported as such by the caller instead of becoming an unknown variable.
+        while (startIndex < expression.length() && isAsciiLetter(expression.charAt(startIndex))) {
             variable.append(expression.charAt(startIndex));
             startIndex++;
         }

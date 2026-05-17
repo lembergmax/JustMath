@@ -252,6 +252,55 @@ Error messages can be rendered in two modes via **`ErrorMode`**:
 The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
 `setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
 
+### 🧱 Error Categories & Three-Tier Fallback
+
+Every `CalculatorErrorCode` belongs to a **Casio-style category**. In `USER_FRIENDLY`
+mode the message is resolved in three tiers, so a missing translation never leaks an
+internal/English detail string:
+
+1. the **specific** message for the code (e.g. *“Factorial is undefined for negative numbers.”*);
+2. otherwise the **category** message — `Syntax Error`, `Math Error`, `Argument Error`,
+   `Stack Error`, `Range Error`, `Dimension Error`;
+3. otherwise a top-level **generic** message.
+
+In `RAW` mode `Throwable.getMessage()` returns the stable category label.
+
+> ⚠️ **Behaviour change (1.5.0):** division-by-zero and domain errors moved from the
+> `Processing Error` category to **`Math Error`**. In `RAW` mode their
+> `Throwable.getMessage()` is now `"Math Error"` (was `"Processing Error"`). The typed
+> `CalculatorErrorCode` values (`PROCESSING_DIVISION_BY_ZERO`, `PROCESSING_DOMAIN_ERROR`,
+> …) are unchanged — prefer branching on the code, not on the message string.
+
+### 🧪 Expression Syntax & Structural Validation
+
+Malformed input is rejected by a structural pre-pass **before** any (potentially
+expensive) evaluation — e.g. `50000!/` fails instantly instead of computing the
+factorial first. Each defect maps to a specific code:
+
+| Input | Result |
+|-------|--------|
+| `*5`, `/3` | `SYNTAX_LEADING_OPERATOR` |
+| `5+`, `50000!/` | `SYNTAX_TRAILING_OPERATOR` |
+| `()` | `SYNTAX_EMPTY_PARENTHESES` |
+| `sqrt()` | `SYNTAX_EMPTY_FUNCTION_ARGUMENT` |
+| `3 4` (whitespace), `5!sqrt(4)` | `SYNTAX_MISSING_OPERATOR` |
+| `sqrt(1;2)`, `atan2(1)`, `logbase(8)` | `SYNTAX_WRONG_ARGUMENT_COUNT` |
+| `!5`, `5!!` | `SYNTAX_INVALID_FACTORIAL` |
+
+Syntax rules to be aware of:
+
+- **Unary `+` / `-`** is supported before a group, function, constant or variable:
+  `-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`. It is right-associative and binds looser than
+  `^`, so `-3^2` follows the leading-signed-number rule while `-(3)^2 == -(3^2)`.
+- **Whitespace is a separator, not a no-op.** `1 + 2` is fine, but `3 4` is *not* `34`
+  — two operands with no operator is `SYNTAX_MISSING_OPERATOR`.
+- **No implicit multiplication after `!`.** `5!sqrt(4)` is an error, not `5! · sqrt(4)`
+  (write `5!*sqrt(4)`).
+- **Variable names are ASCII letters only.** Any other non-registered character
+  (e.g. `ß`, `±`) is reported as `SYNTAX_INVALID_CHARACTER` with its position.
+- **Coordinate functions** (`Pol`, `Rec`) intentionally return a `MultiValueResult`
+  rendered as `"r=…; θ=…"` / `"x=…; y=…"`.
+
 ### 🔣 Localized Result Formatting
 
 `setLocale(Locale)` controls error message language **and** the decimal/grouping separators
@@ -948,6 +997,23 @@ Cannot wait? Just download the latest jar:
 </table>
 
 Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
+
+## 🆕 Changelog
+
+### 1.5.0
+
+- **Structural validation** runs before evaluation: malformed input fails fast with a
+  specific `CalculatorErrorCode` instead of computing an expensive sub-expression or
+  returning a misclassified *Processing Error* (`50000!/`, `5000!sqrt()`, `!5`, `*5`,
+  `()`, `3 4`, `sqrt(1;2)`, …).
+- **Prefix unary `+` / `-`** before groups, functions, constants and variables
+  (`-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`).
+- **Casio-style error categories** (`Syntax`, `Math`, `Argument`, `Stack`, `Range`,
+  `Dimension`) with a specific → category → generic three-tier localized fallback.
+- **Whitespace is now a separator** (`3 4` is an error, not `34`); variable names are
+  restricted to ASCII letters; no implicit multiplication after `!`.
+- ⚠️ Division-by-zero / domain errors recategorized to **`Math Error`** — `RAW`
+  `getMessage()` changed for these (typed codes unchanged).
 
 ## 📜 License
 

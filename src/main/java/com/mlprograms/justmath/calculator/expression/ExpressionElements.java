@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -30,17 +30,16 @@ import com.mlprograms.justmath.calculator.expression.elements.Constant;
 import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
 import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.*;
-import com.mlprograms.justmath.calculator.expression.elements.*;
-import com.mlprograms.justmath.calculator.expression.elements.function.*;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
-import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import lombok.Getter;
 
 /**
  * Utility class for managing all supported mathematical expression elements.
@@ -78,6 +77,15 @@ public class ExpressionElements {
     public static final String OP_COMBINATION = "nCr";
     //
     public static final String OP_FACTORIAL = "!";
+    /**
+     * Internal prefix unary operators. The symbols are Private-Use-Area code points
+     * (written as Unicode escapes) so they can never appear in user input nor collide
+     * with any real operator, while still being resolvable via the registry for
+     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
+     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
+     */
+    public static final String OP_UNARY_MINUS = "";
+    public static final String OP_UNARY_PLUS = "";
     public static final String FUNC_SQRT = "sqrt";
     public static final String FUNC_SQRT_S = "√";
     public static final String FUNC_CBRT = "cbrt";
@@ -174,6 +182,12 @@ public class ExpressionElements {
                 new BinaryOperator(OP_COMBINATION, 6, BigNumber::combination),
                 //
                 new PostfixUnaryOperator(OP_FACTORIAL, 5, BigNumber::factorial),
+                // Prefix unary operators (precedence 4: binds looser than '!' (5) and,
+                // being right-associative like '^' (4), yields -3^2 == -(3^2)). The
+                // zero guard avoids a cosmetic "-0" from negate().
+                new PostfixUnaryOperator(OP_UNARY_MINUS, 4,
+                        (value, mathContext, locale) -> value.signum() == 0 ? value : value.negate()),
+                new PostfixUnaryOperator(OP_UNARY_PLUS, 4, (value, mathContext, locale) -> value),
                 new OneArgumentFunction(FUNC_SQRT, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_SQRT_S, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_CBRT, 4, BigNumber::cubicRoot),

@@ -111,6 +111,13 @@ public enum CalculatorErrorCode {
     SYNTAX_EMPTY_PARENTHESES("error.syntax.emptyParentheses", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
 
     /**
+     * Two operands are juxtaposed with no connecting operator and no implied
+     * multiplication — e.g. {@code "3 4"} (whitespace-separated numbers) or the
+     * {@code 5!sqrt(4)} case (no implicit {@code *} after a postfix {@code !}).
+     */
+    SYNTAX_MISSING_OPERATOR("error.syntax.missingOperator", "error.category.syntax", CustomExceptionMessages.SYNTAX_ERROR),
+
+    /**
      * A function was called with an empty parenthesis pair (e.g. {@code "sqrt()"}).
      * Every function in this engine requires at least one argument. Parameter:
      * {@code function}.

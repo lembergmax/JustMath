@@ -265,6 +265,41 @@ public class CalculatorEngineUtils {
             }
         }
 
+        validateFunctionArgumentCounts(tokens);
+
+        for (int i = 0; i + 1 < tokens.size(); i++) {
+            final Token a = tokens.get(i);
+            final Token b = tokens.get(i + 1);
+            // Two number literals with no operator and no implied multiplication
+            // between them — e.g. the whitespace-separated "3 4". (Tokenizer implicit
+            // multiplication already bridges every legitimate juxtaposition, so any
+            // residual NUMBER->NUMBER adjacency is a genuine missing operator.)
+            // Note: a three-argument function (summation/product) is pre-expanded by
+            // the tokenizer to NUMBER NUMBER STRING FUNCTION — that legitimate
+            // NUMBER->NUMBER pair is identified by a following STRING and excluded.
+            final boolean threeArgExpansion =
+                    i + 2 < tokens.size() && tokens.get(i + 2).getType() == Token.Type.STRING;
+            final boolean numberNumber = !threeArgExpansion
+                    && a.getType() == Token.Type.NUMBER && b.getType() == Token.Type.NUMBER;
+            // A postfix factorial is value-producing; there is deliberately no implicit
+            // multiplication after '!', so "2!3" / "5!sqrt(4)" are missing an operator.
+            final boolean factorialThenOperand =
+                    a.getType() == Token.Type.OPERATOR
+                            && ExpressionElements.OP_FACTORIAL.equals(a.getValue())
+                            && (b.getType() == Token.Type.NUMBER
+                            || b.getType() == Token.Type.CONSTANT
+                            || b.getType() == Token.Type.VARIABLE
+                            || b.getType() == Token.Type.FUNCTION
+                            || b.getType() == Token.Type.LEFT_PAREN);
+            if (numberNumber || factorialThenOperand) {
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_MISSING_OPERATOR,
+                        Map.of(),
+                        "Two operands are not connected by an operator",
+                        null);
+            }
+        }
+
         final Token first = tokens.get(0);
         if (first.getType() == Token.Type.OPERATOR
                 && isBinaryOperatorSymbol(first.getValue())
@@ -286,6 +321,95 @@ public class CalculatorEngineUtils {
                             + "' is missing its right operand",
                     null);
         }
+    }
+
+    /**
+     * Validates the number of {@code ;}-separated arguments of every parenthesised
+     * function call against the function's declared arity (1, 2 or 3; variadic
+     * functions accept any positive count). This yields a precise
+     * {@link CalculatorErrorCode#SYNTAX_WRONG_ARGUMENT_COUNT} for cases such as
+     * {@code sqrt(1;2)} (too many) or {@code atan2(1)} / {@code logbase(8)} (too few)
+     * instead of a generic "incomplete expression".
+     *
+     * <p>
+     * Three-argument functions written as {@code summation(a;b;c)} are pre-expanded by
+     * the tokenizer (and already validated there), so only the normal
+     * {@code FUNCTION '(' … ')'} form is inspected here. Empty calls are reported
+     * earlier by the empty-argument check.
+     * </p>
+     *
+     * @param tokens the tokenized (infix) expression; must not be {@code null}
+     * @throws SyntaxErrorException if a fixed-arity function receives the wrong count
+     */
+    private static void validateFunctionArgumentCounts(@NonNull final List<Token> tokens) {
+        for (int i = 0; i + 1 < tokens.size(); i++) {
+            if (tokens.get(i).getType() != Token.Type.FUNCTION
+                    || tokens.get(i + 1).getType() != Token.Type.LEFT_PAREN) {
+                continue;
+            }
+            final String function = tokens.get(i).getValue();
+            final int expected = ExpressionElements.findBySymbol(function)
+                    .map(CalculatorEngineUtils::expectedFunctionArity)
+                    .orElse(0);
+            if (expected <= 0) {
+                continue; // unknown or variadic -> nothing to check here
+            }
+
+            int depth = 0;
+            int arguments = 1;
+            boolean sawContent = false;
+            int j = i + 1;
+            for (; j < tokens.size(); j++) {
+                final Token.Type t = tokens.get(j).getType();
+                if (t == Token.Type.LEFT_PAREN) {
+                    depth++;
+                } else if (t == Token.Type.RIGHT_PAREN) {
+                    depth--;
+                    if (depth == 0) {
+                        break;
+                    }
+                } else if (t == Token.Type.SEMICOLON && depth == 1) {
+                    arguments++;
+                } else {
+                    sawContent = true;
+                }
+            }
+            if (!sawContent) {
+                continue; // empty call -> handled by the empty-argument check
+            }
+            if (arguments != expected) {
+                throw new SyntaxErrorException(
+                        CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT,
+                        Map.of("function", function,
+                                "expected", String.valueOf(expected),
+                                "actual", String.valueOf(arguments)),
+                        "Function '" + function + "' expects " + expected
+                                + " argument(s) but received " + arguments,
+                        null);
+            }
+        }
+    }
+
+    /**
+     * Declared argument count of a callable element: {@code 1} for ordinary one-arg
+     * functions, {@code 2} for two-argument and coordinate functions, {@code 3} for
+     * three-argument functions, and {@code 0} for variadic or non-checkable elements
+     * (the caller then skips the count check).
+     *
+     * @param element the resolved expression element; must not be {@code null}
+     * @return the declared arity, or {@code 0} to skip
+     */
+    private static int expectedFunctionArity(@NonNull final ExpressionElement element) {
+        if (element instanceof UnlimitedArgumentFunction || element instanceof Constant) {
+            return 0;
+        }
+        if (element instanceof ThreeArgumentFunction) {
+            return 3;
+        }
+        if (element instanceof TwoArgumentFunction || element instanceof CoordinateFunction) {
+            return 2;
+        }
+        return element.isFunction() ? 1 : 0;
     }
 
     /**
