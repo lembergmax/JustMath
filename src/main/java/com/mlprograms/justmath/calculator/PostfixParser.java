@@ -31,19 +31,19 @@ import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
 import com.mlprograms.justmath.calculator.internal.Token;
 
-import lombok.NoArgsConstructor;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+
+import lombok.NoArgsConstructor;
 
 /**
  * Converts a list of tokens from infix notation to postfix (Reverse Polish Notation).
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-class PostfixParser {
+public class PostfixParser {
 
     /**
      * Checks if the given expression element is a right-associative operator.

@@ -412,6 +412,11 @@ public class CalculatorEngine {
                 }
             }
 
+            // Reject a dangling trailing binary operator (e.g. "50000!/") before the
+            // evaluator runs, so an expensive left-hand subexpression like a large
+            // factorial is never computed for an expression that cannot yield a result.
+            validateNoTrailingBinaryOperator(tokens);
+
             try {
                 replaceVariables(this, tokens, combinedVariables);
             } catch (IllegalArgumentException iae) {
@@ -805,6 +810,22 @@ public class CalculatorEngine {
                 || lower.contains("undefined for x = 0")
                 || lower.contains("normalize list with sum 0")) {
             code = CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO;
+        } else if (lower.contains("factorial") && lower.contains("non-negative")) {
+            // "Factorial is only defined for non-negative integers."
+            code = CalculatorErrorCode.MATH_FACTORIAL_NEGATIVE;
+        } else if (lower.contains("factorial") && lower.contains("integer")) {
+            // "Factorial is only defined for integers."
+            code = CalculatorErrorCode.MATH_FACTORIAL_NON_INTEGER;
+        } else if (lower.contains("ln(x) undefined")
+                || lower.contains("number must be positive")
+                || lower.contains("base must be positive")
+                || ((lower.contains("log") || lower.contains("logarith")) && lower.contains("positive"))) {
+            code = CalculatorErrorCode.MATH_LOG_NON_POSITIVE;
+        } else if (lower.contains("root of a negative")
+                || lower.contains("sqrt is only defined for non-negative")) {
+            code = CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE;
+        } else if (lower.contains("overflow") || lower.contains("too large")) {
+            code = CalculatorErrorCode.MATH_OVERFLOW;
         } else if (throwable instanceof ArithmeticException
                 || lower.contains("undefined")
                 || lower.contains("only defined")

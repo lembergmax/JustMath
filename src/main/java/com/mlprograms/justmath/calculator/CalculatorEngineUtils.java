@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -25,15 +25,22 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.bignumber.BigNumbers;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
+import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
+import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
-
-import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import lombok.NonNull;
 
 public class CalculatorEngineUtils {
 
@@ -197,6 +204,50 @@ public class CalculatorEngineUtils {
 
         currentPath.remove(variableName);
         visitedVariables.add(variableName);
+    }
+
+    /**
+     * Rejects an expression whose last meaningful token is a binary operator (e.g. the
+     * trailing {@code /} in {@code 50000!/}). Such an expression can never reduce to a
+     * value because the operator is missing its right operand.
+     *
+     * <p>
+     * This check runs <em>before</em> the postfix evaluator. Without it the evaluator
+     * would first execute everything to the left of the dangling operator — including
+     * an arbitrarily expensive {@code !} (factorial) — only to fail afterwards with a
+     * stack-underflow syntax error. Failing fast here avoids that wasted computation.
+     * </p>
+     *
+     * @param tokens the tokenized (infix) expression; must not be {@code null}
+     * @throws SyntaxErrorException if the final token is a binary operator
+     */
+    static void validateNoTrailingBinaryOperator(@NonNull final List<Token> tokens) {
+        if (tokens.isEmpty()) {
+            return;
+        }
+
+        final Token last = tokens.get(tokens.size() - 1);
+        if (last.getType() == Token.Type.OPERATOR && isBinaryOperatorSymbol(last.getValue())) {
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR,
+                    Map.of("operator", last.getValue()),
+                    "Incomplete expression: trailing operator '" + last.getValue()
+                            + "' is missing its right operand",
+                    null);
+        }
+    }
+
+    /**
+     * Determines whether the given operator symbol denotes a binary operator (two
+     * operands), as opposed to the postfix unary {@code !} factorial operator.
+     *
+     * @param symbol the operator symbol to classify
+     * @return {@code true} if the symbol resolves to a binary operator
+     */
+    private static boolean isBinaryOperatorSymbol(final String symbol) {
+        return ExpressionElements.findBySymbol(symbol)
+                .map(element -> element instanceof BinaryOperator || element instanceof SimpleBinaryOperator)
+                .orElse(false);
     }
 
     /**

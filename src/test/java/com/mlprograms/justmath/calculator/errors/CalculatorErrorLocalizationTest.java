@@ -150,7 +150,7 @@ class CalculatorErrorLocalizationTest {
                 .setLocale(Locale.GERMAN)
                 .setErrorMode(ErrorMode.USER_FRIENDLY);
         String msg = engine.evaluateToString("sqrt(-4)");
-        assertEquals("Wert liegt außerhalb des zulässigen Bereichs für diese Operation.", msg);
+        assertEquals("Die gerade Wurzel einer negativen Zahl ist keine reelle Zahl.", msg);
     }
 
     @Test
@@ -160,8 +160,7 @@ class CalculatorErrorLocalizationTest {
                 .setErrorMode(ErrorMode.USER_FRIENDLY);
         String msg = engine.evaluateToPrettyString("ln(-1)");
         assertFalse(msg.toLowerCase().contains("exception"));
-        assertTrue(msg.startsWith("Wert liegt") || msg.startsWith("Der Ausdruck"),
-                "expected localized DE message, got: " + msg);
+        assertEquals("Der Logarithmus ist für nicht-positive Argumente nicht definiert.", msg);
     }
 
     @Test
@@ -187,17 +186,17 @@ class CalculatorErrorLocalizationTest {
         CalculatorEngine engine = new CalculatorEngine();
         CalculatorResult<?> result = engine.evaluateSafe("25+3.6*");
         assertTrue(result.isFailure());
-        assertEquals(CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
+        assertEquals(CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR,
                 result.error().orElseThrow().code());
     }
 
     @Test
-    void trailingOperatorLocalizedAsIncompleteExpressionInGerman() {
+    void trailingOperatorLocalizedAsTrailingOperatorInGerman() {
         CalculatorEngine engine = new CalculatorEngine()
                 .setLocale(Locale.GERMAN)
                 .setErrorMode(ErrorMode.USER_FRIENDLY);
         String msg = engine.evaluateToString("25+3.6*");
-        assertEquals("Der Ausdruck ist unvollständig oder die Betragsstriche sind unausgeglichen.", msg);
+        assertEquals("Der Ausdruck endet mit dem Operator '*', der rechte Operand fehlt.", msg);
     }
 
     @Test
@@ -205,5 +204,70 @@ class CalculatorErrorLocalizationTest {
         CalculatorEngine engine = new CalculatorEngine();
         String msg = engine.evaluateToString("25+3.6*");
         assertEquals("Syntax Error", msg);
+    }
+
+    @Test
+    void trailingOperatorAfterFactorialFailsFastWithoutComputingFactorial() {
+        CalculatorEngine engine = new CalculatorEngine();
+        long start = System.nanoTime();
+        CalculatorResult<?> result = engine.evaluateSafe("50000!/");
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertTrue(result.isFailure());
+        assertEquals(CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR,
+                result.error().orElseThrow().code());
+        // Computing 50000! takes tens of seconds; the pre-check must short-circuit.
+        assertTrue(elapsedMs < 2_000,
+                "trailing-operator pre-check did not short-circuit; took " + elapsedMs + " ms");
+    }
+
+    @Test
+    void everyCodeHasCategoryAndGenericFallbackEntries() {
+        for (Locale locale : new Locale[]{Locale.ENGLISH, Locale.GERMAN}) {
+            ResourceBundle bundle = ResourceBundle.getBundle(CalculatorError.BUNDLE_BASENAME, locale);
+            assertDoesNotThrow(() -> bundle.getString(CalculatorErrorCode.GENERIC_BUNDLE_KEY),
+                    "Missing generic fallback for " + locale);
+            for (CalculatorErrorCode code : CalculatorErrorCode.values()) {
+                assertDoesNotThrow(() -> bundle.getString(code.getCategoryBundleKey()),
+                        "Missing category fallback " + code.getCategoryBundleKey() + " for " + locale);
+            }
+        }
+    }
+
+    @Test
+    void formatFallsBackToCategoryThenGenericWhenSpecificKeyMissing() {
+        // Synthetic code-free probe: a CalculatorError whose specific key is absent from
+        // the bundle must resolve to the localized category text, never the English
+        // technical detail.
+        CalculatorError err = new CalculatorError(
+                CalculatorErrorCode.PROCESSING_INTERNAL, "raw technical detail");
+        String de = err.format(Locale.GERMAN, com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY);
+        assertFalse(de.equals("raw technical detail"), "fallback leaked technical detail");
+        assertFalse(de.toLowerCase().contains("exception"));
+    }
+
+    @Test
+    void factorialOfNegativeLocalizedInGerman() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToString("(0-5)!");
+        assertEquals("Die Fakultät ist für negative Zahlen nicht definiert.", msg);
+    }
+
+    @Test
+    void logOfZeroLocalizedInGerman() {
+        CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(com.mlprograms.justmath.calculator.errors.ErrorMode.USER_FRIENDLY);
+        String msg = engine.evaluateToString("ln(0)");
+        assertEquals("Der Logarithmus ist für nicht-positive Argumente nicht definiert.", msg);
+    }
+
+    @Test
+    void divisionByZeroRawModeReturnsMathErrorCategory() {
+        CalculatorEngine engine = new CalculatorEngine(); // default RAW
+        String msg = engine.evaluateToString("5/0");
+        assertEquals("Math Error", msg);
     }
 }

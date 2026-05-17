@@ -101,8 +101,10 @@ class Evaluator {
                         expressionElement.apply(stack, mathContext, trigonometricMode, CALCULATION_LOCALE);
                     } catch (NoSuchElementException stackUnderflow) {
                         throw new SyntaxErrorException(
-                                CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
-                                "Incomplete expression: operator or function '" + token.getValue() + "' is missing an operand");
+                                CalculatorErrorCode.SYNTAX_MISSING_OPERAND,
+                                java.util.Map.of("operator", token.getValue()),
+                                "Incomplete expression: operator or function '" + token.getValue() + "' is missing an operand",
+                                null);
                     }
                 }
                 default -> throw new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, "Unexpected token: " + token);
@@ -110,7 +112,7 @@ class Evaluator {
         }
 
         if (stack.size() != 1) {
-            throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete expression: expected a single result, but found " + stack.size());
+            throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_UNEXPECTED_END, "Incomplete expression: expected a single result, but found " + stack.size());
         }
 
         Object result = stack.pop();

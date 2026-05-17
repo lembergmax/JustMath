@@ -24,8 +24,10 @@
 
 package com.mlprograms.justmath;
 
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitConverter;
+import com.mlprograms.justmath.calculator.CalculatorEngine;
+import com.mlprograms.justmath.calculator.errors.ErrorMode;
+
+import java.util.Locale;
 
 public class Main {
 
@@ -39,9 +41,18 @@ public class Main {
 //        System.out.println(convertedToBigNumber);
 //        System.out.println(convertedToUnitValue.getValue());
 
-//        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-//        calculatorEngine.setLocale(Locale.FRENCH);
-//        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
+        final CalculatorEngine calculatorEngine = new CalculatorEngine();
+        calculatorEngine.setLocale(Locale.GERMAN);
+        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
+        System.out.println(calculatorEngine.evaluateToString("5000ß!sqrt()"));
+        System.out.println(calculatorEngine.evaluateToString("5000!sqrt()"));
+        System.out.println(calculatorEngine.evaluateToString("5000!*"));
+
+
+        System.out.println(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"));
+        System.out.println((calculatorEngine.getPostfixParser().toPostfix(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"))));
+
+
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
@@ -54,7 +65,23 @@ public class Main {
 //                UnitElements.getRegistry().entrySet().stream().filter(unit -> unit.getValue().toString().equals("0"))
 //        );
 
-        System.out.println(new UnitConverter().convert("15", Unit.Speed.KILOMETER_PER_HOUR, Unit.Speed.METER_PER_SECOND));
+
+//        UnitConverter unitConverter = new UnitConverter();
+//
+//        System.out.println(unitConverter.convert("15", Unit.Speed.KILOMETER_PER_HOUR, Unit.Speed.METER_PER_SECOND));
+//
+//
+//        System.out.println(unitConverter.convert(
+//                "8935410796587016507816508716578061357893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357",
+//                Unit.Length.SUN_RADIUS,
+//                Unit.Length.METER
+//        ));
+//
+//        System.out.println(unitConverter.convert(
+//                "893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357",
+//                Unit.Length.SUN_RADIUS,
+//                Unit.Length.METER
+//        ));
 
     }
 

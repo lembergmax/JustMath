@@ -76,6 +76,36 @@ public enum CustomExceptionMessages {
     PROCESSING_ERROR("Processing Error"),
 
     /**
+     * Casio-style "Math ERROR": a mathematically invalid operation such as division by
+     * zero, a domain violation ({@code sqrt(-4)}, {@code ln(0)}) or factorial of a
+     * negative/non-integer value.
+     */
+    MATH_ERROR("Math Error"),
+
+    /**
+     * Casio-style "Argument ERROR": a function was called with the wrong number of
+     * arguments.
+     */
+    ARGUMENT_ERROR("Argument Error"),
+
+    /**
+     * Casio-style "Stack ERROR": the expression exceeded the supported nesting depth.
+     */
+    STACK_ERROR("Stack Error"),
+
+    /**
+     * Casio-style "Range ERROR": a value or result lies outside the supported numeric
+     * range (overflow).
+     */
+    RANGE_ERROR("Range Error"),
+
+    /**
+     * Casio-style "Dimension ERROR": an operation received operands of incompatible
+     * dimensions (e.g. matrix/vector shape mismatch).
+     */
+    DIMENSION_ERROR("Dimension Error"),
+
+    /**
      * Indicates that a variable resolution/evaluation encountered a cyclic reference.
      * <p>
      * Typical examples:

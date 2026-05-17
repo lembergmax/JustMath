@@ -120,12 +120,45 @@ public record CalculatorError(
         if (mode == ErrorMode.RAW) {
             return technicalDetail;
         }
+
+        final ResourceBundle bundle;
         try {
-            ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_BASENAME, locale);
-            String template = bundle.getString(code.getBundleKey());
-            return applyNamedParameters(template, params, position);
-        } catch (MissingResourceException ignored) {
+            bundle = ResourceBundle.getBundle(BUNDLE_BASENAME, locale);
+        } catch (MissingResourceException noBundle) {
             return technicalDetail;
+        }
+
+        // Casio-style tiered resolution: try the most specific message first, then the
+        // mid-tier category message (e.g. "Math Error"), then the top-level generic
+        // message, and only fall back to the technical English detail if even the
+        // generic key is absent.
+        String template = lookup(bundle, code.getBundleKey());
+        if (template == null) {
+            template = lookup(bundle, code.getCategoryBundleKey());
+        }
+        if (template == null) {
+            template = lookup(bundle, CalculatorErrorCode.GENERIC_BUNDLE_KEY);
+        }
+        if (template == null) {
+            return technicalDetail;
+        }
+        return applyNamedParameters(template, params, position);
+    }
+
+    /**
+     * Returns the bundle entry for {@code key}, or {@code null} if it is absent or blank
+     * (so that the caller can fall through to the next, less specific tier).
+     *
+     * @param bundle resolved resource bundle; must not be {@code null}
+     * @param key    bundle key to look up; must not be {@code null}
+     * @return the template string, or {@code null} when missing/blank
+     */
+    private static String lookup(@NonNull final ResourceBundle bundle, @NonNull final String key) {
+        try {
+            String value = bundle.getString(key);
+            return value.isBlank() ? null : value;
+        } catch (MissingResourceException missing) {
+            return null;
         }
     }
 

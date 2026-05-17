@@ -26,7 +26,9 @@ package com.mlprograms.justmath.calculator.expression.elements.function;
 
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.MultiValueResult;
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
+import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.operations.function.UnlimitedArgumentFunctionOperation;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 
@@ -45,21 +47,37 @@ public class UnlimitedArgumentFunction extends Function {
     @Override
     public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
         if (stack.isEmpty()) {
-            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires an argument count on the stack");
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.ARGUMENT_COUNT_MISMATCH,
+                    Map.of("function", getSymbol(), "expected", "1+", "actual", "0"),
+                    "Function '" + getSymbol() + "' requires an argument count on the stack",
+                    null);
         }
 
         Object countObject = stack.pop();
         if (!(countObject instanceof BigNumber countNumber)) {
-            throw new ProcessingErrorException("Invalid argument count for function '" + getSymbol() + "': " + countObject);
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.ARGUMENT_COUNT_MISMATCH,
+                    Map.of("function", getSymbol(), "expected", "1+", "actual", "0"),
+                    "Invalid argument count for function '" + getSymbol() + "': " + countObject,
+                    null);
         }
 
         int argumentCount = countNumber.intValue();
         if (argumentCount <= 0) {
-            throw new ProcessingErrorException("Function '" + getSymbol() + "' requires at least one argument, but got " + argumentCount);
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.ARGUMENT_COUNT_MISMATCH,
+                    Map.of("function", getSymbol(), "expected", "1+", "actual", String.valueOf(argumentCount)),
+                    "Function '" + getSymbol() + "' requires at least one argument, but got " + argumentCount,
+                    null);
         }
 
         if (stack.size() < argumentCount) {
-            throw new ProcessingErrorException("Function '" + getSymbol() + "' expected " + argumentCount + " arguments but stack contains only " + stack.size());
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.ARGUMENT_COUNT_MISMATCH,
+                    Map.of("function", getSymbol(), "expected", String.valueOf(argumentCount), "actual", String.valueOf(stack.size())),
+                    "Function '" + getSymbol() + "' expected " + argumentCount + " arguments but stack contains only " + stack.size(),
+                    null);
         }
 
         List<BigNumber> arguments = new ArrayList<>(argumentCount);
