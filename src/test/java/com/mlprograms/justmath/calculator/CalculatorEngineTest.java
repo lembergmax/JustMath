@@ -24,12 +24,9 @@
 
 package com.mlprograms.justmath.calculator;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +36,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CalculatorEngineTest {
 
@@ -141,6 +140,27 @@ public class CalculatorEngineTest {
 
         BigNumber actualResult = calculatorEngineRad.evaluate(calculationString, variables);
         assertEquals(expectedResult, actualResult.roundAfterDecimals(9).toString());
+    }
+
+    /**
+     * Regression: binary '+' / '-' directly after a pre-expanded three-argument
+     * function (summation/product). The tokenizer must emit a binary operator
+     * there, not a prefix unary-sign sentinel; otherwise arity validation
+     * rejected the expression with a spurious SYNTAX_UNEXPECTED_END.
+     * summation(1;3;k)=6, product(1;3;k)=6, product(1;2;k)=2.
+     */
+    @ParameterizedTest
+    @CsvSource(value = {
+            "summation(1;3;k)+product(1;3;k)#12",
+            "summation(1;3;k)-product(1;3;k)#0",
+            "summation(1;3;k)-product(1;2;k)#4",
+            "product(1;3;k)+summation(1;3;k)-2#10",
+            "summation(1;3;k)+5#11",
+            "summation(1;4;k^2)-product(1;3;k)#24"
+    }, delimiter = '#')
+    void binarySignAfterThreeArgumentFunctionTest(String calculationString, String expectedResult) {
+        BigNumber actualResult = calculatorEngineRad.evaluate(calculationString);
+        assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
     }
 
     @ParameterizedTest

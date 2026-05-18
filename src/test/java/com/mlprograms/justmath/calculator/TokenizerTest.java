@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -25,6 +25,7 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
+import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.Token;
 import org.junit.jupiter.api.Test;
 
@@ -117,10 +118,15 @@ class TokenizerTest {
     void testMultipleSignsOdd() {
         List<Token> tokens = tokenizer.tokenize("5---3");
 
+        // First '-' is binary (after the operand '5'); the following two are
+        // prefix unary-minus sentinels stacked onto the number 3. Net value
+        // is unchanged: 5 - (-(-3)) == 2.
         assertEquals(List.of(
                 new Token(Token.Type.NUMBER, "5"),
-                new Token(Token.Type.OPERATOR, "+"),
-                new Token(Token.Type.NUMBER, "-3")
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
+                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
+                new Token(Token.Type.NUMBER, "3")
         ), tokens);
     }
 
@@ -204,7 +210,8 @@ class TokenizerTest {
                 new Token(Token.Type.LEFT_PAREN, "("),
                 new Token(Token.Type.NUMBER, "4"),
                 new Token(Token.Type.OPERATOR, "*"),
-                new Token(Token.Type.OPERATOR, "-"),
+                // Prefix '-' before the constant 'pi' is a unary-minus sentinel.
+                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
                 new Token(Token.Type.CONSTANT, "pi"),
                 new Token(Token.Type.RIGHT_PAREN, ")"),
                 new Token(Token.Type.OPERATOR, "-"),
@@ -401,7 +408,11 @@ class TokenizerTest {
                 new Token(Token.Type.CONSTANT, "pi"),
                 new Token(Token.Type.OPERATOR, "*"),
                 new Token(Token.Type.CONSTANT, "e"),
-                new Token(Token.Type.OPERATOR, "+"),
+                // "e--√(16)": first '-' is binary (after operand 'e'), the
+                // second is a prefix unary-minus sentinel applied to √(16).
+                // Net value unchanged: e - (-√16) == e + √16.
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
                 new Token(Token.Type.FUNCTION, "√"),
                 new Token(Token.Type.LEFT_PAREN, "("),
                 new Token(Token.Type.NUMBER, "16"),
@@ -413,6 +424,40 @@ class TokenizerTest {
                 new Token(Token.Type.OPERATOR, "*"),
                 new Token(Token.Type.NUMBER, "4")
         ), tokens);
+    }
+
+    /**
+     * Regression: a three-argument function is pre-expanded by the tokenizer to
+     * {@code NUMBER NUMBER STRING FUNCTION}, so the trailing FUNCTION token is a
+     * completed operand. A following '+' or '-' must therefore be a binary
+     * operator, NOT a prefix unary-sign sentinel (which previously broke
+     * arity validation for "summation(1;3;k)+product(1;3;k)").
+     */
+    @Test
+    void testBinarySignAfterThreeArgumentFunction() {
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.STRING, "k"),
+                new Token(Token.Type.FUNCTION, "summation"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.STRING, "k"),
+                new Token(Token.Type.FUNCTION, "product")
+        ), tokenizer.tokenize("summation(1;3;k)+product(1;3;k)"));
+
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.NUMBER, "4"),
+                new Token(Token.Type.STRING, "k^2"),
+                new Token(Token.Type.FUNCTION, "summation"),
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "1"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.STRING, "k"),
+                new Token(Token.Type.FUNCTION, "product")
+        ), tokenizer.tokenize("summation(1;4;k^2)-product(1;3;k)"));
     }
 
     @Test

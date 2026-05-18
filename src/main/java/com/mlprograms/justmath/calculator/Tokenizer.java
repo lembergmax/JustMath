@@ -35,11 +35,10 @@ import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
-
-import lombok.NonNull;
 
 /**
  * Tokenizer for mathematical expressions.
@@ -574,8 +573,12 @@ public class Tokenizer {
                     .orElse(true);
         }
 
-        // If previous is FUNCTION or SEMICOLON -> + / - is a sign of number (e.g. 2*-3 or func(-2))
-        return prevType == Token.Type.FUNCTION || prevType == Token.Type.SEMICOLON;
+        // A FUNCTION token here is the trailing token of a pre-expanded multi-argument
+        // function (e.g. "summation(1;3;k)"), i.e. a completed operand, so a following
+        // + / - is BINARY. Real prefix functions are always followed by '(' and never
+        // reach this point. Only after a SEMICOLON is + / - the sign of a number
+        // (e.g. the "-2" in "gcd(4;-2)").
+        return prevType == Token.Type.SEMICOLON;
     }
 
     /**
@@ -621,13 +624,19 @@ public class Tokenizer {
             case NUMBER, RIGHT_PAREN, CONSTANT, VARIABLE -> {
                 return false;
             }
+            case FUNCTION -> {
+                // Trailing token of a pre-expanded multi-argument function
+                // (e.g. "summation(1;3;k)") — a completed operand, so the sign
+                // is binary. Real prefix functions are followed by '(', never a sign.
+                return false;
+            }
             case OPERATOR -> {
                 // Binary after the postfix factorial ("3!-2"); unary after any other
                 // operator, including a preceding prefix unary ("--x").
                 return !ExpressionElements.OP_FACTORIAL.equals(previous.getValue());
             }
             default -> {
-                // LEFT_PAREN, FUNCTION, SEMICOLON
+                // LEFT_PAREN, SEMICOLON
                 return true;
             }
         }
