@@ -33,13 +33,12 @@ import com.mlprograms.justmath.calculator.expression.elements.function.*;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import lombok.Getter;
 
 /**
  * Utility class for managing all supported mathematical expression elements.
@@ -56,6 +55,23 @@ public class ExpressionElements {
 
     @Getter
     private static int maxTokenLength = -1;
+
+    /**
+     * Internal prefix unary operators. The symbols are Private-Use-Area code points
+     * (written as Unicode escapes) so they can never appear in user input nor collide
+     * with any real operator, while still being resolvable via the registry for
+     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
+     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
+     */
+    public static final String OP_UNARY_MINUS = "";
+    /**
+     * Internal prefix unary operators. The symbols are Private-Use-Area code points
+     * (written as Unicode escapes) so they can never appear in user input nor collide
+     * with any real operator, while still being resolvable via the registry for
+     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
+     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
+     */
+    public static final String OP_UNARY_PLUS = "";
 
     public static final String PI = "pi";
     public static final String PI_S = "π";
@@ -77,15 +93,7 @@ public class ExpressionElements {
     public static final String OP_COMBINATION = "nCr";
     //
     public static final String OP_FACTORIAL = "!";
-    /**
-     * Internal prefix unary operators. The symbols are Private-Use-Area code points
-     * (written as Unicode escapes) so they can never appear in user input nor collide
-     * with any real operator, while still being resolvable via the registry for
-     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
-     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
-     */
-    public static final String OP_UNARY_MINUS = "";
-    public static final String OP_UNARY_PLUS = "";
+
     public static final String FUNC_SQRT = "sqrt";
     public static final String FUNC_SQRT_S = "√";
     public static final String FUNC_CBRT = "cbrt";

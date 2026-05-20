@@ -53,7 +53,6 @@ public class Main {
         System.out.println(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"));
         System.out.println((calculatorEngine.getPostfixParser().toPostfix(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"))));
 
-
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
 //        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
