@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -52,7 +52,9 @@ public class Token {
 	 * @return Optional of ArithmeticOperator
 	 */
 	public Optional<ExpressionElement> asArithmeticOperator() {
-		return ExpressionElements.findBySymbol(value);
+		return type == Type.UNARY_OPERATOR
+				? ExpressionElements.findUnaryBySymbol(value)
+				: ExpressionElements.findBySymbol(value);
 	}
 
 	/**
@@ -61,6 +63,7 @@ public class Token {
 	public enum Type {
 		NUMBER,
 		OPERATOR,
+		UNARY_OPERATOR,
 		FUNCTION,
 		LEFT_PAREN,
 		RIGHT_PAREN,

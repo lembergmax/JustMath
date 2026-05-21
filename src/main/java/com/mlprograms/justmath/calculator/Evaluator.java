@@ -24,17 +24,16 @@
 
 package com.mlprograms.justmath.calculator;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
 import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
-import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.Token;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.math.MathContext;
 import java.util.ArrayDeque;
@@ -42,8 +41,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
 
 /**
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
@@ -89,8 +87,8 @@ class Evaluator {
             switch (token.getType()) {
                 case NUMBER -> stack.push(new BigNumber(token.getValue()));
                 case STRING -> stack.push(token.getValue());
-                case OPERATOR, FUNCTION, CONSTANT -> {
-                    ExpressionElement expressionElement = ExpressionElements.findBySymbol(token.getValue())
+                case OPERATOR, UNARY_OPERATOR, FUNCTION, CONSTANT -> {
+                    ExpressionElement expressionElement = token.asArithmeticOperator()
                             .orElseThrow(() -> new SyntaxErrorException(
                                     CalculatorErrorCode.SYNTAX_UNKNOWN_FUNCTION,
                                     java.util.Map.of("function", token.getValue()),

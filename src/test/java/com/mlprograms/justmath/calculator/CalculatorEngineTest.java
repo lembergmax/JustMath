@@ -165,6 +165,45 @@ public class CalculatorEngineTest {
 
     @ParameterizedTest
     @CsvSource(value = {
+            "--5#5",
+            "++5#5",
+            "+-5#-5",
+            "-+5#-5",
+            "5--3#8",
+            "5---3#2",
+            "5+-3#2",
+            "5-+3#2",
+            "-(3+4)#-7",
+            "--(3+4)#7",
+            "-3^2#-9",
+            "2*-3^2#-18",
+            "2*(-3)^2#18",
+            "-------5+3#-2"
+    }, delimiter = '#')
+    void signMergeEvalTest(String calculationString, String expectedResult) {
+        BigNumber actualResult = calculatorEngineRad.evaluate(calculationString);
+        assertEquals(expectedResult, actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
+    }
+
+    @Test
+    void whitespaceSeparatesSignRunsInEval() {
+        BigNumber actualResult = calculatorEngineRad.evaluate("5 - -3");
+        assertEquals("8", actualResult.roundAfterDecimals(new MathContext(10, RoundingMode.HALF_UP)).toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "-",
+            "+",
+            "5-",
+            "sin(-)"
+    })
+    void signMergeErrorCases(String calculationString) {
+        assertThrows(Exception.class, () -> calculatorEngineRad.evaluate(calculationString));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
             // --- DEG Modus ---
             "sin(90)#1",
             "cos(180)#-1",

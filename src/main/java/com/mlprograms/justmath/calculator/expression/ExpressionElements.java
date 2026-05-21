@@ -53,25 +53,19 @@ public class ExpressionElements {
     @Getter
     private static final Map<String, ExpressionElement> registry = new HashMap<>();
 
+    /**
+     * Registry for prefix unary operators ({@code -}, {@code +}). Kept separate from
+     * the main {@link #registry} so the same ASCII symbols can resolve to a binary
+     * operator (precedence 2) or a prefix unary operator (precedence 4,
+     * right-associative) depending on {@link com.mlprograms.justmath.calculator.internal.Token.Type}.
+     * The {@link com.mlprograms.justmath.calculator.Tokenizer} emits
+     * {@link com.mlprograms.justmath.calculator.internal.Token.Type#UNARY_OPERATOR}
+     * tokens in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
+     */
+    private static final Map<String, ExpressionElement> unaryRegistry = new HashMap<>();
+
     @Getter
     private static int maxTokenLength = -1;
-
-    /**
-     * Internal prefix unary operators. The symbols are Private-Use-Area code points
-     * (written as Unicode escapes) so they can never appear in user input nor collide
-     * with any real operator, while still being resolvable via the registry for
-     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
-     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
-     */
-    public static final String OP_UNARY_MINUS = "";
-    /**
-     * Internal prefix unary operators. The symbols are Private-Use-Area code points
-     * (written as Unicode escapes) so they can never appear in user input nor collide
-     * with any real operator, while still being resolvable via the registry for
-     * precedence and evaluation. The {@link com.mlprograms.justmath.calculator.Tokenizer}
-     * emits these in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
-     */
-    public static final String OP_UNARY_PLUS = "";
 
     public static final String PI = "pi";
     public static final String PI_S = "π";
@@ -190,12 +184,6 @@ public class ExpressionElements {
                 new BinaryOperator(OP_COMBINATION, 6, BigNumber::combination),
                 //
                 new PostfixUnaryOperator(OP_FACTORIAL, 5, BigNumber::factorial),
-                // Prefix unary operators (precedence 4: binds looser than '!' (5) and,
-                // being right-associative like '^' (4), yields -3^2 == -(3^2)). The
-                // zero guard avoids a cosmetic "-0" from negate().
-                new PostfixUnaryOperator(OP_UNARY_MINUS, 4,
-                        (value, mathContext, locale) -> value.signum() == 0 ? value : value.negate()),
-                new PostfixUnaryOperator(OP_UNARY_PLUS, 4, (value, mathContext, locale) -> value),
                 new OneArgumentFunction(FUNC_SQRT, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_SQRT_S, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_CBRT, 4, BigNumber::cubicRoot),
@@ -274,6 +262,9 @@ public class ExpressionElements {
         for (ExpressionElement expressionElement : expressionElementList) {
             register(expressionElement);
         }
+
+        registerUnary(new PostfixUnaryOperator(OP_MINUS, 4, (value, mathContext, locale) -> value.signum() == 0 ? value : value.negate()));
+        registerUnary(new PostfixUnaryOperator(OP_PLUS, 4, (value, mathContext, locale) -> value));
     }
 
     /**
@@ -287,6 +278,21 @@ public class ExpressionElements {
     }
 
     /**
+     * Finds a prefix unary {@link ExpressionElement} by its symbol.
+     * <p>
+     * Lookups must use this method (not {@link #findBySymbol(String)}) when the
+     * token type is {@link com.mlprograms.justmath.calculator.internal.Token.Type#UNARY_OPERATOR},
+     * because the same symbol ({@code -} / {@code +}) is also registered as a
+     * binary operator with a different precedence in the main registry.
+     *
+     * @param symbol the symbol to look up
+     * @return an {@link Optional} containing the found {@code ExpressionElement}, or empty if not found
+     */
+    public static Optional<ExpressionElement> findUnaryBySymbol(String symbol) {
+        return Optional.ofNullable(unaryRegistry.get(symbol));
+    }
+
+    /**
      * Registers an {@link ExpressionElement} in the registry.
      * The element is mapped by its symbol for a later lookup.
      *
@@ -295,6 +301,17 @@ public class ExpressionElements {
     public static void register(ExpressionElement element) {
         maxTokenLength = Math.max(element.getSymbol().length(), maxTokenLength);
         registry.put(element.getSymbol(), element);
+    }
+
+    /**
+     * Registers an {@link ExpressionElement} in the unary-operator registry.
+     * Does not affect {@link #maxTokenLength} — unary symbols ({@code -}, {@code +})
+     * are length 1 and never longer than existing entries.
+     *
+     * @param element the {@code ExpressionElement} to register
+     */
+    private static void registerUnary(ExpressionElement element) {
+        unaryRegistry.put(element.getSymbol(), element);
     }
 
 }

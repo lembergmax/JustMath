@@ -30,13 +30,12 @@ import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
 import com.mlprograms.justmath.calculator.internal.Token;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-
-import lombok.NoArgsConstructor;
 
 /**
  * Converts a list of tokens from infix notation to postfix (Reverse Polish Notation).
@@ -46,19 +45,16 @@ import lombok.NoArgsConstructor;
 public class PostfixParser {
 
     /**
-     * Checks if the given expression element is a right-associative operator. The
-     * power operator ({@code ^}) and the prefix unary operators are right-associative
-     * (the latter so that chained signs such as {@code --5} stack as
-     * {@code -(-(5))} instead of underflowing).
+     * Checks if the given expression element is a right-associative operator. Only
+     * the power operator ({@code ^}) is identified here by symbol; prefix unary
+     * operators are tagged by token type ({@link Token.Type#UNARY_OPERATOR}) and
+     * handled in {@link #isRightAssociative(Token)}.
      *
      * @param expressionElement the expression element to check
      * @return true if the operator is right-associative, false otherwise
      */
     private static boolean isRightAssociativeOperator(ExpressionElement expressionElement) {
-        final String symbol = expressionElement.getSymbol();
-        return symbol.equals(ExpressionElements.OP_POWER)
-                || symbol.equals(ExpressionElements.OP_UNARY_MINUS)
-                || symbol.equals(ExpressionElements.OP_UNARY_PLUS);
+        return expressionElement.getSymbol().equals(ExpressionElements.OP_POWER);
     }
 
     /**
@@ -99,16 +95,19 @@ public class PostfixParser {
                     argumentCountStack.push(isUnlimitedCall ? 1 : 0);
                 }
 
-                case OPERATOR -> {
-                    if (token.getValue().equals("!")) {
+                case OPERATOR, UNARY_OPERATOR -> {
+                    if (token.getType() == Token.Type.OPERATOR
+                            && token.getValue().equals(ExpressionElements.OP_FACTORIAL)) {
                         output.add(token);
                         break;
                     }
 
                     while (!operatorStack.isEmpty()) {
                         Token top = operatorStack.peek();
+                        boolean topIsOperator = top.getType() == Token.Type.OPERATOR
+                                || top.getType() == Token.Type.UNARY_OPERATOR;
                         if ((top.getType() == Token.Type.FUNCTION)
-                                || (top.getType() == Token.Type.OPERATOR
+                                || (topIsOperator
                                 && (hasHigherPrecedence(top, token)
                                 || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
                             output.add(operatorStack.pop());
@@ -232,6 +231,9 @@ public class PostfixParser {
      * @return true if the operator is right-associative, false otherwise
      */
     private boolean isRightAssociative(Token token) {
+        if (token.getType() == Token.Type.UNARY_OPERATOR) {
+            return true;
+        }
         return token.asArithmeticOperator()
                 .map(PostfixParser::isRightAssociativeOperator)
                 .orElse(false);

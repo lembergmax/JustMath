@@ -25,7 +25,6 @@
 package com.mlprograms.justmath.calculator;
 
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
-import com.mlprograms.justmath.calculator.expression.ExpressionElements;
 import com.mlprograms.justmath.calculator.internal.Token;
 import org.junit.jupiter.api.Test;
 
@@ -63,8 +62,11 @@ class TokenizerTest {
     void testNegativeNumberAtStart() {
         List<Token> tokens = tokenizer.tokenize("-3");
 
+        // Sign is emitted as a separate UNARY_OPERATOR token rather than
+        // folded into the number, so that '-3^2' parses as '-(3^2)' = -9.
         assertEquals(List.of(
-                new Token(Token.Type.NUMBER, "-3")
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3")
         ), tokens);
     }
 
@@ -75,7 +77,8 @@ class TokenizerTest {
         assertEquals(List.of(
                 new Token(Token.Type.NUMBER, "5"),
                 new Token(Token.Type.OPERATOR, "*"),
-                new Token(Token.Type.NUMBER, "-2")
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "2")
         ), tokens);
     }
 
@@ -85,7 +88,8 @@ class TokenizerTest {
 
         assertEquals(List.of(
                 new Token(Token.Type.LEFT_PAREN, "("),
-                new Token(Token.Type.NUMBER, "-3"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3"),
                 new Token(Token.Type.RIGHT_PAREN, ")")
         ), tokens);
     }
@@ -107,10 +111,12 @@ class TokenizerTest {
     void testMultipleConsecutiveSigns() {
         List<Token> tokens = tokenizer.tokenize("5--3");
 
+        // Aggressive sign-merge: '--' after the operand '5' is a binary
+        // context with two minuses (even) → net '+'. Eval unchanged: 5+3 == 8.
         assertEquals(List.of(
                 new Token(Token.Type.NUMBER, "5"),
-                new Token(Token.Type.OPERATOR, "-"),
-                new Token(Token.Type.NUMBER, "-3")
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "3")
         ), tokens);
     }
 
@@ -118,14 +124,11 @@ class TokenizerTest {
     void testMultipleSignsOdd() {
         List<Token> tokens = tokenizer.tokenize("5---3");
 
-        // First '-' is binary (after the operand '5'); the following two are
-        // prefix unary-minus sentinels stacked onto the number 3. Net value
-        // is unchanged: 5 - (-(-3)) == 2.
+        // Aggressive sign-merge: '---' after the operand '5' is a binary
+        // context with three minuses (odd) → net '-'. Eval unchanged: 5-3 == 2.
         assertEquals(List.of(
                 new Token(Token.Type.NUMBER, "5"),
                 new Token(Token.Type.OPERATOR, "-"),
-                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
-                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
                 new Token(Token.Type.NUMBER, "3")
         ), tokens);
     }
@@ -210,8 +213,8 @@ class TokenizerTest {
                 new Token(Token.Type.LEFT_PAREN, "("),
                 new Token(Token.Type.NUMBER, "4"),
                 new Token(Token.Type.OPERATOR, "*"),
-                // Prefix '-' before the constant 'pi' is a unary-minus sentinel.
-                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
+                // Prefix '-' before the constant 'pi' is a unary-minus operator.
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
                 new Token(Token.Type.CONSTANT, "pi"),
                 new Token(Token.Type.RIGHT_PAREN, ")"),
                 new Token(Token.Type.OPERATOR, "-"),
@@ -228,6 +231,8 @@ class TokenizerTest {
     void testExpressionWithLeadingPlus() {
         List<Token> tokens = tokenizer.tokenize("+2");
 
+        // Leading '+' in unary context is a no-op; aggressive sign-merging
+        // drops it entirely.
         assertEquals(List.of(
                 new Token(Token.Type.NUMBER, "2")
         ), tokens);
@@ -251,7 +256,8 @@ class TokenizerTest {
         List<Token> tokens = tokenizer.tokenize("-3.5");
 
         assertEquals(List.of(
-                new Token(Token.Type.NUMBER, "-3.5")
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3.5")
         ), tokens);
     }
 
@@ -400,7 +406,8 @@ class TokenizerTest {
         List<Token> tokens = tokenizer.tokenize(expr);
         assertEquals(List.of(
                 new Token(Token.Type.LEFT_PAREN, "("),
-                new Token(Token.Type.NUMBER, "-.5"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, ".5"),
                 new Token(Token.Type.RIGHT_PAREN, ")"),
                 new Token(Token.Type.OPERATOR, "*"),
                 new Token(Token.Type.NUMBER, "2"),
@@ -408,11 +415,10 @@ class TokenizerTest {
                 new Token(Token.Type.CONSTANT, "pi"),
                 new Token(Token.Type.OPERATOR, "*"),
                 new Token(Token.Type.CONSTANT, "e"),
-                // "e--√(16)": first '-' is binary (after operand 'e'), the
-                // second is a prefix unary-minus sentinel applied to √(16).
-                // Net value unchanged: e - (-√16) == e + √16.
-                new Token(Token.Type.OPERATOR, "-"),
-                new Token(Token.Type.OPERATOR, ExpressionElements.OP_UNARY_MINUS),
+                // "e--√(16)": '--' after operand 'e' is a binary context
+                // with two minuses (even) → merged to net '+'. Eval unchanged:
+                // e + √16.
+                new Token(Token.Type.OPERATOR, "+"),
                 new Token(Token.Type.FUNCTION, "√"),
                 new Token(Token.Type.LEFT_PAREN, "("),
                 new Token(Token.Type.NUMBER, "16"),
@@ -693,7 +699,8 @@ class TokenizerTest {
         assertEquals(List.of(
                 new Token(Token.Type.FUNCTION, "abs"),
                 new Token(Token.Type.LEFT_PAREN, "("),
-                new Token(Token.Type.NUMBER, "-5"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "5"),
                 new Token(Token.Type.RIGHT_PAREN, ")")
         ), tokens1);
 
@@ -702,7 +709,8 @@ class TokenizerTest {
         assertEquals(List.of(
                 new Token(Token.Type.FUNCTION, "abs"),
                 new Token(Token.Type.LEFT_PAREN, "("),
-                new Token(Token.Type.NUMBER, "-5"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "5"),
                 new Token(Token.Type.RIGHT_PAREN, ")")
         ), tokens2);
 
@@ -814,6 +822,144 @@ class TokenizerTest {
                 new Token(Token.Type.OPERATOR, "*"),
                 new Token(Token.Type.VARIABLE, "a")
         ), tokens);
+    }
+
+    // ------------------------------------------------------------------
+    // Sign-merge token-sequence tests (Phase 2).
+    // ------------------------------------------------------------------
+
+    @Test
+    void testDoubleMinusAtStart() {
+        // '--' in unary context: 2 minuses → even → no-op, no token emitted.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "5")
+        ), tokenizer.tokenize("--5"));
+    }
+
+    @Test
+    void testDoublePlusAtStart() {
+        // '++' in unary context: no minuses → no-op.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "5")
+        ), tokenizer.tokenize("++5"));
+    }
+
+    @Test
+    void testPlusMinusAtStart() {
+        // '+-' in unary context: 1 minus → odd → UNARY '-'.
+        assertEquals(List.of(
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "5")
+        ), tokenizer.tokenize("+-5"));
+    }
+
+    @Test
+    void testMinusPlusAtStart() {
+        // '-+' in unary context: 1 minus → odd → UNARY '-'.
+        assertEquals(List.of(
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "5")
+        ), tokenizer.tokenize("-+5"));
+    }
+
+    @Test
+    void testBinaryPlusMinus() {
+        // '+-' after operand 5 is binary context with 1 minus → OP '-'.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "5"),
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3")
+        ), tokenizer.tokenize("5+-3"));
+    }
+
+    @Test
+    void testBinaryMinusPlus() {
+        // '-+' after operand 5: 1 minus → OP '-'.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "5"),
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3")
+        ), tokenizer.tokenize("5-+3"));
+    }
+
+    @Test
+    void testWhitespaceSeparatesSignRuns() {
+        // "5 - -3": whitespace inserts a boundary between the two '-' signs
+        // so the merger does NOT collapse them. The first '-' classifies as
+        // binary (after operand), the second as unary (after the OPERATOR).
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "5"),
+                new Token(Token.Type.OPERATOR, "-"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3")
+        ), tokenizer.tokenize("5 - -3"));
+    }
+
+    @Test
+    void testUnaryMinusBeforeParenthesisGroup() {
+        assertEquals(List.of(
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "4"),
+                new Token(Token.Type.RIGHT_PAREN, ")")
+        ), tokenizer.tokenize("-(3+4)"));
+    }
+
+    @Test
+    void testDoubleMinusBeforeParenthesisGroup() {
+        // '--' in unary context → 2 minuses → no-op, group untouched.
+        assertEquals(List.of(
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "4"),
+                new Token(Token.Type.RIGHT_PAREN, ")")
+        ), tokenizer.tokenize("--(3+4)"));
+    }
+
+    @Test
+    void testUnaryMinusBeforePowerLiteral() {
+        // '2*-3^2': '-' after '*' is unary, '3^2' is a separate subexpression.
+        // The UNARY_OPERATOR binds looser than '^' (same precedence 4, but
+        // right-associative), so eval is 2 * (-(3^2)) = -18.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "2"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.OPERATOR, "^"),
+                new Token(Token.Type.NUMBER, "2")
+        ), tokenizer.tokenize("2*-3^2"));
+    }
+
+    @Test
+    void testParenthesisedNegativeBaseInPower() {
+        // '2*(-3)^2' = 2 * ((-3)^2) = 18. The unary minus is inside the
+        // parens, so the '^' sees a pre-evaluated -3 on the stack.
+        assertEquals(List.of(
+                new Token(Token.Type.NUMBER, "2"),
+                new Token(Token.Type.OPERATOR, "*"),
+                new Token(Token.Type.LEFT_PAREN, "("),
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "3"),
+                new Token(Token.Type.RIGHT_PAREN, ")"),
+                new Token(Token.Type.OPERATOR, "^"),
+                new Token(Token.Type.NUMBER, "2")
+        ), tokenizer.tokenize("2*(-3)^2"));
+    }
+
+    @Test
+    void testLongUnaryRun() {
+        // '-------5+3': 7 leading minuses in unary context → odd → UNARY '-';
+        // then '+' is binary, '3' a number. Eval: -5 + 3 = -2.
+        assertEquals(List.of(
+                new Token(Token.Type.UNARY_OPERATOR, "-"),
+                new Token(Token.Type.NUMBER, "5"),
+                new Token(Token.Type.OPERATOR, "+"),
+                new Token(Token.Type.NUMBER, "3")
+        ), tokenizer.tokenize("-------5+3"));
     }
 
 }

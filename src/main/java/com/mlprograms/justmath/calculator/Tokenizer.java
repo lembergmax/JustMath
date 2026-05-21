@@ -33,7 +33,6 @@ import com.mlprograms.justmath.calculator.expression.elements.Constant;
 import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
 import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
-import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
 import lombok.NonNull;
 
@@ -124,33 +123,6 @@ public class Tokenizer {
             buildThreeArgumentFunctionCandidates();
 
     /**
-     * Scans the given token list for occurrences where a signed number directly follows
-     * a closing parenthesis token (e.g. ") -5"). In such cases, the signed number token
-     * is split into an operator token ('+' or '-') and a separate unsigned number token.
-     * This is necessary because expressions like "(-3) + 5" or "(2) -4" are tokenized
-     * initially with signed number tokens which must be separated for correct parsing.
-     * <p>
-     * This method modifies the list in place.
-     *
-     * @param tokens the list of tokens to scan and fix
-     * @throws NullPointerException if {@code tokens} is null
-     */
-    private void splitSignedNumbersAfterParentheses(List<Token> tokens) {
-        for (int i = 0; i < tokens.size() - 1; i++) {
-            Token current = tokens.get(i);
-            Token next = tokens.get(i + 1);
-            if (current.getType() == Token.Type.RIGHT_PAREN && next.getType() == Token.Type.NUMBER) {
-                String value = next.getValue();
-                if ((value.startsWith("+") || value.startsWith("-")) && value.length() > 1) {
-                    tokens.set(i + 1, new Token(Token.Type.OPERATOR, value.substring(0, 1)));
-                    tokens.add(i + 2, new Token(Token.Type.NUMBER, value.substring(1)));
-                    i++; // skip the inserted number token to avoid an infinite loop
-                }
-            }
-        }
-    }
-
-    /**
      * Tokenizes the input mathematical expression string into a list of {@link Token} objects.
      * <p>
      * This method performs lexical analysis by scanning the input expression character by character.
@@ -187,10 +159,8 @@ public class Tokenizer {
 
             if (isSignedNumberStart(expression, index, tokens)) {
                 index = tokenizeNumber(expression, index, tokens);
-            } else if (isUnarySignStart(expression, index, tokens)) {
-                tokens.add(new Token(Token.Type.OPERATOR,
-                        character == '-' ? ExpressionElements.OP_UNARY_MINUS : ExpressionElements.OP_UNARY_PLUS));
-                index++;
+            } else if (isSignChar(character)) {
+                index = tokenizeSignRun(expression, index, tokens);
             } else if (isLeftParenthesis(character)) {
                 tokens.add(new Token(Token.Type.LEFT_PAREN, String.valueOf(character)));
                 index++;
@@ -255,16 +225,66 @@ public class Tokenizer {
             }
         }
 
-        // Fix cases like ") -5" → OPERATOR(-), NUMBER(5)
-        splitSignedNumbersAfterParentheses(tokens);
-
-        // Insert implicit multiplication tokens where necessary
+        // Insert implicit multiplication tokens where necessary.
+        // splitSignedNumbersAfterParentheses and mergeConsecutiveSignOperators
+        // are obsolete: signs are never folded into number literals, and
+        // tokenizeSignRun collapses '+'/'-' runs at the source. Both methods
+        // have been removed.
         insertImplicitMultiplicationTokens(tokens);
 
-        // Merge consecutive + and - operators
-        mergeConsecutiveSignOperators(tokens);
-
         return tokens;
+    }
+
+    /**
+     * Consumes a run of consecutive {@code '+'} / {@code '-'} characters starting
+     * at {@code startIndex} and emits at most one token reflecting the net sign.
+     * <p>
+     * Behaviour:
+     * <ul>
+     *   <li>The run is classified once at {@code startIndex}: in unary context
+     *       (start of expression, after operator, after {@code (}, after
+     *       {@code ;}) the emitted token is {@link Token.Type#UNARY_OPERATOR};
+     *       otherwise {@link Token.Type#OPERATOR}.</li>
+     *   <li>The net sign is computed by parity of {@code '-'} count. An even
+     *       count yields {@code '+'}, an odd count yields {@code '-'}.</li>
+     *   <li>Unary {@code '+'} is a no-op and is dropped entirely (no token).
+     *       Binary {@code '+'} or {@code '-'} is always emitted.</li>
+     * </ul>
+     * Whitespace between two signs is preserved as a
+     * {@link #WHITESPACE_BOUNDARY} by {@link #removeWhitespace(String)}, which
+     * stops the run scan and forces two separate classifications.
+     *
+     * @param expression the input expression (whitespace already normalised)
+     * @param startIndex the index of the first {@code '+'} or {@code '-'}
+     * @param tokens     the token list to append to
+     * @return the index immediately after the consumed run
+     */
+    private int tokenizeSignRun(final String expression, final int startIndex, final List<Token> tokens) {
+        final boolean unaryContext = isUnarySignStart(expression, startIndex, tokens);
+        int minusCount = 0;
+        int i = startIndex;
+        while (i < expression.length()) {
+            char c = expression.charAt(i);
+            if (c == '-') {
+                minusCount++;
+                i++;
+            } else if (c == '+') {
+                i++;
+            } else {
+                break;
+            }
+        }
+        final boolean netMinus = (minusCount & 1) == 1;
+        if (unaryContext) {
+            if (netMinus) {
+                tokens.add(new Token(Token.Type.UNARY_OPERATOR, ExpressionElements.OP_MINUS));
+            }
+            // Unary '+' is a no-op: emit nothing.
+        } else {
+            tokens.add(new Token(Token.Type.OPERATOR,
+                    netMinus ? ExpressionElements.OP_MINUS : ExpressionElements.OP_PLUS));
+        }
+        return i;
     }
 
     /**
@@ -532,53 +552,15 @@ public class Tokenizer {
     private boolean isSignedNumberStart(String expression, int index, List<Token> tokens) {
         char c = expression.charAt(index);
 
-        // If not + or -, it's a normal digit start decision
-        if (!(c == '+' || c == '-')) {
-            return isDigitOrDecimal(c);
-        }
-
-        // must be followed by digit or decimal
-        if (index + 1 >= expression.length() || !isDigitOrDecimal(expression.charAt(index + 1))) {
+        // Sign characters are never folded into a number literal — they are
+        // emitted as a separate UNARY_OPERATOR token. This preserves the
+        // mathematical precedence rule that '-3^2' == '-(3^2)' == -9 (the
+        // unary minus binds looser than '^'), which sign-absorption would
+        // break by collapsing it into '(-3)^2' == 9.
+        if (c == '+' || c == '-') {
             return false;
         }
-
-        // If nothing parsed yet => sign at start of expression is part of number
-        if (tokens.isEmpty()) {
-            return true;
-        }
-
-        // Look at last produced token for context
-        Token previous = tokens.getLast(); // safe for any List implementation
-        Token.Type prevType = previous.getType();
-
-        // If previous is a number, right paren, constant or variable => + / - is BINARY operator
-        if (prevType == Token.Type.NUMBER
-                || prevType == Token.Type.RIGHT_PAREN
-                || prevType == Token.Type.CONSTANT
-                || prevType == Token.Type.VARIABLE) {
-            return false;
-        }
-
-        // If previous is a left paren: only '-' is unary sign (so "(+2)" -> "(, +, 2, )")
-        if (prevType == Token.Type.LEFT_PAREN) {
-            return c == '-';
-        }
-
-        // If previous is an operator, we must treat postfix-unary operators (like '!') specially:
-        if (prevType == Token.Type.OPERATOR) {
-            // If the previous operator is a postfix-unary operator (e.g. '!'), then + / - is NOT a unary sign.
-            // Otherwise (previous is a binary operator like '*' or a prefix operator), + / - is a unary sign.
-            return ExpressionElements.findBySymbol(previous.getValue())
-                    .map(element -> !(element instanceof PostfixUnaryOperator))
-                    .orElse(true);
-        }
-
-        // A FUNCTION token here is the trailing token of a pre-expanded multi-argument
-        // function (e.g. "summation(1;3;k)"), i.e. a completed operand, so a following
-        // + / - is BINARY. Real prefix functions are always followed by '(' and never
-        // reach this point. Only after a SEMICOLON is + / - the sign of a number
-        // (e.g. the "-2" in "gcd(4;-2)").
-        return prevType == Token.Type.SEMICOLON;
+        return isDigitOrDecimal(c);
     }
 
     /**
@@ -630,9 +612,12 @@ public class Tokenizer {
                 // is binary. Real prefix functions are followed by '(', never a sign.
                 return false;
             }
-            case OPERATOR -> {
+            case OPERATOR, UNARY_OPERATOR -> {
                 // Binary after the postfix factorial ("3!-2"); unary after any other
-                // operator, including a preceding prefix unary ("--x").
+                // operator, including a preceding prefix unary ("--x"). The
+                // UNARY_OPERATOR branch is reached when sign-merging is disabled
+                // or has not yet collapsed a run — the result is still "unary"
+                // because '-' followed by '-' is two stacked unaries.
                 return !ExpressionElements.OP_FACTORIAL.equals(previous.getValue());
             }
             default -> {
@@ -652,6 +637,19 @@ public class Tokenizer {
      */
     private static boolean isOperandChar(final char c) {
         return (c >= '0' && c <= '9') || isAsciiLetter(c) || c == '.';
+    }
+
+    /**
+     * Whether {@code c} is a prefix/binary sign character ({@code '+'} or {@code '-'}).
+     * Used by {@link #removeWhitespace(String)} to preserve a whitespace boundary
+     * between two signs (so that {@code "5 - -3"} is not collapsed by the
+     * aggressive sign-run merger into a single net sign).
+     *
+     * @param c the character to test
+     * @return {@code true} for {@code '+'} or {@code '-'}
+     */
+    private static boolean isSignChar(final char c) {
+        return c == '+' || c == '-';
     }
 
     /**
@@ -767,19 +765,26 @@ public class Tokenizer {
                 stringBuilder.append(charAt);
                 continue;
             }
-            // Whitespace is a separator, not a no-op: when it sits directly between
-            // two operand characters (letter/digit/'.' on BOTH sides) the operands
-            // must not silently merge ("3 4" must not become "34"). A boundary
-            // sentinel is inserted so they stay separate tokens; the structural
-            // validator then reports the missing operator.
+            // Whitespace is a separator, not a no-op:
+            //   1) Between two operand characters (letter/digit/'.' on BOTH sides)
+            //      operands must not silently merge ("3 4" → not "34"); a boundary
+            //      sentinel is inserted so they stay separate tokens.
+            //   2) Between two sign characters ('+' or '-' on both sides) the
+            //      aggressive sign-run merger in tokenizeSignRun must not collapse
+            //      them across a deliberate whitespace gap. "5 - -3" must parse
+            //      as 5, binary '-', unary '-', 3 — not as a single net sign.
             int j = i;
             while (j < length && Character.isWhitespace(input.charAt(j))) {
                 j++;
             }
-            if (j < length && stringBuilder.length() > 0
-                    && isOperandChar(stringBuilder.charAt(stringBuilder.length() - 1))
-                    && isOperandChar(input.charAt(j))) {
-                stringBuilder.append(WHITESPACE_BOUNDARY);
+            if (j < length && stringBuilder.length() > 0) {
+                char prev = stringBuilder.charAt(stringBuilder.length() - 1);
+                char next = input.charAt(j);
+                boolean operandPair = isOperandChar(prev) && isOperandChar(next);
+                boolean signPair = isSignChar(prev) && isSignChar(next);
+                if (operandPair || signPair) {
+                    stringBuilder.append(WHITESPACE_BOUNDARY);
+                }
             }
             i = j - 1;
         }
@@ -875,68 +880,15 @@ public class Tokenizer {
     private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
         int currentIndex = startIndex;
 
-        if (currentIndex < expression.length()) {
-            char fc = expression.charAt(currentIndex);
-            if (fc == '+' || fc == '-') {
-                currentIndex++;
-            }
-        }
-
+        // Sign characters are never folded into a number literal (see
+        // isSignedNumberStart); the input here always begins with a digit
+        // or decimal point. Walk forward over the operand chars.
         while (currentIndex < expression.length() && isDigitOrDecimal(expression.charAt(currentIndex))) {
             currentIndex++;
         }
 
-        String rawNumber = expression.substring(startIndex, currentIndex);
-
-        if (rawNumber.startsWith("+")) {
-            rawNumber = rawNumber.substring(1);
-        }
-
-        tokens.add(new Token(Token.Type.NUMBER, rawNumber));
+        tokens.add(new Token(Token.Type.NUMBER, expression.substring(startIndex, currentIndex)));
         return currentIndex;
-    }
-
-    /**
-     * Collapses sequences of consecutive '+' and '-' operator tokens in the token list
-     * into a single operator token. The result is determined by the parity of the number
-     * of '-' operators in the sequence: an even number of '-' results in '+', an odd number in '-'.
-     * <p>
-     * For example, the sequence "--" becomes "+", "---" becomes "-".
-     * <p>
-     * This method modifies the list of tokens in place.
-     *
-     * @param tokens the list of tokens to be processed and mutated
-     * @throws NullPointerException if {@code tokens} is null
-     */
-    private void mergeConsecutiveSignOperators(List<Token> tokens) {
-        List<Token> mergedTokens = new ArrayList<>();
-        int i = 0;
-
-        while (i < tokens.size()) {
-            Token token = tokens.get(i);
-
-            if (token.getType() == Token.Type.OPERATOR && (token.getValue().equals("+") || token.getValue().equals("-"))) {
-                int minusCount = 0;
-
-                while (i < tokens.size()
-                        && tokens.get(i).getType() == Token.Type.OPERATOR
-                        && (tokens.get(i).getValue().equals("+") || tokens.get(i).getValue().equals("-"))) {
-                    if (tokens.get(i).getValue().equals("-")) {
-                        minusCount++;
-                    }
-                    i++;
-                }
-
-                String resolvedOperator = (minusCount % 2 == 0) ? "+" : "-";
-                mergedTokens.add(new Token(Token.Type.OPERATOR, resolvedOperator));
-            } else {
-                mergedTokens.add(token);
-                i++;
-            }
-        }
-
-        tokens.clear();
-        tokens.addAll(mergedTokens);
     }
 
     /**
