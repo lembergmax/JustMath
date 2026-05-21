@@ -49,12 +49,12 @@ import java.util.*;
  * <p>
  * The tokenizer also handles special cases such as:
  * <ul>
- *   <li>Splitting signed numbers that appear immediately after closing parentheses into
- *       separate operator and number tokens (e.g., ") -5" becomes [")", "-", "5"]).</li>
+ *   <li>Emitting prefix signs as {@link Token.Type#UNARY_OPERATOR} tokens (never folded
+ *       into a number literal), so that {@code -3^2} parses as {@code -(3^2)}.</li>
+ *   <li>Collapsing a run of consecutive '+'/'-' characters into a single net sign token
+ *       (see {@code tokenizeSignRun}), respecting arithmetic sign rules.</li>
  *   <li>Inserting implicit multiplication tokens where multiplication is implied by juxtaposition,
  *       such as between a number and a parenthesis ("2(3)"), or between parentheses and functions.</li>
- *   <li>Merging consecutive '+' and '-' operators into a single normalized operator token,
- *       respecting arithmetic sign rules.</li>
  * </ul>
  * <p>
  * The set of valid operators and functions is dynamically populated from the
@@ -126,10 +126,9 @@ public class Tokenizer {
      * Tokenizes the input mathematical expression string into a list of {@link Token} objects.
      * <p>
      * This method performs lexical analysis by scanning the input expression character by character.
-     * It recognizes numbers (including signed numbers), parentheses, separators, operators,
-     * functions, constants (such as pi and e), and inserts implicit multiplication tokens where
-     * applicable. It also merges consecutive '+' and '-' operators into a single operator token
-     * for normalization.
+     * It recognizes numbers, parentheses, separators, operators, functions, constants (such as pi
+     * and e), emits prefix signs as unary-operator tokens, collapses consecutive '+'/'-' runs into
+     * a single net sign, and inserts implicit multiplication tokens where applicable.
      * <p>
      * The token list returned by this method is suitable for further syntactic parsing and evaluation.
      *
@@ -157,7 +156,7 @@ public class Tokenizer {
 
             Optional<ExpressionElement> matchedFunction = matchThreeArgumentFunction(expression, index);
 
-            if (isSignedNumberStart(expression, index, tokens)) {
+            if (startsNumericLiteral(character)) {
                 index = tokenizeNumber(expression, index, tokens);
             } else if (isSignChar(character)) {
                 index = tokenizeSignRun(expression, index, tokens);
@@ -225,11 +224,9 @@ public class Tokenizer {
             }
         }
 
-        // Insert implicit multiplication tokens where necessary.
-        // splitSignedNumbersAfterParentheses and mergeConsecutiveSignOperators
-        // are obsolete: signs are never folded into number literals, and
-        // tokenizeSignRun collapses '+'/'-' runs at the source. Both methods
-        // have been removed.
+        // Insert implicit multiplication tokens where necessary. Signs are never
+        // folded into number literals and consecutive '+'/'-' runs are already
+        // collapsed by tokenizeSignRun, so no post-pass normalisation is needed.
         insertImplicitMultiplicationTokens(tokens);
 
         return tokens;
@@ -506,67 +503,30 @@ public class Tokenizer {
     }
 
     /**
-     * Decide whether the character at {@code index} in {@code expression} starts a (possibly signed) numeric literal.
+     * Decide whether the character {@code c} starts a numeric literal.
      *
      * <p>
-     * The decision uses both the raw character context in {@code expression} and the already-produced {@code tokens}
-     * for lexical context (this is important because previously emitted tokens may represent multi-character
-     * constructs such as function names). The method therefore determines whether a leading '+' or '-' should be
-     * treated as part of a number (unary sign) or as a binary operator.
+     * Sign characters ({@code '+'} / {@code '-'}) are <em>never</em> folded into a
+     * number literal; they are emitted as separate {@link Token.Type#UNARY_OPERATOR}
+     * (or binary {@link Token.Type#OPERATOR}) tokens by {@link #tokenizeSignRun}. This
+     * preserves the precedence rule that {@code -3^2 == -(3^2) == -9} (unary minus
+     * binds looser than {@code '^'}); sign-absorption would wrongly collapse it into
+     * {@code (-3)^2 == 9}. A numeric literal therefore begins only with a digit or a
+     * decimal point.
      * </p>
      *
-     * <p><strong>Rules implemented</strong>:
-     * <ul>
-     *   <li>If the character at {@code index} is neither '+' nor '-', this method returns whether it is a digit
-     *       or a decimal point.</li>
-     *   <li>If the character is '+' or '-' it must be followed by a digit or decimal point to be considered a number
-     *       start; otherwise it is not a number start.</li>
-     *   <li>If no tokens have been produced yet, a leading '+' or '-' starts a number (e.g. {@code "+2"} or {@code "-2"}).</li>
-     *   <li>If the last produced token is a {@code NUMBER}, {@code RIGHT_PAREN}, {@code CONSTANT} or {@code VARIABLE},
-     *       then '+' / '-' is treated as a binary operator (not part of a number).</li>
-     *   <li>If the last produced token is a {@code LEFT_PAREN}, only a '-' is treated as a unary sign (so {@code "(+2)"}
-     *       is tokenized as {@code '(', '+', '2', ')'}, whereas {@code "(-2)"} produces {@code '(', NUMBER("-2"), ')'}).</li>
-     *   <li>If the last produced token is an {@code OPERATOR}, {@code FUNCTION} or {@code SEMICOLON}, the '+' / '-'
-     *       is treated as a unary sign for the following number (e.g. {@code "2*-3"}).</li>
-     * </ul>
-     * </p>
-     *
-     * <h4>Examples</h4>
-     * <ul>
-     *   <li>{@code isSignedNumberStart("+2", 0, emptyTokens)} → {@code true}</li>
-     *   <li>{@code isSignedNumberStart("-5", 0, emptyTokens)} → {@code true}</li>
-     *   <li>Given tokens ending with {@code RIGHT_PAREN}: {@code isSignedNumberStart("+3", idx, tokens)} → {@code false}</li>
-     *   <li>Given tokens ending with {@code OPERATOR}: {@code isSignedNumberStart("-3", idx, tokens)} → {@code true}</li>
-     *   <li>Inside parentheses: {@code isSignedNumberStart("+2", idx, tokensWithLastLeftParen)} → {@code false}</li>
-     * </ul>
-     *
-     * @param expression full input expression (must not be {@code null})
-     * @param index      index in {@code expression} to test (0-based). The caller must ensure {@code index} is valid.
-     * @param tokens     the list of tokens that have already been produced while tokenizing the expression;
-     *                   this method inspects the last produced token to decide context (must not be {@code null}).
-     * @return {@code true} if the character at {@code index} should be interpreted as starting a numeric token
-     * (including an optional unary '+' or '-' sign), {@code false} otherwise
-     * @throws IndexOutOfBoundsException if {@code index} is outside the bounds of {@code expression}
-     * @throws NullPointerException      if {@code expression} or {@code tokens} is {@code null}
+     * @param c the character to test
+     * @return {@code true} if {@code c} is a digit or {@code '.'}, {@code false} otherwise
      */
-    private boolean isSignedNumberStart(String expression, int index, List<Token> tokens) {
-        char c = expression.charAt(index);
-
-        // Sign characters are never folded into a number literal — they are
-        // emitted as a separate UNARY_OPERATOR token. This preserves the
-        // mathematical precedence rule that '-3^2' == '-(3^2)' == -9 (the
-        // unary minus binds looser than '^'), which sign-absorption would
-        // break by collapsing it into '(-3)^2' == 9.
-        if (c == '+' || c == '-') {
-            return false;
-        }
+    private boolean startsNumericLiteral(final char c) {
         return isDigitOrDecimal(c);
     }
 
     /**
      * Boundary marker injected by {@link #removeWhitespace(String)} where whitespace
-     * separates two operand characters. It is a non-typeable control character that
-     * acts purely as a hard token boundary and is skipped by the main scan loop.
+     * separates two operand characters ({@code "3 4"}) or two sign characters
+     * ({@code "5 - -3"}). It is a non-typeable control character that acts purely as a
+     * hard token boundary and is skipped by the main scan loop.
      */
     private static final char WHITESPACE_BOUNDARY = '';
 
@@ -577,12 +537,12 @@ public class Tokenizer {
      * in {@code -(3+4)}, {@code -sin(0)}, {@code -x} or {@code 2*-(1+1)}.
      *
      * <p>
-     * A signed <em>number</em> literal (e.g. {@code -5}) is still folded into the
-     * number by {@link #isSignedNumberStart(String, int, List)} and is therefore
-     * excluded here. After a {@code NUMBER}, {@code RIGHT_PAREN}, {@code CONSTANT} or
-     * {@code VARIABLE} the sign is binary; after the postfix factorial {@code !} it is
-     * binary too ({@code 3!-2}); otherwise (start, after {@code (}, a binary/prefix
-     * operator, a function or {@code ;}) it is unary.
+     * Classifies a single sign by the preceding token. After a {@code NUMBER},
+     * {@code RIGHT_PAREN}, {@code CONSTANT}, {@code VARIABLE} or a pre-expanded
+     * multi-argument {@code FUNCTION} the sign is binary; after the postfix
+     * factorial {@code !} it is binary too ({@code 3!-2}); otherwise (start of
+     * expression, after {@code (}, after a binary operator, or after {@code ;})
+     * it is unary.
      * </p>
      *
      * @param expression the full (whitespace-normalised) expression; must not be {@code null}
@@ -592,10 +552,7 @@ public class Tokenizer {
      */
     private boolean isUnarySignStart(final String expression, final int index, final List<Token> tokens) {
         final char c = expression.charAt(index);
-        if (c != '+' && c != '-') {
-            return false;
-        }
-        if (isSignedNumberStart(expression, index, tokens)) {
+        if (!isSignChar(c)) {
             return false;
         }
         if (tokens.isEmpty()) {
@@ -612,12 +569,9 @@ public class Tokenizer {
                 // is binary. Real prefix functions are followed by '(', never a sign.
                 return false;
             }
-            case OPERATOR, UNARY_OPERATOR -> {
-                // Binary after the postfix factorial ("3!-2"); unary after any other
-                // operator, including a preceding prefix unary ("--x"). The
-                // UNARY_OPERATOR branch is reached when sign-merging is disabled
-                // or has not yet collapsed a run — the result is still "unary"
-                // because '-' followed by '-' is two stacked unaries.
+            case OPERATOR -> {
+                // Binary after the postfix factorial ("3!-2"); unary after any
+                // other (binary) operator (e.g. "2*-3").
                 return !ExpressionElements.OP_FACTORIAL.equals(previous.getValue());
             }
             default -> {
@@ -881,7 +835,7 @@ public class Tokenizer {
         int currentIndex = startIndex;
 
         // Sign characters are never folded into a number literal (see
-        // isSignedNumberStart); the input here always begins with a digit
+        // startsNumericLiteral); the input here always begins with a digit
         // or decimal point. Walk forward over the operand chars.
         while (currentIndex < expression.length() && isDigitOrDecimal(expression.charAt(currentIndex))) {
             currentIndex++;
