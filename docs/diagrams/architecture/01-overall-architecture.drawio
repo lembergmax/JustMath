@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="overall-architecture" name="Overall Architecture">
+    <mxGraphModel dx="1100" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="JustMath — Overall Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="desc" value="Three top-level packages of com.mlprograms.justmath. The calculator package evaluates expression strings; bignumber provides the high-precision number model and math; converter handles unit conversion. All depend on BigNumber. Heavy transcendental math is delegated to the external library ch.obermuhlner.math.big.BigDecimalMath." style="text;html=1;fontSize=12;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="56" width="900" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- calculator package -->
+        <mxCell id="pkg_calc" value="package calculator  (Expression engine)" style="swimlane;html=1;startSize=28;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="380" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c_engine" value="CalculatorEngine&#10;(public API)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="110" y="40" width="160" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c_tok" value="Tokenizer" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="20" y="104" width="100" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="c_post" value="PostfixParser" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="140" y="104" width="100" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="c_eval" value="Evaluator" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="260" y="104" width="100" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="c_expr" value="expression.ExpressionElements&#10;(operator / function registry)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="20" y="150" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_err" value="errors.* / exceptions.*&#10;CalculatorResult, ErrorMode" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="20" y="200" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_util" value="CalculatorEngineUtils&#10;(validation, variables, cache helpers)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_calc">
+          <mxGeometry x="20" y="250" width="340" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- bignumber package -->
+        <mxCell id="pkg_bn" value="package bignumber  (High-precision math)" style="swimlane;html=1;startSize=28;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="450" y="130" width="380" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="b_num" value="BigNumber&#10;(central immutable number)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="100" y="40" width="180" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="b_list" value="BigNumberList" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="20" y="104" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="b_mat" value="BigNumberMatrix" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="140" y="104" width="120" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="b_parse" value="BigNumberParser / BigNumbers" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="270" y="104" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="b_math" value="math.*  (17 classes: BasicMath, RadicalMath,&#10;LogarithmicMath, TrigonometricMath, MatrixMath, …)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="20" y="160" width="340" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="b_algo" value="algorithms.*  (8 SortingAlgorithm impls)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_bn">
+          <mxGeometry x="20" y="216" width="340" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- converter package -->
+        <mxCell id="pkg_conv" value="package converter  (Unit conversion)" style="swimlane;html=1;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="860" y="130" width="340" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="v_conv" value="UnitConverter&#10;(public API)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="90" y="40" width="160" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="v_elem" value="UnitElements (facade)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="20" y="104" width="140" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="v_reg" value="UnitRegistry (BUILT_IN)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="180" y="104" width="140" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="v_def" value="Unit / UnitDefinition / UnitValue" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="20" y="150" width="300" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="v_form" value="ConversionFormula impls&#10;(Affine, Rational, Reciprocal, …)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="20" y="198" width="300" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="v_exc" value="exception.* (UnitConversionException, …)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="pkg_conv">
+          <mxGeometry x="20" y="246" width="300" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- external dependency -->
+        <mxCell id="ext" value="external: ch.obermuhlner.math.big.BigDecimalMath&#10;(roots, logarithms, trigonometry)" style="rounded=0;html=1;whiteSpace=wrap;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="450" y="470" width="380" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- dependency edges -->
+        <mxCell id="e1" style="endArrow=open;html=1;strokeColor=#9673a6;fontSize=11;" edge="1" parent="1" source="pkg_calc" target="pkg_bn">
+          <mxGeometry relative="1" as="geometry" />
+          <mxValue />
+        </mxCell>
+        <mxCell id="e1l" value="evaluates to BigNumber" style="text;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="180" width="50" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="uses BigNumber" style="endArrow=open;html=1;strokeColor=#6c8ebf;fontSize=11;" edge="1" parent="1" source="pkg_conv" target="pkg_bn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="delegates roots / logs / trig" style="endArrow=open;html=1;strokeColor=#666666;dashed=1;fontSize=11;" edge="1" parent="1" source="pkg_bn" target="ext">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- legend -->
+        <mxCell id="leg" value="Legend" style="swimlane;html=1;startSize=24;fillColor=none;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="900" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" value="Public API / entry point" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="leg">
+          <mxGeometry x="20" y="36" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" value="Core engine / central logic" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="leg">
+          <mxGeometry x="220" y="36" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" value="Parsing / validation" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="leg">
+          <mxGeometry x="420" y="36" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" value="Error path" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="leg">
+          <mxGeometry x="620" y="36" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" value="Utility / helper" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="leg">
+          <mxGeometry x="20" y="74" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg6" value="Cache / configuration" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="leg">
+          <mxGeometry x="220" y="74" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="lg7" value="Successful result" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="leg">
+          <mxGeometry x="420" y="74" width="180" height="28" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
