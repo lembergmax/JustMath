@@ -1,0 +1,91 @@
+<mxfile host="Electron">
+  <diagram id="seq-evaluate-variables" name="12 · Sequence: evaluate with variables">
+    <mxGraphModel dx="2934" dy="1201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="Sequence — evaluate(&quot;2*x+y&quot;, {x=3, y=4})  →  10" vertex="1">
+          <mxGeometry height="52" width="1420" x="40" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="Evaluation with a variable map. Before parsing, CalculatorEngineUtils checks for cyclic variable references and substitutes VARIABLE tokens with their evaluated values. A variable cycle raises CyclicVariableReferenceException. Verified against CalculatorEngine and CalculatorEngineUtils." vertex="1">
+          <mxGeometry height="44" width="1416" x="44" y="84" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_caller" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" value="Caller" vertex="1">
+          <mxGeometry height="620" width="130" x="60" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_engine" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" value="CalculatorEngine" vertex="1">
+          <mxGeometry height="620" width="160" x="280" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_tok" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#F97316;strokeColor=#EA580C;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" value="Tokenizer" vertex="1">
+          <mxGeometry height="620" width="130" x="520" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_utils" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" value="CalculatorEngineUtils" vertex="1">
+          <mxGeometry height="620" width="170" x="730" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_eval" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" value="PostfixParser + Evaluator" vertex="1">
+          <mxGeometry height="620" width="200" x="980" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" edge="1" parent="1" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" value="1: evaluate(&quot;2*x+y&quot;, {x=3, y=4})">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="125" y="220" as="sourcePoint" />
+            <mxPoint x="360" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" edge="1" parent="1" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" value="2: tokenize(&quot;2*x+y&quot;)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="262" as="sourcePoint" />
+            <mxPoint x="585" y="262" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" edge="1" parent="1" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#64748B;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" value="3: [2, *, x, +, y]">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="302" as="sourcePoint" />
+            <mxPoint x="360" y="302" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" edge="1" parent="1" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" value="4: checkVariablesForRecursion({x,y})">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="342" as="sourcePoint" />
+            <mxPoint x="810" y="342" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" edge="1" parent="1" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" value="5: replaceVariables(tokens, {x=3, y=4})">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="392" as="sourcePoint" />
+            <mxPoint x="810" y="392" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6" edge="1" parent="1" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#64748B;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" value="6: [2, *, 3, +, 4]  (substituted)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="810" y="432" as="sourcePoint" />
+            <mxPoint x="360" y="432" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m7" edge="1" parent="1" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" value="7: toPostfix → [2,3,*,4,+]  then evaluate">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="482" as="sourcePoint" />
+            <mxPoint x="1080" y="482" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m8" edge="1" parent="1" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" value="8: BigNumber(10)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="532" as="sourcePoint" />
+            <mxPoint x="360" y="532" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m9" edge="1" parent="1" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" value="9: return BigNumber(10)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="572" as="sourcePoint" />
+            <mxPoint x="125" y="572" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note" parent="1" style="rounded=1;arcSize=12;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" value="A cyclic definition (e.g. x = y + 1, y = x) raises CyclicVariableReferenceException at step 4." vertex="1">
+          <mxGeometry height="50" width="470" x="730" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  solid arrow = call  ·  dashed arrow = return  ·  green = result  ·  red note = error condition" vertex="1">
+          <mxGeometry height="24" width="1400" x="44" y="780" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

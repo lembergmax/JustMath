@@ -1,0 +1,73 @@
+<mxfile host="Electron">
+  <diagram id="caching-flow" name="09 · Caching Flow">
+    <mxGraphModel dx="2445" dy="1001" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="Expression Token Cache  (LRU)" vertex="1">
+          <mxGeometry height="56" width="1320" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="When the cache is enabled, CalculatorEngine caches the tokenized form of an expression to skip re-tokenizing. The cache is a synchronized LinkedHashMap with access-order LRU eviction (default capacity 128). Tokens are cached BEFORE variable substitution (substitution mutates the token list), so postfix and results are NOT cached. Verified against CalculatorEngine.java." vertex="1">
+          <mxGeometry height="56" width="1316" x="44" y="96" as="geometry" />
+        </mxCell>
+        <mxCell id="in" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;evaluate(expression [, variables])&lt;/b&gt;" vertex="1">
+          <mxGeometry height="48" width="300" x="80" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="norm" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;normalize key&lt;/b&gt; = replaceAbsSigns(expression)" vertex="1">
+          <mxGeometry height="48" width="340" x="60" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="enabled" parent="1" style="rhombus;rounded=0;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" value="cache&#xa;enabled?" vertex="1">
+          <mxGeometry height="100" width="180" x="140" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="hit" parent="1" style="rhombus;rounded=0;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" value="lookupCache(key)&#xa;hit?" vertex="1">
+          <mxGeometry height="100" width="180" x="140" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="reuse" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;reuse cached List&amp;lt;Token&amp;gt;&lt;/b&gt;&lt;br&gt;copy before mutation (substitution edits in place)" vertex="1">
+          <mxGeometry height="70" width="300" x="440" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="tok" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Tokenizer.tokenize(key)&lt;/b&gt; → List&amp;lt;Token&amp;gt;" vertex="1">
+          <mxGeometry height="60" width="300" x="440" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="store" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;storeCache(key, tokens)&lt;/b&gt;&lt;br&gt;synchronized; LRU evict at capacity (default 128)" vertex="1">
+          <mxGeometry height="60" width="320" x="800" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="cont" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;continue pipeline&lt;/b&gt;&lt;br&gt;variable substitution → validate → toPostfix → evaluate  (diagram 07)" vertex="1">
+          <mxGeometry height="60" width="450" x="530" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="cfg" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=12;spacingTop=8;shadow=1;" value="&lt;b&gt;Config&lt;/b&gt;&lt;br&gt;setExpressionCacheEnabled(boolean) — toggling off clears the cache&lt;br&gt;setExpressionCacheSize(int) — resets the cache to the new capacity&lt;br&gt;Internals: lookupCache / storeCache / ensureCache (synchronized)" vertex="1">
+          <mxGeometry height="120" width="380" x="940" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="in" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="norm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="norm" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="enabled">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="enabled" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;fontColor=#334155;fontSize=11;fontFamily=Helvetica;" target="hit" value="yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="enabled" style="endArrow=block;html=1;rounded=1;strokeColor=#8B5CF6;strokeWidth=2;fontColor=#6D28D9;fontSize=11;fontFamily=Helvetica;" target="tok" value="no → tokenize">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="hit" style="endArrow=block;html=1;rounded=1;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" target="reuse" value="hit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="hit" style="endArrow=block;html=1;rounded=1;strokeColor=#8B5CF6;strokeWidth=2;fontColor=#6D28D9;fontSize=11;fontFamily=Helvetica;" target="tok" value="miss → tokenize">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="tok" style="endArrow=block;html=1;rounded=1;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" target="store" value="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="reuse" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="cont">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="store" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="cont">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  Blue = entry / continuation  ·  Orange = normalization  ·  Yellow = cache decision / store  ·  Violet = tokenize  ·  Green = cache-hit reuse" vertex="1">
+          <mxGeometry height="24" width="1320" x="44" y="760" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

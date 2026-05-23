@@ -1,60 +1,100 @@
 <mxfile host="app.diagrams.net" type="device">
-  <diagram id="unit-converter-architecture" name="UnitConverter Architecture">
-    <mxGraphModel dx="1100" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1250" pageHeight="900" math="0" shadow="0">
+  <diagram id="unit-converter-architecture" name="06 · UnitConverter Architecture">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1100" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <mxCell id="title" value="UnitConverter — Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=left;" vertex="1" parent="1">
-          <mxGeometry x="40" y="20" width="800" height="34" as="geometry" />
+        <mxCell id="banner" value="UnitConverter  ·  Subsystem Architecture" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1574" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="desc" value="UnitConverter is the public API. Unit is a marker interface with 11 group enums (Length, Mass, Temperature, …). UnitRegistry is the single source of truth (BUILT_IN list) mapping each Unit to a UnitDefinition (display name, symbol, ConversionFormula). UnitElements is the lookup facade. Conversion always routes through the group base unit. Verified against converter/*." style="text;html=1;fontSize=12;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="40" y="56" width="1000" height="60" as="geometry" />
-        </mxCell>
-
-        <mxCell id="api" value="UnitConverter  (public API)&#10;convert(value, fromUnit, toUnit) → UnitValue&#10;convert(UnitValue, toUnit)&#10;convertToBigNumber(...)&#10;setMathContext(...)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="40" y="140" width="300" height="120" as="geometry" />
+        <mxCell id="subtitle" value="UnitConverter is the public API. Unit is a marker interface with 11 group enums. UnitRegistry (the BUILT_IN list) is the single source of truth, mapping each Unit to a UnitDefinition (display name, symbol, ConversionFormula). UnitElements is the lookup facade. Every conversion routes through the group base unit: value → toBase → fromBase. Verified against converter/*." style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="44" y="96" width="1560" height="56" as="geometry" />
         </mxCell>
 
-        <mxCell id="elem" value="UnitElements  (facade)&#10;parseUnit(symbol) → Unit&#10;getDisplayName(Unit)&#10;areCompatible(from, to)&#10;toBase(unit, value, ctx)&#10;fromBase(unit, base, ctx)&#10;findBySymbol(symbol)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#666666;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="400" y="140" width="280" height="150" as="geometry" />
+        <!-- API -->
+        <mxCell id="api" value="UnitConverter  (public API)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="420" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="apib" value="convert(String|BigNumber, fromUnit, toUnit) : UnitValue&lt;br&gt;convert(UnitValue input, toUnit) : UnitValue&lt;br&gt;convertToBigNumber(...) : BigNumber&#160;(3 overloads)&lt;br&gt;setMathContext(MathContext)&lt;br&gt;&lt;br&gt;&lt;i&gt;Checks compatibility, then routes value → base → target.&lt;/i&gt;" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="api">
+          <mxGeometry x="14" y="40" width="392" height="146" as="geometry" />
         </mxCell>
 
-        <mxCell id="reg" value="UnitRegistry  (single source of truth)&#10;BUILT_IN : List&lt;UnitSpec&gt;&#10;findBySymbol(symbol)&#10;requireDefinition(unit) → UnitDefinition&#10;baseUnitOf(unit)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="740" y="140" width="300" height="120" as="geometry" />
+        <!-- facade -->
+        <mxCell id="elem" value="UnitElements  (facade)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="170" width="420" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="elemb" value="parseUnit(symbol) : Unit&lt;br&gt;findBySymbol(symbol) : Optional&amp;lt;Unit&amp;gt;&lt;br&gt;getDisplayName(unit) : String&lt;br&gt;areCompatible(from, to) : boolean&lt;br&gt;toBase(unit, value, ctx) : BigNumber&lt;br&gt;fromBase(unit, base, ctx) : BigNumber" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="elem">
+          <mxGeometry x="14" y="40" width="392" height="146" as="geometry" />
         </mxCell>
 
-        <mxCell id="unit" value="Unit  (marker interface)&#10;group enums: Length, Area, Volume, Mass,&#10;Temperature, Pressure, Energy, Power, Time,&#10;Force, Speed  (each with a base unit)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#666666;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="40" y="320" width="320" height="110" as="geometry" />
+        <!-- registry -->
+        <mxCell id="reg" value="UnitRegistry  (single source of truth)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="170" width="420" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="regb" value="BUILT_IN : List&amp;lt;UnitSpec&amp;gt;&#160;— the single edit point&lt;br&gt;findBySymbol(symbol) · requireDefinition(unit) · baseUnitOf(unit)&lt;br&gt;helpers: define(...) · defineFraction(...) · defineReciprocal(...)&lt;br&gt;record UnitSpec(unit, definition, base)" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="reg">
+          <mxGeometry x="14" y="40" width="392" height="146" as="geometry" />
         </mxCell>
 
-        <mxCell id="def" value="UnitDefinition  (record)&#10;displayName, symbol, formula : ConversionFormula&#10;toBase(value, ctx) / fromBase(base, ctx)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#666666;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="400" y="320" width="300" height="110" as="geometry" />
+        <!-- Unit groups -->
+        <mxCell id="unit" value="Unit  (marker interface)  ·  11 group enums + base units" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="640" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="unitb" value="Length → METER&#160;&#160;·&#160;&#160;Area → SQUARE_METER&#160;&#160;·&#160;&#160;Volume → CUBIC_METER&lt;br&gt;Mass → KILOGRAM&#160;&#160;·&#160;&#160;Temperature → CELSIUS&#160;&#160;·&#160;&#160;Pressure → PASCAL&lt;br&gt;Energy → JOULE&#160;&#160;·&#160;&#160;Power → WATT&#160;&#160;·&#160;&#160;Time → SECOND&lt;br&gt;Force → NEWTON&#160;&#160;·&#160;&#160;Speed → METER_PER_SECOND&lt;br&gt;&lt;br&gt;&lt;i&gt;Units are pure identifiers (no data); the group fixes the base unit and the compatibility class.&lt;/i&gt;" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="unit">
+          <mxGeometry x="14" y="40" width="612" height="166" as="geometry" />
         </mxCell>
 
-        <mxCell id="form" value="ConversionFormula  (strategy)&#10;toBase(BigNumber, MathContext)&#10;fromBase(BigNumber, MathContext)&#10;impls: AffineConversionFormula (base = v·scale + offset),&#10;RationalConversionFormula, ReciprocalConversionFormula,&#10;RationalReciprocalConversionFormula; built via ConversionFormulas" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#ffe6cc;strokeColor=#d79b00;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="740" y="320" width="320" height="150" as="geometry" />
+        <!-- definition -->
+        <mxCell id="def" value="UnitDefinition  (record)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="410" width="380" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="defb" value="displayName · symbol · formula : ConversionFormula&lt;br&gt;toBase(value, ctx) · fromBase(base, ctx)" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="def">
+          <mxGeometry x="14" y="38" width="352" height="50" as="geometry" />
         </mxCell>
 
-        <mxCell id="value" value="UnitValue  (numeric + unit)&#10;toDisplayString(...), toCompactString(...),&#10;toPrettyDisplayString(locale), compareTo(...)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="40" y="470" width="320" height="90" as="geometry" />
+        <!-- formula -->
+        <mxCell id="form" value="ConversionFormula  (strategy)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#F97316;strokeColor=#EA580C;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="410" width="474" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="formb" value="toBase(BigNumber, MathContext) · fromBase(BigNumber, MathContext)&lt;br&gt;&lt;br&gt;&lt;b&gt;AffineConversionFormula&lt;/b&gt;&#160;base = value·scale + offset; inverse value = (base − offset)/scale&lt;br&gt;&lt;b&gt;RationalConversionFormula&lt;/b&gt;&#160;exact num/den&lt;br&gt;&lt;b&gt;ReciprocalConversionFormula&lt;/b&gt; · &lt;b&gt;RationalReciprocalConversionFormula&lt;/b&gt;&lt;br&gt;&lt;br&gt;built via &lt;b&gt;ConversionFormulas&lt;/b&gt;&#160;affine(scale, offset) · linear(num, den) · reciprocal(...)" style="text;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="form">
+          <mxGeometry x="14" y="40" width="446" height="166" as="geometry" />
         </mxCell>
 
-        <mxCell id="exc" value="exception.*&#10;UnitConversionException (incompatible / unknown unit),&#10;ConversionException (numeric parse failure)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
-          <mxGeometry x="400" y="470" width="300" height="90" as="geometry" />
+        <!-- value -->
+        <mxCell id="value" value="UnitValue  (numeric + unit)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="670" width="640" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="valueb" value="construct: (BigNumber, Unit) · (String [,Locale [,MathContext]])&lt;br&gt;toUnitSymbol() · isUnit(unit) · isUnitSymbol(sym) · compareTo(other)&lt;br&gt;toDisplayString([Locale]) &quot;12.5 km&quot; · toPrettyDisplayString(Locale) &quot;1.234.567,89 km&quot;&lt;br&gt;toCompactString([Locale]) &quot;12.5km&quot;&lt;br&gt;&lt;br&gt;&lt;i&gt;Self-describing, immutable; parsing handled internally by UnitValueParser.&lt;/i&gt;" style="text;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="value">
+          <mxGeometry x="14" y="40" width="612" height="116" as="geometry" />
+        </mxCell>
+
+        <!-- parser + exceptions -->
+        <mxCell id="parser" value="UnitValueParser  (internal)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="670" width="420" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="parserb" value="parseComponents(String [,Locale]) : ParsedComponents&lt;br&gt;splitIntoNumberTextAndUnitSymbol(String)&lt;br&gt;&lt;br&gt;Heuristic locale detection from separators; longest-symbol-match-first; symbols are case-sensitive." style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="parser">
+          <mxGeometry x="14" y="40" width="392" height="116" as="geometry" />
+        </mxCell>
+
+        <mxCell id="exc" value="exception.*" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#EF4444;strokeColor=#DC2626;fontColor=#FFFFFF;fontStyle=1;fontSize=14;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="670" width="454" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="excb" value="&lt;b&gt;UnitConversionException&lt;/b&gt;&lt;br&gt;different unit group · unknown / blank symbol&lt;br&gt;&lt;br&gt;&lt;b&gt;ConversionException&lt;/b&gt;&lt;br&gt;numeric parse failure (wraps BigNumber parse error)" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" vertex="1" parent="exc">
+          <mxGeometry x="14" y="40" width="426" height="116" as="geometry" />
         </mxCell>
 
         <!-- edges -->
-        <mxCell id="ea" value="uses" style="endArrow=open;html=1;strokeColor=#6c8ebf;fontSize=11;" edge="1" parent="1" source="api" target="elem"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="eb" value="looks up" style="endArrow=open;html=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="elem" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="ec" value="resolves" style="endArrow=open;html=1;strokeColor=#d6b656;fontSize=11;" edge="1" parent="1" source="reg" target="def"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="ed" value="holds" style="endArrow=open;html=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="def" target="form"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="ee" value="identifies" style="endArrow=open;html=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="def" target="unit"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="ef" value="produces" style="endArrow=open;html=1;strokeColor=#82b366;fontSize=11;" edge="1" parent="1" source="api" target="value"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="eg" value="on error" style="endArrow=open;html=1;strokeColor=#b85450;dashed=1;fontSize=11;" edge="1" parent="1" source="api" target="exc"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea" value="uses" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#2563EB;strokeWidth=2;fontColor=#2563EB;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="api" target="elem"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb" value="looks up" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#475569;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="elem" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec" value="resolves" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="reg" target="def"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed" value="holds" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#475569;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="def" target="form"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ee" value="identifies" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#475569;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="def" target="unit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ef" value="produces" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="api" target="value"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eg" value="parses input" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#475569;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="value" target="parser"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eh" value="on error" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=6 4;strokeColor=#EF4444;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1" source="api" target="exc"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-        <mxCell id="leg" value="Legend:  Blue = public API   Green = result value   Yellow = registry/config   Orange = formula/parsing   Red = error   Grey = supporting types" style="text;html=1;fontSize=12;align=left;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="40" y="600" width="1100" height="24" as="geometry" />
+        <mxCell id="leg" value="Legend:&#160;&#160;Blue = public API&#160;&#160;·&#160;&#160;Green = result value&#160;&#160;·&#160;&#160;Yellow = registry / config&#160;&#160;·&#160;&#160;Orange = conversion formula&#160;&#160;·&#160;&#160;Red = error&#160;&#160;·&#160;&#160;Grey = supporting types&#160;&#160;|&#160;&#160;See diagram 15 for the conversion sequence." style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" vertex="1" parent="1">
+          <mxGeometry x="44" y="870" width="1570" height="24" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

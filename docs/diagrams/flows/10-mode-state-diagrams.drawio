@@ -1,0 +1,85 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="mode-state-diagrams" name="10 · Modes and States">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1000" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="banner" value="Modes &amp; State / Decision Diagrams" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1574" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Four decision/state views for the configurable modes and outcome types. All names verified against ErrorMode, TrigonometricMode, CalculatorResult and UnitElements.areCompatible." style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="44" y="96" width="1560" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- G1 ErrorMode -->
+        <mxCell id="g1" value="ErrorMode  ·  engine.setErrorMode(...)" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="760" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="g1s" value="error formatted" style="ellipse;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" vertex="1" parent="g1">
+          <mxGeometry x="30" y="80" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g1raw" value="&lt;b&gt;RAW&lt;/b&gt;&#160;— technical English (technicalDetail)" style="rounded=1;arcSize=10;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g1">
+          <mxGeometry x="240" y="48" width="480" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g1uf" value="&lt;b&gt;USER_FRIENDLY&lt;/b&gt;&#160;— localized template from i18n bundle" style="rounded=1;arcSize=10;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g1">
+          <mxGeometry x="240" y="116" width="480" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g1e1" value="RAW" style="endArrow=block;html=1;rounded=1;strokeColor=#64748B;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g1" source="g1s" target="g1raw"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="g1e2" value="USER_FRIENDLY" style="endArrow=block;html=1;rounded=1;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g1" source="g1s" target="g1uf"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- G2 Trig -->
+        <mxCell id="g2" value="TrigonometricMode  ·  constructor / per call" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="160" width="774" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="g2s" value="trig fn input angle" style="ellipse;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" vertex="1" parent="g2">
+          <mxGeometry x="30" y="80" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g2deg" value="&lt;b&gt;DEG&lt;/b&gt;&#160;(default)&#160;— convertAngle: degrees → radians, then BigDecimalMath" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g2">
+          <mxGeometry x="240" y="48" width="500" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g2rad" value="&lt;b&gt;RAD&lt;/b&gt;&#160;— use the angle directly (radians)" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g2">
+          <mxGeometry x="240" y="116" width="500" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g2e1" value="DEG" style="endArrow=block;html=1;rounded=1;strokeColor=#7C3AED;strokeWidth=2;fontColor=#6D28D9;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g2" source="g2s" target="g2deg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="g2e2" value="RAD" style="endArrow=block;html=1;rounded=1;strokeColor=#7C3AED;strokeWidth=2;fontColor=#6D28D9;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g2" source="g2s" target="g2rad"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- G3 Result -->
+        <mxCell id="g3" value="CalculatorResult&amp;lt;T&amp;gt;  ·  sealed" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="760" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="g3s" value="evaluateSafe(...)" style="ellipse;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" vertex="1" parent="g3">
+          <mxGeometry x="30" y="80" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g3ok" value="&lt;b&gt;Success&amp;lt;T&amp;gt;(value)&lt;/b&gt;&#160;— value() present · isSuccess()=true" style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g3">
+          <mxGeometry x="240" y="48" width="480" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g3fail" value="&lt;b&gt;Failure&amp;lt;T&amp;gt;(error)&lt;/b&gt;&#160;— error() present · valueOrThrow() throws" style="rounded=1;arcSize=10;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g3">
+          <mxGeometry x="240" y="116" width="480" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g3e1" value="ok" style="endArrow=block;html=1;rounded=1;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g3" source="g3s" target="g3ok"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="g3e2" value="error" style="endArrow=block;html=1;rounded=1;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g3" source="g3s" target="g3fail"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- G4 Unit -->
+        <mxCell id="g4" value="Unit conversion validity  ·  UnitElements.areCompatible" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#14B8A6;strokeColor=#0D9488;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="400" width="774" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="g4s" value="convert(from, to)" style="ellipse;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" vertex="1" parent="g4">
+          <mxGeometry x="30" y="80" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g4ok" value="&lt;b&gt;same group&lt;/b&gt;&#160;→ toBase → fromBase → UnitValue" style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g4">
+          <mxGeometry x="240" y="48" width="500" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g4bad" value="&lt;b&gt;different group / unknown symbol&lt;/b&gt;&#160;→ UnitConversionException" style="rounded=1;arcSize=10;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="g4">
+          <mxGeometry x="240" y="116" width="500" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="g4e1" value="compatible" style="endArrow=block;html=1;rounded=1;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g4" source="g4s" target="g4ok"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="g4e2" value="incompatible" style="endArrow=block;html=1;rounded=1;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="g4" source="g4s" target="g4bad"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="leg" value="Legend:&#160;&#160;Blue = entry state&#160;&#160;·&#160;&#160;Green = success&#160;&#160;·&#160;&#160;Red = error&#160;&#160;·&#160;&#160;Violet = engine math&#160;&#160;·&#160;&#160;Yellow = localized&#160;&#160;·&#160;&#160;Grey = raw / technical" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" vertex="1" parent="1">
+          <mxGeometry x="44" y="630" width="1560" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

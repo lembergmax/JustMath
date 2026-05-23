@@ -1,0 +1,63 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="seq-matrix-operation" name="14 · Sequence: matrix determinant">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="banner" value="Sequence — BigNumberMatrix.determinant()" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="1320" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Determinant via Laplace expansion. BigNumberMatrix validates the shape (must be square) then delegates to MatrixMath.determinant, which expands recursively using minor(...) and combines cofactors with BigNumber arithmetic. The same delegate pattern applies to multiply / inverse / power. Verified against BigNumberMatrix.java and MatrixMath.java." style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="44" y="84" width="1316" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll_caller" value="Caller" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="130" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_mtx" value="BigNumberMatrix" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="170" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_mm" value="MatrixMath" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="580" y="150" width="170" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_bn" value="BigNumber" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="870" y="150" width="140" height="600" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="1: determinant()" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="125" y="230" as="sourcePoint" /><mxPoint x="385" y="230" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="n1" value="self · validateDimensions() / require square (isSquare)" style="rounded=1;arcSize=12;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=10;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="248" width="330" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="2: determinant(this)" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="385" y="300" as="sourcePoint" /><mxPoint x="665" y="300" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="n2" value="self · Laplace expansion along first row — for each column j: minor(m,0,j) then recurse determinant(minor)" style="rounded=1;arcSize=12;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=10;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="318" width="450" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="3: multiply / subtract cofactor terms" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="665" y="370" as="sourcePoint" /><mxPoint x="940" y="370" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4: BigNumber (partial sums)" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#64748B;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="940" y="410" as="sourcePoint" /><mxPoint x="665" y="410" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5: BigNumber det" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="665" y="460" as="sourcePoint" /><mxPoint x="385" y="460" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="6: return BigNumber det" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="385" y="500" as="sourcePoint" /><mxPoint x="125" y="500" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="note" value="Non-square input fails fast at step 1; recursion base cases: 1×1 → value, 2×2 → ad − bc. inverse(m) follows the same shape: adjugate(m) / determinant(m)." style="rounded=1;arcSize=12;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#475569;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="560" width="710" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg" value="Legend:&#160;&#160;solid arrow = call&#160;&#160;·&#160;&#160;dashed arrow = return&#160;&#160;·&#160;&#160;green = result&#160;&#160;·&#160;&#160;orange note = validation&#160;&#160;·&#160;&#160;violet note = recursive algorithm" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" vertex="1" parent="1">
+          <mxGeometry x="44" y="780" width="1320" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
