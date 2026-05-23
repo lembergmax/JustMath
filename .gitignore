@@ -44,3 +44,6 @@ build/
 /.idea/
 /out/artifacts/justmath_jar/justmath.jar
 /.claude/
+
+### draw.io ###
+*.bkp
