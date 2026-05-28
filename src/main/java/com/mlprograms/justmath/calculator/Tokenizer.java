@@ -184,6 +184,13 @@ public class Tokenizer {
                 String symbol = expressionElement.getSymbol();
 
                 int functionStart = index + symbol.length();
+                if (functionStart >= expression.length() || !isLeftParenthesis(expression.charAt(functionStart))) {
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_MISSING_RIGHT_PAREN,
+                            Map.of("function", symbol),
+                            "Expected '(' after function: " + symbol,
+                            null);
+                }
                 int closingParenthesis = findClosingParenthesis(expression, functionStart);
                 if (closingParenthesis < 0) {
                     throw new SyntaxErrorException(
@@ -195,18 +202,20 @@ public class Tokenizer {
 
                 String inside = expression.substring(functionStart + 1, closingParenthesis);
 
-                String[] parts = inside.split(ExpressionElements.SEP_SEMICOLON, 3);
-                if (parts.length != 3) {
+                // Split on the top-level separator only — nested parentheses must not be broken up,
+                // otherwise e.g. iif(max(a;b);c;d) would be mis-parsed.
+                List<String> parts = splitTopLevel(inside, ExpressionElements.SEP_SEMICOLON.charAt(0));
+                if (parts.size() != 3) {
                     throw new SyntaxErrorException(
                             CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT,
-                            Map.of("function", symbol, "expected", "3", "actual", String.valueOf(parts.length)),
+                            Map.of("function", symbol, "expected", "3", "actual", String.valueOf(parts.size())),
                             "Function '" + symbol + "' must have three arguments",
                             null);
                 }
 
-                tokens.add(new Token(Token.Type.NUMBER, parts[0]));
-                tokens.add(new Token(Token.Type.NUMBER, parts[1]));
-                tokens.add(new Token(Token.Type.STRING, parts[2]));
+                tokens.add(new Token(Token.Type.NUMBER, parts.get(0)));
+                tokens.add(new Token(Token.Type.NUMBER, parts.get(1)));
+                tokens.add(new Token(Token.Type.STRING, parts.get(2)));
                 tokens.add(new Token(Token.Type.FUNCTION, symbol));
 
                 index = closingParenthesis + 1;
@@ -833,11 +842,24 @@ public class Tokenizer {
      */
     private int tokenizeNumber(String expression, int startIndex, List<Token> tokens) {
         int currentIndex = startIndex;
+        boolean decimalPointSeen = false;
 
         // Sign characters are never folded into a number literal (see
         // startsNumericLiteral); the input here always begins with a digit
         // or decimal point. Walk forward over the operand chars.
+        // A number literal may contain at most one '.': "1.2.3" is rejected
+        // with a clear syntax error rather than silently producing one token.
         while (currentIndex < expression.length() && isDigitOrDecimal(expression.charAt(currentIndex))) {
+            if (expression.charAt(currentIndex) == '.') {
+                if (decimalPointSeen) {
+                    throw new SyntaxErrorException(
+                            CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                            Map.of("character", "."),
+                            "Invalid number literal at position " + startIndex + ": multiple decimal points",
+                            currentIndex);
+                }
+                decimalPointSeen = true;
+            }
             currentIndex++;
         }
 
@@ -950,22 +972,57 @@ public class Tokenizer {
      * @return the index of the matching closing parenthesis, or -1 if not found
      */
     private int findClosingParenthesis(String expression, int openIndex) {
+        if (openIndex >= expression.length() || !isLeftParenthesis(expression.charAt(openIndex))) {
+            return -1;
+        }
+
         int depth = 0;
+        boolean opened = false;
         for (int i = openIndex; i < expression.length(); i++) {
             char c = expression.charAt(i);
 
             if (isLeftParenthesis(c)) {
                 depth++;
+                opened = true;
             } else if (isRightParenthesis(c)) {
                 depth--;
             }
 
-            if (depth == 0) {
+            if (opened && depth == 0) {
                 return i;
             }
         }
 
         return -1;
+    }
+
+    /**
+     * Splits a string on the given separator character, but only at the top nesting level (depth 0).
+     * Separators inside parentheses (or any registered left/right parenthesis pair) are preserved
+     * in the produced parts. Used by the three-argument-function tokenizer path so that nested
+     * expressions like {@code iif(max(a;b);c;d)} are not mis-split.
+     *
+     * @param input    the inner expression text (must not be {@code null})
+     * @param separator the top-level separator character
+     * @return list of substrings; never {@code null}, may be empty if {@code input} is empty
+     */
+    private List<String> splitTopLevel(final String input, final char separator) {
+        final List<String> parts = new ArrayList<>();
+        int depth = 0;
+        int partStart = 0;
+        for (int i = 0; i < input.length(); i++) {
+            final char c = input.charAt(i);
+            if (isLeftParenthesis(c)) {
+                depth++;
+            } else if (isRightParenthesis(c)) {
+                depth--;
+            } else if (c == separator && depth == 0) {
+                parts.add(input.substring(partStart, i));
+                partStart = i + 1;
+            }
+        }
+        parts.add(input.substring(partStart));
+        return parts;
     }
 
 }

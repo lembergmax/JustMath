@@ -27,6 +27,8 @@ package com.mlprograms.justmath.bignumber;
 import com.mlprograms.justmath.bignumber.math.MatrixMath;
 import com.mlprograms.justmath.bignumber.matrix.MatrixElementConsumer;
 import com.mlprograms.justmath.bignumber.matrix.MatrixMessages;
+import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-
-import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * Represents a matrix whose elements are arbitrary-precision decimal numbers ({@link BigNumber}),
@@ -143,7 +142,13 @@ public class BigNumberMatrix implements Cloneable {
 		}
 
 		this.locale = locale;
-		this.data = data;
+		// Defensive copy: detach the matrix from the caller's list so that subsequent mutations
+		// to the input list (add/remove rows, replace cells) do not silently corrupt this matrix.
+		final List<List<BigNumber>> defensiveData = new ArrayList<>(data.size());
+		for (final List<BigNumber> row : data) {
+			defensiveData.add(new ArrayList<>(row));
+		}
+		this.data = defensiveData;
 		this.rows = new BigNumber(String.valueOf(data.size()), locale);
 		this.columns = new BigNumber(String.valueOf(expectedCols), locale);
 	}
@@ -674,6 +679,26 @@ public class BigNumberMatrix implements Cloneable {
 		});
 
 		return currentMax[ 0 ];
+	}
+
+	/**
+	 * Returns the minimum value among all elements in the matrix.
+	 * <p>
+	 * Counterpart to {@link #max()}. Iterates over all matrix entries and compares them using
+	 * {@link BigNumber#isLessThan(BigNumber)}.
+	 *
+	 * @return the smallest {@link BigNumber} present in the matrix
+	 */
+	public BigNumber min() {
+		BigNumber[] currentMin = new BigNumber[] { get(BigNumbers.ZERO, BigNumbers.ZERO) };
+
+		forEachElement((i, j, value) -> {
+			if (value.isLessThan(currentMin[ 0 ])) {
+				currentMin[ 0 ] = value;
+			}
+		});
+
+		return currentMin[ 0 ];
 	}
 
 	/**

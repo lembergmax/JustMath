@@ -28,12 +28,11 @@ import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.bignumber.math.utils.MathUtils;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Locale;
-
-import lombok.NonNull;
 
 /**
  * Provides core arithmetic and selected transcendental operations for {@link BigNumber} without using
@@ -110,8 +109,8 @@ public final class BasicMath {
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend, @NonNull final Locale locale) {
-        final ParsedDecimalNumber augendParts = normalize(parseToParts(augend.toString(), locale));
-        final ParsedDecimalNumber addendParts = normalize(parseToParts(addend.toString(), locale));
+        final ParsedDecimalNumber augendParts = normalize(parseFromBigNumber(augend));
+        final ParsedDecimalNumber addendParts = normalize(parseFromBigNumber(addend));
 
         final ParsedDecimalNumber sumParts = normalize(addParsed(augendParts, addendParts));
         return toBigNumber(sumParts, locale);
@@ -133,8 +132,8 @@ public final class BasicMath {
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend, @NonNull final Locale locale) {
-        final ParsedDecimalNumber minuendParts = normalize(parseToParts(minuend.toString(), locale));
-        final ParsedDecimalNumber subtrahendParts = normalize(parseToParts(subtrahend.toString(), locale));
+        final ParsedDecimalNumber minuendParts = normalize(parseFromBigNumber(minuend));
+        final ParsedDecimalNumber subtrahendParts = normalize(parseFromBigNumber(subtrahend));
 
         final ParsedDecimalNumber differenceParts = normalize(addParsed(minuendParts, negate(subtrahendParts)));
         return toBigNumber(differenceParts, locale);
@@ -158,8 +157,8 @@ public final class BasicMath {
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier, @NonNull final Locale locale) {
-        final ParsedDecimalNumber multiplicandParts = normalize(parseToParts(multiplicand.toString(), locale));
-        final ParsedDecimalNumber multiplierParts = normalize(parseToParts(multiplier.toString(), locale));
+        final ParsedDecimalNumber multiplicandParts = normalize(parseFromBigNumber(multiplicand));
+        final ParsedDecimalNumber multiplierParts = normalize(parseFromBigNumber(multiplier));
 
         final ParsedDecimalNumber productParts = normalize(multiplyParsed(multiplicandParts, multiplierParts));
         return toBigNumber(productParts, locale);
@@ -185,8 +184,8 @@ public final class BasicMath {
     public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        final ParsedDecimalNumber dividendParts = normalize(parseToParts(dividend.toString(), locale));
-        final ParsedDecimalNumber divisorParts = normalize(parseToParts(divisor.toString(), locale));
+        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
+        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
             throw new ArithmeticException("Division by zero");
@@ -216,8 +215,8 @@ public final class BasicMath {
      * @throws IllegalArgumentException if {@code divisor} is zero or an operand is invalid
      */
     public static BigNumber modulo(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
-        final ParsedDecimalNumber dividendParts = normalize(parseToParts(dividend.toString(), locale));
-        final ParsedDecimalNumber divisorParts = normalize(parseToParts(divisor.toString(), locale));
+        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
+        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
             throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
@@ -250,8 +249,8 @@ public final class BasicMath {
     public static BigNumber power(@NonNull final BigNumber base, @NonNull final BigNumber exponent, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        final ParsedDecimalNumber baseParts = normalize(parseToParts(base.toString(), locale));
-        final ParsedDecimalNumber exponentParts = normalize(parseToParts(exponent.toString(), locale));
+        final ParsedDecimalNumber baseParts = normalize(parseFromBigNumber(base));
+        final ParsedDecimalNumber exponentParts = normalize(parseFromBigNumber(exponent));
 
         final ParsedDecimalNumber specialCaseResult = tryHandlePowerSpecialCases(baseParts, exponentParts, mathContext);
         if (specialCaseResult != null) {
@@ -291,7 +290,7 @@ public final class BasicMath {
     public static BigNumber factorial(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        final ParsedDecimalNumber argumentParts = normalize(parseToParts(argument.toString(), locale));
+        final ParsedDecimalNumber argumentParts = normalize(parseFromBigNumber(argument));
         validateFactorialInput(argumentParts);
 
         final String factorialDigits = computeFactorialDigits(argumentParts);
@@ -325,7 +324,7 @@ public final class BasicMath {
     public static BigNumber exp(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        final ParsedDecimalNumber exponentParts = normalize(parseToParts(argument.toString(), locale));
+        final ParsedDecimalNumber exponentParts = normalize(parseFromBigNumber(argument));
 
         final String fastExpPlain = tryComputeExpUsingDouble(exponentParts);
         if (fastExpPlain != null) {
@@ -542,6 +541,22 @@ public final class BasicMath {
      * @param locale          locale describing separators; must not be {@code null}
      * @return parsed number (may not be normalized yet)
      */
+    /**
+     * Parses a {@link BigNumber} into its internal {@link ParsedDecimalNumber} representation using its
+     * canonical (locale-independent) {@link BigNumber#toBigDecimal() BigDecimal} form.
+     *
+     * <p>This avoids the locale-mismatch bug that would otherwise occur when one operand was formatted
+     * with its own locale (e.g. {@code "1,5"} for {@code de_DE}) and then parsed under a different
+     * locale (e.g. {@code en_US}): the source locale's decimal separator would be misclassified as a
+     * grouping separator and silently stripped, producing a result that is off by a power of ten.</p>
+     *
+     * @param bigNumber the source number; must not be {@code null}
+     * @return the parsed parts (not necessarily normalized yet); never {@code null}
+     */
+    private static ParsedDecimalNumber parseFromBigNumber(final BigNumber bigNumber) {
+        return parseToParts(bigNumber.toBigDecimal().toPlainString(), Locale.US);
+    }
+
     private static ParsedDecimalNumber parseToParts(final String rawNumberString, final Locale locale) {
         final String trimmed = rawNumberString == null ? "" : rawNumberString.trim();
         if (trimmed.isEmpty()) {
@@ -1687,8 +1702,8 @@ public final class BasicMath {
      * @throws IllegalArgumentException if {@code divisor} is zero or an operand is invalid
      */
     public static BigNumber remainder(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
-        final ParsedDecimalNumber dividendParts = normalize(parseToParts(dividend.toString(), locale));
-        final ParsedDecimalNumber divisorParts = normalize(parseToParts(divisor.toString(), locale));
+        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
+        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
             throw new IllegalArgumentException("Cannot perform remainder operation with divisor zero.");

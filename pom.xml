@@ -152,11 +152,53 @@
     <build>
         <plugins>
 
-            <!-- Maven Surefire Plugin (for running tests) -->
+            <!--
+                Maven Surefire Plugin.
+                Pinned to 3.5.2 (was 3.2.5) to pick up SUREFIRE-2127 and related fixes that
+                eliminate the spurious {@code *.dumpstream} files emitted on normal test-fork
+                shutdown. Those files contained a {@code java.io.EOFException} from the
+                {@code CommandChannelDecoder} reader thread reacting to the parent surefire
+                process closing the command stream — i.e. diagnostic noise, not a JVM crash.
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.2</version>
+                <configuration>
+                    <!-- Reuse the forked JVM across test classes for faster runs and fewer
+                         forks to shut down (each shutdown is the source of the dumpstream
+                         noise that motivated the upgrade). -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                </configuration>
+            </plugin>
+
+            <!--
+                Maven JAR Plugin: excludes the dev scratchpad {@code Main} class from the
+                published library JAR. The source file is kept in {@code src/main/java} for
+                interactive debugging but never ends up in {@code justmath-<version>.jar}.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/mlprograms/justmath/Main.class</exclude>
+                        <exclude>com/mlprograms/justmath/Main$*.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!--
+                Maven Clean Plugin: explicit version pin. The default {@code clean} lifecycle
+                purges {@code target/} at the start of {@code mvn clean package}; pinning the
+                version avoids version drift across machines and CI.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
             </plugin>
 
             <!-- JavaFX Maven Plugin (for `mvn javafx:run`) -->
@@ -212,6 +254,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Keep the published source jar in sync with the binary jar: omit Main. -->
+                    <excludes>
+                        <exclude>com/mlprograms/justmath/Main.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
 
             <!-- Attach Javadocs -->

@@ -24,9 +24,6 @@
 
 package com.mlprograms.justmath.calculator;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumbers;
 import com.mlprograms.justmath.calculator.errors.CalculatorError;
@@ -38,12 +35,14 @@ import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.internal.Token;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.Getter;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
 
-import lombok.Getter;
-import lombok.NonNull;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
+import static com.mlprograms.justmath.calculator.CalculatorEngineUtils.*;
 
 /**
  * Main entry point for evaluating arbitrary-precision mathematical expressions supplied as
@@ -235,7 +234,7 @@ public class CalculatorEngine {
      * Creates an engine with an explicit division precision and trigonometric mode.
      *
      * @param divisionPrecision precision used for division operations
-     * @param trigonometricMode trigonometric mode (DEG, RAD, GRAD); must not be {@code null}
+     * @param trigonometricMode trigonometric mode (DEG or RAD); must not be {@code null}
      */
     public CalculatorEngine(int divisionPrecision, @NonNull TrigonometricMode trigonometricMode) {
         this(getDefaultMathContext(divisionPrecision), trigonometricMode);

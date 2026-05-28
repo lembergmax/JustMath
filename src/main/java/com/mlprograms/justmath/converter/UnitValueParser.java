@@ -24,21 +24,20 @@
 
 package com.mlprograms.justmath.converter;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.internal.LocaleSeparators;
 import com.mlprograms.justmath.calculator.CalculatorEngineUtils;
 import com.mlprograms.justmath.converter.exception.ConversionException;
 import com.mlprograms.justmath.converter.exception.UnitConversionException;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import static com.mlprograms.justmath.bignumber.BigNumbers.DEFAULT_DIVISION_PRECISION;
 
 /**
  * Internal parsing utility for {@link UnitValue} inputs.
@@ -347,8 +346,11 @@ final class UnitValueParser {
         for (final String unitSymbolText : UNIT_SYMBOLS_SORTED_BY_LENGTH_DESCENDING) {
             if (singleTokenInput.endsWith(unitSymbolText)) {
                 final String numericText = singleTokenInput.substring(0, singleTokenInput.length() - unitSymbolText.length()).trim();
+                // An empty numeric prefix means the input is just the unit symbol — keep
+                // scanning so shorter unit suffixes (which would leave a non-empty prefix)
+                // still get a chance to match.
                 if (numericText.isEmpty()) {
-                    break;
+                    continue;
                 }
                 return new ParsedParts(numericText, unitSymbolText);
             }

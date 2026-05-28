@@ -25,11 +25,10 @@
 package com.mlprograms.justmath.bignumber;
 
 import com.mlprograms.justmath.calculator.internal.CoordinateType;
-
-import java.util.Locale;
-
 import lombok.Getter;
 import lombok.NonNull;
+
+import java.util.Locale;
 
 /**
  * An immutable data structure representing a 2D coordinate with arbitrary precision,
@@ -94,10 +93,11 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
 
     /**
      * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates
-     * using the default system {@link Locale}.
+     * using {@link Locale#US}. The previous JVM-default locale was deliberately replaced to
+     * keep the behaviour of test suites and library callers deterministic across machines.
      */
     public BigNumberCoordinate() {
-        this(BigNumbers.ZERO, BigNumbers.ZERO, CoordinateType.CARTESIAN, Locale.getDefault());
+        this(BigNumbers.ZERO, BigNumbers.ZERO, CoordinateType.CARTESIAN, Locale.US);
     }
 
     /**

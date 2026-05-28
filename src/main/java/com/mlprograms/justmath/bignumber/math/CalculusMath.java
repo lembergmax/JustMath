@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -24,51 +24,19 @@
 
 package com.mlprograms.justmath.bignumber.math;
 
-import com.mlprograms.justmath.bignumber.BigNumber;
-import com.mlprograms.justmath.bignumber.BigNumbers;
-import com.mlprograms.justmath.calculator.CalculatorEngine;
-import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.NonNull;
+/**
+ * Placeholder for future calculus-related operations on {@link com.mlprograms.justmath.bignumber.BigNumber}.
+ *
+ * <p>The previous {@code integrate(...)} method was removed because it produced incorrect results when
+ * mixed with non-US locales (variable substitution fed locale-formatted strings back into the calculator
+ * engine which only accepts {@code '.'} as decimal separator) and contained other unresolved issues
+ * tracked as a TODO. The method will be reintroduced once a locale-safe, adaptive implementation is
+ * available.</p>
+ */
+public final class CalculusMath {
 
-import java.math.MathContext;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import static com.mlprograms.justmath.calculator.CalculatorEngine.getCurrentVariables;
-
-public class CalculusMath {
-
-	// TODO: integral
-	public static BigNumber integrate(@NonNull BigNumber from, @NonNull BigNumber to, @NonNull String kExpression, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		if (from.isGreaterThan(to)) {
-			throw new IllegalArgumentException("Lower bound must be less than or equal to upper bound");
-		}
-		if (!kExpression.contains("x")) {
-			throw new IllegalArgumentException("Expression must contain the variable 'x'");
-		}
-
-		final int steps = 10000;
-		final CalculatorEngine calculator = new CalculatorEngine(mathContext, trigonometricMode);
-
-		BigNumber h = to.subtract(from).divide(new BigNumber(String.valueOf(steps)), mathContext);
-		BigNumber result = BigNumbers.ZERO;
-
-		for (int i = 0; i <= steps; i++) {
-			BigNumber x = from.add(h.multiply(new BigNumber(String.valueOf(i))));
-			Map<String, String> vars = new HashMap<>(getCurrentVariables());
-			vars.put("x", x.toString());
-
-			BigNumber fx = calculator.evaluate(kExpression, vars);
-			if (i == 0 || i == steps) {
-				result = result.add(fx.divide(BigNumbers.TWO, mathContext));
-			} else {
-				result = result.add(fx);
-			}
-		}
-
-		result = result.multiply(h).round(mathContext);
-		return new BigNumber(result, locale, mathContext, trigonometricMode);
+	private CalculusMath() {
+		// utility class
 	}
 
 }

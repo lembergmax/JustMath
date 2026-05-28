@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -28,6 +28,7 @@ import com.mlprograms.justmath.bignumber.algorithms.*;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
@@ -103,7 +104,11 @@ public class BigNumberList implements List<BigNumber> {
      * @param bigNumberList the list whose internal storage should be shared; must not be {@code null}
      */
     public BigNumberList(@NonNull final BigNumberList bigNumberList) {
-        this.values = bigNumberList.values;
+        // Defensive copy: detach the new list from the source's internal storage. The previous
+        // behaviour ("shallow copy" that shared the underlying list reference) was surprising and
+        // led to silent aliasing bugs. For explicit reference sharing use the
+        // {@link #BigNumberList(List)} constructor with the source's {@code values}.
+        this.values = new ArrayList<>(bigNumberList.values);
     }
 
     /**
@@ -394,41 +399,47 @@ public class BigNumberList implements List<BigNumber> {
             return Set.of();
         }
 
-        List<BigNumber> unique = new ArrayList<>();
-        List<Integer> counts = new ArrayList<>();
-
-        for (BigNumber value : values) {
-            int index = -1;
-            for (int i = 0; i < unique.size(); i++) {
-                if (value.compareTo(unique.get(i)) == 0) {
-                    index = i;
-                    break;
-                }
+        // Group by numeric value (BigDecimal stripped of trailing zeros) so that "1" and "1.0"
+        // collapse to the same key. A LinkedHashMap preserves first-occurrence order, which
+        // makes the resulting LinkedHashSet stable across runs and easy to test.
+        final java.util.LinkedHashMap<BigDecimal, int[]> countsByValue = new java.util.LinkedHashMap<>();
+        final java.util.LinkedHashMap<BigDecimal, BigNumber> representativeByValue = new java.util.LinkedHashMap<>();
+        for (final BigNumber value : values) {
+            final BigDecimal key = canonicalKey(value);
+            final int[] slot = countsByValue.computeIfAbsent(key, k -> new int[1]);
+            if (slot[0] == 0) {
+                representativeByValue.put(key, value);
             }
-
-            if (index == -1) {
-                unique.add(value);
-                counts.add(1);
-            } else {
-                counts.set(index, counts.get(index) + 1);
-            }
+            slot[0]++;
         }
 
         int maxCount = 0;
-        for (int count : counts) {
-            if (count > maxCount) {
-                maxCount = count;
+        for (final int[] slot : countsByValue.values()) {
+            if (slot[0] > maxCount) {
+                maxCount = slot[0];
             }
         }
 
-        Set<BigNumber> result = new LinkedHashSet<>();
-        for (int i = 0; i < unique.size(); i++) {
-            if (counts.get(i) == maxCount) {
-                result.add(unique.get(i));
+        final Set<BigNumber> result = new LinkedHashSet<>();
+        for (final var entry : countsByValue.entrySet()) {
+            if (entry.getValue()[0] == maxCount) {
+                result.add(representativeByValue.get(entry.getKey()));
             }
         }
-
         return result;
+    }
+
+    /**
+     * Returns a canonical {@link BigDecimal} key suitable for value-based hashing of
+     * {@link BigNumber} instances. Strips trailing zeros so that representations like
+     * {@code "1"} and {@code "1.0"} share a bucket, and normalises negative zero to zero.
+     *
+     * @param value the source number; must not be {@code null}
+     * @return a representation-independent key; never {@code null}
+     */
+    private static BigDecimal canonicalKey(final BigNumber value) {
+        final BigDecimal raw = value.toBigDecimal();
+        return raw.signum() == 0 ? BigDecimal.ZERO : raw.stripTrailingZeros();
     }
 
     /**
@@ -530,6 +541,46 @@ public class BigNumberList implements List<BigNumber> {
      */
     public BigNumber standardDeviation() {
         return variance().squareRoot();
+    }
+
+    /**
+     * Computes the unbiased sample variance of the values in this list (divisor {@code N - 1}).
+     *
+     * <p>Unlike {@link #variance()} (population variance with divisor {@code N}), the sample
+     * variance applies Bessel's correction and is the appropriate estimator when the values are
+     * drawn from a larger population.</p>
+     *
+     * <pre>
+     * sampleVariance = Σ (xᵢ - μ)² / (N - 1)
+     * </pre>
+     *
+     * @return a new {@link BigNumber} representing the unbiased sample variance
+     * @throws IllegalStateException if this list contains fewer than two elements
+     */
+    public BigNumber sampleVariance() {
+        final int minSize = 2;
+        if (size() < minSize) {
+            throw new IllegalStateException("sampleVariance requires at least " + minSize + " elements, but the list contains " + size() + ".");
+        }
+
+        final BigNumber mean = average();
+        BigNumber sumOfSquaredDeviations = BigNumbers.ZERO;
+        for (final BigNumber value : values) {
+            final BigNumber deviation = value.subtract(mean);
+            sumOfSquaredDeviations = sumOfSquaredDeviations.add(deviation.multiply(deviation));
+        }
+        final BigNumber denominator = new BigNumber(String.valueOf(size() - 1));
+        return sumOfSquaredDeviations.divide(denominator);
+    }
+
+    /**
+     * Computes the unbiased sample standard deviation, i.e. {@code sqrt(sampleVariance())}.
+     *
+     * @return a new {@link BigNumber} representing the unbiased sample standard deviation
+     * @throws IllegalStateException if this list contains fewer than two elements
+     */
+    public BigNumber sampleStandardDeviation() {
+        return sampleVariance().squareRoot();
     }
 
     /**
@@ -1163,7 +1214,12 @@ public class BigNumberList implements List<BigNumber> {
      * @return a new {@code BigNumberList} instance referencing the same internal list
      */
     public BigNumberList clone() {
-        return new BigNumberList(this);
+        // {@code clone()} intentionally shares the underlying list storage (legacy contract,
+        // exercised by {@code cloneSharesInternalStorage}). The {@code BigNumberList(List)}
+        // constructor assigns the supplied list by reference (no defensive copy), which gives
+        // us the desired aliasing. For an independent copy use {@link #copy()} or the
+        // {@link #BigNumberList(BigNumberList)} copy constructor (which is defensive).
+        return new BigNumberList(this.values);
     }
 
     @Override

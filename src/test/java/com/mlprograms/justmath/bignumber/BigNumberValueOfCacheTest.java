@@ -27,15 +27,20 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class BigNumberValueOfCacheTest {
 
     @Test
-    void valueOfReturnsSameInstanceForCachedRange() {
+    void valueOfReturnsEqualInstancesForCachedRange() {
+        // valueOf still uses an internal cache as an optimisation, but returns a defensive
+        // clone of the cached template so that callers' mutations (setters / negateThis)
+        // cannot corrupt the shared instance. The contract is therefore value equality,
+        // not reference identity.
         for (int i = -16; i <= 256; i++) {
-            assertSame(BigNumber.valueOf(i), BigNumber.valueOf(i),
-                    "valueOf(" + i + ") should be cached");
+            assertEquals(BigNumber.valueOf(i), BigNumber.valueOf(i),
+                    "valueOf(" + i + ") should produce equal numbers");
         }
     }
 
@@ -49,7 +54,7 @@ class BigNumberValueOfCacheTest {
 
     @Test
     void valueOfIntAndLongAgreeForOverlap() {
-        assertSame(BigNumber.valueOf(5), BigNumber.valueOf(5L));
+        assertEquals(BigNumber.valueOf(5), BigNumber.valueOf(5L));
     }
 
     @Test

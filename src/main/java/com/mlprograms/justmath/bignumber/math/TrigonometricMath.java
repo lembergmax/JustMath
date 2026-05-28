@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Max Lemberg
+ * Copyright (c) 2025-2026 Max Lemberg
  *
  * This file is part of JustMath.
  *
@@ -122,9 +122,38 @@ public class TrigonometricMath {
 	public static BigNumber tan(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
+		if (isTangentSingularity(angle, trigonometricMode)) {
+			throw new ArithmeticException(
+					"tan is undefined at " + angle.toString() + " (cosine is zero at this point)");
+		}
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 
 		return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale).trim();
+	}
+
+	/**
+	 * Detects exact tangent singularities for the {@link TrigonometricMode#DEG} mode where the input
+	 * can be checked symbolically. In radian mode the input is transcendental in general, so a
+	 * reliable exact check is not possible; callers in radian mode receive whatever the
+	 * underlying {@link BigDecimalMath#tan(BigDecimal, MathContext)} produces.
+	 *
+	 * @param angle             the input angle
+	 * @param trigonometricMode the angle measurement mode
+	 * @return {@code true} when {@code angle} is an exact {@code 90° + k·180°} in degree mode
+	 */
+	private static boolean isTangentSingularity(final BigNumber angle, final TrigonometricMode trigonometricMode) {
+		if (trigonometricMode != TrigonometricMode.DEG) {
+			return false;
+		}
+		final BigDecimal degrees = angle.toBigDecimal();
+		if (degrees.stripTrailingZeros().scale() > 0) {
+			// Has a fractional part — cannot be an exact 90 + k·180.
+			return false;
+		}
+		final java.math.BigInteger integerDegrees = degrees.toBigIntegerExact();
+		final java.math.BigInteger modulo = integerDegrees.mod(java.math.BigInteger.valueOf(180));
+		return modulo.equals(java.math.BigInteger.valueOf(90));
 	}
 
 	/**
@@ -151,9 +180,34 @@ public class TrigonometricMath {
 	public static BigNumber cot(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
+		if (isCotangentSingularity(angle, trigonometricMode)) {
+			throw new ArithmeticException(
+					"cot is undefined at " + angle.toString() + " (sine is zero at this point)");
+		}
+
 		BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
 
 		return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale).trim();
+	}
+
+	/**
+	 * Detects exact cotangent singularities for the {@link TrigonometricMode#DEG} mode (where the
+	 * input can be checked symbolically). In radian mode no exact check is performed.
+	 *
+	 * @param angle             the input angle
+	 * @param trigonometricMode the angle measurement mode
+	 * @return {@code true} when {@code angle} is an exact {@code k·180°} in degree mode
+	 */
+	private static boolean isCotangentSingularity(final BigNumber angle, final TrigonometricMode trigonometricMode) {
+		if (trigonometricMode != TrigonometricMode.DEG) {
+			return false;
+		}
+		final BigDecimal degrees = angle.toBigDecimal();
+		if (degrees.stripTrailingZeros().scale() > 0) {
+			return false;
+		}
+		final java.math.BigInteger integerDegrees = degrees.toBigIntegerExact();
+		return integerDegrees.mod(java.math.BigInteger.valueOf(180)).signum() == 0;
 	}
 
 }

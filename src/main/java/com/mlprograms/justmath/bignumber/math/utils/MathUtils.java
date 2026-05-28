@@ -24,19 +24,18 @@
 
 package com.mlprograms.justmath.bignumber.math.utils;
 
-import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
-import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
-
 import com.mlprograms.justmath.bignumber.BigNumber;
 import com.mlprograms.justmath.bignumber.BigNumberCoordinate;
 import com.mlprograms.justmath.bignumber.MultiValueResult;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import lombok.NonNull;
+import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
+import static com.mlprograms.justmath.bignumber.BigNumbers.pi;
 
 /**
  * Utility class for internal mathematical operations involving angle conversions.
@@ -124,31 +123,11 @@ public class MathUtils {
     }
 
     /**
-     * Ensures that the provided object is an instance of {@link BigNumber}.
-     * <p>
-     * If the object is a {@code BigNumber}, it is returned as-is.
-     * Otherwise, an {@link IllegalArgumentException} is thrown.
-     *
-     * @param object the object to check and cast
-     * @return the object cast to {@link BigNumber} if it is an instance
-     * @throws IllegalArgumentException if the object is not a {@link BigNumber}
-     */
-    @Deprecated(forRemoval = true)
-    public static BigNumber ensureBigNumber(Object object) {
-        if (object instanceof BigNumber bigNumber) {
-            return bigNumber;
-        }
-
-        throw new IllegalArgumentException("Expected BigNumber but got: " + object);
-    }
-
-    /**
      * Ensures that the provided object can be used as a scalar {@link BigNumber}.
      * <p>
      * Operators and functions that participate in a normal scalar expression
      * (addition, subtraction, multiplication, division, power, single-argument
-     * functions, ...) call this helper instead of {@link #ensureBigNumber(Object)}
-     * to support transparent use of multi-value results.
+     * functions, ...) call this helper to support transparent use of multi-value results.
      * </p>
      *
      * <ul>
