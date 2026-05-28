@@ -29,60 +29,30 @@ import com.mlprograms.justmath.calculator.errors.ErrorMode;
 
 import java.util.Locale;
 
-public class Main {
+/**
+ * Minimal runnable demonstration of the {@link CalculatorEngine} API.
+ *
+ * <p>This class is a developer convenience entry point only. It is intentionally
+ * excluded from the published library jar (see the {@code maven-jar-plugin} and
+ * {@code maven-source-plugin} configuration in {@code pom.xml}) and carries no library
+ * logic — keep production behaviour and tests out of here.</p>
+ */
+public final class Main {
+
+    private Main() {
+        // Demonstration entry point; not instantiable.
+    }
 
     public static void main(final String[] args) {
+        final CalculatorEngine engine = new CalculatorEngine()
+                .setLocale(Locale.GERMAN)
+                .setErrorMode(ErrorMode.USER_FRIENDLY);
 
-//        UnitConverter unitConverter = new UnitConverter();
-//
-//        BigNumber convertedToBigNumber = unitConverter.convertToBigNumber("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//        UnitValue convertedToUnitValue = unitConverter.convert("1", Unit.Area.ACRE, Unit.Area.SQUARE_KILOMETER);
-//
-//        System.out.println(convertedToBigNumber);
-//        System.out.println(convertedToUnitValue.getValue());
+        // A successful evaluation rendered with the configured locale.
+        System.out.println("1/2 + 1/2 = " + engine.evaluateToString("1/2 + 1/2"));
 
-        final CalculatorEngine calculatorEngine = new CalculatorEngine();
-        calculatorEngine.setLocale(Locale.GERMAN);
-        calculatorEngine.setErrorMode(ErrorMode.USER_FRIENDLY);
-        System.out.println(calculatorEngine.evaluateToString("!5"));
-        System.out.println(calculatorEngine.evaluateToString("5000ß!sqrt()"));
-        System.out.println(calculatorEngine.evaluateToString("5000!sqrt()"));
-        System.out.println(calculatorEngine.evaluateToString("5000!*"));
-
-
-        System.out.println(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"));
-        System.out.println((calculatorEngine.getPostfixParser().toPostfix(calculatorEngine.getTokenizer().tokenize("5000!sqrt()"))));
-
-//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)"));
-//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+3"));
-//        System.out.println(calculatorEngine.evaluateToString("Pol(1;2)+Rec(2;1)"));
-//        System.out.println(calculatorEngine.evaluateToString("Rec(2;1)"));
-
-//        final UnitValue unitValue = new UnitValue("1y");
-//        System.out.println(new UnitConverter().convertToBigNumber(unitValue, Unit.Time.SECOND));
-
-//        System.out.println(
-//                UnitElements.getRegistry().entrySet().stream().filter(unit -> unit.getValue().toString().equals("0"))
-//        );
-
-
-//        UnitConverter unitConverter = new UnitConverter();
-//
-//        System.out.println(unitConverter.convert("15", Unit.Speed.KILOMETER_PER_HOUR, Unit.Speed.METER_PER_SECOND));
-//
-//
-//        System.out.println(unitConverter.convert(
-//                "8935410796587016507816508716578061357893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357",
-//                Unit.Length.SUN_RADIUS,
-//                Unit.Length.METER
-//        ));
-//
-//        System.out.println(unitConverter.convert(
-//                "893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357893541079658701650781650871657806135789354107965870165078165087165780613578935410796587016507816508716578061357",
-//                Unit.Length.SUN_RADIUS,
-//                Unit.Length.METER
-//        ));
-
+        // A failing evaluation, folded into a localized error string (Text Output API).
+        System.out.println("5/0      = " + engine.evaluateToString("5/0"));
     }
 
 }
