@@ -91,4 +91,29 @@ public class SyntaxErrorException extends CalculatorException {
         super(new CalculatorError(code, params, technicalDetail, position));
     }
 
+    /**
+     * Variant of the structured constructor that additionally chains a lower-level cause. Used
+     * by {@link com.mlprograms.justmath.calculator.CalculatorEngine} when it converts an
+     * {@link IllegalArgumentException} or other unchecked failure from the tokenizer / parser
+     * into a syntax error: without this overload the underlying stack trace would be lost.
+     *
+     * @param code            the structured error code; must not be {@code null}
+     * @param params          named substitution parameters; must not be {@code null}
+     * @param technicalDetail technical English detail; must not be {@code null}
+     * @param position        optional one-based position inside the expression, or {@code null}
+     * @param cause           the underlying cause; may be {@code null}
+     */
+    public SyntaxErrorException(
+            @NonNull final CalculatorErrorCode code,
+            @NonNull final Map<String, String> params,
+            @NonNull final String technicalDetail,
+            final Integer position,
+            final Throwable cause
+    ) {
+        super(new CalculatorError(code, params, technicalDetail, position));
+        if (cause != null) {
+            initCause(cause);
+        }
+    }
+
 }

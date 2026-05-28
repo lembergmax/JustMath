@@ -96,27 +96,20 @@ public class PostfixParser {
                 }
 
                 case OPERATOR, UNARY_OPERATOR -> {
-                    if (token.getType() == Token.Type.OPERATOR
-                            && token.getValue().equals(ExpressionElements.OP_FACTORIAL)) {
+                    // Factorial is the only postfix operator in the grammar; it has the same RPN
+                    // form as the input (the value it consumes is already in {@code output}), so
+                    // we emit it directly without running the precedence loop. The previous
+                    // implementation used {@code break;} inside an arrow-form switch arm to skip
+                    // the precedence loop — this still worked but read as if it were exiting the
+                    // outer {@code for}-loop. An explicit {@code if/else} makes the control flow
+                    // obvious to readers.
+                    final boolean isFactorial = token.getType() == Token.Type.OPERATOR
+                            && token.getValue().equals(ExpressionElements.OP_FACTORIAL);
+                    if (isFactorial) {
                         output.add(token);
-                        break;
+                    } else {
+                        shuntInfixOperator(token, operatorStack, output);
                     }
-
-                    while (!operatorStack.isEmpty()) {
-                        Token top = operatorStack.peek();
-                        boolean topIsOperator = top.getType() == Token.Type.OPERATOR
-                                || top.getType() == Token.Type.UNARY_OPERATOR;
-                        if ((top.getType() == Token.Type.FUNCTION)
-                                || (topIsOperator
-                                && (hasHigherPrecedence(top, token)
-                                || (hasEqualPrecedence(top, token) && !isRightAssociative(token))))) {
-                            output.add(operatorStack.pop());
-                        } else {
-                            break;
-                        }
-                    }
-
-                    operatorStack.push(token);
                 }
                 case RIGHT_PAREN -> {
                     while (!operatorStack.isEmpty() && operatorStack.peek().getType() != Token.Type.LEFT_PAREN) {
@@ -188,6 +181,40 @@ public class PostfixParser {
         return ExpressionElements.findBySymbol(functionToken.getValue())
                 .map(element -> element instanceof UnlimitedArgumentFunction)
                 .orElse(false);
+    }
+
+    /**
+     * Performs the shunting-yard precedence dance for an infix or prefix operator.
+     *
+     * <p>While operators of higher precedence — or of equal precedence when the incoming operator
+     * is <em>left</em> associative — sit on top of {@code operatorStack}, they are popped onto the
+     * {@code output} list. Functions on the operator stack are always popped first (they bind
+     * tighter than any infix operator). Finally the incoming {@code operator} is pushed onto the
+     * stack.</p>
+     *
+     * <p>Extracting this loop into a named helper replaces the previous inline {@code break;}
+     * inside an arrow-form switch arm. The {@code break;} was syntactically valid (it exited the
+     * switch arm) but read as if it were exiting the surrounding {@code for} loop.</p>
+     *
+     * @param operator      the incoming infix or prefix operator token
+     * @param operatorStack the shunting-yard operator stack (mutated in place)
+     * @param output        the postfix output list (mutated in place)
+     */
+    private void shuntInfixOperator(final Token operator, final Deque<Token> operatorStack, final List<Token> output) {
+        while (!operatorStack.isEmpty()) {
+            final Token top = operatorStack.peek();
+            final boolean topIsOperator = top.getType() == Token.Type.OPERATOR
+                    || top.getType() == Token.Type.UNARY_OPERATOR;
+            final boolean shouldPop = top.getType() == Token.Type.FUNCTION
+                    || (topIsOperator
+                    && (hasHigherPrecedence(top, operator)
+                    || (hasEqualPrecedence(top, operator) && !isRightAssociative(operator))));
+            if (!shouldPop) {
+                break;
+            }
+            output.add(operatorStack.pop());
+        }
+        operatorStack.push(operator);
     }
 
     /**

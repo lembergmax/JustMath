@@ -330,7 +330,11 @@ public class CalculatorEngine {
      * @param enabled {@code true} to enable caching of tokenized expressions
      * @return this engine for builder-style chaining
      */
-    public CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
+    public synchronized CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
+        // Synchronized on {@code this} so it shares the same monitor as {@link #lookupCache(String)}
+        // and {@link #storeCache(String, List)}: without the lock, this setter could write
+        // {@code expressionCache = null} while another thread sat inside a synchronized lookup
+        // and was about to dereference the field.
         this.expressionCacheEnabled = enabled;
         if (!enabled) {
             this.expressionCache = null;
@@ -346,7 +350,10 @@ public class CalculatorEngine {
      * @return this engine for builder-style chaining
      * @throws IllegalArgumentException if {@code size} is not strictly positive
      */
-    public CalculatorEngine setExpressionCacheSize(final int size) {
+    public synchronized CalculatorEngine setExpressionCacheSize(final int size) {
+        // See {@link #setExpressionCacheEnabled(boolean)} — same lock-sharing rationale: this
+        // setter discards the cache reference, and that write must not race with concurrent
+        // lookups/stores that already hold this engine's monitor.
         if (size <= 0) {
             throw new IllegalArgumentException("expressionCacheSize must be positive");
         }
@@ -392,12 +399,13 @@ public class CalculatorEngine {
             String normalized;
             try {
                 normalized = replaceAbsSigns(expression);
-            } catch (IllegalArgumentException iae) {
+            } catch (IllegalArgumentException illegalArgumentException) {
                 throw new SyntaxErrorException(
                         CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
                         Map.of(),
-                        iae.getMessage() == null ? "Incomplete expression" : iae.getMessage(),
-                        null);
+                        illegalArgumentException.getMessage() == null ? "Incomplete expression" : illegalArgumentException.getMessage(),
+                        null,
+                        illegalArgumentException);
             }
 
             List<Token> tokens;
@@ -412,13 +420,16 @@ public class CalculatorEngine {
                 } catch (final RuntimeException tokenizerFailure) {
                     // Any unchecked failure from the tokenizer is a malformed-input
                     // problem, not an internal processing error: classify it as a
-                    // syntax error so it never surfaces as "Processing Error".
+                    // syntax error so it never surfaces as "Processing Error". The
+                    // original throwable is chained as the cause so callers and tests
+                    // can still inspect the underlying root reason.
                     throw new SyntaxErrorException(
                             CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
                             Map.of(),
                             Objects.requireNonNullElse(tokenizerFailure.getMessage(),
                                     "Malformed expression"),
-                            null);
+                            null,
+                            tokenizerFailure);
                 }
                 if (expressionCacheEnabled) {
                     storeCache(normalized, List.copyOf(tokens));
@@ -432,14 +443,15 @@ public class CalculatorEngine {
 
             try {
                 replaceVariables(this, tokens, combinedVariables);
-            } catch (IllegalArgumentException iae) {
-                String msg = Objects.requireNonNullElse(iae.getMessage(), "Variable is not defined");
-                String variableName = extractVariableName(msg);
+            } catch (IllegalArgumentException variableSubstitutionFailure) {
+                final String message = Objects.requireNonNullElse(variableSubstitutionFailure.getMessage(), "Variable is not defined");
+                final String variableName = extractVariableName(message);
                 throw new SyntaxErrorException(
                         CalculatorErrorCode.SYNTAX_UNKNOWN_VARIABLE,
                         variableName == null ? Map.of() : Map.of("variable", variableName),
-                        msg,
-                        null);
+                        message,
+                        null,
+                        variableSubstitutionFailure);
             }
 
             final List<Token> postfix;
@@ -452,7 +464,8 @@ public class CalculatorEngine {
                         CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
                         Map.of(),
                         Objects.requireNonNullElse(parserFailure.getMessage(), "Malformed expression"),
-                        null);
+                        null,
+                        parserFailure);
             }
 
             // Arity dry run: reject under-supplied operators / leftover operands before
@@ -917,6 +930,12 @@ public class CalculatorEngine {
      * Lazily creates the LRU cache. The capacity is captured once at creation time;
      * subsequent calls to {@link #setExpressionCacheSize(int)} discard the existing cache so
      * that this method can rebuild it with the new capacity.
+     *
+     * <p><strong>Threading contract:</strong> the method is intentionally not declared
+     * {@code synchronized} because every existing caller ({@link #lookupCache(String)},
+     * {@link #storeCache(String, List)}) already holds this engine's monitor. New callers must
+     * hold the same monitor before invoking this method; otherwise the {@code null}-check and
+     * the assignment race with the cache-discarding setters.</p>
      */
     private void ensureCache() {
         if (expressionCache == null) {

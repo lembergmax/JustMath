@@ -125,4 +125,26 @@ public class CustomErrorException extends RuntimeException {
         this.detailedMessage = detailedMessage;
     }
 
+    /**
+     * Creates a new exception that wraps a lower-level cause.
+     *
+     * <p>The cause is chained via {@link Throwable#initCause(Throwable)} so that the original
+     * stack trace remains available for diagnosis. Without this constructor, callers that wrapped
+     * (for example) a {@link NumberFormatException} from the parser into a higher-level
+     * {@code CustomErrorException} would silently drop the root cause.</p>
+     *
+     * @param customExceptionMessages the standardized error category; must not be {@code null}
+     * @param detailedMessage         additional context describing the failure; must not be {@code null}
+     * @param cause                   the underlying cause; may be {@code null}
+     */
+    public CustomErrorException(
+            @NonNull final CustomExceptionMessages customExceptionMessages,
+            @NonNull final String detailedMessage,
+            final Throwable cause
+    ) {
+        super(customExceptionMessages.getMessage(), cause);
+        this.customExceptionMessages = customExceptionMessages;
+        this.detailedMessage = detailedMessage;
+    }
+
 }

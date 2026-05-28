@@ -32,8 +32,7 @@ import com.mlprograms.justmath.calculator.exceptions.SyntaxErrorException;
 import com.mlprograms.justmath.calculator.expression.ExpressionElement;
 import com.mlprograms.justmath.calculator.internal.Token;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.math.MathContext;
 import java.util.ArrayDeque;
@@ -47,38 +46,56 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.CALCULATION_LOCALE;
  * Evaluates a mathematical expression represented as a list of tokens in Reverse Polish Notation.
  * Supports full precision using BigDecimal.
  */
-@NoArgsConstructor
-@AllArgsConstructor
 class Evaluator {
 
     /**
      * Math context specifying the precision and rounding mode for calculations.
      */
-    private MathContext mathContext;
+    private final MathContext mathContext;
 
     /**
      * The mode used for trigonometric calculations (e.g., degrees or radians).
      */
-    private TrigonometricMode trigonometricMode;
+    private final TrigonometricMode trigonometricMode;
 
     /**
-     * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result as a {@link BigNumber}.
-     * <p>
-     * This method processes the given RPN token list by using a stack-based evaluation strategy. It supports numeric
-     * values as well as arithmetic operators and functions. Operands and intermediate results can be either
-     * {@link BigNumber}
-     * or {@link BigNumberCoordinate} objects.
-     * </p>
-     * <p>
-     * If the final result is a {@link BigNumberCoordinate}, it is converted into a string representation and
-     * wrapped in a {@link BigNumber}. This preserves compatibility with downstream code expecting BigNumber results,
-     * while still supporting polar and Cartesian coordinates.
-     * </p>
+     * Creates an evaluator with the supplied configuration. Both arguments are mandatory because
+     * every {@code apply()} call dispatched from {@link #evaluate(List)} forwards them to the
+     * concrete {@link ExpressionElement} implementations — leaving either as {@code null} would
+     * produce a {@link NullPointerException} on the first operator. The previously generated
+     * Lombok {@code @NoArgsConstructor} silently created an evaluator in that broken state.
+     *
+     * @param mathContext       math context controlling precision and rounding; must not be {@code null}
+     * @param trigonometricMode trigonometric mode; must not be {@code null}
+     */
+    Evaluator(@NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode) {
+        this.mathContext = mathContext;
+        this.trigonometricMode = trigonometricMode;
+    }
+
+    /**
+     * Evaluates a list of tokens in Reverse Polish Notation (RPN) and returns the final result
+     * as a {@link BigNumber}.
+     *
+     * <p>The method drives a classic stack-based evaluator: numeric and string literals are
+     * pushed verbatim; operators, unary operators, functions, and constants are resolved through
+     * the {@link ExpressionElement} registry and consume / push values on the stack. Intermediate
+     * values may be either {@link BigNumber} scalars or domain types such as {@link BigNumberCoordinate}
+     * (the {@code Pol}/{@code Rec} two-component results). Scalar operators that need to consume a
+     * coordinate go through {@link com.mlprograms.justmath.bignumber.math.utils.MathUtils#ensureScalar
+     * ensureScalar}, which projects the coordinate onto its first component.</p>
+     *
+     * <p><strong>Final result contract:</strong> the top of the stack must be a {@link BigNumber}.
+     * If a multi-component value such as a {@link BigNumberCoordinate} ends up as the lone stack
+     * entry, this method throws a {@link ProcessingErrorException} — the engine does not silently
+     * collapse it. Callers that want to read both components should keep using the typed
+     * {@code Pol}/{@code Rec} helpers exposed by {@link com.mlprograms.justmath.bignumber.BigNumber}.</p>
      *
      * @param reversePolishNotationTokens a list of {@link Token} objects in Reverse Polish Notation
      * @return the result of evaluating the expression as a {@link BigNumber}
-     * @throws IllegalArgumentException if an unexpected token type is encountered
-     * @throws IllegalStateException    if the expression does not reduce to a single result or has an unsupported result type
+     * @throws SyntaxErrorException     if a token is malformed, an operator lacks an operand, or
+     *                                  the final stack does not contain exactly one value
+     * @throws ProcessingErrorException if the final value cannot be represented as a {@link BigNumber}
      */
     public BigNumber evaluate(List<Token> reversePolishNotationTokens) {
         Deque<Object> stack = new ArrayDeque<>();
