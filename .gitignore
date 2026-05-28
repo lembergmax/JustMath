@@ -45,6 +45,12 @@ build/
 /out/artifacts/justmath_jar/justmath.jar
 /.claude/
 
+### Claude ###
+/CLAUDE.md
+
 ### draw.io ###
 *.bkp
 
+### graphify ###
+/graphify-out/
+/src/graphify-out/
