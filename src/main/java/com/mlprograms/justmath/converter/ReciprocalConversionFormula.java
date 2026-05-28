@@ -77,6 +77,12 @@ final class ReciprocalConversionFormula implements ConversionFormula {
     /**
      * Creates a new reciprocal conversion formula.
      *
+     * <p>Note that both {@link #toBase(BigNumber, MathContext)} and {@link #fromBase(BigNumber, MathContext)}
+     * compute a division by their input value (the conversion is symmetric: {@code base = scale / value}
+     * and {@code value = scale / base}). Passing a zero input value to either direction therefore raises
+     * an {@link ArithmeticException} at conversion time, even though the constructor itself only checks
+     * that {@code scale} is non-zero.</p>
+     *
      * @param scale the scaling factor; must not be {@code null} and must not be zero
      * @throws IllegalArgumentException if {@code scale} is zero
      */

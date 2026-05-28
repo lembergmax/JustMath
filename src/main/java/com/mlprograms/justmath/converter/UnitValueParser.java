@@ -346,11 +346,15 @@ final class UnitValueParser {
         for (final String unitSymbolText : UNIT_SYMBOLS_SORTED_BY_LENGTH_DESCENDING) {
             if (singleTokenInput.endsWith(unitSymbolText)) {
                 final String numericText = singleTokenInput.substring(0, singleTokenInput.length() - unitSymbolText.length()).trim();
-                // An empty numeric prefix means the input is just the unit symbol — keep
-                // scanning so shorter unit suffixes (which would leave a non-empty prefix)
-                // still get a chance to match.
+                // The candidate list is sorted by descending symbol length, so the FIRST suffix
+                // that matches is the longest possible split. When that split leaves no numeric
+                // prefix, the input is *exactly* the unit symbol (e.g. "km") and the user clearly
+                // forgot the number — there is no point in trying shorter suffixes because that
+                // would only downgrade the diagnostic to "Invalid numeric value '<garbage>'" when
+                // the real problem is "Missing numeric value". Break out and let the explicit
+                // UnitConversionException below signal the structural error.
                 if (numericText.isEmpty()) {
-                    continue;
+                    break;
                 }
                 return new ParsedParts(numericText, unitSymbolText);
             }
