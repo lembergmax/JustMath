@@ -38,7 +38,17 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.*;
 /**
  * Provides mathematical operations for calculating roots of numbers (radicals).
  */
-public class RadicalMath {
+public final class RadicalMath {
+
+	/**
+	 * Cached {@code BigDecimal(2)} used as divisor when checking whether a root index is even.
+	 * Avoids allocating a fresh constant on every {@link #nthRoot} call.
+	 */
+	private static final BigDecimal TWO_AS_BIG_DECIMAL = BigDecimal.valueOf(2);
+
+	private RadicalMath() {
+		// Utility class — never instantiated.
+	}
 
 	/**
 	 * Calculates the square root of the given radicand.
@@ -61,7 +71,9 @@ public class RadicalMath {
 	public static BigNumber squareRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return new BigNumber(nthRoot(radicand, TWO, mathContext, locale));
+		// {@link #nthRoot} already returns a freshly allocated, locale-aware {@link BigNumber};
+		// wrapping it in the copy constructor would just double the allocation cost.
+		return nthRoot(radicand, TWO, mathContext, locale);
 	}
 
 	/**
@@ -129,7 +141,7 @@ public class RadicalMath {
 			return ONE.divide(positiveRoot, mathContext, locale).trim();
 		}
 
-		boolean isEvenRoot = index.isInteger() && index.toBigDecimal().remainder(BigDecimal.valueOf(2)).compareTo(BigDecimal.ZERO) == 0;
+		boolean isEvenRoot = index.isInteger() && index.toBigDecimal().remainder(TWO_AS_BIG_DECIMAL).compareTo(BigDecimal.ZERO) == 0;
 		boolean radicandIsNegative = radicand.isNegative();
 
 		if (radicandIsNegative && isEvenRoot) {

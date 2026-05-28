@@ -45,7 +45,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
  * All methods accept a {@link MathContext} to control precision and rounding,
  * and a {@link Locale} for formatting the resulting {@link BigNumber}.
  */
-public class LogarithmicMath {
+public final class LogarithmicMath {
+
+	private LogarithmicMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Computes the base‐2 logarithm of the given argument.
@@ -67,15 +72,15 @@ public class LogarithmicMath {
 	 * @return a {@link BigNumber} representing log₂(argument)
 	 *
 	 * @throws ArithmeticException
-	 * 	if the underlying library cannot compute with given context
-	 * @throws IllegalArgumentException
-	 * 	if argument is non‐positive
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
 	 */
 	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("Argument to log2 must be positive and non-zero.");
+		// Use ArithmeticException to match {@link #ln(BigNumber, MathContext, Locale)} and the
+		// JDK convention for mathematical-domain errors (BigDecimal.divide(zero) etc.).
+		if (argument.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("log2(x) undefined for x <= 0");
 		}
 
 		return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -100,15 +105,13 @@ public class LogarithmicMath {
 	 * @return a {@link BigNumber} representing log₁₀(argument)
 	 *
 	 * @throws ArithmeticException
-	 * 	if the underlying library cannot compute with given context
-	 * @throws IllegalArgumentException
-	 * 	if argument is non‐positive
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
 	 */
 	public static BigNumber log10(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (argument.isNegative() || argument.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("Argument to log10 must be positive and non-zero.");
+		if (argument.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("log10(x) undefined for x <= 0");
 		}
 
 		return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -133,9 +136,7 @@ public class LogarithmicMath {
 	 * @return a {@link BigNumber} representing ln(argument)
 	 *
 	 * @throws ArithmeticException
-	 * 	if the underlying library cannot compute with given context
-	 * @throws IllegalArgumentException
-	 * 	if argument is non‐positive
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
 	 */
 	public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
@@ -168,17 +169,17 @@ public class LogarithmicMath {
 	 *
 	 * @return a {@link BigNumber} representing log₍base₎(number)
 	 *
-	 * @throws IllegalArgumentException
-	 * 	if number ≤ 0, or if base ≤ 0, or base == 1
+	 * @throws ArithmeticException
+	 * 	if {@code number ≤ 0}, {@code base ≤ 0}, or {@code base == 1}
 	 */
 	public static BigNumber logBase(@NonNull final BigNumber number, @NonNull final BigNumber base, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (number.isNegative() || number.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("Number must be positive and non-zero.");
+		if (number.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("logBase(x, b) undefined for x <= 0");
 		}
-		if (base.isNegative() || base.isEqualTo(ZERO) || base.isEqualTo(BigNumbers.ONE)) {
-			throw new IllegalArgumentException("Base must be positive and not equal to 1.");
+		if (base.compareTo(ZERO) <= 0 || base.isEqualTo(BigNumbers.ONE)) {
+			throw new ArithmeticException("logBase(x, b) undefined for b <= 0 or b == 1");
 		}
 
 		BigDecimal lnNumber = BigDecimalMath.log(number.toBigDecimal(), mathContext);

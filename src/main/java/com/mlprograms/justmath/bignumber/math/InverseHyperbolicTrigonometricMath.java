@@ -64,7 +64,14 @@ import lombok.NonNull;
 public final class InverseHyperbolicTrigonometricMath {
 
     /**
-     * Additional digits used internally to reduce cancellation issues in intermediate operations.
+     * Additional digits used internally to reduce catastrophic cancellation in the
+     * {@code ln(x ± sqrt(x² ∓ 1))} composites used by {@code asinh/acosh/atanh/acoth}.
+     *
+     * <p>Value chosen conservatively to keep the boundary cases stable (close to {@code |x| = 1}
+     * the subtractions inside the radicand cancel several leading digits). Reducing this to a
+     * smaller value (e.g. 24) is a known performance opportunity but requires a dedicated
+     * boundary-case benchmark + golden-value test pass to avoid silent precision regressions
+     * at the limits of the supported {@link MathContext} range.</p>
      */
     private static final int INTERNAL_GUARD_DIGITS = 100;
 

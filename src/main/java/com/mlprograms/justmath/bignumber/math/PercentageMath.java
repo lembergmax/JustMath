@@ -36,7 +36,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ONE_HUNDRED;
 /**
  * Utility class for percentage calculations using {@link BigNumber}.
  */
-public class PercentageMath {
+public final class PercentageMath {
+
+	private PercentageMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Calculates n percent of m.
@@ -63,27 +68,30 @@ public class PercentageMath {
 	}
 
 	/**
-	 * Calculates what percentage m is of n.
+	 * Calculates what percentage {@code part} is of {@code total}.
 	 * <p>
 	 * Mathematically:
 	 * <pre>
-	 * result = (m / n) * 100
+	 * result = (part / total) * 100
 	 * </pre>
-	 * Example: 25 is 50% of 50, since (25 / 50) * 100 = 50.
+	 * Example: 25 is 50% of 50, since {@code (25 / 50) * 100 = 50}.
 	 *
-	 * @param n
-	 * 	the reference value (100%)
-	 * @param m
-	 * 	the part value whose percentage of n is calculated
-	 * @param mathContext
-	 * 	the {@link MathContext} to control precision and rounding
+	 * <p>Historical note: the parameters are named {@code part} and {@code total} for clarity.
+	 * Earlier versions called them {@code n} and {@code m} with a JavaDoc that described the
+	 * opposite semantics (n = reference, m = part) — the runtime behaviour, however, has always
+	 * computed {@code part / total × 100} as documented above. The rename clarifies the contract
+	 * without changing behaviour.
 	 *
-	 * @return the percentage that m is of n
+	 * @param part        the part value whose percentage of {@code total} is being computed
+	 * @param total       the reference value (100%)
+	 * @param mathContext the {@link MathContext} to control precision and rounding
+	 * @param locale      the locale used for {@link BigNumber} formatting
+	 * @return the percentage that {@code part} is of {@code total}
 	 */
-	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber n, @NonNull final BigNumber m, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+	public static BigNumber xIsNPercentOfN(@NonNull final BigNumber part, @NonNull final BigNumber total, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		return new BigNumber(n.divide(m, mathContext, locale).multiply(ONE_HUNDRED, locale).trim());
+		return new BigNumber(part.divide(total, mathContext, locale).multiply(ONE_HUNDRED, locale).trim());
 	}
 
 }

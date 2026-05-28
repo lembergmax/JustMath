@@ -35,7 +35,12 @@ import com.mlprograms.justmath.bignumber.algorithms.QuickSort;
 import com.mlprograms.justmath.bignumber.math.exceptions.InsufficientElementsException;
 import lombok.NonNull;
 
-public class StatisticsMath {
+public final class StatisticsMath {
+
+    private StatisticsMath() {
+        // Utility class — never instantiated.
+    }
+
 
     /**
      * Calculates the arithmetic mean (average) of the provided list of {@link BigNumber} values.
@@ -44,22 +49,21 @@ public class StatisticsMath {
      * and then divides that sum by the number of elements using the supplied {@link MathContext} to control
      * precision and rounding behaviour.</p>
      *
-     * <p>Important notes:</p>
-     * <ul>
-     *   <li>The {@code locale} parameter is forwarded to {@link BigNumber} operations and may influence
-     *       parsing/formatting rules used internally by those operations.</li>
-     *   <li>If {@code numbers} is empty, this method will attempt to divide by zero; the exact outcome
-     *       depends on the implementation of {@link BigNumber#divide(BigNumber, MathContext, Locale)}
-     *       and may result in an exception.</li>
-     * </ul>
-     *
-     * @param numbers     the list of values to average; must not be {@code null}
+     * @param numbers     the list of values to average; must not be {@code null} and must not be empty
      * @param mathContext controls precision and rounding for the division; must not be {@code null}
      * @param locale      locale used for BigNumber operations; must not be {@code null}
      * @return the arithmetic mean of the input values as a {@link BigNumber}
+     * @throws InsufficientElementsException if {@code numbers} is empty — the previous implementation
+     *                                       silently triggered a {@code 0/0} {@link ArithmeticException}
+     *                                       at the call site; this guard surfaces the structural problem
+     *                                       (no data to average) up front with the same exception type
+     *                                       that {@link #median(List, MathContext, Locale)} already uses
      */
     public static BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-        return sum(numbers, locale).divide(new BigNumber(numbers.size()), mathContext, locale);
+        if (numbers.isEmpty()) {
+            throw new InsufficientElementsException();
+        }
+        return sum(numbers, locale).divide(BigNumber.valueOf(numbers.size()), mathContext, locale);
     }
 
     /**

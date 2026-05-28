@@ -39,7 +39,12 @@ import java.util.Locale;
  * and are widely used in fields such as calculus, number theory,
  * probability theory, and statistics.
  */
-public class SpecialFunctionMath {
+public final class SpecialFunctionMath {
+
+	private SpecialFunctionMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Computes the Gamma function Γ(x) using the Lanczos approximation.
@@ -83,13 +88,10 @@ public class SpecialFunctionMath {
 	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined.
 	 */
 	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		// BigNumber xClone = x.clone();
-
-		//	if (xClone.isInteger() && xClone.isLessThanOrEqualTo(BigNumbers.ZERO)) {
-		//	   throw new ArithmeticException("Gamma function is undefined for non-positive integers");
-		// }
-
-		// return xClone.subtract(BigNumbers.ONE).factorial(mathContext);
+		// {@link BigDecimalMath#gamma} already raises {@link ArithmeticException} for the
+		// non-positive integer singularities (its lanczos approximation diverges there). We
+		// therefore delegate domain enforcement to the underlying library rather than carrying
+		// a parallel pre-check that has to stay in lock-step with library updates.
 		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 

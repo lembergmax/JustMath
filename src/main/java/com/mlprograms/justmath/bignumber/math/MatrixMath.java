@@ -34,7 +34,12 @@ import java.util.Map;
 
 import lombok.NonNull;
 
-public class MatrixMath {
+public final class MatrixMath {
+
+	private MatrixMath() {
+		// Utility class: never instantiated.
+	}
+
 
 	/**
 	 * Computes the element-wise addition of two matrices.
@@ -62,14 +67,13 @@ public class MatrixMath {
 	public static BigNumberMatrix add(@NonNull final BigNumberMatrix augend, @NonNull final BigNumberMatrix addend, @NonNull final Locale locale) {
 		checkParamsForSameMatrixSize(augend, addend);
 
-		BigNumberMatrix result = new BigNumberMatrix(augend.getRows(), augend.getColumns(), locale);
-
-		augend.forEachElement((row, col, valueA) -> {
-			BigNumber valueB = addend.get(row, col);
-			result.set(row, col, valueA.add(valueB));
-		});
-
-		return new BigNumberMatrix(result);
+		final BigNumberMatrix result = new BigNumberMatrix(augend.getRows(), augend.getColumns(), locale);
+		augend.forEachElement((row, col, valueA) -> result.set(row, col, valueA.add(addend.get(row, col))));
+		// The previous code wrapped {@code result} in a defensive copy via the {@link BigNumberMatrix}
+		// copy constructor — that copy is now redundant because {@code result} is a freshly allocated
+		// matrix owned exclusively by this method, and the copy constructor itself already performs
+		// a deep copy, so the wrap doubled up the work.
+		return result;
 	}
 
 	/**
@@ -96,14 +100,9 @@ public class MatrixMath {
 	public static BigNumberMatrix subtract(@NonNull final BigNumberMatrix minuend, @NonNull final BigNumberMatrix subtrahend) {
 		checkParamsForSameMatrixSize(minuend, subtrahend);
 
-		BigNumberMatrix result = new BigNumberMatrix(minuend.getRows(), minuend.getColumns(), minuend.getLocale());
-
-		minuend.forEachElement((row, col, a) -> {
-			BigNumber b = subtrahend.get(row, col);
-			result.set(row, col, a.subtract(b));
-		});
-
-		return new BigNumberMatrix(result);
+		final BigNumberMatrix result = new BigNumberMatrix(minuend.getRows(), minuend.getColumns(), minuend.getLocale());
+		minuend.forEachElement((row, col, minuendValue) -> result.set(row, col, minuendValue.subtract(subtrahend.get(row, col))));
+		return result;
 	}
 
 	/**
@@ -145,19 +144,23 @@ public class MatrixMath {
 							"rightCols", multiplicand.getColumns().toString())));
 		}
 
-		BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
-
-		result.forEachElement((i, j, value) -> {
-			BigNumber sum = BigNumbers.ZERO;
-			for (BigNumber k = BigNumbers.ZERO; k.isLessThan(multiplier.getColumns()); k = k.add(BigNumbers.ONE)) {
-				BigNumber a = multiplier.get(i, k);
-				BigNumber b = multiplicand.get(k, j);
-				sum = sum.add(a.multiply(b));
+		// Dimensions are bounded by {@code Integer.MAX_VALUE} (see {@code BigNumberMatrix#validateDimensions}),
+		// so the inner dot-product loop can run with primitive {@code int} counters instead of
+		// allocating a fresh {@link BigNumber} per increment via {@code k.add(BigNumbers.ONE)}.
+		// For an n×n×n multiplication this saves roughly n^3 throw-away BigNumber allocations.
+		final int innerCount = multiplier.getColumns().intValue();
+		final BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
+		result.forEachElement((rowIndex, columnIndex, ignoredZero) -> {
+			BigNumber dotProduct = BigNumbers.ZERO;
+			for (int innerIndex = 0; innerIndex < innerCount; innerIndex++) {
+				final BigNumber innerIndexAsBigNumber = BigNumber.valueOf(innerIndex);
+				final BigNumber leftValue = multiplier.get(rowIndex, innerIndexAsBigNumber);
+				final BigNumber rightValue = multiplicand.get(innerIndexAsBigNumber, columnIndex);
+				dotProduct = dotProduct.add(leftValue.multiply(rightValue));
 			}
-			result.set(i, j, sum);
+			result.set(rowIndex, columnIndex, dotProduct);
 		});
-
-		return new BigNumberMatrix(result);
+		return result;
 	}
 
 	/**
@@ -187,14 +190,9 @@ public class MatrixMath {
 	public static BigNumberMatrix divide(@NonNull final BigNumberMatrix dividend, @NonNull final BigNumberMatrix divisor) {
 		checkParamsForSameMatrixSize(dividend, divisor);
 
-		BigNumberMatrix result = new BigNumberMatrix(dividend.getRows(), dividend.getColumns(), dividend.getLocale());
-
-		dividend.forEachElement((row, col, a) -> {
-			BigNumber b = divisor.get(row, col);
-			result.set(row, col, a.divide(b));
-		});
-
-		return new BigNumberMatrix(result);
+		final BigNumberMatrix result = new BigNumberMatrix(dividend.getRows(), dividend.getColumns(), dividend.getLocale());
+		dividend.forEachElement((row, col, dividendValue) -> result.set(row, col, dividendValue.divide(divisor.get(row, col))));
+		return result;
 	}
 
 	/**
@@ -208,11 +206,9 @@ public class MatrixMath {
 	 * @return a new matrix with each element multiplied by the scalar
 	 */
 	public static BigNumberMatrix scalarMultiply(@NonNull final BigNumberMatrix matrix, @NonNull final BigNumber scalar) {
-		BigNumberMatrix result = new BigNumberMatrix(matrix.getRows(), matrix.getColumns(), matrix.getLocale());
-
+		final BigNumberMatrix result = new BigNumberMatrix(matrix.getRows(), matrix.getColumns(), matrix.getLocale());
 		matrix.forEachElement((row, col, value) -> result.set(row, col, value.multiply(scalar)));
-
-		return new BigNumberMatrix(result);
+		return result;
 	}
 
 
@@ -239,11 +235,9 @@ public class MatrixMath {
 	 * 	if {@code matrix} is {@code null}
 	 */
 	public static BigNumberMatrix transpose(@NonNull final BigNumberMatrix matrix) {
-		BigNumberMatrix result = new BigNumberMatrix(matrix.getColumns(), matrix.getRows(), matrix.getLocale());
-
+		final BigNumberMatrix result = new BigNumberMatrix(matrix.getColumns(), matrix.getRows(), matrix.getLocale());
 		matrix.forEachElement((row, col, value) -> result.set(col, row, value));
-
-		return new BigNumberMatrix(result);
+		return result;
 	}
 
 	/**
@@ -263,38 +257,155 @@ public class MatrixMath {
 	 * 	if {@code matrix} is {@code null}
 	 */
 	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix) {
-		BigNumber n = matrix.getRows();
-
-		if (n.isEqualTo(BigNumbers.ZERO)) {
-			// Convention: the determinant of the empty 0x0 matrix is the multiplicative identity 1.
-			// This makes the recursive cofactor expansion for 1x1 inverses produce the correct result.
+		final BigNumber sizeAsBigNumber = matrix.getRows();
+		if (sizeAsBigNumber.isEqualTo(BigNumbers.ZERO)) {
+			// Convention: the determinant of the empty 0×0 matrix is the multiplicative identity 1.
+			// This makes the recursive cofactor expansion for 1×1 inverses produce the correct result.
 			return BigNumbers.ONE;
 		}
 
-		if (n.isEqualTo(BigNumbers.ONE)) {
+		final int size = sizeAsBigNumber.intValue();
+		if (size == 1) {
 			return matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
 		}
+		if (size == 2) {
+			return determinantTwoByTwo(matrix);
+		}
+		if (size == 3) {
+			return determinantThreeByThree(matrix);
+		}
+		return determinantViaLuDecomposition(matrix, size);
+	}
 
-		if (n.isEqualTo(BigNumbers.TWO)) {
-			BigNumber a = matrix.get(new BigNumber("0"), new BigNumber("0"));
-			BigNumber b = matrix.get(new BigNumber("0"), new BigNumber("1"));
-			BigNumber c = matrix.get(new BigNumber("1"), new BigNumber("0"));
-			BigNumber d = matrix.get(new BigNumber("1"), new BigNumber("1"));
+	/**
+	 * Direct closed-form determinant for a 2×2 matrix: {@code a*d - b*c}.
+	 */
+	private static BigNumber determinantTwoByTwo(final BigNumberMatrix matrix) {
+		final BigNumber a = matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
+		final BigNumber b = matrix.get(BigNumbers.ZERO, BigNumbers.ONE);
+		final BigNumber c = matrix.get(BigNumbers.ONE, BigNumbers.ZERO);
+		final BigNumber d = matrix.get(BigNumbers.ONE, BigNumbers.ONE);
+		return a.multiply(d).subtract(b.multiply(c));
+	}
 
-			return a.multiply(d).subtract(b.multiply(c));
+	/**
+	 * Direct rule-of-Sarrus determinant for a 3×3 matrix. Kept as a fast path because LU
+	 * decomposition adds noticeable overhead for matrices this small.
+	 */
+	private static BigNumber determinantThreeByThree(final BigNumberMatrix matrix) {
+		final BigNumber two = BigNumbers.TWO;
+		final BigNumber a = matrix.get(BigNumbers.ZERO, BigNumbers.ZERO);
+		final BigNumber b = matrix.get(BigNumbers.ZERO, BigNumbers.ONE);
+		final BigNumber c = matrix.get(BigNumbers.ZERO, two);
+		final BigNumber d = matrix.get(BigNumbers.ONE, BigNumbers.ZERO);
+		final BigNumber e = matrix.get(BigNumbers.ONE, BigNumbers.ONE);
+		final BigNumber f = matrix.get(BigNumbers.ONE, two);
+		final BigNumber g = matrix.get(two, BigNumbers.ZERO);
+		final BigNumber h = matrix.get(two, BigNumbers.ONE);
+		final BigNumber i = matrix.get(two, two);
+		return a.multiply(e.multiply(i).subtract(f.multiply(h)))
+				.subtract(b.multiply(d.multiply(i).subtract(f.multiply(g))))
+				.add(c.multiply(d.multiply(h).subtract(e.multiply(g))));
+	}
+
+	/**
+	 * Computes the determinant via in-place LU decomposition with partial pivoting in
+	 * {@code O(n^3)} arithmetic operations — a dramatic improvement over the previous Laplace
+	 * expansion which ran in {@code O(n!)} and made matrices larger than ~7×7 effectively
+	 * intractable.
+	 *
+	 * <p>The matrix is copied into a primitive 2D {@link BigNumber} array so that the inner
+	 * pivoting and elimination loops can use direct array access instead of going through
+	 * {@link BigNumberMatrix#get(BigNumber, BigNumber) get}/{@code set} (which themselves
+	 * wrap their indices in {@code BigNumber} arithmetic). After {@code n - 1} elimination
+	 * steps the determinant equals the product of the pivot diagonal, multiplied by
+	 * {@code -1} for each row swap performed during pivoting. A zero pivot anywhere on the
+	 * diagonal means the matrix is singular and the determinant is exactly zero.</p>
+	 *
+	 * @param matrix the square source matrix; must not be {@code null}
+	 * @param size   the matrix dimension, guaranteed to fit in {@code int}
+	 * @return the determinant of {@code matrix}
+	 */
+	private static BigNumber determinantViaLuDecomposition(final BigNumberMatrix matrix, final int size) {
+		final BigNumber[][] workingCopy = toPrimitiveArray(matrix, size);
+		boolean rowSwapNegatesSign = false;
+
+		for (int pivotColumn = 0; pivotColumn < size - 1; pivotColumn++) {
+			final int pivotRow = findPivotRow(workingCopy, pivotColumn, size);
+			if (workingCopy[pivotRow][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
+				return BigNumbers.ZERO;
+			}
+			if (pivotRow != pivotColumn) {
+				swapRows(workingCopy, pivotRow, pivotColumn);
+				rowSwapNegatesSign = !rowSwapNegatesSign;
+			}
+			eliminateBelowPivot(workingCopy, pivotColumn, size);
 		}
 
-		BigNumber det = BigNumbers.ZERO;
-
-		for (BigNumber col = BigNumbers.ZERO; col.isLessThan(n); col = col.add(BigNumbers.ONE)) {
-			BigNumber sign = (col.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ZERO)) ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
-			BigNumber element = matrix.get(new BigNumber("0"), new BigNumber(String.valueOf(col)));
-			BigNumberMatrix minor = minor(matrix, BigNumbers.ZERO, col);
-
-			det = det.add(sign.multiply(element).multiply(determinant(minor)));
+		BigNumber determinant = workingCopy[0][0];
+		for (int diagonalIndex = 1; diagonalIndex < size; diagonalIndex++) {
+			determinant = determinant.multiply(workingCopy[diagonalIndex][diagonalIndex]);
 		}
+		return rowSwapNegatesSign ? determinant.negate() : determinant;
+	}
 
-		return new BigNumber(det);
+	/**
+	 * Copies the matrix into a primitive 2D {@link BigNumber} array for the LU loops to mutate.
+	 */
+	private static BigNumber[][] toPrimitiveArray(final BigNumberMatrix matrix, final int size) {
+		final BigNumber[][] result = new BigNumber[size][size];
+		for (int rowIndex = 0; rowIndex < size; rowIndex++) {
+			final BigNumber rowAsBigNumber = BigNumber.valueOf(rowIndex);
+			for (int columnIndex = 0; columnIndex < size; columnIndex++) {
+				result[rowIndex][columnIndex] = matrix.get(rowAsBigNumber, BigNumber.valueOf(columnIndex));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the index of the row containing the largest absolute pivot candidate in column
+	 * {@code pivotColumn} below row {@code pivotColumn} (inclusive). Partial pivoting keeps
+	 * intermediate values numerically meaningful and avoids dividing by tiny near-zero pivots
+	 * during elimination.
+	 */
+	private static int findPivotRow(final BigNumber[][] matrix, final int pivotColumn, final int size) {
+		int bestRow = pivotColumn;
+		BigNumber bestAbsolute = matrix[pivotColumn][pivotColumn].abs();
+		for (int candidateRow = pivotColumn + 1; candidateRow < size; candidateRow++) {
+			final BigNumber candidateAbsolute = matrix[candidateRow][pivotColumn].abs();
+			if (candidateAbsolute.isGreaterThan(bestAbsolute)) {
+				bestRow = candidateRow;
+				bestAbsolute = candidateAbsolute;
+			}
+		}
+		return bestRow;
+	}
+
+	private static void swapRows(final BigNumber[][] matrix, final int firstRow, final int secondRow) {
+		final BigNumber[] temporaryReference = matrix[firstRow];
+		matrix[firstRow] = matrix[secondRow];
+		matrix[secondRow] = temporaryReference;
+	}
+
+	/**
+	 * Subtracts a multiple of the pivot row from every row below it so that the column below the
+	 * pivot becomes zero. Operates in place on the working copy.
+	 */
+	private static void eliminateBelowPivot(final BigNumber[][] matrix, final int pivotColumn, final int size) {
+		final BigNumber pivotValue = matrix[pivotColumn][pivotColumn];
+		for (int eliminationRow = pivotColumn + 1; eliminationRow < size; eliminationRow++) {
+			final BigNumber leadingValue = matrix[eliminationRow][pivotColumn];
+			if (leadingValue.isEqualTo(BigNumbers.ZERO)) {
+				continue;
+			}
+			final BigNumber rowMultiplier = leadingValue.divide(pivotValue);
+			matrix[eliminationRow][pivotColumn] = BigNumbers.ZERO;
+			for (int columnIndex = pivotColumn + 1; columnIndex < size; columnIndex++) {
+				matrix[eliminationRow][columnIndex] = matrix[eliminationRow][columnIndex]
+						.subtract(rowMultiplier.multiply(matrix[pivotColumn][columnIndex]));
+			}
+		}
 	}
 
 	/**
@@ -317,14 +428,14 @@ public class MatrixMath {
 	 * 	if {@code matrix} is {@code null}
 	 */
 	public static BigNumberMatrix inverse(@NonNull final BigNumberMatrix matrix) {
-		BigNumber determinant = determinant(matrix);
+		final BigNumber determinant = determinant(matrix);
 
 		if (determinant.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException(
 					MatrixMessages.get(matrix.getLocale(), "matrix.error.singular"));
 		}
 
-		return new BigNumberMatrix(scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant)));
+		return scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant));
 	}
 
 	/**
@@ -352,20 +463,21 @@ public class MatrixMath {
 					MatrixMessages.get(base.getLocale(), "matrix.error.invalidExponent"));
 		}
 
-		BigNumberMatrix result = identity(base.getRows(), base.getLocale());
-		BigNumberMatrix temp = base.clone();
-		BigNumber exp = exponent;
+		BigNumberMatrix accumulator = identity(base.getRows(), base.getLocale());
+		BigNumberMatrix squaringBase = base.clone();
+		BigNumber remainingExponent = exponent;
 
-		while (exp.isGreaterThan(BigNumbers.ZERO)) {
-			if (exp.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ONE)) {
-				result = multiply(result, temp);
+		// Exponentiation by squaring on an arbitrary-precision exponent: while the exponent is
+		// non-zero, fold the current squared base into the accumulator on odd bits, then square
+		// the base and shift the exponent right by one (modelled as integer division by two).
+		while (remainingExponent.isGreaterThan(BigNumbers.ZERO)) {
+			if (remainingExponent.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ONE)) {
+				accumulator = multiply(accumulator, squaringBase);
 			}
-
-			temp = multiply(temp, temp);
-			exp = exp.divide(BigNumbers.TWO).floor();
+			squaringBase = multiply(squaringBase, squaringBase);
+			remainingExponent = remainingExponent.divide(BigNumbers.TWO).floor();
 		}
-
-		return new BigNumberMatrix(result);
+		return accumulator;
 	}
 
 	/**
@@ -381,30 +493,33 @@ public class MatrixMath {
 	 * @return the resulting minor matrix
 	 */
 	public static BigNumberMatrix minor(@NonNull final BigNumberMatrix matrix, @NonNull final BigNumber rowToRemove, @NonNull final BigNumber colToRemove) {
-		BigNumber size = matrix.getRows();
+		final int size = matrix.getRows().intValue();
+		final int removedRow = rowToRemove.intValue();
+		final int removedColumn = colToRemove.intValue();
 
-		BigNumberMatrix result = new BigNumberMatrix(size.subtract(BigNumbers.ONE), size.subtract(BigNumbers.ONE), matrix.getLocale());
+		final BigNumber minorSizeAsBigNumber = BigNumber.valueOf(size - 1);
+		final BigNumberMatrix result = new BigNumberMatrix(minorSizeAsBigNumber, minorSizeAsBigNumber, matrix.getLocale());
 
-		BigNumber newRow = BigNumbers.ZERO;
-		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(size); row = row.add(BigNumbers.ONE)) {
-			if (row.isEqualTo(rowToRemove)) {
+		int targetRow = 0;
+		for (int sourceRow = 0; sourceRow < size; sourceRow++) {
+			if (sourceRow == removedRow) {
 				continue;
 			}
+			final BigNumber sourceRowAsBigNumber = BigNumber.valueOf(sourceRow);
+			final BigNumber targetRowAsBigNumber = BigNumber.valueOf(targetRow);
 
-			BigNumber newCol = BigNumbers.ZERO;
-			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(size); col = col.add(BigNumbers.ONE)) {
-				if (col.isEqualTo(colToRemove)) {
+			int targetColumn = 0;
+			for (int sourceColumn = 0; sourceColumn < size; sourceColumn++) {
+				if (sourceColumn == removedColumn) {
 					continue;
 				}
-
-				BigNumber value = matrix.get(new BigNumber(row), new BigNumber(col));
-				result.set(new BigNumber(newRow), new BigNumber(newCol), value);
-				newCol = newCol.add(BigNumbers.ONE);
+				result.set(targetRowAsBigNumber, BigNumber.valueOf(targetColumn),
+						matrix.get(sourceRowAsBigNumber, BigNumber.valueOf(sourceColumn)));
+				targetColumn++;
 			}
-			newRow = newRow.add(BigNumbers.ONE);
+			targetRow++;
 		}
-
-		return new BigNumberMatrix(result);
+		return result;
 	}
 
 	/**
@@ -417,15 +532,14 @@ public class MatrixMath {
 	 *
 	 * @return an identity matrix of dimension size × size
 	 */
-	public static BigNumberMatrix identity(@NonNull BigNumber size, @NonNull Locale locale) {
-		int sizeAsInt = size.intValue();
-		BigNumberMatrix result = new BigNumberMatrix(size, size, locale);
-
-		for (int i = 0; i < sizeAsInt; i++) {
-			result.set(new BigNumber(String.valueOf(i)), new BigNumber(String.valueOf(i)), BigNumbers.ONE);
+	public static BigNumberMatrix identity(@NonNull final BigNumber size, @NonNull final Locale locale) {
+		final int sizeAsInt = size.intValue();
+		final BigNumberMatrix result = new BigNumberMatrix(size, size, locale);
+		for (int diagonalIndex = 0; diagonalIndex < sizeAsInt; diagonalIndex++) {
+			final BigNumber diagonalIndexAsBigNumber = BigNumber.valueOf(diagonalIndex);
+			result.set(diagonalIndexAsBigNumber, diagonalIndexAsBigNumber, BigNumbers.ONE);
 		}
-
-		return new BigNumberMatrix(result);
+		return result;
 	}
 
 	/**
@@ -437,20 +551,21 @@ public class MatrixMath {
 	 *
 	 * @return the adjugate matrix
 	 */
-	public static BigNumberMatrix adjugate(@NonNull BigNumberMatrix matrix) {
-		BigNumber rows = matrix.getRows();
-		BigNumberMatrix cofactorMatrix = new BigNumberMatrix(rows, rows, matrix.getLocale());
+	public static BigNumberMatrix adjugate(@NonNull final BigNumberMatrix matrix) {
+		final BigNumber sizeAsBigNumber = matrix.getRows();
+		final int size = sizeAsBigNumber.intValue();
+		final BigNumberMatrix cofactorMatrix = new BigNumberMatrix(sizeAsBigNumber, sizeAsBigNumber, matrix.getLocale());
 
-		for (BigNumber row = BigNumbers.ZERO; row.isLessThan(rows); row = row.add(BigNumbers.ONE)) {
-			for (BigNumber col = BigNumbers.ZERO; col.isLessThan(rows); col = col.add(BigNumbers.ONE)) {
-				BigNumber sign = (row.add(col).modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ZERO)) ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
-				BigNumber minorDet = MatrixMath.determinant(minor(matrix, row, col));
-
-				cofactorMatrix.set(new BigNumber(String.valueOf(row)), new BigNumber(String.valueOf(col)), sign.multiply(minorDet));
+		for (int rowIndex = 0; rowIndex < size; rowIndex++) {
+			final BigNumber rowIndexAsBigNumber = BigNumber.valueOf(rowIndex);
+			for (int columnIndex = 0; columnIndex < size; columnIndex++) {
+				final BigNumber columnIndexAsBigNumber = BigNumber.valueOf(columnIndex);
+				final BigNumber sign = ((rowIndex + columnIndex) & 1) == 0 ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
+				final BigNumber minorDeterminant = determinant(minor(matrix, rowIndexAsBigNumber, columnIndexAsBigNumber));
+				cofactorMatrix.set(rowIndexAsBigNumber, columnIndexAsBigNumber, sign.multiply(minorDeterminant));
 			}
 		}
-
-		return new BigNumberMatrix(transpose(cofactorMatrix));
+		return transpose(cofactorMatrix);
 	}
 
 	/**

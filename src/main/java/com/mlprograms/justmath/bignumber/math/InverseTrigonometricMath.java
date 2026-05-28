@@ -48,7 +48,12 @@ import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.bigDecimalR
  * This class supports calculation of the arcsine, arccosine, arctangent,
  * and arccotangent functions with output in radians or degrees.
  */
-public class InverseTrigonometricMath {
+public final class InverseTrigonometricMath {
+
+    private InverseTrigonometricMath() {
+        // Utility class — never instantiated.
+    }
+
 
     /**
      * Computes the arcsine (inverse sine) of a given BigNumber.
@@ -165,7 +170,11 @@ public class InverseTrigonometricMath {
 
         BigNumber result;
 
-        if (argument.isLessThanOrEqualTo(BigNumbers.ONE)) {
+        // The Taylor series for atan only converges for |x| ≤ 1. The previous check
+        // {@code argument.isLessThanOrEqualTo(ONE)} mistakenly treated any negative argument as
+        // "in range" because it ignored the magnitude — so atan(-5) silently fed -5 into the
+        // diverging series. Comparing the absolute value gates the series path correctly.
+        if (argument.abs().isLessThanOrEqualTo(BigNumbers.ONE)) {
             result = computeAtanSeries(argument, mathContext);
         } else {
             BigNumber oneOverX = BigNumbers.ONE.divide(argument, mathContext);

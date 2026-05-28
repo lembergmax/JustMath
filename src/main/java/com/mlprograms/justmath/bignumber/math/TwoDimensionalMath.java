@@ -37,7 +37,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
 /**
  * Provides two-dimensional mathematical functions.
  */
-public class TwoDimensionalMath {
+public final class TwoDimensionalMath {
+
+	private TwoDimensionalMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Computes the angle θ between the positive x-axis and the point (x, y).
@@ -54,28 +59,25 @@ public class TwoDimensionalMath {
 	 * <p>
 	 * <strong>Restrictions:</strong>
 	 * <ul>
-	 *   <li>Neither {@code x} nor {@code y} may be zero. The angle is undefined at the origin (0,0).</li>
+	 *   <li>{@code x} and {@code y} may not both be zero — the angle is undefined at the origin (0, 0).
+	 *       All other combinations (including {@code y = 0} or {@code x = 0} on its own) are valid:
+	 *       e.g. {@code atan2(5, 0) = π/2}, {@code atan2(0, -5) = π}.</li>
 	 * </ul>
 	 *
-	 * @param y
-	 * 	the y-coordinate (must not be zero)
-	 * @param x
-	 * 	the x-coordinate (must not be zero)
-	 * @param mathContext
-	 * 	the {@link MathContext} controlling precision and rounding
-	 * @param locale
-	 * 	the {@link Locale} used for number formatting
-	 *
-	 * @return the angle θ in radians as a {@link BigNumber}, in the range [-π, π]
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if {@code x} or {@code y} is zero (undefined result at origin)
+	 * @param y           the y-coordinate
+	 * @param x           the x-coordinate
+	 * @param mathContext the {@link MathContext} controlling precision and rounding
+	 * @param locale      the {@link Locale} used for number formatting
+	 * @return the angle θ in radians as a {@link BigNumber}, in the range {@code (-π, π]}
+	 * @throws IllegalArgumentException if {@code x} and {@code y} are both zero
 	 */
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("x or y cannot be zero");
+		// Only the origin is undefined; axis points (x=0 or y=0 alone) are well-defined and map
+		// to multiples of π/2. The previous check rejected three quarters of the unit circle.
+		if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("atan2 is undefined at the origin (0, 0)");
 		}
 
 		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();

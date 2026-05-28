@@ -41,7 +41,12 @@ import static com.mlprograms.justmath.bignumber.BigNumbers.ZERO;
  * This class enforces integer inputs and validates arguments to ensure
  * mathematically correct results for combinatorics.
  */
-public class CombinatoricsMath {
+public final class CombinatoricsMath {
+
+	private CombinatoricsMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Calculates the number of combinations (n choose k), denoted as C(n, k),
@@ -80,16 +85,30 @@ public class CombinatoricsMath {
 			return ONE;
 		}
 
-		BigNumber kClone = k.clone();
+		// Use symmetry property: C(n, k) = C(n, n-k). Choosing the smaller of the two values
+		// halves the iteration count and keeps the divisor sequence in the int range, which
+		// makes the primitive index loop below safe.
+		final BigNumber effectiveK = k.min(n.subtract(k));
+		if (effectiveK.isGreaterThan(BigNumber.valueOf(Integer.MAX_VALUE))) {
+			// Practically unreachable — a binomial with k > 2 billion would produce a result with
+			// hundreds of millions of digits — but guard against silent {@link BigDecimal#intValue}
+			// wrap-around just in case a caller hands us pathological inputs.
+			throw new IllegalArgumentException("combination is not supported for k > Integer.MAX_VALUE");
+		}
+		final int iterationCount = effectiveK.intValue();
 
-		// Use symmetry property: C(n, k) = C(n, n-k)
-		kClone = kClone.min(n.subtract(kClone));
-		BigNumber c = ONE;
-		for (BigNumber i = ZERO; i.isLessThan(kClone); i = i.add(ONE)) {
-			c = c.multiply(n.subtract(i), locale).divide(i.add(ONE, locale), mathContext);
+		// Previously this loop ran on {@link BigNumber} counters and allocated several throwaway
+		// instances per step (i.add(ONE) twice, n.subtract(i) once). Replacing the counter with a
+		// primitive {@code int} eliminates ~3·k allocations and the corresponding string-based
+		// arithmetic — the only BigNumber math that remains is the actual product update.
+		BigNumber product = ONE;
+		for (int i = 0; i < iterationCount; i++) {
+			final BigNumber iAsBigNumber = BigNumber.valueOf(i);
+			final BigNumber divisor = BigNumber.valueOf(i + 1L);
+			product = product.multiply(n.subtract(iAsBigNumber), locale).divide(divisor, mathContext);
 		}
 
-		return new BigNumber(c.trim());
+		return new BigNumber(product.trim());
 	}
 
 	/**

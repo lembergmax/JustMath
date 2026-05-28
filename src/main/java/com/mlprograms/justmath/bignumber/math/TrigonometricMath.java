@@ -40,7 +40,12 @@ import static com.mlprograms.justmath.bignumber.math.utils.MathUtils.convertAngl
  * Provides trigonometric functions operating on BigNumber values.
  * Supports angle inputs in degrees or radians, controlled by {@link TrigonometricMode}.
  */
-public class TrigonometricMath {
+public final class TrigonometricMath {
+
+	private TrigonometricMath() {
+		// Utility class — never instantiated.
+	}
+
 
 	/**
 	 * Calculates the sine of the given angle.

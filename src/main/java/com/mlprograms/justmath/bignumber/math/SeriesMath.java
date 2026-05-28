@@ -43,7 +43,12 @@ import static com.mlprograms.justmath.calculator.CalculatorEngine.getCurrentVari
 /**
  * Utility class for performing mathematical series operations with arbitrary precision.
  */
-public class SeriesMath {
+public final class SeriesMath {
+
+    private SeriesMath() {
+        // Utility class — never instantiated.
+    }
+
 
     /**
      * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
@@ -126,7 +131,11 @@ public class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toString());
+            // Use the locale-independent canonical form: {@link BigNumber#toString()} would emit
+            // the iteration index using k's own locale (for instance {@code "1,5"} for DE), which
+            // the calculator engine — that always expects {@code .} as the decimal separator —
+            // would then reject as a syntax error. Plain US-style ASCII digits side-step that.
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.add(currentCalculation);
@@ -306,7 +315,8 @@ public class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toString());
+            // Same canonical-form rationale as {@link #summation}.
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.multiply(currentCalculation);
@@ -331,7 +341,7 @@ public class SeriesMath {
     private static void checkParams(BigNumber kStart, BigNumber kEnd, String kCalculation, MathContext mathContext, Map<String, String> externalVariables) {
         MathUtils.checkMathContext(mathContext);
 
-        if (!kCalculation.contains(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
+        if (!containsIterationVariable(kCalculation)) {
             throw new IllegalArgumentException("Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
 
@@ -346,6 +356,45 @@ public class SeriesMath {
         if (externalVariables.containsKey(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
             throw new IllegalArgumentException("External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
+    }
+
+    /**
+     * Checks whether {@code expression} mentions the iteration variable {@code k} as a standalone
+     * identifier rather than as a substring of another token.
+     *
+     * <p>The naive {@code expression.contains("k")} that the method previously used returned true
+     * for any expression accidentally containing the letter {@code k} inside another identifier or
+     * function name — for example {@code max}, {@code exp(k)}, {@code sink} — producing both
+     * false positives and false negatives. This method scans the string and reports {@code true}
+     * only when the letter {@code k} appears with non-letter neighbours on both sides (so it can
+     * be tokenised as the variable {@code k}).</p>
+     *
+     * @param expression user-supplied calculator expression; must not be {@code null}
+     * @return {@code true} if {@code k} appears as a standalone identifier
+     */
+    private static boolean containsIterationVariable(final String expression) {
+        final String iterationVariable = ExpressionElements.K_SERIES_MATH_VARIABLE;
+        final int length = expression.length();
+        for (int index = 0; index < length; index++) {
+            if (!matchesAt(expression, index, iterationVariable)) {
+                continue;
+            }
+            final char previousChar = index == 0 ? '\0' : expression.charAt(index - 1);
+            final char nextChar = index + iterationVariable.length() >= length
+                    ? '\0'
+                    : expression.charAt(index + iterationVariable.length());
+            if (!Character.isLetter(previousChar) && !Character.isLetter(nextChar)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if {@code expression} starts with {@code needle} at {@code position}.
+     */
+    private static boolean matchesAt(final String expression, final int position, final String needle) {
+        return expression.regionMatches(position, needle, 0, needle.length());
     }
 
 }
