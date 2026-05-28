@@ -832,20 +832,16 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     /**
-     * Reverses the order of elements in this {@code BigNumberList}.
+     * Reverses the order of elements in this {@code BigNumberList} in place.
      *
-     * <p>The operation is performed by constructing an intermediate {@code BigNumberList},
-     * inserting elements at the front, and then replacing the internal storage reference.</p>
+     * <p>Uses {@link Collections#reverse(List)} for an {@code O(n)} in-place reversal. The
+     * previous implementation prepended each element to an {@link java.util.ArrayList}-backed
+     * list, which is {@code O(n)} per insertion and therefore {@code O(n^2)} overall.</p>
      *
      * @return this instance with elements in reversed order
      */
     public BigNumberList reverse() {
-        BigNumberList reversedBigNumberList = new BigNumberList();
-        for (BigNumber value : values) {
-            reversedBigNumberList.addFirst(value);
-        }
-
-        values = reversedBigNumberList.getValues();
+        Collections.reverse(values);
         return this;
     }
 

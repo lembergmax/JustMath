@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 /**
@@ -635,14 +634,20 @@ public class BigNumberMatrix implements Cloneable {
 			return false;
 		}
 
-		AtomicBoolean symmetric = new AtomicBoolean(true);
-		forEachIndex((i, j) -> {
-			if (!get(i, j).isEqualTo(get(j, i))) {
-				symmetric.set(false);
+		// Direct int-indexed scan over the backing data with an early exit on the first
+		// asymmetric pair. The previous forEachIndex + AtomicBoolean variant allocated a
+		// BigNumber per index step and always scanned the whole matrix even after a mismatch.
+		final int size = data.size();
+		for (int row = 0; row < size; row++) {
+			final List<BigNumber> rowValues = data.get(row);
+			for (int col = row + 1; col < size; col++) {
+				if (!rowValues.get(col).isEqualTo(data.get(col).get(row))) {
+					return false;
+				}
 			}
-		});
+		}
 
-		return symmetric.get();
+		return true;
 	}
 
 	/**
@@ -818,14 +823,23 @@ public class BigNumberMatrix implements Cloneable {
 			return false;
 		}
 
-		AtomicBoolean equal = new AtomicBoolean(true);
-		forEachIndex((i, j) -> {
-			if (!get(i, j).isEqualTo(other.get(i, j))) {
-				equal.set(false);
+		// Direct int-indexed scan with early exit on the first differing cell, replacing the
+		// forEachIndex + AtomicBoolean variant that allocated BigNumber indices and always
+		// scanned every cell even after a mismatch was found.
+		final List<List<BigNumber>> otherData = other.getData();
+		final int rowCount = data.size();
+		for (int row = 0; row < rowCount; row++) {
+			final List<BigNumber> rowValues = data.get(row);
+			final List<BigNumber> otherRowValues = otherData.get(row);
+			final int colCount = rowValues.size();
+			for (int col = 0; col < colCount; col++) {
+				if (!rowValues.get(col).isEqualTo(otherRowValues.get(col))) {
+					return false;
+				}
 			}
-		});
+		}
 
-		return equal.get();
+		return true;
 	}
 
 	/**
