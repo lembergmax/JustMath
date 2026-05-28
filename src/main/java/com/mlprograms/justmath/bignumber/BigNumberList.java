@@ -660,7 +660,7 @@ public class BigNumberList implements List<BigNumber> {
             }
 
             final BigNumber reciprocal = BigNumbers.ONE.divide(value);
-            sumOfReciprocals = (sumOfReciprocals == null) ? reciprocal : sumOfReciprocals.add(reciprocal);
+            sumOfReciprocals = sumOfReciprocals.add(reciprocal);
         }
 
         final BigNumber count = new BigNumber(String.valueOf(values.size()));

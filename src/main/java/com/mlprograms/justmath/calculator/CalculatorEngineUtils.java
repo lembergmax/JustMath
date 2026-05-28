@@ -184,11 +184,13 @@ public class CalculatorEngineUtils {
      * @param text   the input string to be scanned
      * @param search the substring to search for
      * @return the number of non-overlapping occurrences of {@code search} within {@code text};
-     * returns {@code -1} if either {@code text} or {@code search} is empty
+     * {@code 0} if either {@code text} or {@code search} is empty (an empty text trivially
+     * contains zero occurrences — the previous {@code -1} sentinel made the {@code replaceAbsSigns}
+     * parity check report a spurious "odd number of bars" for empty input)
      */
     static int countOccurrences(@NonNull final String text, @NonNull final String search) {
         if (text.isEmpty() || search.isEmpty()) {
-            return -1;
+            return 0;
         }
 
         int count = 0;
