@@ -33,6 +33,8 @@ import com.mlprograms.justmath.calculator.expression.elements.function.*;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.UnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
+import lombok.Getter;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +69,7 @@ public class ExpressionElements {
      */
     private static final Map<String, ExpressionElement> unaryRegistry = new HashMap<>();
 
+    @Getter
     private static int maxTokenLength = -1;
 
     /**
@@ -74,22 +77,13 @@ public class ExpressionElements {
      *
      * <p>The returned view is unmodifiable so that callers cannot poison the global lookup
      * surface (e.g. the {@link com.mlprograms.justmath.calculator.Tokenizer} cached key set).
-     * Use {@link #register(ExpressionElement)} to add new entries.</p>
+     * The registry is populated once during static initialization and is not mutated
+     * afterwards.</p>
      *
      * @return unmodifiable view of the registry; never {@code null}
      */
     public static Map<String, ExpressionElement> getRegistry() {
         return Collections.unmodifiableMap(registry);
-    }
-
-    /**
-     * Returns the length of the longest registered symbol. Used by the tokenizer's
-     * maximal-munch matching strategy.
-     *
-     * @return the current maximum token length; never negative after the static initializer runs
-     */
-    public static int getMaxTokenLength() {
-        return maxTokenLength;
     }
 
     public static final String PI = "pi";
@@ -320,12 +314,19 @@ public class ExpressionElements {
     }
 
     /**
-     * Registers an {@link ExpressionElement} in the registry.
-     * The element is mapped by its symbol for a later lookup.
+     * Registers an {@link ExpressionElement} in the registry, mapped by its symbol.
+     *
+     * <p>Intentionally {@code private}: the registry is populated once during static
+     * initialization and is immutable thereafter. Exposing this as a public mutator allowed
+     * callers to write into the backing {@link java.util.HashMap} after start-up, racing with
+     * the {@link com.mlprograms.justmath.calculator.Tokenizer}'s cached key-set view and
+     * shifting {@link #getMaxTokenLength()} mid-tokenization. If runtime extension is ever
+     * required, add a properly synchronized, per-engine registry instead of mutating this
+     * global one.</p>
      *
      * @param element the {@code ExpressionElement} to register
      */
-    public static void register(ExpressionElement element) {
+    private static void register(ExpressionElement element) {
         maxTokenLength = Math.max(element.getSymbol().length(), maxTokenLength);
         registry.put(element.getSymbol(), element);
     }
