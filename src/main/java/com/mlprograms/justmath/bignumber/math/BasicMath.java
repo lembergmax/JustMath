@@ -937,7 +937,7 @@ public final class BasicMath {
         }
 
         final int precision = requirePositivePrecision(mathContext);
-        final RoundingDecision roundingDecision = computeRoundingDecision(normalizedValue, precision);
+        final RoundingDecision roundingDecision = computeRoundingDecision(normalizedValue, precision, mathContext.getRoundingMode());
 
         if (roundingDecision.noRoundingNeeded()) {
             return normalizedValue;
@@ -970,9 +970,10 @@ public final class BasicMath {
      *
      * @param normalizedValue normalized value to round
      * @param precision       target significant digits
+     * @param roundingMode    the caller-supplied rounding mode that decides the half-way / directed behaviour
      * @return rounding decision
      */
-    private static RoundingDecision computeRoundingDecision(final ParsedDecimalNumber normalizedValue, final int precision) {
+    private static RoundingDecision computeRoundingDecision(final ParsedDecimalNumber normalizedValue, final int precision, final RoundingMode roundingMode) {
         final String digits = normalizedValue.digits();
 
         final int firstNonZeroIndex = findFirstNonZeroIndex(digits);
@@ -989,7 +990,9 @@ public final class BasicMath {
         final boolean anyFollowingNonZeroDigit = hasNonZeroDigitAfterIndex(digits, cutIndexExclusive);
 
         final char lastKeptDigit = digits.charAt(cutIndexExclusive - 1);
-        final boolean incrementRequired = shouldIncrementAccordingToRoundingMode(BigNumbers.DEFAULT_MATH_CONTEXT.getRoundingMode(), normalizedValue.sign(), lastKeptDigit, roundingDigit, anyFollowingNonZeroDigit);
+        // Honour the caller's rounding mode (MathContext) instead of the library default —
+        // otherwise directed modes such as FLOOR/CEILING/UP/DOWN are silently ignored.
+        final boolean incrementRequired = shouldIncrementAccordingToRoundingMode(roundingMode, normalizedValue.sign(), lastKeptDigit, roundingDigit, anyFollowingNonZeroDigit);
 
         final String keptDigits = digits.substring(0, cutIndexExclusive);
         final int removedCount = digits.length() - cutIndexExclusive;
