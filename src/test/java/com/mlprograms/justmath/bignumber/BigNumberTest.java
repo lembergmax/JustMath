@@ -545,10 +545,12 @@ public class BigNumberTest {
             assertEquals(expectedPrefix, result.roundAfterDecimals(5).toString());
         }
 
+        // Logarithm domain errors are signalled with ArithmeticException, consistent with
+        // lnInvalidTest, BigDecimalMath and the JDK convention for mathematical-domain failures.
         @Test
         void log2InvalidTest() {
             BigNumber zero = new BigNumber("0");
-            assertThrows(IllegalArgumentException.class, () -> zero.log2(new MathContext(10, RoundingMode.HALF_UP), Locale.US));
+            assertThrows(ArithmeticException.class, () -> zero.log2(new MathContext(10, RoundingMode.HALF_UP), Locale.US));
         }
 
         @ParameterizedTest
@@ -567,7 +569,7 @@ public class BigNumberTest {
         @Test
         void log10InvalidTest() {
             BigNumber neg = new BigNumber("-5");
-            assertThrows(IllegalArgumentException.class, () -> neg.log10(new MathContext(10, RoundingMode.HALF_UP), Locale.GERMAN));
+            assertThrows(ArithmeticException.class, () -> neg.log10(new MathContext(10, RoundingMode.HALF_UP), Locale.GERMAN));
         }
 
         @ParameterizedTest
@@ -612,7 +614,7 @@ public class BigNumberTest {
         void logBaseInvalidTest(String number, String base) {
             BigNumber arg = new BigNumber(number);
             BigNumber b = new BigNumber(base);
-            assertThrows(IllegalArgumentException.class,
+            assertThrows(ArithmeticException.class,
                     () -> arg.logBase(b, new MathContext(10, RoundingMode.HALF_UP), Locale.US));
         }
 
@@ -1131,10 +1133,14 @@ public class BigNumberTest {
     @Nested
     public class Methods {
 
+        // floor rounds toward negative infinity: floor(-3.9) == -4 (not -3, which would be
+        // truncation toward zero). The previous "-3.9, -3" expectation encoded the truncation
+        // bug fixed under audit item H10.
         @ParameterizedTest
         @CsvSource({
                 "3.9, 3",
-                "-3.9, -3",
+                "-3.9, -4",
+                "-3.0, -3",
                 "5.0, 5"
         })
         void floorTest(String input, String expected) {

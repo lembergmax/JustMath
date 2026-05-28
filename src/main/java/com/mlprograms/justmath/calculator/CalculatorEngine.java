@@ -387,7 +387,9 @@ public class CalculatorEngine {
      */
     public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         if (expression.isBlank()) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: this value is returned to callers who
+            // may mutate it (e.g. negateThis), which must not corrupt the global BigNumbers.ZERO.
+            return new BigNumber("0");
         }
 
         Map<String, String> previous = currentVariables.get();

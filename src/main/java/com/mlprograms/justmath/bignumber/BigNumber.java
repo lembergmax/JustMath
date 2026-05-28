@@ -197,14 +197,34 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     private boolean isNegative;
     /**
-     * Per-instance {@link CalculatorEngine} used for evaluating sub-expressions (for example
-     * inside {@link #summation}, {@link #product}). Each {@code BigNumber} carries its own
-     * engine to keep the mutable configuration surface (locale, error mode, expression cache)
-     * isolated from other holders.
+     * Per-instance {@link CalculatorEngine}, created lazily on first {@link #getCalculatorEngine()}
+     * access. It is intentionally <em>not</em> built eagerly in the constructors: a
+     * {@code CalculatorEngine} allocates a tokenizer, parser and evaluator, and the vast majority
+     * of {@code BigNumber} instances never evaluate a sub-expression, so eager construction was
+     * pure overhead (noticeable in tight loops such as matrix arithmetic).
+     *
+     * <p>Because the engine is created per instance and never shared across clones (see
+     * {@link #clone()}), one holder's mutable engine configuration (locale, error mode, expression
+     * cache) cannot leak into another holder.</p>
      */
-    @NonNull
     @Setter
     private CalculatorEngine calculatorEngine;
+
+    /**
+     * Returns this instance's {@link CalculatorEngine}, creating it lazily on first access. The
+     * returned engine is owned solely by this {@code BigNumber}; clones and copies receive their
+     * own independent engine.
+     *
+     * @return the per-instance calculator engine; never {@code null}
+     */
+    public CalculatorEngine getCalculatorEngine() {
+        CalculatorEngine engine = this.calculatorEngine;
+        if (engine == null) {
+            engine = sharedEngine(mathContext, trigonometricMode);
+            this.calculatorEngine = engine;
+        }
+        return engine;
+    }
     /**
      * The trigonometric mode (DEG or RAD) used for trigonometric calculations.
      * Defaults to DEG (degrees).
@@ -272,7 +292,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         this.isNegative = parsedAndFormatted.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
+        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -339,7 +359,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
 
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
+        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -400,7 +420,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         this.isNegative = bigNumber.isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
+        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -417,7 +437,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         this.isNegative = other.isNegative;
         this.mathContext = other.mathContext;
         this.trigonometricMode = other.trigonometricMode;
-        this.calculatorEngine = other.calculatorEngine;
+        // Do not share the source engine: each instance lazily builds its own so that one
+        // holder's engine configuration cannot leak into another (audit fix K8).
     }
 
     /**
@@ -440,7 +461,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        this.calculatorEngine = sharedEngine(this.mathContext, this.trigonometricMode);
+        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -650,7 +671,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      *
      * @param divisor the divisor to compute the remainder with (must not be zero)
      * @return a new {@code BigNumber} representing {@code this % divisor}
-     * @throws ArithmeticException if {@code divisor} is zero
+     * @throws IllegalArgumentException if {@code divisor} is zero
      */
     public BigNumber remainder(@NonNull final BigNumber divisor) {
         return remainder(divisor, locale);
@@ -667,7 +688,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @param divisor the divisor to compute the remainder with (must not be zero)
      * @param locale  the locale used to construct the returned {@link BigNumber}
      * @return a new {@code BigNumber} representing {@code this % divisor}
-     * @throws ArithmeticException if {@code divisor} is zero
+     * @throws IllegalArgumentException if {@code divisor} is zero
      */
     public BigNumber remainder(@NonNull final BigNumber divisor, @NonNull final Locale locale) {
         return BasicMath.remainder(this, divisor, locale);
@@ -2671,7 +2692,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
      */
     public BigNumber average(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-        return StatisticsMath.average(addThisTobigNumberList(numbers), mathContext, locale);
+        return StatisticsMath.average(addThisToBigNumberList(numbers), mathContext, locale);
     }
 
     /**
@@ -2700,7 +2721,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @throws IllegalArgumentException if {@code numbers} is empty (implementation-dependent)
      */
     public BigNumber sum(@NonNull final List<BigNumber> numbers, @NonNull final Locale locale) {
-        return StatisticsMath.sum(addThisTobigNumberList(numbers), locale);
+        return StatisticsMath.sum(addThisToBigNumberList(numbers), locale);
     }
 
     /**
@@ -2708,7 +2729,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * dataset.
      *
      * <p>This convenience overload uses the instance's default {@link MathContext} and {@link Locale}. The supplied
-     * {@code numbers} list is combined with this {@code BigNumber} via {@code addThisTobigNumberList(numbers)} before
+     * {@code numbers} list is combined with this {@code BigNumber} via {@code addThisToBigNumberList(numbers)} before
      * delegating to the canonical implementation.</p>
      *
      * @param numbers the list of {@code BigNumber} values to include in the median calculation; must not be {@code null}
@@ -2768,7 +2789,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @throws IllegalArgumentException if the resulting dataset is empty (delegated to {@link StatisticsMath#median})
      */
     public BigNumber median(@NonNull final List<BigNumber> numbers, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-        final List<BigNumber> allNumbers = addThisTobigNumberList(numbers);
+        final List<BigNumber> allNumbers = addThisToBigNumberList(numbers);
         return StatisticsMath.median(allNumbers, mathContext, locale);
     }
 
@@ -2782,7 +2803,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @param numbers the list of {@code BigNumber} values to append after {@code this}; must not be {@code null}
      * @return a new {@code List<BigNumber>} containing {@code this} followed by all elements of {@code numbers}
      */
-    private List<BigNumber> addThisTobigNumberList(@NonNull final List<BigNumber> numbers) {
+    private List<BigNumber> addThisToBigNumberList(@NonNull final List<BigNumber> numbers) {
         List<BigNumber> bigNumbers = new ArrayList<>(numbers.size() + 1);
         bigNumbers.add(this);
         bigNumbers.addAll(numbers);
@@ -2790,20 +2811,36 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
-     * Returns a new {@code BigNumber} whose value is the largest integer less than or equal to this number.
-     * This operation sets the value after the decimal point to zero.
+     * Returns the integer part of this number under the given {@link RoundingMode}, as a fresh
+     * {@code BigNumber} that preserves this instance's {@link Locale}.
      *
-     * @return this {@code BigNumber} with the fractional part removed
+     * <p>This is the single, non-mutating implementation shared by {@link #floor()},
+     * {@link #ceil()} and {@link #truncate()}. It never mutates the receiver and never returns
+     * a shared constant, so the result is always safe to mutate independently.</p>
+     *
+     * @param roundingMode the rounding direction toward the integer; must not be {@code null}
+     * @return a new integer-valued {@code BigNumber}
      */
-    public BigNumber floor() {
-        valueAfterDecimalPoint = "0";
-        return this;
+    private BigNumber integerPart(@NonNull final RoundingMode roundingMode) {
+        final BigDecimal integerValue = toBigDecimal().setScale(0, roundingMode);
+        return new BigNumber(integerValue.toPlainString(), locale);
     }
 
     /**
-     * Returns a new {@code BigNumber} whose value is the smallest integer greater than or equal to this number.
-     * For positive numbers with a fractional part, this means rounding up to the next integer.
-     * For negative numbers or whole numbers, the result is the same as truncating towards zero or leaving unchanged.
+     * Returns a new {@code BigNumber} whose value is the largest integer less than or equal to
+     * this number (rounding toward negative infinity). The receiver is not modified.
+     * <p>
+     * Examples: {@code 3.7 → 3}, {@code -3.7 → -4}, {@code -3.0 → -3}.
+     *
+     * @return a new floored {@code BigNumber}
+     */
+    public BigNumber floor() {
+        return integerPart(RoundingMode.FLOOR);
+    }
+
+    /**
+     * Returns a new {@code BigNumber} whose value is the smallest integer greater than or equal
+     * to this number (rounding toward positive infinity). The receiver is not modified.
      * <p>
      * Examples:
      * <ul>
@@ -2812,28 +2849,15 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      *     <li>5.0 → 5</li>
      * </ul>
      *
-     * @return a new {@code BigNumber} rounded up to the next integer
+     * @return a new ceiled {@code BigNumber}
      */
     public BigNumber ceil() {
-        // Already an integer → return directly
-        if (this.valueAfterDecimalPoint.equals("0")) {
-            return new BigNumber(this.toString());
-        }
-
-        // Positive → add 1 to integer part
-        if (!this.isNegative()) {
-            return new BigNumber(this.truncate().add(BigNumbers.ONE).toString());
-        }
-
-        // Negative → ceil is just truncation towards zero
-        return new BigNumber(this.truncate().toString());
+        return integerPart(RoundingMode.CEILING);
     }
 
     /**
-     * Returns a new {@code BigNumber} whose value is truncated toward zero.
-     * Truncation removes the fractional part of the number without rounding.
-     * For positive numbers this behaves like {@link #floor()}, for negative numbers
-     * it behaves like {@link #ceil()}.
+     * Returns a new {@code BigNumber} whose value is truncated toward zero (the fractional part
+     * is dropped without rounding). The receiver is not modified.
      * <p>
      * Examples:
      * <pre>
@@ -2841,56 +2865,76 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      *  -3.7   → -3
      *   5.0   → 5
      *   0.99  → 0
+     *  -0.5   → 0
      * </pre>
      *
-     * @return this {@code BigNumber} truncated toward zero
+     * @return a new truncated {@code BigNumber}
      */
     public BigNumber truncate() {
-        // If the number has no decimal part, nothing to do
-        if ("0".equals(valueAfterDecimalPoint) || valueAfterDecimalPoint.isEmpty()) {
-            return this;
-        }
-
-        // Simply drop the fractional part
-        valueAfterDecimalPoint = "0";
-
-        if (isNegative() && valueBeforeDecimalPoint.equals("0")) {
-            return BigNumbers.ZERO;
-        }
-
-        return this;
+        return integerPart(RoundingMode.DOWN);
     }
 
     /**
-     * Converts this BigNumber from radians to degrees.
+     * Extra significant digits carried internally by {@link #toDegrees(MathContext)} and
+     * {@link #toRadians(MathContext)} so that the conversion rounds <em>once</em> at the end
+     * instead of double-rounding (rounding {@code pi} to the target precision first and then
+     * rounding the quotient again). Double-rounding can shift the last digit at a tie boundary
+     * — e.g. {@code 90°} would yield {@code 1.570796326794896} instead of the correctly rounded
+     * {@code 1.570796326794897} under {@link RoundingMode#HALF_EVEN}.
+     */
+    private static final int ANGLE_CONVERSION_GUARD_DIGITS = 10;
+
+    /**
+     * Builds a {@link MathContext} with {@link #ANGLE_CONVERSION_GUARD_DIGITS} extra precision
+     * while preserving the caller's rounding mode, used for intermediate angle-conversion math.
      *
+     * @param mathContext the caller-requested context; must not be {@code null}
+     * @return a guard-padded context for intermediate computation
+     */
+    private static MathContext withAngleConversionGuardDigits(@NonNull final MathContext mathContext) {
+        return new MathContext(mathContext.getPrecision() + ANGLE_CONVERSION_GUARD_DIGITS, mathContext.getRoundingMode());
+    }
+
+    /**
+     * Converts this BigNumber from radians to degrees: {@code degrees = radians * 180 / pi}.
+     *
+     * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
+     * to avoid double-rounding artifacts at tie boundaries.</p>
+     *
+     * @param mathContext precision and rounding for the result; must not be {@code null}
      * @return a new BigNumber representing the value in degrees
      */
     public BigNumber toDegrees(@NonNull final MathContext mathContext) {
-        return multiply(ONE_HUNDRED_EIGHTY, locale).divide(BigNumbers.pi(mathContext), mathContext, locale);
+        final MathContext guard = withAngleConversionGuardDigits(mathContext);
+        return multiply(ONE_HUNDRED_EIGHTY, locale).divide(BigNumbers.pi(guard), guard, locale).round(mathContext);
     }
 
     /**
-     * Converts this BigNumber from degrees to radians.
+     * Converts this BigNumber from degrees to radians: {@code radians = degrees * pi / 180}.
      *
+     * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
+     * to avoid double-rounding artifacts at tie boundaries.</p>
+     *
+     * @param mathContext precision and rounding for the result; must not be {@code null}
      * @return a new BigNumber representing the value in radians
      */
     public BigNumber toRadians(@NonNull final MathContext mathContext) {
-        return multiply(BigNumbers.pi(mathContext)).divide(ONE_HUNDRED_EIGHTY, mathContext);
+        final MathContext guard = withAngleConversionGuardDigits(mathContext);
+        return multiply(BigNumbers.pi(guard)).divide(ONE_HUNDRED_EIGHTY, guard).round(mathContext);
     }
 
     /**
-     * Returns the absolute value of this {@code BigNumber}.
+     * Returns the absolute value of this {@code BigNumber} as a new instance.
      * <p>
-     * If the number is negative, sets the sign to positive and returns this instance.
+     * The receiver is not modified. A positive (or zero) copy with the same magnitude,
+     * locale and configuration is returned.
      *
-     * @return this {@code BigNumber} as a non-negative value
+     * @return a new non-negative {@code BigNumber} with this number's magnitude
      */
     public BigNumber abs() {
-        if (isNegative) {
-            isNegative = false;
-        }
-        return this;
+        final BigNumber result = clone();
+        result.isNegative = false;
+        return result;
     }
 
     /**
@@ -3405,7 +3449,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     @Override
     public BigNumber clone() {
         try {
-            return (BigNumber) super.clone();
+            final BigNumber cloned = (BigNumber) super.clone();
+            // Detach the (lazily created) engine so the clone builds its own on demand and never
+            // shares mutable engine state with the original (audit fix K8).
+            cloned.calculatorEngine = null;
+            return cloned;
         } catch (final CloneNotSupportedException cloneNotSupportedException) {
             throw new AssertionError(cloneNotSupportedException);
         }

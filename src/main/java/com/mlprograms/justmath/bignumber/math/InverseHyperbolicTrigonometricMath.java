@@ -107,7 +107,8 @@ public final class InverseHyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("0", locale);
         }
 
         final boolean argumentIsNegative = isNegativeLiteral(argument);
@@ -141,7 +142,8 @@ public final class InverseHyperbolicTrigonometricMath {
         ensureGreaterOrEqualToOne(argument);
 
         if (argument.isEqualTo(ONE)) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("0", locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -177,7 +179,8 @@ public final class InverseHyperbolicTrigonometricMath {
         ensureAbsoluteLessThanOne(argument);
 
         if (argument.isEqualTo(ZERO)) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("0", locale);
         }
 
         final boolean argumentIsNegative = isNegativeLiteral(argument);
@@ -449,7 +452,8 @@ public final class InverseHyperbolicTrigonometricMath {
             throw new IllegalArgumentException("sqrt is only defined for non-negative values in real arithmetic");
         }
         if (nonNegativeValue.isEqualTo(ZERO)) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: callers up the chain may mutate it.
+            return new BigNumber("0", locale);
         }
 
         BigNumber currentEstimate = initialSqrtGuess(nonNegativeValue, locale);
@@ -518,7 +522,8 @@ public final class InverseHyperbolicTrigonometricMath {
             throw new IllegalArgumentException("ln(x) is only defined for x > 0");
         }
         if (positiveValue.isEqualTo(ONE)) {
-            return BigNumbers.ZERO;
+            // Fresh instance, never the shared constant: callers up the chain may mutate it.
+            return new BigNumber("0", locale);
         }
 
         final String fastLnPlain = tryLnUsingDouble(positiveValue, locale);
@@ -623,7 +628,8 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static BigNumber powerOfTen(final int exponent, final Locale locale) {
         if (exponent == 0) {
-            return BigNumbers.ONE;
+            // Fresh instance, never the shared constant: callers up the chain may mutate it.
+            return new BigNumber("1", locale);
         }
         if (exponent > 0) {
             return new BigNumber("1" + "0".repeat(exponent), locale).trim();

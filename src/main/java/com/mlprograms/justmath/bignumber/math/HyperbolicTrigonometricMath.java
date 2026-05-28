@@ -93,7 +93,8 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            return ZERO;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("0", locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -127,7 +128,8 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            return BigNumbers.ONE;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("1", locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -161,7 +163,8 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            return ZERO;
+            // Fresh instance, never the shared constant: the caller may mutate the result.
+            return new BigNumber("0", locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);

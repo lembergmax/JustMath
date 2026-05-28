@@ -261,7 +261,8 @@ public final class MatrixMath {
 		if (sizeAsBigNumber.isEqualTo(BigNumbers.ZERO)) {
 			// Convention: the determinant of the empty 0×0 matrix is the multiplicative identity 1.
 			// This makes the recursive cofactor expansion for 1×1 inverses produce the correct result.
-			return BigNumbers.ONE;
+			// Fresh instance, never the shared constant: the caller may mutate the result.
+			return new BigNumber("1", matrix.getLocale());
 		}
 
 		final int size = sizeAsBigNumber.intValue();
@@ -333,7 +334,8 @@ public final class MatrixMath {
 		for (int pivotColumn = 0; pivotColumn < size - 1; pivotColumn++) {
 			final int pivotRow = findPivotRow(workingCopy, pivotColumn, size);
 			if (workingCopy[pivotRow][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
-				return BigNumbers.ZERO;
+				// Fresh instance, never the shared constant: the caller may mutate the determinant.
+				return new BigNumber("0", matrix.getLocale());
 			}
 			if (pivotRow != pivotColumn) {
 				swapRows(workingCopy, pivotRow, pivotColumn);

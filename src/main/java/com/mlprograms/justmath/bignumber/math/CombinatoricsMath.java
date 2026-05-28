@@ -82,7 +82,8 @@ public final class CombinatoricsMath {
 		}
 
 		if (k.isEqualTo(ZERO) || k.isEqualTo(n)) {
-			return ONE;
+			// Fresh instance, never the shared constant: the caller may mutate the result.
+			return new BigNumber("1", locale);
 		}
 
 		// Use symmetry property: C(n, k) = C(n, n-k). Choosing the smaller of the two values
