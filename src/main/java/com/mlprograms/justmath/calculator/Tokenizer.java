@@ -138,6 +138,21 @@ public class Tokenizer {
      * @throws NullPointerException     if the input string is null
      */
     public List<Token> tokenize(@NonNull final String input) {
+        // Reject the internal whitespace-boundary sentinel if it appears in caller input.
+        // The sentinel is a non-typeable control character injected by removeWhitespace to
+        // mark deliberate token splits; if user input already contains it, the main scan
+        // loop would silently skip it (collapsing e.g. "1<sentinel>2" into "12") and let an
+        // attacker smuggle a boundary past a naive input filter. Treat it as an invalid
+        // character with a precise position instead.
+        final int sentinelIndex = input.indexOf(WHITESPACE_BOUNDARY);
+        if (sentinelIndex >= 0) {
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                    Map.of("character", String.valueOf(WHITESPACE_BOUNDARY)),
+                    "Invalid control character at position " + sentinelIndex,
+                    sentinelIndex);
+        }
+
         // Tracks whether the next absolute-value bar opens or closes a context.
         boolean nextAbsoluteIsOpen = true;
 
