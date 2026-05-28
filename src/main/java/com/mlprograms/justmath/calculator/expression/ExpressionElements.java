@@ -31,10 +31,9 @@ import com.mlprograms.justmath.calculator.expression.elements.Parenthesis;
 import com.mlprograms.justmath.calculator.expression.elements.Separator;
 import com.mlprograms.justmath.calculator.expression.elements.function.*;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
-import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.expression.elements.operator.UnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
-import lombok.Getter;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +49,11 @@ import java.util.Optional;
  */
 public class ExpressionElements {
 
-    @Getter
+    /**
+     * Backing map for the registry. Mutated only by {@link #register(ExpressionElement)} and the
+     * static initializer; external callers should read it through {@link #getRegistry()} which
+     * returns an unmodifiable view.
+     */
     private static final Map<String, ExpressionElement> registry = new HashMap<>();
 
     /**
@@ -64,8 +67,30 @@ public class ExpressionElements {
      */
     private static final Map<String, ExpressionElement> unaryRegistry = new HashMap<>();
 
-    @Getter
     private static int maxTokenLength = -1;
+
+    /**
+     * Returns the registry of registered {@link ExpressionElement} instances keyed by symbol.
+     *
+     * <p>The returned view is unmodifiable so that callers cannot poison the global lookup
+     * surface (e.g. the {@link com.mlprograms.justmath.calculator.Tokenizer} cached key set).
+     * Use {@link #register(ExpressionElement)} to add new entries.</p>
+     *
+     * @return unmodifiable view of the registry; never {@code null}
+     */
+    public static Map<String, ExpressionElement> getRegistry() {
+        return Collections.unmodifiableMap(registry);
+    }
+
+    /**
+     * Returns the length of the longest registered symbol. Used by the tokenizer's
+     * maximal-munch matching strategy.
+     *
+     * @return the current maximum token length; never negative after the static initializer runs
+     */
+    public static int getMaxTokenLength() {
+        return maxTokenLength;
+    }
 
     public static final String PI = "pi";
     public static final String PI_S = "π";
@@ -106,7 +131,9 @@ public class ExpressionElements {
     public static final String FUNC_ACOS = "acos";
     public static final String FUNC_COS_S = "cos⁻¹";
     public static final String FUNC_ACOSH = "acosh";
-    public static final String FUNC_ACOS_S = "cosh⁻¹";
+    // Surrogate for the inverse hyperbolic cosine. Previously misnamed FUNC_ACOS_S, which
+    // looked like the inverse cosine surrogate but in fact held the {@code cosh⁻¹} symbol.
+    public static final String FUNC_ACOSH_S = "cosh⁻¹";
     //
     public static final String FUNC_TAN = "tan";
     public static final String FUNC_TANH = "tanh";
@@ -183,7 +210,7 @@ public class ExpressionElements {
                 new BinaryOperator(OP_PERMUTATION, 6, BigNumber::permutation),
                 new BinaryOperator(OP_COMBINATION, 6, BigNumber::combination),
                 //
-                new PostfixUnaryOperator(OP_FACTORIAL, 5, BigNumber::factorial),
+                new UnaryOperator(OP_FACTORIAL, 5, UnaryOperator.Position.POSTFIX, BigNumber::factorial),
                 new OneArgumentFunction(FUNC_SQRT, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_SQRT_S, 4, BigNumber::squareRoot),
                 new OneArgumentFunction(FUNC_CBRT, 4, BigNumber::cubicRoot),
@@ -214,7 +241,7 @@ public class ExpressionElements {
                 new OneArgumentFunction(FUNC_ATANH, 6, BigNumber::atanh),
                 new OneArgumentFunction(FUNC_ACOTH, 6, BigNumber::acoth),
                 new OneArgumentFunction(FUNC_ASINH_S, 6, BigNumber::asinh),
-                new OneArgumentFunction(FUNC_ACOS_S, 6, BigNumber::acosh),
+                new OneArgumentFunction(FUNC_ACOSH_S, 6, BigNumber::acosh),
                 new OneArgumentFunction(FUNC_ATANH_S, 6, BigNumber::atanh),
                 new OneArgumentFunction(FUNC_ACOTH_S, 6, BigNumber::acoth),
                 //
@@ -263,8 +290,8 @@ public class ExpressionElements {
             register(expressionElement);
         }
 
-        registerUnary(new PostfixUnaryOperator(OP_MINUS, 4, (value, mathContext, locale) -> value.signum() == 0 ? value : value.negate()));
-        registerUnary(new PostfixUnaryOperator(OP_PLUS, 4, (value, mathContext, locale) -> value));
+        registerUnary(new UnaryOperator(OP_MINUS, 4, UnaryOperator.Position.PREFIX, (value, mathContext, locale) -> value.signum() == 0 ? value : value.negate()));
+        registerUnary(new UnaryOperator(OP_PLUS, 4, UnaryOperator.Position.PREFIX, (value, mathContext, locale) -> value));
     }
 
     /**

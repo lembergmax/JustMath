@@ -35,6 +35,19 @@ import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import java.math.MathContext;
 import java.util.*;
 
+/**
+ * Variadic function element — operates on an arbitrary, runtime-determined number of arguments
+ * (e.g. {@code sum}, {@code avg}, {@code median}).
+ *
+ * <p><strong>Scalar coercion of multi-value results:</strong> when an argument popped from the
+ * evaluation stack is a {@link MultiValueResult} (for example a {@code Pol(...)}/{@code Rec(...)}
+ * coordinate pair), only its {@link MultiValueResult#firstValue() first component} is forwarded
+ * to the variadic operation. The second component is silently discarded. This mirrors the
+ * project-wide scalarisation policy in {@link com.mlprograms.justmath.bignumber.math.utils.MathUtils#ensureScalar},
+ * which lets expressions such as {@code sum(Pol(3;4); 5)} type-check at evaluation time. Callers
+ * who need both components must consume them via dedicated coordinate-aware functions, not
+ * variadics.</p>
+ */
 public class UnlimitedArgumentFunction extends Function {
 
     private final UnlimitedArgumentFunctionOperation operation;

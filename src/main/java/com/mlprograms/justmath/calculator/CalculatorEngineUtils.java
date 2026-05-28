@@ -36,7 +36,7 @@ import com.mlprograms.justmath.calculator.expression.elements.function.ThreeArgu
 import com.mlprograms.justmath.calculator.expression.elements.function.TwoArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
 import com.mlprograms.justmath.calculator.expression.elements.operator.BinaryOperator;
-import com.mlprograms.justmath.calculator.expression.elements.operator.PostfixUnaryOperator;
+import com.mlprograms.justmath.calculator.expression.elements.operator.UnaryOperator;
 import com.mlprograms.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
 import com.mlprograms.justmath.calculator.internal.Token;
 
@@ -87,37 +87,91 @@ public class CalculatorEngineUtils {
      *                                  (e.g., {@code |x+3}).
      */
     public static String replaceAbsSigns(String expression) {
-        String absValueSign = ExpressionElements.SURRFUNC_ABS_S;
+        final char absSignCharacter = ExpressionElements.SURRFUNC_ABS_S.charAt(0);
 
-        int occurrences = countOccurrences(expression, absValueSign);
+        // Bail out early if the sign cardinality is already obviously wrong. A correct
+        // expression must have an even number of {@code |} characters because every opening
+        // bar needs a matching closer.
+        final int occurrences = countOccurrences(expression, ExpressionElements.SURRFUNC_ABS_S);
         if (occurrences % 2 != 0) {
-            throw new IllegalArgumentException("Expression must contain an even number (greater than 1) of abs sign functions ('|')");
+            throw new IllegalArgumentException(
+                    "Expression must contain an even number of abs-sign characters ('|')");
         }
 
-        StringBuilder result = new StringBuilder();
-        int index = 0;
-        int foundCount = 0;
+        // Context-aware open/close detection. The previous implementation alternated
+        // open/close purely by position parity, so an input like {@code a|b|c|d|e} (four bars,
+        // even count, all in operator-required positions) was rewritten to
+        // {@code aabs(b)cabs(d)e} — syntactically nonsense that was only caught by downstream
+        // validation with a diffuse error. By tracking whether we currently expect an operand
+        // (so a bar opens an abs) or an operator (so a bar closes one), we both reject
+        // misplaced bars early and produce correctly nested {@code abs(...)} output.
+        final StringBuilder result = new StringBuilder(expression.length());
+        boolean expectingOperand = true;
+        int openAbsDepth = 0;
 
-        while (index < expression.length()) {
-            int next = expression.indexOf(absValueSign, index);
-            if (next == -1) {
-                result.append(expression.substring(index));
-                break;
+        for (int index = 0; index < expression.length(); index++) {
+            final char currentChar = expression.charAt(index);
+
+            if (currentChar == absSignCharacter) {
+                if (expectingOperand) {
+                    result.append(ExpressionElements.FUNC_ABS).append(ExpressionElements.PAR_LEFT);
+                    openAbsDepth++;
+                    // Inside an abs, the next character still starts an operand.
+                    expectingOperand = true;
+                } else {
+                    if (openAbsDepth == 0) {
+                        throw new IllegalArgumentException(
+                                "Unmatched closing '|' at position " + index + " in expression: '" + expression + "'");
+                    }
+                    result.append(')');
+                    openAbsDepth--;
+                    expectingOperand = false;
+                }
+                continue;
             }
 
-            result.append(expression, index, next);
-
-            if (foundCount % 2 == 0) {
-                result.append(ExpressionElements.FUNC_ABS + ExpressionElements.PAR_LEFT);
-            } else {
-                result.append(")");
-            }
-
-            foundCount++;
-            index = next + absValueSign.length();
+            result.append(currentChar);
+            expectingOperand = expectsOperandAfter(currentChar, expectingOperand);
         }
 
+        if (openAbsDepth != 0) {
+            throw new IllegalArgumentException(
+                    "Unmatched opening '|' in expression: '" + expression + "'");
+        }
         return result.toString();
+    }
+
+    /**
+     * Returns the {@code expectingOperand} state that applies after consuming {@code character},
+     * given the previous state. Drives the open/close decision in {@link #replaceAbsSigns(String)}.
+     *
+     * <p>Whitespace and unknown characters are treated as transparent and pass the state through.
+     * Operators, parentheses, and separators reset the state to "operand expected" because the
+     * grammar requires an operand on the right-hand side of each of them. Digits, letters and
+     * closing parens flip the state to "operator expected".</p>
+     */
+    private static boolean expectsOperandAfter(final char character, final boolean previousState) {
+        if (Character.isWhitespace(character)) {
+            return previousState;
+        }
+        switch (character) {
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '%':
+            case '^':
+            case '(':
+            case ',':
+            case ';':
+                return true;
+            case ')':
+                return false;
+            default:
+                // Digits, decimal points, letters, and any registered function/constant text
+                // produce values; after them we are inside an operator-expecting state.
+                return !(Character.isLetterOrDigit(character) || character == '.');
+        }
     }
 
     /**
@@ -533,7 +587,7 @@ public class CalculatorEngineUtils {
      * @return {@code 1}, {@code 2} or {@code 3}
      */
     private static int operandCountOf(@NonNull final ExpressionElement element) {
-        if (element instanceof PostfixUnaryOperator) {
+        if (element instanceof UnaryOperator) {
             return 1;
         }
         if (element instanceof BinaryOperator
