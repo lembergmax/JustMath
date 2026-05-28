@@ -55,6 +55,16 @@ class BigNumberListTest {
                 "Expected BigNumber <" + expected + "> but was <" + actual + ">");
     }
 
+    /**
+     * Overload that prefixes the standard failure message with caller-supplied context. Used by
+     * assertions where the bare "Expected X but was Y" diagnostic does not explain why a given
+     * value was expected (for example tests that exercise live-view vs. snapshot semantics).
+     */
+    private static void assertBigNumberEquals(BigNumber expected, BigNumber actual, String contextMessage) {
+        assertEquals(expected.toString(), actual.toString(), () ->
+                contextMessage + " — expected BigNumber <" + expected + "> but was <" + actual + ">");
+    }
+
     @Nested
     class ConstructorAndFactoryTests {
 
@@ -786,6 +796,243 @@ class BigNumberListTest {
             assertTrue(sawOne.get());
             assertTrue(sawTwo.get());
             assertTrue(sawThree.get());
+        }
+    }
+
+    /**
+     * Tests for the {@link List} interface contract, added when {@link BigNumberList} grew an
+     * {@code implements List<BigNumber>} declaration. They verify that the class behaves like
+     * a regular {@link List} for equality, hashing, iteration, sub-views and the Java 21
+     * {@code SequencedCollection} default methods.
+     */
+    @Nested
+    class ListContractTests {
+
+        // -----------------------------------------------------------------------------------
+        // Group 1: equals / hashCode contract
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void equals_reflexive() {
+            BigNumberList list = listOf("1", "2", "3");
+            assertEquals(list, list);
+        }
+
+        @Test
+        void equals_symmetric_betweenBigNumberLists() {
+            BigNumberList left = listOf("1", "2", "3");
+            BigNumberList right = listOf("1", "2", "3");
+            assertEquals(left, right);
+            assertEquals(right, left);
+        }
+
+        @Test
+        void equals_betweenBigNumberListAndPlainList() {
+            BigNumberList bigNumberList = listOf("1", "2", "3");
+            List<BigNumber> plainArrayList = new ArrayList<>(List.of(
+                    getNewBigNumber("1"), getNewBigNumber("2"), getNewBigNumber("3")));
+            assertEquals(bigNumberList, plainArrayList,
+                    "List.equals contract: BigNumberList must equal any List with same elements in same order");
+        }
+
+        @Test
+        void equals_differentOrder_returnsFalse() {
+            BigNumberList ascending = listOf("1", "2", "3");
+            BigNumberList descending = listOf("3", "2", "1");
+            assertNotEquals(ascending, descending);
+        }
+
+        @Test
+        void equals_differentSize_returnsFalse() {
+            BigNumberList shorter = listOf("1", "2");
+            BigNumberList longer = listOf("1", "2", "3");
+            assertNotEquals(shorter, longer);
+        }
+
+        @Test
+        void equals_againstNonListType_returnsFalse() {
+            BigNumberList list = listOf("1");
+            assertNotEquals(list, "1");
+            assertNotEquals(list, getNewBigNumber("1"));
+        }
+
+        @Test
+        void hashCode_consistentWithEquals() {
+            BigNumberList first = listOf("1", "2", "3");
+            BigNumberList second = listOf("1", "2", "3");
+            assertEquals(first, second);
+            assertEquals(first.hashCode(), second.hashCode(),
+                    "Equal lists must have equal hash codes");
+        }
+
+        @Test
+        void hashCode_consistentWithPlainArrayList() {
+            BigNumberList bigNumberList = listOf("1", "2", "3");
+            List<BigNumber> plainArrayList = new ArrayList<>(List.of(
+                    getNewBigNumber("1"), getNewBigNumber("2"), getNewBigNumber("3")));
+            assertEquals(plainArrayList.hashCode(), bigNumberList.hashCode(),
+                    "BigNumberList hashCode must follow the List#hashCode contract");
+        }
+
+        // -----------------------------------------------------------------------------------
+        // Group 2: ListIterator contract
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void listIterator_traverseForward() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator();
+            assertTrue(iterator.hasNext());
+            assertBigNumberEquals(getNewBigNumber("10"), iterator.next());
+            assertBigNumberEquals(getNewBigNumber("20"), iterator.next());
+            assertBigNumberEquals(getNewBigNumber("30"), iterator.next());
+            assertFalse(iterator.hasNext());
+        }
+
+        @Test
+        void listIterator_traverseBackward() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator(list.size());
+            assertTrue(iterator.hasPrevious());
+            assertBigNumberEquals(getNewBigNumber("30"), iterator.previous());
+            assertBigNumberEquals(getNewBigNumber("20"), iterator.previous());
+            assertBigNumberEquals(getNewBigNumber("10"), iterator.previous());
+            assertFalse(iterator.hasPrevious());
+        }
+
+        @Test
+        void listIterator_atIndex_startsAtPosition() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator(2);
+            assertEquals(2, iterator.nextIndex());
+            assertBigNumberEquals(getNewBigNumber("30"), iterator.next());
+        }
+
+        @Test
+        void listIterator_setReplacesCurrentElement() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator();
+            iterator.next();
+            iterator.set(getNewBigNumber("99"));
+            assertBigNumberEquals(getNewBigNumber("99"), list.get(0));
+        }
+
+        @Test
+        void listIterator_addInsertsAtCursor() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator();
+            iterator.next();
+            iterator.add(getNewBigNumber("15"));
+            assertEquals(4, list.size());
+            assertBigNumberEquals(getNewBigNumber("15"), list.get(1));
+        }
+
+        @Test
+        void listIterator_removeAfterNext() {
+            BigNumberList list = listOf("10", "20", "30");
+            ListIterator<BigNumber> iterator = list.listIterator();
+            iterator.next();
+            iterator.remove();
+            assertEquals(2, list.size());
+            assertBigNumberEquals(getNewBigNumber("20"), list.get(0));
+        }
+
+        // -----------------------------------------------------------------------------------
+        // Group 3: Iterator fail-fast contract
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void iterator_failsFast_onStructuralModification() {
+            BigNumberList list = listOf("1", "2", "3");
+            Iterator<BigNumber> iterator = list.iterator();
+            iterator.next();
+            list.add(getNewBigNumber("4"));
+            assertThrows(ConcurrentModificationException.class, iterator::next);
+        }
+
+        @Test
+        void listIterator_failsFast_onExternalModification() {
+            BigNumberList list = listOf("1", "2", "3");
+            ListIterator<BigNumber> iterator = list.listIterator();
+            iterator.next();
+            list.add(getNewBigNumber("4"));
+            assertThrows(ConcurrentModificationException.class, iterator::next);
+        }
+
+        // -----------------------------------------------------------------------------------
+        // Group 4: subList live-view contract vs. subListCopy snapshot
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void subList_returnsLiveView_writeThroughToParent() {
+            BigNumberList parent = listOf("10", "20", "30", "40");
+            List<BigNumber> sub = parent.subList(1, 3);
+            sub.set(0, getNewBigNumber("99"));
+            assertBigNumberEquals(getNewBigNumber("99"), parent.get(1),
+                    "subList is a live view; writes must surface in the parent");
+        }
+
+        @Test
+        void subList_parentStructuralChange_invalidatesSubView() {
+            BigNumberList parent = listOf("10", "20", "30", "40");
+            List<BigNumber> sub = parent.subList(1, 3);
+            parent.add(getNewBigNumber("50"));
+            assertThrows(ConcurrentModificationException.class, () -> sub.get(0));
+        }
+
+        @Test
+        void subListCopy_returnsIndependentSnapshot() {
+            BigNumberList parent = listOf("10", "20", "30", "40");
+            BigNumberList copy = parent.subListCopy(1, 3);
+            parent.set(1, getNewBigNumber("99"));
+            assertBigNumberEquals(getNewBigNumber("20"), copy.get(0),
+                    "subListCopy is a snapshot; parent mutations must not leak in");
+        }
+
+        // -----------------------------------------------------------------------------------
+        // Group 5: Stream / Spliterator
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void stream_yieldsAllElementsInOrder() {
+            BigNumberList list = listOf("1", "2", "3");
+            List<String> collected = list.stream()
+                    .map(BigNumber::toString)
+                    .toList();
+            assertEquals(List.of("1", "2", "3"), collected);
+        }
+
+        @Test
+        void parallelStream_yieldsSameMultiset() {
+            BigNumberList list = listOf("1", "2", "3", "4", "5");
+            // Parallel traversal does not guarantee order; compare as multisets via sorted view.
+            List<String> collected = list.parallelStream()
+                    .map(BigNumber::toString)
+                    .sorted()
+                    .toList();
+            assertEquals(List.of("1", "2", "3", "4", "5"), collected);
+        }
+
+        @Test
+        void spliterator_reportsSizedAndOrdered() {
+            BigNumberList list = listOf("1", "2", "3");
+            Spliterator<BigNumber> spliterator = list.spliterator();
+            assertTrue(spliterator.hasCharacteristics(Spliterator.SIZED),
+                    "List spliterators must report SIZED");
+            assertTrue(spliterator.hasCharacteristics(Spliterator.ORDERED),
+                    "List spliterators must report ORDERED");
+            assertEquals(3L, spliterator.estimateSize());
+        }
+
+        // -----------------------------------------------------------------------------------
+        // Group 6: SequencedCollection defaults (Java 21)
+        // -----------------------------------------------------------------------------------
+
+        @Test
+        void sequencedAccessors_matchFirstAndLastElement() {
+            BigNumberList list = listOf("10", "20", "30");
+            assertBigNumberEquals(list.get(0), list.getFirst());
+            assertBigNumberEquals(list.get(list.size() - 1), list.getLast());
         }
     }
 

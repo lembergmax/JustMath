@@ -373,29 +373,40 @@ class BigNumberMatrixTest {
     }
 
     @Test
-    void tst() {
-        // Create a 2x2 matrix from a string
-        BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
+    void readmeStyleSmokeFlow() {
+        // Smoke check for the README-style usage flow: determinant + inverse + multiply +
+        // identity recognition. The previous version printed each intermediate value to
+        // {@code System.out}, which polluted CI logs and verified nothing. Cell-level assertions
+        // are used because {@link BigNumberMatrix#toPlainDataString} is for human inspection and
+        // not stable enough to pin in a unit test.
+        final BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
 
-        // Compute the determinant
-        BigNumber det = a.determinant();
-        System.out.println(det);
-        // -2
+        assertEquals("-2", a.determinant().toString());
 
-        // Compute the inverse
-        BigNumberMatrix inv = a.inverse();
-        System.out.println(inv.toPlainDataString());
-        // [[-2.0, 1.0], [1.5, -0.5]]
+        final BigNumberMatrix inverse = a.inverse();
+        assertBigNumberMatrixCell(inverse, "-2", 0, 0);
+        assertBigNumberMatrixCell(inverse, "1", 0, 1);
+        assertBigNumberMatrixCell(inverse, "1.5", 1, 0);
+        assertBigNumberMatrixCell(inverse, "-0.5", 1, 1);
 
-        // Multiply matrices
-        BigNumberMatrix b = new BigNumberMatrix("5,6;7,8", Locale.US);
-        BigNumberMatrix c = a.multiply(b);
-        System.out.println(c.toPlainDataString());
-        // [[19, 22], [43, 50]]
+        final BigNumberMatrix b = new BigNumberMatrix("5,6;7,8", Locale.US);
+        final BigNumberMatrix product = a.multiply(b);
+        assertBigNumberMatrixCell(product, "19", 0, 0);
+        assertBigNumberMatrixCell(product, "22", 0, 1);
+        assertBigNumberMatrixCell(product, "43", 1, 0);
+        assertBigNumberMatrixCell(product, "50", 1, 1);
 
-        // Check identity matrix
-        BigNumberMatrix i = new BigNumberMatrix("1,0;0,1", Locale.US);
-        System.out.println(i.isIdentityMatrix());
+        final BigNumberMatrix identity = new BigNumberMatrix("1,0;0,1", Locale.US);
+        assertTrue(identity.isIdentityMatrix());
+    }
+
+    /**
+     * Asserts that the given matrix cell trimmed-to-text matches {@code expected}.
+     */
+    private static void assertBigNumberMatrixCell(final BigNumberMatrix matrix, final String expected, final int row, final int column) {
+        final BigNumber actual = matrix.get(BigNumber.valueOf(row), BigNumber.valueOf(column)).trim();
+        assertEquals(expected, actual.toString(),
+                () -> "Mismatch at [" + row + "][" + column + "]");
     }
 
     @Test

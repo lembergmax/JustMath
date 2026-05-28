@@ -466,7 +466,13 @@ public class BigNumberTest {
                 "-1,RAD,-0.785",
                 "-1,DEG,-45",
                 "1000,RAD,1.57",
-                "1000,DEG,89.943"
+                "1000,DEG,89.943",
+                // Regression coverage for the K2 fix: large negative arguments previously fell
+                // into the Taylor-series branch (|x| ≤ 1 check did not take the magnitude), where
+                // the series diverges. After the {@code argument.abs()} fix, the identity branch
+                // applies and the result is the negated counterpart of {@code atan(+1000)}.
+                "-1000,RAD,-1.57",
+                "-1000,DEG,-89.943"
         })
         void atanTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
             BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
@@ -860,17 +866,34 @@ public class BigNumberTest {
             assertEquals(expected, result.toString());
         }
 
+        @Test
+        void atan2OriginThrows() {
+            // The origin (0, 0) is the only point where atan2 is mathematically undefined.
+            final BigNumber zero = new BigNumber("0", Locale.US);
+            assertThrows(IllegalArgumentException.class, () -> zero.atan2(zero));
+        }
+
         @ParameterizedTest
         @CsvSource({
-                "0,0",
-                "0,1",
-                "1,0"
+                // y = 0, positive x → angle 0
+                "0,1,0",
+                // y = 0, negative x → angle π
+                "0,-1,3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117068",
+                // y > 0, x = 0 → angle π/2
+                "1,0,1.570796326794896619231321691639751442098584699687552910487472296153908203143104499314017412671058534",
+                // y < 0, x = 0 → angle -π/2
+                "-1,0,-1.570796326794896619231321691639751442098584699687552910487472296153908203143104499314017412671058534"
         })
-        void atan2InvalidTest(String inputY, String inputX) {
+        void atan2AxisPointsTest(String inputY, String inputX, String expected) {
+            // Regression coverage for the K3 fix: previously these calls rejected with
+            // {@code IllegalArgumentException} because the implementation refused any input with
+            // x == 0 OR y == 0. Mathematically only the origin is undefined; axis points map to
+            // multiples of π/2.
             BigNumber y = new BigNumber(inputY, Locale.US);
             BigNumber x = new BigNumber(inputX, Locale.US);
 
-            assertThrows(IllegalArgumentException.class, () -> y.atan2(x));
+            BigNumber result = y.atan2(x);
+            assertEquals(expected, result.toString());
         }
 
     }

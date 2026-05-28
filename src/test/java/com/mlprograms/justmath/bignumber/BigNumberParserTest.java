@@ -60,10 +60,14 @@ class BigNumberParserTest {
         }
 
         @Test
-        void parse_invalid_returnsZero() {
-            assertSame(ZERO, parser.parse("abc", LOCALE_US));
-            assertSame(ZERO, parser.parse("12a3", LOCALE_US));
-            assertSame(ZERO, parser.parse("--1", LOCALE_US));
+        void parse_invalid_throws() {
+            // Invalid numeric input now throws {@link IllegalArgumentException} instead of
+            // silently materialising as zero. The old behaviour swallowed typos such as
+            // {@code new BigNumber("abc")}, which is a surprising failure mode for an
+            // arbitrary-precision math library.
+            assertThrows(IllegalArgumentException.class, () -> parser.parse("abc", LOCALE_US));
+            assertThrows(IllegalArgumentException.class, () -> parser.parse("12a3", LOCALE_US));
+            assertThrows(IllegalArgumentException.class, () -> parser.parse("--1", LOCALE_US));
         }
 
         @Test
@@ -259,10 +263,16 @@ class BigNumberParserTest {
         }
 
         @Test
-        void parse_scientificNotation_invalid_returnsZero() {
-            BigNumber result = parser.parse("1e--3", LOCALE_US);
-
-            assertSame(ZERO, result);
+        void parse_scientificNotation_invalid_throws() {
+            // Mirrors the behaviour change in {@code parse_invalid_throws}: invalid scientific
+            // notation now raises {@link IllegalArgumentException} (chained to the underlying
+            // {@link NumberFormatException}) instead of silently materialising as zero. Failing
+            // loudly catches typos such as {@code "1e--3"} that the old silent-fallback masked.
+            final IllegalArgumentException thrown = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> parser.parse("1e--3", LOCALE_US));
+            assertTrue(thrown.getMessage().contains("1e--3"),
+                    () -> "Failure message should mention the offending input but was: " + thrown.getMessage());
         }
     }
 
