@@ -201,7 +201,16 @@
                 <version>3.3.2</version>
             </plugin>
 
-            <!-- JavaFX Maven Plugin (for `mvn javafx:run`) -->
+            <!--
+                JavaFX Maven Plugin — currently disabled because the referenced main class
+                {@code com.mlprograms.justmath.graphfx.GraphCalculatorApp} does not exist in
+                this branch. Re-enable once the GraphFX module is restored under
+                {@code src/main/java/com/mlprograms/justmath/graphfx}; running {@code mvn javafx:run}
+                with the missing class fails with a {@code ClassNotFoundException} instead of a
+                helpful diagnostic. The JavaFX runtime dependencies are kept above in case the
+                module returns soon — they pull only ~2 MB and have no other consumer here.
+            -->
+            <!--
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -210,6 +219,8 @@
                     <mainClass>com.mlprograms.justmath.graphfx.GraphCalculatorApp</mainClass>
                 </configuration>
             </plugin>
+            -->
+
 
             <!-- PIT Mutation Testing -->
             <plugin>
