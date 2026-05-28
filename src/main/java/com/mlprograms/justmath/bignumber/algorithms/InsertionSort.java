@@ -53,6 +53,7 @@ public class InsertionSort extends SortingAlgorithm {
         final List<BigNumber> sortedList = cloneList(bigNumbers);
 
         for (int index = 1; index < sortedList.size(); index++) {
+            abortIfInterrupted();
             final BigNumber key = sortedList.get(index);
 
             int insertIndex = index - 1;

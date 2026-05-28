@@ -50,33 +50,56 @@ public abstract class SortingAlgorithm {
     }
 
     /**
-     * Validate a list of {@link BigNumber} for algorithmic operations.
+     * Validates whether the given list contains enough elements to be worth sorting.
      *
-     * <p>Validity rules:
-     * <ul>
-     *   <li>the list must not be {@code null}</li>
-     *   <li>the list must not be empty</li>
-     *   <li>the list must contain more than one element</li>
-     * </ul>
-     * </p>
+     * <p>The previous body checked for {@code null} as well, but {@link #sort(List)} declares
+     * {@link NonNull @NonNull} on its parameter and Lombok therefore throws a
+     * {@link NullPointerException} before this method is ever entered. Keeping the redundant
+     * null guard masked that contract and produced dead code.</p>
      *
-     * @param bigNumbers the list to validate
-     * @return {@code true} if the list meets the validity rules, {@code false} otherwise
+     * @param bigNumbers the non-null list to inspect
+     * @return {@code true} when the list has at least two elements; {@code false} otherwise
      */
-    protected static boolean isListValid(final List<BigNumber> bigNumbers) {
-        if (bigNumbers == null) {
-            return false;
-        }
+    protected static boolean isListValid(@NonNull final List<BigNumber> bigNumbers) {
+        return bigNumbers.size() >= 2;
+    }
 
-        if (bigNumbers.isEmpty()) {
-            return false;
+    /**
+     * Swaps the elements at {@code firstIndex} and {@code secondIndex} in the provided list.
+     *
+     * <p>Used by the concrete sort implementations to avoid duplicating the same three-line
+     * swap helper in every subclass. Does nothing when both indices are equal; index-bounds
+     * violations propagate from the underlying {@link List#set(int, Object)} call.</p>
+     *
+     * @param numbers     the list whose elements should be swapped; must not be {@code null}
+     * @param firstIndex  index of the first element
+     * @param secondIndex index of the second element
+     */
+    protected static void swap(@NonNull final List<BigNumber> numbers, final int firstIndex, final int secondIndex) {
+        if (firstIndex == secondIndex) {
+            return;
         }
+        final BigNumber temporary = numbers.get(firstIndex);
+        numbers.set(firstIndex, numbers.get(secondIndex));
+        numbers.set(secondIndex, temporary);
+    }
 
-        if (bigNumbers.size() == 1) {
-            return false;
+    /**
+     * Throws a {@link CancellationException} when the current thread has been interrupted.
+     *
+     * <p>Long-running sorts (BubbleSort and friends on tens of thousands of {@link BigNumber}s)
+     * are CPU bound and otherwise ignore JUnit {@code @Timeout} interrupts and external
+     * cancellation requests. Calling this guard inside each pass of the outer loop lets the
+     * caller terminate the algorithm promptly when the thread is asked to stop.</p>
+     *
+     * @throws java.util.concurrent.CancellationException when {@link Thread#interrupted()} reports
+     *                                                    {@code true}; the thread's interrupt status
+     *                                                    is cleared by this check
+     */
+    protected static void abortIfInterrupted() {
+        if (Thread.interrupted()) {
+            throw new java.util.concurrent.CancellationException("Sorting was interrupted before completion");
         }
-
-        return true;
     }
 
 }

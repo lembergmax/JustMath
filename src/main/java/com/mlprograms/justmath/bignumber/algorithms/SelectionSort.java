@@ -54,6 +54,7 @@ public class SelectionSort extends SortingAlgorithm {
         final List<BigNumber> sortedList = cloneList(bigNumbers);
 
         for (int index = 0; index < sortedList.size() - 1; index++) {
+            abortIfInterrupted();
             int minimumIndex = index;
             BigNumber minimumValue = sortedList.get(index);
 

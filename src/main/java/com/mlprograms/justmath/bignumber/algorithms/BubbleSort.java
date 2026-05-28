@@ -67,6 +67,11 @@ public class BubbleSort extends SortingAlgorithm {
         final int size = numbers.size();
 
         for (int pass = 0; pass < size - 1; pass++) {
+            // BubbleSort is O(n^2). On the inputs the algorithm is actually used for (≤ 32
+            // elements per {@link BigNumberList#sort()}'s adaptive cutoff) this is fine, but
+            // tests deliberately throw larger payloads at it; checking interruption per pass
+            // makes the algorithm responsive to {@code @Timeout} and other cancellation signals.
+            abortIfInterrupted();
             boolean swapped = false;
 
             for (int index = 0; index < size - 1 - pass; index++) {
@@ -83,26 +88,6 @@ public class BubbleSort extends SortingAlgorithm {
                 return;
             }
         }
-    }
-
-    /**
-     * Swaps the elements at {@code firstIndex} and {@code secondIndex} in the provided list.
-     *
-     * <p>This method does nothing if the two indices are equal. If an index is out of range,
-     * the underlying {@link List} implementation will throw an {@link IndexOutOfBoundsException}.</p>
-     *
-     * @param numbers     the list in which to swap elements
-     * @param firstIndex  index of the first element to swap
-     * @param secondIndex index of the second element to swap
-     */
-    private static void swap(@NonNull final List<BigNumber> numbers, final int firstIndex, final int secondIndex) {
-        if (firstIndex == secondIndex) {
-            return;
-        }
-
-        final BigNumber temp = numbers.get(firstIndex);
-        numbers.set(firstIndex, numbers.get(secondIndex));
-        numbers.set(secondIndex, temp);
     }
 
 }

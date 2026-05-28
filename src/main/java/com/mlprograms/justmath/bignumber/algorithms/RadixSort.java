@@ -118,6 +118,10 @@ public class RadixSort extends SortingAlgorithm {
         BigInteger exp = BigInteger.ONE;
 
         while (maxAbs.compareTo(exp) >= 0) {
+            // Each LSD pass is O(n); the loop count equals the number of digits in the largest
+            // absolute value. Check before every pass so cancellation kicks in at most one pass
+            // late even on very large integer inputs.
+            abortIfInterrupted();
             countingSortByDigit(values, exp);
             exp = exp.multiply(BigInteger.TEN);
         }
@@ -218,12 +222,18 @@ public class RadixSort extends SortingAlgorithm {
     /**
      * Converts the given integer {@link BigNumber} to its absolute {@link BigInteger} value.
      *
+     * <p>Uses the canonical (locale-independent) {@link BigNumber#toBigDecimal()} representation
+     * so that values originating from non-US locales (where {@link BigNumber#toString()} emits
+     * {@code ,} as the decimal separator and {@code .} as the grouping separator) are converted
+     * correctly. The previous implementation passed a {@code toString()} result through a naive
+     * comma-to-dot replacement, which produced invalid {@code BigDecimal} input for locales such
+     * as {@link Locale#GERMANY}.</p>
+     *
      * @param value integer {@link BigNumber}
      * @return absolute integer value
      */
     private BigInteger toBigIntegerAbs(@NonNull final BigNumber value) {
-        final BigDecimal decimal = new BigDecimal(value.toString().replace(',', '.'));
-        return decimal.toBigIntegerExact().abs();
+        return value.toBigDecimal().toBigIntegerExact().abs();
     }
 
 }

@@ -60,6 +60,9 @@ public class MergeSort extends SortingAlgorithm {
         List<BigNumber> destination = buffer;
 
         for (int runSize = 1; runSize > 0 && runSize < size; runSize <<= 1) {
+            // Check once per pass — there are only {@code log2(n)} passes, so the overhead is
+            // negligible compared to per-merge or per-element checks.
+            abortIfInterrupted();
             final int blockSize = (int) Math.min((long) size, (long) runSize * 2L);
 
             for (int leftFrom = 0; leftFrom < size; leftFrom += blockSize) {

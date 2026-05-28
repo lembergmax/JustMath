@@ -119,6 +119,9 @@ public class QuickSort extends SortingAlgorithm {
         stackSize = pushRange(leftBounds, rightBounds, stackSize, 0, lastIndex);
 
         while (stackSize > 0) {
+            // Check once per stack frame rather than on every partition step: keeps the inner
+            // loop tight while still giving the caller a chance to cancel a long sort run.
+            abortIfInterrupted();
             stackSize--;
 
             int leftIndex = leftBounds[stackSize];
@@ -318,28 +321,6 @@ public class QuickSort extends SortingAlgorithm {
         final int rangesCapacity = (log2 + 2) * 2;
 
         return Math.max(16, rangesCapacity);
-    }
-
-    /**
-     * Swaps the elements at {@code firstIndex} and {@code secondIndex} in the provided list.
-     *
-     * <p>
-     * This method does nothing if the two indices are equal. If an index is out of range,
-     * the underlying {@link List} implementation will throw an {@link IndexOutOfBoundsException}.
-     * </p>
-     *
-     * @param numbers     the list in which to swap elements
-     * @param firstIndex  index of the first element to swap
-     * @param secondIndex index of the second element to swap
-     */
-    private static void swap(@NonNull final List<BigNumber> numbers, final int firstIndex, final int secondIndex) {
-        if (firstIndex == secondIndex) {
-            return;
-        }
-
-        final BigNumber temp = numbers.get(firstIndex);
-        numbers.set(firstIndex, numbers.get(secondIndex));
-        numbers.set(secondIndex, temp);
     }
 
 }
