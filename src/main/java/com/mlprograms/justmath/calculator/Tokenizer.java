@@ -228,7 +228,7 @@ public class Tokenizer {
                             null);
                 }
 
-                tokens.add(new Token(Token.Type.NUMBER, parts.get(0)));
+                tokens.add(new Token(Token.Type.NUMBER, parts.getFirst()));
                 tokens.add(new Token(Token.Type.NUMBER, parts.get(1)));
                 tokens.add(new Token(Token.Type.STRING, parts.get(2)));
                 tokens.add(new Token(Token.Type.FUNCTION, symbol));
@@ -582,7 +582,7 @@ public class Tokenizer {
         if (tokens.isEmpty()) {
             return true;
         }
-        final Token previous = tokens.get(tokens.size() - 1);
+        final Token previous = tokens.getLast();
         switch (previous.getType()) {
             case NUMBER, RIGHT_PAREN, CONSTANT, VARIABLE -> {
                 return false;

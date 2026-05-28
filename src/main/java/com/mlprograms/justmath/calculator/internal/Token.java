@@ -43,8 +43,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class Token {
 
-	private Type type;
-	private String value;
+	private final Type type;
+	private final String value;
 
 	/**
 	 * Returns the matching ArithmeticOperator if available.

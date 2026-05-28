@@ -356,7 +356,7 @@ public class CalculatorEngineUtils {
             }
         }
 
-        final Token first = tokens.get(0);
+        final Token first = tokens.getFirst();
         if (first.getType() == Token.Type.OPERATOR
                 && isBinaryOperatorSymbol(first.getValue())
                 && !isUnarySignSymbol(first.getValue())) {
@@ -368,7 +368,7 @@ public class CalculatorEngineUtils {
                     null);
         }
 
-        final Token last = tokens.get(tokens.size() - 1);
+        final Token last = tokens.getLast();
         if (last.getType() == Token.Type.OPERATOR && isBinaryOperatorSymbol(last.getValue())) {
             throw new SyntaxErrorException(
                     CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR,
