@@ -45,7 +45,7 @@ import lombok.NonNull;
  * (e.g. {@code 1e-12}, {@code -3.5E+4}).
  * </p>
  */
-class BigNumberParser {
+final class BigNumberParser {
 
     /**
      * Parses a number string by auto-detecting its locale from the input.
@@ -91,8 +91,12 @@ class BigNumberParser {
             return parseScientificNotation(trimmedInput, locale);
         }
 
+        // Reject malformed input loudly. The previous behaviour silently returned ZERO,
+        // which let typos such as {@code new BigNumber("abc")} survive as the number 0 —
+        // a very surprising failure mode for users of an arbitrary-precision math library.
         if (!isNumber(trimmedInput, locale)) {
-            return ZERO;
+            throw new IllegalArgumentException(
+                    "Input is not a valid number for locale " + locale + ": '" + input + "'");
         }
 
         final String normalized = normalize(trimmedInput, locale);
@@ -241,7 +245,11 @@ class BigNumberParser {
             final String plainString = decimal.toPlainString();
             return extractParts(plainString, locale);
         } catch (NumberFormatException exception) {
-            return ZERO;
+            // Same rationale as {@link #parse(String, Locale)}: signal malformed scientific
+            // notation instead of silently materialising it as zero.
+            throw new IllegalArgumentException(
+                    "Input is not a valid scientific-notation number for locale " + locale + ": '" + input + "'",
+                    exception);
         }
     }
 

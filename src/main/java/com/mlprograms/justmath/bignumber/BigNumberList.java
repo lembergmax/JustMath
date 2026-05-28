@@ -95,19 +95,23 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     /**
-     * Creates a new {@code BigNumberList} that shares the internal storage of the provided instance.
+     * Creates a new {@code BigNumberList} that is structurally independent of the provided source.
      *
-     * <p>This constructor performs a shallow copy of the internal list reference. Both the
-     * original and the new {@code BigNumberList} instances will point to the same underlying list.
-     * If you need an independent copy of the list contents, use {@link #copy()}.</p>
+     * <p>The constructor performs a defensive (shallow-element) copy of the source's internal list:
+     * the two instances no longer share the same backing storage, so structural mutations such as
+     * {@link #add(BigNumber) add}/{@link #remove(int) remove} on either side are isolated. The
+     * {@link BigNumber} elements themselves are still shared by reference; that is safe because
+     * {@code BigNumber} treats its setters as configuration knobs rather than mutation of the
+     * numeric value, and the supported mutating operations on this list ({@code copy},
+     * {@code negateAll}, …) produce new elements.</p>
      *
-     * @param bigNumberList the list whose internal storage should be shared; must not be {@code null}
+     * <p>If you actually want the previous "alias the same backing list" semantics (for example to
+     * obtain a thin view), use {@link #BigNumberList(List)} with the source's {@link #getValues()
+     * values}.</p>
+     *
+     * @param bigNumberList the source list; must not be {@code null}
      */
     public BigNumberList(@NonNull final BigNumberList bigNumberList) {
-        // Defensive copy: detach the new list from the source's internal storage. The previous
-        // behaviour ("shallow copy" that shared the underlying list reference) was surprising and
-        // led to silent aliasing bugs. For explicit reference sharing use the
-        // {@link #BigNumberList(List)} constructor with the source's {@code values}.
         this.values = new ArrayList<>(bigNumberList.values);
     }
 
@@ -1206,12 +1210,19 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     /**
-     * Creates and returns a copy of this {@code BigNumberList}.
+     * Creates a new {@code BigNumberList} that <strong>aliases</strong> the internal list storage
+     * of this instance.
      *
-     * <p>This method shares the underlying list storage with the original instance.
-     * For an independent list copy, use {@link #copy()} instead.</p>
+     * <p>This is intentional and asymmetric to {@link #copy()} / {@link #BigNumberList(BigNumberList)},
+     * both of which produce structurally independent lists. The aliasing behaviour exists for
+     * legacy callers (verified by the {@code cloneSharesInternalStorage} regression test); new
+     * code should prefer {@link #copy()} when independence is required, and treat {@code clone()}
+     * as the explicit opt-in to shared storage.</p>
      *
-     * @return a new {@code BigNumberList} instance referencing the same internal list
+     * <p>Element objects ({@link BigNumber}) are reference-shared in either case — they are
+     * effectively immutable from the perspective of list semantics.</p>
+     *
+     * @return a new {@code BigNumberList} referencing the same internal list as this instance
      */
     public BigNumberList clone() {
         // {@code clone()} intentionally shares the underlying list storage (legacy contract,
@@ -1220,6 +1231,41 @@ public class BigNumberList implements List<BigNumber> {
         // us the desired aliasing. For an independent copy use {@link #copy()} or the
         // {@link #BigNumberList(BigNumberList)} copy constructor (which is defensive).
         return new BigNumberList(this.values);
+    }
+
+    /**
+     * Value-equality according to the {@link List} contract.
+     *
+     * <p>Two lists are equal when they have the same {@link #size() size} and contain the same
+     * elements in the same iteration order. The other operand may be any {@link List}
+     * implementation — comparison against a {@code BigNumberList} and a plain {@code ArrayList}
+     * with identical contents both yield {@code true}. This restores the contract that was
+     * previously inherited (and violated) from {@link Object#equals(Object)}.</p>
+     *
+     * @param other the object to compare with
+     * @return {@code true} if {@code other} is a {@link List} with the same elements in the same order
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof List<?> otherList)) {
+            return false;
+        }
+        return values.equals(otherList);
+    }
+
+    /**
+     * Hash code matching the {@link List#hashCode()} contract. Delegates to the backing
+     * {@link ArrayList}, which already computes the canonical list hash
+     * ({@code 1 + 31 * element.hashCode() ...}). This keeps a {@code BigNumberList} and a plain
+     * {@code List} with identical contents in the same hash bucket — required for
+     * {@code HashSet}/{@code HashMap} interoperability.
+     */
+    @Override
+    public int hashCode() {
+        return values.hashCode();
     }
 
     @Override
@@ -1352,6 +1398,22 @@ public class BigNumberList implements List<BigNumber> {
         return values.listIterator(index);
     }
 
+    /**
+     * Returns a <strong>live view</strong> of the portion of this list between {@code fromIndex}
+     * (inclusive) and {@code toIndex} (exclusive), per the {@link List#subList(int, int)} contract.
+     *
+     * <p>The returned list is backed by this {@code BigNumberList}: writes to the sub-list write
+     * through to the parent, and non-structural changes to the parent are visible in the sub-list.
+     * Structural modifications to the parent invalidate any sub-list returned by this method
+     * (subsequent operations on the sub-list throw {@link java.util.ConcurrentModificationException}).</p>
+     *
+     * <p>For an independent snapshot that survives parent mutations, use
+     * {@link #subListCopy(int, int)} instead.</p>
+     *
+     * @param fromIndex low endpoint (inclusive)
+     * @param toIndex   high endpoint (exclusive)
+     * @return live sub-list view; never {@code null}
+     */
     @Override
     public List<BigNumber> subList(final int fromIndex, final int toIndex) {
         return values.subList(fromIndex, toIndex);
