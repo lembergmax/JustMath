@@ -1279,7 +1279,10 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     @Override
-    public boolean contains(@NonNull final Object object) {
+    public boolean contains(final Object object) {
+        // List#contains accepts null per the interface contract; the backing ArrayList
+        // returns false for a null query when no null element is present. Do not annotate
+        // with @NonNull — that would throw NPE and break the List contract.
         return values.contains(object);
     }
 
@@ -1309,7 +1312,8 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     @Override
-    public boolean remove(@NonNull final Object object) {
+    public boolean remove(final Object object) {
+        // List#remove(Object) accepts null per the interface contract.
         return values.remove(object);
     }
 
@@ -1379,12 +1383,14 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     @Override
-    public int indexOf(@NonNull final Object object) {
+    public int indexOf(final Object object) {
+        // List#indexOf accepts null per the interface contract (returns -1 when absent).
         return values.indexOf(object);
     }
 
     @Override
-    public int lastIndexOf(@NonNull final Object object) {
+    public int lastIndexOf(final Object object) {
+        // List#lastIndexOf accepts null per the interface contract (returns -1 when absent).
         return values.lastIndexOf(object);
     }
 
