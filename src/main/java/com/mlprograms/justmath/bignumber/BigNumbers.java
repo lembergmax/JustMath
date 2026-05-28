@@ -156,17 +156,27 @@ public class BigNumbers {
 	 * 	if {@code min} ≥ {@code max}, or if either value has decimal places
 	 */
 	public static BigNumber randomIntegerBigNumberInRange(@NonNull final BigNumber min, @NonNull final BigNumber max, @NonNull final Locale locale) {
-		BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
-		BigInteger maxInt = max.add(ONE).toBigDecimal().toBigIntegerExact();
+		final BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
+		final BigInteger maxInt = max.toBigDecimal().toBigIntegerExact();
 
+		// Half-open interval [min, max): max is the EXCLUSIVE upper bound. The previous
+		// implementation added one to max, turning the contract into an inclusive [min, max].
 		if (minInt.compareTo(maxInt) >= 0) {
 			throw new IllegalArgumentException("min must be less than max");
 		}
 
-		BigInteger range = maxInt.subtract(minInt);
-		BigInteger randomInRange = new BigInteger(range.bitLength(), ThreadLocalRandom.current()).mod(range).add(minInt);
+		final BigInteger range = maxInt.subtract(minInt);
 
-		return new BigNumber(randomInRange.toString(), locale);
+		// Rejection sampling for a uniform distribution. Generating a value in
+		// [0, 2^bitLength) and taking mod(range) (the old approach) biases the lower
+		// residues whenever range is not a power of two. Re-draw until the candidate
+		// falls inside [0, range) so every value is equally likely.
+		BigInteger candidate;
+		do {
+			candidate = new BigInteger(range.bitLength(), ThreadLocalRandom.current());
+		} while (candidate.compareTo(range) >= 0);
+
+		return new BigNumber(candidate.add(minInt).toString(), locale);
 	}
 
 	/**
