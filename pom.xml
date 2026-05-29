@@ -28,7 +28,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mlprograms.justmath</groupId>
+    <!--
+        Maven coordinates.
+
+        groupId io.github.lembergmax is verified against the GitHub account of the same name
+        via Sonatype Central Portal's automated GitHub namespace verification. The Java package
+        root has been migrated to io.github.lembergmax.justmath to match. See README changelog.
+    -->
+    <groupId>io.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
     <version>1.5.0</version>
     <packaging>jar</packaging>
@@ -72,20 +79,6 @@
         <url>https://github.com/lembergmax/JustMath</url>
         <tag>HEAD</tag>
     </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <name>Sonatype OSSRH Release</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <name>Sonatype OSSRH Snapshot</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
 
         <!-- Lombok -->
@@ -137,15 +130,6 @@
 
     <build>
         <plugins>
-
-            <!--
-                Maven Surefire Plugin.
-                Pinned to 3.5.2 (was 3.2.5) to pick up SUREFIRE-2127 and related fixes that
-                eliminate the spurious {@code *.dumpstream} files emitted on normal test-fork
-                shutdown. Those files contained a {@code java.io.EOFException} from the
-                {@code CommandChannelDecoder} reader thread reacting to the parent surefire
-                process closing the command stream — i.e. diagnostic noise, not a JVM crash.
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -158,28 +142,17 @@
                     <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
-
-            <!--
-                Maven JAR Plugin: excludes the dev scratchpad {@code Main} class from the
-                published library JAR. The source file is kept in {@code src/main/java} for
-                interactive debugging but never ends up in {@code justmath-<version>.jar}.
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.1</version>
                 <configuration>
                     <excludes>
-                        <exclude>com/mlprograms/justmath/Main.class</exclude>
-                        <exclude>com/mlprograms/justmath/Main$*.class</exclude>
+                        <exclude>io/github/lembergmax/justmath/Main.class</exclude>
+                        <exclude>io/github/lembergmax/justmath/Main$*.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
-
-            <!--
-                Maven Clean Plugin: explicit version pin. The default {@code clean} lifecycle
-                purges {@code target/} at the start of {@code mvn clean package}; pinning the
-                version avoids version drift across machines and CI.
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -201,10 +174,10 @@
                 </dependencies>
                 <configuration>
                     <targetClasses>
-                        <param>com.mlprograms.justmath*</param>
+                        <param>io.github.lembergmax.justmath*</param>
                     </targetClasses>
                     <targetTests>
-                        <param>com.mlprograms.justmath*</param>
+                        <param>io.github.lembergmax.justmath*</param>
                     </targetTests>
                     <threads>4</threads>
                     <outputFormats>
@@ -216,7 +189,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Attach Sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -233,12 +205,10 @@
                 <configuration>
                     <!-- Keep the published source jar in sync with the binary jar: omit Main. -->
                     <excludes>
-                        <exclude>com/mlprograms/justmath/Main.java</exclude>
+                        <exclude>io/github/lembergmax/justmath/Main.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
-
-            <!-- Attach Javadocs -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -264,39 +234,50 @@
                 </configuration>
             </plugin>
 
-            <!-- Sign Artifacts -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

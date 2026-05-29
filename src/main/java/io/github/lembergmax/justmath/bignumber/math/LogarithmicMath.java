@@ -1,0 +1,192 @@
+/*
+ * Copyright (c) 2025-2026 Max Lemberg
+ *
+ * This file is part of JustMath.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package io.github.lembergmax.justmath.bignumber.math;
+
+import ch.obermuhlner.math.big.BigDecimalMath;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.Locale;
+
+import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
+
+/**
+ * Utility class providing high‐precision logarithmic functions on {@link BigNumber} values.
+ * <p>
+ * Wraps the {@link BigDecimalMath} library to compute
+ * base‐2 logarithm, base‐10 logarithm, natural logarithm (ln), and
+ * logarithm with arbitrary positive base.
+ * All methods accept a {@link MathContext} to control precision and rounding,
+ * and a {@link Locale} for formatting the resulting {@link BigNumber}.
+ */
+public final class LogarithmicMath {
+
+	private LogarithmicMath() {
+		// Utility class — never instantiated.
+	}
+
+
+	/**
+	 * Computes the base‐2 logarithm of the given argument.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₂(x) = ln(x) / ln(2)
+	 * </pre>
+	 * where ln is the natural logarithm.
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₂(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
+	 */
+	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
+		// Use ArithmeticException to match {@link #ln(BigNumber, MathContext, Locale)} and the
+		// JDK convention for mathematical-domain errors (BigDecimal.divide(zero) etc.).
+		if (argument.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("log2(x) undefined for x <= 0");
+		}
+
+		return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+	}
+
+	/**
+	 * Computes the base‐10 logarithm of the given argument.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₁₀(x) = ln(x) / ln(10)
+	 * </pre>
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₁₀(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
+	 */
+	public static BigNumber log10(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
+		if (argument.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("log10(x) undefined for x <= 0");
+		}
+
+		return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+	}
+
+	/**
+	 * Computes the natural logarithm (ln) of the given argument.
+	 * <p>
+	 * Mathematically defined as the inverse of the exponential function:
+	 * <pre>
+	 * ln(x) = the unique y such that eʸ = x
+	 * </pre>
+	 * Domain: x &gt; 0.
+	 *
+	 * @param argument
+	 * 	the positive input value x
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing ln(argument)
+	 *
+	 * @throws ArithmeticException
+	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
+	 */
+	public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
+		if (argument.compareTo(ZERO) <= 0)
+			throw new ArithmeticException("ln(x) undefined for x <= 0");
+
+		BigDecimal result = BigDecimalMath.log(argument.toBigDecimal(), mathContext);
+		return new BigNumber(result.toPlainString(), locale).trim();
+	}
+
+	/**
+	 * Computes the logarithm of a number with respect to an arbitrary positive base.
+	 * <p>
+	 * Mathematically defined as:
+	 * <pre>
+	 * log₍b₎(x) = ln(x) / ln(b)
+	 * </pre>
+	 * where ln is the natural logarithm.
+	 * Domain: x &gt; 0, b &gt; 0 &amp;&amp; b ≠ 1.
+	 *
+	 * @param number
+	 * 	the positive input value x
+	 * @param base
+	 * 	the positive base b (not equal to 1)
+	 * @param mathContext
+	 * 	the {@link MathContext} specifying precision and rounding
+	 * @param locale
+	 * 	the {@link Locale} used to format the returned {@link BigNumber}
+	 *
+	 * @return a {@link BigNumber} representing log₍base₎(number)
+	 *
+	 * @throws ArithmeticException
+	 * 	if {@code number ≤ 0}, {@code base ≤ 0}, or {@code base == 1}
+	 */
+	public static BigNumber logBase(@NonNull final BigNumber number, @NonNull final BigNumber base, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		MathUtils.checkMathContext(mathContext);
+
+		if (number.compareTo(ZERO) <= 0) {
+			throw new ArithmeticException("logBase(x, b) undefined for x <= 0");
+		}
+		if (base.compareTo(ZERO) <= 0 || base.isEqualTo(BigNumbers.ONE)) {
+			throw new ArithmeticException("logBase(x, b) undefined for b <= 0 or b == 1");
+		}
+
+		BigDecimal lnNumber = BigDecimalMath.log(number.toBigDecimal(), mathContext);
+		BigDecimal lnBase = BigDecimalMath.log(base.toBigDecimal(), mathContext);
+		BigDecimal result = lnNumber.divide(lnBase, mathContext);
+
+		return new BigNumber(result.toPlainString(), locale).trim();
+	}
+
+}

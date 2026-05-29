@@ -12,7 +12,7 @@
           <mxGeometry x="44" y="84" width="1416" height="56" as="geometry" />
         </mxCell>
 
-        <mxCell id="s1" value="&lt;b&gt;Step 1 · Implement the computation logic&lt;/b&gt;&lt;br&gt;Write the actual math in a helper class in package com.mlprograms.justmath.bignumber.math (e.g. a static MyFnMath.myFn(BigNumber, MathContext, Locale)), like the existing math.* helpers do." style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
+        <mxCell id="s1" value="&lt;b&gt;Step 1 · Implement the computation logic&lt;/b&gt;&lt;br&gt;Write the actual math in a helper class in package io.github.lembergmax.justmath.bignumber.math (e.g. a static MyFnMath.myFn(BigNumber, MathContext, Locale)), like the existing math.* helpers do." style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="80" y="170" width="640" height="78" as="geometry" />
         </mxCell>
         <mxCell id="s2" value="&lt;b&gt;Step 2 · Expose a method on BigNumber&lt;/b&gt;&lt;br&gt;Add a method on BigNumber (e.g. BigNumber myFn(MathContext, Locale)) that just delegates to the math.* helper class from Step 1, matching the existing BigNumber methods." style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">

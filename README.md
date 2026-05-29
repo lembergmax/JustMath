@@ -652,8 +652,8 @@ Locale handling:
 * You can also pass an explicit `Locale`
 
 ```java
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
+import io.github.lembergmax.justmath.converter.UnitConverter;
+import io.github.lembergmax.justmath.converter.UnitValue;
 
 UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
 UnitConverter converter = new UnitConverter();
@@ -671,8 +671,8 @@ The public facade `UnitElements` provides:
 * listing all built-in units
 
 ```java
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitElements;
+import io.github.lembergmax.justmath.converter.Unit;
+import io.github.lembergmax.justmath.converter.UnitElements;
 
 // parse symbol -> unit
 Unit km = UnitElements.parseUnit("km");
@@ -936,14 +936,14 @@ must be observed by callers:
 
 ```xml
 <dependency>
-    <groupId>com.mlprograms.justmath</groupId>
+    <groupId>io.github.lembergmax.justmath</groupId>
     <artifactId>justmath</artifactId>
     <version>1.5.0</version>
 </dependency>
 ```
 
 ```groovy
-implementation 'com.mlprograms.justmath:justmath:1.5.0'
+implementation 'io.github.lembergmax.justmath:justmath:1.5.0'
 ```
 
 **Available now — direct download.** Pick a release JAR below:
