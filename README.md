@@ -927,9 +927,12 @@ must be observed by callers:
 * **No GUI.** This branch ships only the math library. Graphing or REPL UIs are not part of
   the published artifact.
 
-## ⚙️ Maven Central
+## ⚙️ Installation
 
-Add the dependency to your `pom.xml`:
+> **Note:** JustMath is **not yet on Maven Central.** The build is fully configured for
+> publishing (GPG signing + the Sonatype `central-publishing-maven-plugin`), but no release
+> has been pushed yet. Until the first release lands, use the direct JAR download below.
+> Once published, the coordinates will be:
 
 ```xml
 <dependency>
@@ -939,13 +942,11 @@ Add the dependency to your `pom.xml`:
 </dependency>
 ```
 
-Or, for Gradle:
-
 ```groovy
 implementation 'com.mlprograms.justmath:justmath:1.5.0'
 ```
 
-Prefer a direct download? Pick a release JAR below:
+**Available now — direct download.** Pick a release JAR below:
 
 <table style="width:100%">
   <tr>
