@@ -436,7 +436,7 @@ public class CalculatorEngineTest {
     }
 
     @Nested
-    class GraphFxGraphFxCalculatorEngineUtilTest {
+    class VariableRecursionTest {
 
         private final CalculatorEngine calculatorEngine = new CalculatorEngine();
 

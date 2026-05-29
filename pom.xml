@@ -44,7 +44,6 @@
         <junit.version>5.10.2</junit.version>
         <pitest.version>1.15.2</pitest.version>
         <pitest.junit5.plugin.version>1.2.2</pitest.junit5.plugin.version>
-        <javafx.version>21.0.9</javafx.version>
     </properties>
 
     <licenses>
@@ -134,27 +133,6 @@
             <version>1.8.3</version>
         </dependency>
 
-        <!--
-            JavaFX — scope 'provided' on purpose. The GraphFX UI module that consumed these
-            is not present on this branch (see the disabled javafx-maven-plugin below), so the
-            library code has no runtime dependency on JavaFX. Keeping them 'provided' makes the
-            types available at compile time should the module return, while keeping them out of
-            the published library jar and off the transitive classpath of downstream consumers.
-        -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>${javafx.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -208,27 +186,6 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.3.2</version>
             </plugin>
-
-            <!--
-                JavaFX Maven Plugin — currently disabled because the referenced main class
-                {@code com.mlprograms.justmath.graphfx.GraphCalculatorApp} does not exist in
-                this branch. Re-enable once the GraphFX module is restored under
-                {@code src/main/java/com/mlprograms/justmath/graphfx}; running {@code mvn javafx:run}
-                with the missing class fails with a {@code ClassNotFoundException} instead of a
-                helpful diagnostic. The JavaFX runtime dependencies are kept above in case the
-                module returns soon — they pull only ~2 MB and have no other consumer here.
-            -->
-            <!--
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <configuration>
-                    <mainClass>com.mlprograms.justmath.graphfx.GraphCalculatorApp</mainClass>
-                </configuration>
-            </plugin>
-            -->
-
 
             <!-- PIT Mutation Testing -->
             <plugin>
