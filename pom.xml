@@ -270,7 +270,10 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
-                            <waitUntil>published</waitUntil>
+                            <!-- validated, not published: exit once Central accepts the bundle.
+                                 autoPublish=true still releases server-side. waitUntil=published
+                                 would block up to 30 min and time out before the index finishes. -->
+                            <waitUntil>validated</waitUntil>
                         </configuration>
                     </plugin>
 
