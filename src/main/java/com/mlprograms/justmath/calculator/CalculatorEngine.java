@@ -190,8 +190,15 @@ public class CalculatorEngine {
 
     /**
      * Whether the token cache is enabled. Defaults to {@code false}.
+     *
+     * <p>Declared {@code volatile} so that the unsynchronized read in
+     * {@link #evaluate(String, Map)} observes the latest value written by
+     * {@link #setExpressionCacheEnabled(boolean)} or {@link #setExpressionCacheSize(int)} on
+     * another thread. The actual cache mutation (lookup / store / discard) is still serialized
+     * through this engine's monitor — the {@code volatile} only fixes the visibility gap
+     * between the setter and the fast-path enabled-check in callers.</p>
      */
-    private boolean expressionCacheEnabled = false;
+    private volatile boolean expressionCacheEnabled = false;
 
     /**
      * Maximum size (LRU capacity) of the token cache. Defaults to {@code 128}.
@@ -210,8 +217,12 @@ public class CalculatorEngine {
      * tokens already eliminates the bulk of the cost while keeping the cache content
      * variable-agnostic and therefore correct.
      * </p>
+     *
+     * <p>Declared {@code volatile} together with {@link #expressionCacheEnabled} so that the
+     * {@code null}-write performed by the cache-discarding setters becomes visible promptly
+     * to other threads — even outside the synchronized lookup/store helpers.</p>
      */
-    private Map<String, List<Token>> expressionCache;
+    private volatile Map<String, List<Token>> expressionCache;
 
     /**
      * Default constructor that uses {@link BigNumbers#DEFAULT_DIVISION_PRECISION} and
@@ -411,7 +422,13 @@ public class CalculatorEngine {
             }
 
             List<Token> tokens;
-            List<Token> cachedTokens = expressionCacheEnabled ? lookupCache(normalized) : null;
+            // Both reads of {@code expressionCacheEnabled} are delegated to the synchronized
+            // {@link #lookupCache(String)} / {@link #storeCache(String, List)} helpers, which
+            // re-check the flag inside the monitor. This eliminates the race window where the
+            // flag flipped to {@code false} (and the cache was discarded) between an
+            // unsynchronized check at this site and the actual cache mutation. See
+            // {@link #setExpressionCacheEnabled(boolean)} for the writer side.
+            List<Token> cachedTokens = lookupCache(normalized);
             if (cachedTokens != null) {
                 tokens = new ArrayList<>(cachedTokens);
             } else {
@@ -433,9 +450,7 @@ public class CalculatorEngine {
                             null,
                             tokenizerFailure);
                 }
-                if (expressionCacheEnabled) {
-                    storeCache(normalized, List.copyOf(tokens));
-                }
+                storeCache(normalized, List.copyOf(tokens));
             }
 
             // Structural pre-checks run BEFORE variable substitution and the evaluator,
@@ -907,23 +922,35 @@ public class CalculatorEngine {
     }
 
     /**
-     * Looks up a cached token list, initializing the cache lazily if necessary.
+     * Looks up a cached token list, initializing the cache lazily if necessary. When the cache
+     * is disabled this method returns {@code null} without allocating, so callers do not need
+     * to pre-check {@link #expressionCacheEnabled} on the fast path — the check inside the
+     * monitor is the single source of truth and rules out the disable-vs-lookup race that
+     * could previously leak a write into a cache that was supposed to be off.
      *
      * @param key normalized expression string; must not be {@code null}
-     * @return cached token list, or {@code null} if no entry exists
+     * @return cached token list, or {@code null} if no entry exists or the cache is disabled
      */
     private synchronized List<Token> lookupCache(@NonNull final String key) {
+        if (!expressionCacheEnabled) {
+            return null;
+        }
         ensureCache();
         return expressionCache.get(key);
     }
 
     /**
-     * Stores an immutable token list in the cache, initializing it lazily if necessary.
+     * Stores an immutable token list in the cache, initializing it lazily if necessary. When
+     * the cache is disabled this method silently no-ops, see {@link #lookupCache(String)} for
+     * the rationale behind centralising the enabled-check inside the monitor.
      *
      * @param key   normalized expression string; must not be {@code null}
      * @param value immutable token list captured before variable substitution; must not be {@code null}
      */
     private synchronized void storeCache(@NonNull final String key, @NonNull final List<Token> value) {
+        if (!expressionCacheEnabled) {
+            return;
+        }
         ensureCache();
         expressionCache.put(key, value);
     }
