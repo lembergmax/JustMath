@@ -921,11 +921,6 @@ must be observed by callers:
   the language of `USER_FRIENDLY` error messages — not how the engine parses expressions.
   `"1.5+1.5"` is valid under every locale; `"1,5+1,5"` is a syntax error because `,` is
   reserved as the argument separator.
-* **No numeric integration.** `BigNumber` does not expose an `integrate(...)` method. Use the
-  closed-form math utilities (`SeriesMath`, `SpecialFunctionMath`, …) or compute Riemann
-  sums via `summation(...)` if you need an approximation.
-* **No GUI.** This branch ships only the math library. Graphing or REPL UIs are not part of
-  the published artifact.
 
 ## ⚙️ Installation
 
