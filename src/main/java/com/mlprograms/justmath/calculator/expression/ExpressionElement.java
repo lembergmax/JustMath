@@ -24,12 +24,15 @@
 
 package com.mlprograms.justmath.calculator.expression;
 
+import com.mlprograms.justmath.calculator.errors.CalculatorErrorCode;
+import com.mlprograms.justmath.calculator.exceptions.ProcessingErrorException;
 import com.mlprograms.justmath.calculator.internal.TrigonometricMode;
 import lombok.Getter;
 
 import java.math.MathContext;
 import java.util.Deque;
 import java.util.Locale;
+import java.util.Map;
 
 @Getter
 public abstract class ExpressionElement {
@@ -45,23 +48,31 @@ public abstract class ExpressionElement {
 	}
 
 	/**
-	 * Applies this expression element to the given stack using the specified math context, trigonometric mode, and
-	 * locale.
+	 * Applies this expression element to the given stack using the specified math context,
+	 * trigonometric mode, and locale.
 	 *
-	 * @param stack
-	 * 	the stack to operate on
-	 * @param mathContext
-	 * 	the math context for calculations
-	 * @param trigonometricMode
-	 * 	the trigonometric mode to use
-	 * @param locale
-	 * 	the locale for formatting or parsing
+	 * <p>The base implementation throws a typed {@link ProcessingErrorException} with code
+	 * {@link CalculatorErrorCode#PROCESSING_INTERNAL} so that any subclass which is reachable
+	 * by the {@code Evaluator} but does not override this method surfaces as a structured,
+	 * localizable engine error rather than an untyped {@code UnsupportedOperationException}.
+	 * Structural-only subclasses such as {@code Parenthesis} and {@code Separator} are never
+	 * dispatched through this method by the {@code Evaluator}; they may safely inherit the
+	 * default behaviour.</p>
 	 *
-	 * @throws UnsupportedOperationException
-	 * 	if not implemented by subclass
+	 * @param stack             the stack to operate on
+	 * @param mathContext       the math context for calculations
+	 * @param trigonometricMode the trigonometric mode to use
+	 * @param locale            the locale for formatting or parsing
+	 *
+	 * @throws ProcessingErrorException with code {@link CalculatorErrorCode#PROCESSING_INTERNAL}
+	 *                                  when the concrete subclass does not provide an
+	 *                                  implementation
 	 */
 	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		throw new UnsupportedOperationException("apply(stack, mathContext, trigonometricMode, locale) not supported for: " + symbol);
+		throw new ProcessingErrorException(
+				CalculatorErrorCode.PROCESSING_INTERNAL,
+				Map.of("symbol", symbol),
+				"apply(stack, mathContext, trigonometricMode, locale) not implemented for element: " + symbol);
 	}
 
 }
