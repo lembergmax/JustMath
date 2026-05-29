@@ -904,9 +904,48 @@ The registry validates at startup:
 * every symbol is unique
 * groups are consistent and deterministic
 
-## ⚙️ Maven (Coming Soon)
+## ⚠️ Known Limitations
 
-Cannot wait? Just download the latest jar:
+JustMath is a single-JAR library. The following constraints are deliberate and
+must be observed by callers:
+
+* **`CalculatorEngine` is not thread-safe.** Locale, error mode and the expression cache are
+  mutable per-instance state. Share an engine across threads only behind external
+  synchronization, or give each thread its own engine. The token cache itself uses the
+  engine's monitor (`synchronized`) plus `volatile` visibility on the enable-flag and cache
+  reference, so concurrent `setExpressionCacheEnabled(false)` + ongoing `evaluate(...)` is
+  safe — but every other field is unsynchronized.
+* **`Tokenizer` is not thread-safe.** It is documented as a per-thread component. If you
+  cache tokenizers, cache them per-thread or behind a lock.
+* **Input parsing is always US-locale.** `setLocale(Locale)` controls output formatting and
+  the language of `USER_FRIENDLY` error messages — not how the engine parses expressions.
+  `"1.5+1.5"` is valid under every locale; `"1,5+1,5"` is a syntax error because `,` is
+  reserved as the argument separator.
+* **No numeric integration.** `BigNumber` does not expose an `integrate(...)` method. Use the
+  closed-form math utilities (`SeriesMath`, `SpecialFunctionMath`, …) or compute Riemann
+  sums via `summation(...)` if you need an approximation.
+* **No GUI.** This branch ships only the math library. Graphing or REPL UIs are not part of
+  the published artifact.
+
+## ⚙️ Maven Central
+
+Add the dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>com.mlprograms.justmath</groupId>
+    <artifactId>justmath</artifactId>
+    <version>1.5.0</version>
+</dependency>
+```
+
+Or, for Gradle:
+
+```groovy
+implementation 'com.mlprograms.justmath:justmath:1.5.0'
+```
+
+Prefer a direct download? Pick a release JAR below:
 
 <table style="width:100%">
   <tr>
