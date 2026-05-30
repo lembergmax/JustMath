@@ -325,6 +325,40 @@ public class CalculatorEngine {
     }
 
     /**
+     * Returns the languages JustMath ships translated messages and locale-aware formatting for.
+     *
+     * <p>
+     * Consuming applications should use this list to decide which languages to offer their users,
+     * rather than hard-coding their own: an application can only meaningfully offer a language that
+     * JustMath itself supports. The returned list is the single source of truth maintained by
+     * {@link SupportedLanguages}.
+     * </p>
+     *
+     * @return an unmodifiable, non-empty list of supported locales; never {@code null}
+     * @see SupportedLanguages#all()
+     */
+    public static List<Locale> getSupportedLanguages() {
+        return SupportedLanguages.all();
+    }
+
+    /**
+     * Reports whether JustMath advertises first-class support for the given locale.
+     *
+     * <p>
+     * The check matches either the exact locale (language and country) or its language, so for
+     * example {@code fr-CA} is reported as supported because French is supported. Locales that are
+     * not supported still work — they fall back to English messages and JDK number formatting.
+     * </p>
+     *
+     * @param locale the locale to test; must not be {@code null}
+     * @return {@code true} if the locale or its language is supported, {@code false} otherwise
+     * @see SupportedLanguages#isSupported(Locale)
+     */
+    public static boolean isLanguageSupported(@NonNull final Locale locale) {
+        return SupportedLanguages.isSupported(locale);
+    }
+
+    /**
      * Sets the error formatting mode.
      *
      * @param errorMode {@link ErrorMode#RAW} or {@link ErrorMode#USER_FRIENDLY}; must not be {@code null}

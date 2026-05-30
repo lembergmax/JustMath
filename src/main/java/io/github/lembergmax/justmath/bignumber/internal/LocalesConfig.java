@@ -24,11 +24,11 @@
 
 package io.github.lembergmax.justmath.bignumber.internal;
 
-import lombok.NoArgsConstructor;
-
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
+
+import lombok.NoArgsConstructor;
 
 /**
  * Central configuration for locale handling used by the BigNumber parsing subsystem.
@@ -86,9 +86,25 @@ public final class LocalesConfig {
 			Locale.forLanguageTag("de-CH"), // German (Switzerland)
 			Locale.CANADA,
 			Locale.FRANCE,
+			Locale.forLanguageTag("fr"),    // French (language-only)
+			Locale.forLanguageTag("fr-BE"), // French (Belgium)
 			Locale.ITALY,
+			Locale.forLanguageTag("it"),    // Italian (language-only)
 			Locale.forLanguageTag("es-ES"), // Spanish (Spain)
-			Locale.forLanguageTag("pt-BR")  // Portuguese (Brazil)
+			Locale.forLanguageTag("es"),    // Spanish (language-only)
+			Locale.forLanguageTag("pt-BR"), // Portuguese (Brazil)
+			Locale.forLanguageTag("pt-PT"), // Portuguese (Portugal)
+			Locale.forLanguageTag("pt"),    // Portuguese (language-only)
+			Locale.forLanguageTag("nl-NL"), // Dutch (Netherlands)
+			Locale.forLanguageTag("nl-BE"), // Dutch (Belgium / Flemish)
+			Locale.forLanguageTag("nl"),    // Dutch (language-only)
+			Locale.forLanguageTag("cs"),    // Czech
+			Locale.forLanguageTag("da"),    // Danish
+			Locale.forLanguageTag("sv"),    // Swedish
+			Locale.forLanguageTag("nb"),    // Norwegian Bokmål
+			Locale.forLanguageTag("no"),    // Norwegian (macrolanguage)
+			Locale.forLanguageTag("fi"),    // Finnish
+			Locale.forLanguageTag("pl")     // Polish
 	};
 
 	/**

@@ -9,7 +9,7 @@ unlimited precision**, avoiding the limitations of primitive types like `double`
 - ✅ **Virtually unlimited precision** via `BigNumber`
 - ✅ **String-based expression evaluation**
 - ✅ **Supports trigonometry, logarithms, combinatorics, summations, coordinates, factorials, and many more**
-- ✅ **Locale-aware result formatting** — `setLocale(Locale)` drives both error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`)
+- ✅ **Locale-aware formatting & messages in 13 languages / 20 locales** — `setLocale(Locale)` drives error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`); `setInputLocale(Locale)` opts into comma-decimal input parsing; query the catalog via `CalculatorEngine.getSupportedLanguages()`
 
 ## 🔢 BigNumber
 
@@ -933,12 +933,12 @@ must be observed by callers:
 <dependency>
     <groupId>io.github.lembergmax.justmath</groupId>
     <artifactId>justmath</artifactId>
-    <version>1.5.0</version>
+    <version>1.6.0</version>
 </dependency>
 ```
 
 ```groovy
-implementation 'io.github.lembergmax.justmath:justmath:1.5.0'
+implementation 'io.github.lembergmax.justmath:justmath:1.6.0'
 ```
 
 **Available now — direct download.** Pick a release JAR below:
@@ -948,6 +948,11 @@ implementation 'io.github.lembergmax.justmath:justmath:1.5.0'
     <th>Version</th>
     <th>Download</th>
     <th>Release Type</th>
+  </tr>
+  <tr>
+      <td>v1.6.0</td>
+      <td><a href="out/artifacts/justmath_jar/justmath-1.6.0.jar">JustMath v1.6.0</a></td>
+      <td>Release</td>
   </tr>
   <tr>
       <td>v1.5.0</td>
@@ -1039,6 +1044,21 @@ implementation 'io.github.lembergmax.justmath:justmath:1.5.0'
 Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
 
 ## 🆕 Changelog
+
+### 1.6.0
+
+- **Added 13 supported languages / 20 locales** for error messages and locale-aware number
+  formatting: English, German (incl. `de-AT`, `de-CH`), Spanish, French (incl. `fr-BE`), Italian,
+  Portuguese (`pt`, `pt-PT`, `pt-BR`), Dutch (incl. `nl-BE`), Czech, Danish, Swedish, Norwegian
+  (`no`, `nb`), Finnish and Polish.
+- **Added the `SupportedLanguages` registry plus `CalculatorEngine.getSupportedLanguages()` /
+  `isLanguageSupported(Locale)`** so consuming applications can query exactly which languages
+  JustMath offers.
+- **Added opt-in, locale-aware input parsing via `CalculatorEngine.setInputLocale(Locale)`**
+  (additive; default `Locale.US`, so existing behaviour is unchanged). With a comma-decimal input
+  locale, expressions such as `1,5+2,5` are parsed strictly with `,` as the decimal separator,
+  while `;` stays the argument separator. Output formatting remains controlled separately by
+  `setLocale`.
 
 ### 1.5.0
 
