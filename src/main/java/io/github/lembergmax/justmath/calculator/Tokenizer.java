@@ -138,6 +138,29 @@ public class Tokenizer {
      * @throws NullPointerException     if the input string is null
      */
     public List<Token> tokenize(@NonNull final String input) {
+        return tokenize(input, '.');
+    }
+
+    /**
+     * Tokenizes the input using the given decimal separator for numeric literals.
+     *
+     * <p>
+     * Strict locale-aware parsing: when {@code decimalSeparator} is not {@code '.'} (for example
+     * {@code ','} for German, French or Spanish input), only that character is accepted as a
+     * decimal point. The canonical {@code '.'} then becomes an invalid character, and every
+     * occurrence of {@code decimalSeparator} is normalised to {@code '.'} so that the parser,
+     * evaluator and {@link io.github.lembergmax.justmath.bignumber.BigNumber} keep operating on
+     * locale-agnostic, US-canonical number literals. The argument separator stays {@code ';'}
+     * regardless of locale, so {@code "summation(1,5;2,5;k)"} parses as two comma-decimals
+     * separated by {@code ';'}.
+     * </p>
+     *
+     * @param input            the mathematical expression to tokenize; must not be {@code null}
+     * @param decimalSeparator the decimal separator of the active input locale (typically {@code '.'} or {@code ','})
+     * @return a list of tokens representing the lexemes of the expression
+     * @throws SyntaxErrorException if the input contains invalid characters or malformed expressions
+     */
+    public List<Token> tokenize(@NonNull final String input, final char decimalSeparator) {
         // Reject the internal whitespace-boundary sentinel if it appears in caller input.
         // The sentinel is a non-typeable control character injected by removeWhitespace to
         // mark deliberate token splits; if user input already contains it, the main scan
@@ -153,11 +176,14 @@ public class Tokenizer {
                     sentinelIndex);
         }
 
+        // Normalise the locale decimal separator to '.' before scanning (no-op for '.').
+        final String source = normalizeDecimalSeparator(input, decimalSeparator);
+
         // Tracks whether the next absolute-value bar opens or closes a context.
         boolean nextAbsoluteIsOpen = true;
 
         List<Token> tokens = new ArrayList<>();
-        String expression = removeWhitespace(input);
+        String expression = removeWhitespace(source);
         int index = 0;
 
         while (index < expression.length()) {
@@ -721,6 +747,39 @@ public class Tokenizer {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Normalises the active input locale's decimal separator to the canonical {@code '.'}.
+     *
+     * <p>
+     * For the default separator {@code '.'} this is a no-op and the input is returned unchanged,
+     * preserving the legacy US-canonical grammar exactly. Otherwise (strict locale parsing) a
+     * literal {@code '.'} is rejected as an invalid character — it is not the decimal separator of
+     * the active locale — and every {@code decimalSeparator} is rewritten to {@code '.'}. The
+     * argument separator {@code ';'} is never touched.
+     * </p>
+     *
+     * @param input            the raw (abs-normalized) expression
+     * @param decimalSeparator the active input locale's decimal separator
+     * @return the expression with the locale decimal separator rewritten to {@code '.'}
+     * @throws SyntaxErrorException if a literal {@code '.'} appears under a non-{@code '.'} locale
+     */
+    private String normalizeDecimalSeparator(final String input, final char decimalSeparator) {
+        if (decimalSeparator == '.') {
+            return input;
+        }
+        final int dotIndex = input.indexOf('.');
+        if (dotIndex >= 0) {
+            throw new SyntaxErrorException(
+                    CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                    Map.of("character", "."),
+                    "Invalid character at position " + dotIndex
+                            + ": '.' is not the decimal separator for this locale (expected '"
+                            + decimalSeparator + "')",
+                    dotIndex);
+        }
+        return input.replace(decimalSeparator, '.');
     }
 
     /**

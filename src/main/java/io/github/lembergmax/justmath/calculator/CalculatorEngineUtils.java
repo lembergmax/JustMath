@@ -252,7 +252,8 @@ public class CalculatorEngineUtils {
 
         final String expression = variables.get(variableName);
         if (expression != null && !expression.isEmpty()) {
-            final List<Token> tokens = calculatorEngine.getTokenizer().tokenize(expression);
+            final List<Token> tokens = calculatorEngine.getTokenizer()
+                    .tokenize(expression, calculatorEngine.getInputDecimalSeparator());
 
             for (final Token token : tokens) {
                 if (token.getType() != Token.Type.VARIABLE) {
