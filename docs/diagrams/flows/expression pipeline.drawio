@@ -1,0 +1,88 @@
+<mxfile host="Electron">
+  <diagram id="expression-pipeline" name="07 · Expression Pipeline">
+    <mxGraphModel dx="3845" dy="1001" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1300" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="Expression Evaluation Pipeline" vertex="1">
+          <mxGeometry height="56" width="1320" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="Top-to-bottom data flow inside CalculatorEngine.evaluate(...). Each stage names the exact method, the data it produces and the error codes it can raise. The optional LRU token cache sits on the left; the error path on the right. Verified against CalculatorEngine, Tokenizer, PostfixParser, Evaluator, CalculatorEngineUtils." vertex="1">
+          <mxGeometry height="56" width="1316" x="44" y="96" as="geometry" />
+        </mxCell>
+        <mxCell id="s0" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Input&lt;/b&gt;  String expression  (+ optional Map&amp;lt;String,String&amp;gt; variables)" vertex="1">
+          <mxGeometry height="48" width="460" x="420" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;1 · Normalize&lt;/b&gt;  CalculatorEngineUtils.replaceAbsSigns(...)&lt;br&gt;|x| → abs(x); validates an even number of bars" vertex="1">
+          <mxGeometry height="56" width="460" x="420" y="248" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;2 · Tokenize&lt;/b&gt;  Tokenizer.tokenize(...) → List&amp;lt;Token&amp;gt;&lt;br&gt;numbers · operators · unary signs · functions · parens · ; · implicit ×" vertex="1">
+          <mxGeometry height="56" width="460" x="420" y="334" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;3 · Resolve variables&lt;/b&gt;  CalculatorEngineUtils&lt;br&gt;checkVariablesForRecursion(...) · replaceVariables(...) substitute VARIABLE tokens" vertex="1">
+          <mxGeometry height="60" width="460" x="420" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;4 · Validate infix&lt;/b&gt;  validateInfixStructure(tokens)&lt;br&gt;empty fn args · bare () · leading/trailing operators · missing operators · arg counts" vertex="1">
+          <mxGeometry height="60" width="460" x="420" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;5 · To postfix&lt;/b&gt;  PostfixParser.toPostfix(tokens) → List&amp;lt;Token&amp;gt; (RPN)&lt;br&gt;Shunting-Yard; precedence + associativity (^ right-assoc)" vertex="1">
+          <mxGeometry height="60" width="460" x="420" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;6 · Validate arity&lt;/b&gt;  validatePostfixArity(postfix)&lt;br&gt;stack-based dry run checks operand counts before evaluation" vertex="1">
+          <mxGeometry height="56" width="460" x="420" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;7 · Evaluate&lt;/b&gt;  Evaluator.evaluate(postfix) → BigNumber&lt;br&gt;RPN stack machine; each Token resolved via ExpressionElements; element.apply(stack, ctx, trigMode, locale)" vertex="1">
+          <mxGeometry height="64" width="460" x="420" y="776" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Result&lt;/b&gt;  BigNumber&lt;br&gt;MultiValueResult coerced via firstValue() when used as a scalar" vertex="1">
+          <mxGeometry height="56" width="460" x="420" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=28;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="LRU Token Cache  (optional)" vertex="1">
+          <mxGeometry height="170" width="330" x="-60" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="cacheb" parent="cache" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="If enabled: lookupCache(key) before tokenizing; storeCache(key, tokens) after.&lt;br&gt;&lt;br&gt;Key = normalized expression. Tokens cached &lt;b&gt;before&lt;/b&gt; variable substitution. Postfix and results are not cached. See diagram 09." vertex="1">
+          <mxGeometry height="124" width="306" x="12" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="err" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=28;fillColor=#EF4444;strokeColor=#DC2626;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="Error Path" vertex="1">
+          <mxGeometry height="420" width="430" x="1050" y="598" as="geometry" />
+        </mxCell>
+        <mxCell id="errb" parent="err" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;SyntaxErrorException&lt;/b&gt; (stages 1–6)&lt;br&gt;INVALID_CHARACTER · UNMATCHED_PAREN · UNKNOWN_FUNCTION · UNKNOWN_VARIABLE · WRONG_ARGUMENT_COUNT · MISPLACED_SEPARATOR · MISSING_OPERAND/OPERATOR · LEADING/TRAILING_OPERATOR · EMPTY_PARENTHESES …&lt;br&gt;&lt;br&gt;&lt;b&gt;ProcessingErrorException&lt;/b&gt; (stage 7)&lt;br&gt;DIVISION_BY_ZERO · DOMAIN_ERROR · LOG_NON_POSITIVE · ROOT_OF_NEGATIVE · FACTORIAL_NEGATIVE / NON_INTEGER · OVERFLOW · INTERNAL&lt;br&gt;&lt;br&gt;&lt;b&gt;CyclicVariableReferenceException&lt;/b&gt; (stage 3)&lt;br&gt;&lt;br&gt;&lt;i&gt;Handed to the API boundary → throw, or CalculatorResult.Failure. See diagram 08.&lt;/i&gt;" vertex="1">
+          <mxGeometry height="374" width="406" x="12" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="s0" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="s1" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="s2" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="s3" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="s4" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="s5" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="s6" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="s7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="s7" style="endArrow=block;html=1;rounded=1;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" target="s8" value="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ecache" edge="1" parent="1" source="cache" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=6 4;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" target="s2" value="feeds tokens">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eerr" edge="1" parent="1" source="s7" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=6 4;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" target="err" value="on failure">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  Blue = input  ·  Orange = parsing / validation  ·  Violet = core engine step  ·  Green = success  ·  Yellow = cache  ·  Red = error path" vertex="1">
+          <mxGeometry height="24" width="1320" x="44" y="960" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

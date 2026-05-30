@@ -1,0 +1,45 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="extension-add-unit" name="17 · Extension: add a unit">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="950" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="banner" value="Extension Guide — Add a Unit" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="1420" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="UnitRegistry is the single source of truth: its Javadoc states that adding a unit means adding exactly one entry to the BUILT_IN list. Entries are created with the private define / defineFraction / defineReciprocal helpers, which build a ConversionFormula via ConversionFormulas (affine / linear / reciprocal). No other file needs editing. Verified against UnitRegistry.java and ConversionFormulas." style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="44" y="84" width="1416" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1" value="&lt;b&gt;Step 1 · Add the Unit identifier&lt;/b&gt;&lt;br&gt;Add the enum constant to the right group in Unit (e.g. Unit.Length.MY_UNIT). The group fixes the base unit and the compatibility class checked by areCompatible." style="rounded=1;arcSize=10;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="170" width="660" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;Step 2 · Choose the conversion relationship to the base unit&lt;/b&gt;&lt;br&gt;Linear with offset → ConversionFormulas.affine(scale, offset)&lt;br&gt;Exact fraction → linear(num, den)&lt;br&gt;Reciprocal → reciprocal(scale) / reciprocal(num, den)" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="270" width="660" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;Step 3 · Add one entry to UnitRegistry.BUILT_IN&lt;/b&gt;&lt;br&gt;Use the matching helper:&lt;br&gt;define(unit, displayName, symbol, scale, offset)&lt;br&gt;defineFraction(unit, displayName, symbol, num, den)&lt;br&gt;defineReciprocal(...)  ·  mark the group base unit with the base = true variant" style="rounded=1;arcSize=10;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="380" width="660" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;Step 4 · Verify&lt;/b&gt;&lt;br&gt;parseUnit(symbol) resolves the new symbol; convert(...) routes value → toBase → fromBase automatically. Add a JUnit 5 test (see UnitConverterTest / UnitConversionPrecisionTest) asserting a known conversion and a precision case." style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="660" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note" value="Key facts" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="170" width="640" height="430" as="geometry" />
+        </mxCell>
+        <mxCell id="noteb" value="&lt;b&gt;Affine formula&lt;/b&gt;&lt;br&gt;base = value · scale + offset&lt;br&gt;inverse: value = (base − offset) / scale&lt;br&gt;&lt;br&gt;&lt;b&gt;Offset&lt;/b&gt; — use a non-zero offset only for affine scales like Temperature (Celsius ↔ Fahrenheit / Kelvin).&lt;br&gt;&lt;br&gt;&lt;b&gt;Symbols&lt;/b&gt; — case-sensitive, resolved longest-match-first.&lt;br&gt;&lt;br&gt;&lt;b&gt;No ripple edits&lt;/b&gt; — UnitElements, UnitConverter and UnitValue all read from the registry; the new unit works everywhere once BUILT_IN has its entry.&lt;br&gt;&lt;br&gt;&lt;b&gt;Group base units&lt;/b&gt; — Length=METER · Mass=KILOGRAM · Time=SECOND · Temperature=CELSIUS · … (see diagram 06)." style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=10;spacingTop=8;spacingRight=10;" vertex="1" parent="note">
+          <mxGeometry x="14" y="40" width="612" height="374" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" edge="1" parent="1" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="leg" value="Legend:&#160;&#160;Blue = identifier&#160;&#160;·&#160;&#160;Orange = formula choice&#160;&#160;·&#160;&#160;Yellow = registry entry&#160;&#160;·&#160;&#160;Green = verify&#160;&#160;·&#160;&#160;Grey = guidance" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" vertex="1" parent="1">
+          <mxGeometry x="44" y="630" width="700" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

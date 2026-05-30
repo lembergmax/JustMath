@@ -1,0 +1,188 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="detailed-evaluation-trace" name="Detailed Evaluation Trace">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Detailed Evaluation Trace — evaluate(&quot;3 + 4 * 2 - ( 1 - 5 )&quot;)  →  15" style="rounded=1;arcSize=8;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=22;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=20;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1520" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="desc" value="Step-by-step state of every data structure. Phase 1: PostfixParser.toPostfix converts infix tokens to RPN using the Shunting-Yard algorithm (operator stack + output queue). Phase 2: Evaluator.evaluate consumes the RPN with a single value stack. Stacks are written bottom→top; the rightmost element is the top (next pop). Precedences: + and - = 2, * and / = 3 (verified in ExpressionElements). Associativity: only ^ is right-associative; +,-,*,/ are left-associative. Binary operator application pops b first (top), then a, and pushes a∘b (verified in SimpleBinaryOperator.apply)." style="text;html=1;fontSize=12;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="58" width="1500" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Tokenization -->
+        <mxCell id="tok" value="Tokenizer.tokenize(&quot;3 + 4 * 2 - ( 1 - 5 )&quot;)  →  [ 3, +, 4, *, 2, -, (, 1, -, 5, ) ]   (all binary operators; no unary signs here)" style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fillColor=#ffe6cc;strokeColor=#d79b00;fontFamily=Courier New;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="150" width="1500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- PHASE 1 heading -->
+        <mxCell id="p1" value="Phase 1 — Shunting-Yard (PostfixParser.toPostfix)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="900" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- SY header -->
+        <mxCell id="sh0" value="#" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="230" width="50" height="34" as="geometry" /></mxCell>
+        <mxCell id="sh1" value="Token" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="90" y="230" width="80" height="34" as="geometry" /></mxCell>
+        <mxCell id="sh2" value="Action (rule applied)" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="230" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="sh3" value="Operator stack (bottom→top)" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="640" y="230" width="300" height="34" as="geometry" /></mxCell>
+        <mxCell id="sh4" value="Output queue (left→right)" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="940" y="230" width="600" height="34" as="geometry" /></mxCell>
+
+        <!-- SY row 1 -->
+        <mxCell id="r1a" value="1" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="264" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r1b" value="3" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="264" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r1c" value="NUMBER → append to output" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="264" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r1d" value="(empty)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="264" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r1e" value="3" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="264" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 2 -->
+        <mxCell id="r2a" value="2" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="304" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r2b" value="+" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="304" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r2c" value="OPERATOR (prec 2): stack empty → push" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="304" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r2d" value="+" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="304" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r2e" value="3" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="304" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 3 -->
+        <mxCell id="r3a" value="3" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="344" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r3b" value="4" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="344" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r3c" value="NUMBER → append to output" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="344" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r3d" value="+" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="344" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r3e" value="3 4" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="344" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 4 -->
+        <mxCell id="r4a" value="4" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="384" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r4b" value="*" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="384" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r4c" value="OPERATOR (prec 3): top &quot;+&quot; prec 2 not ≥ 3 → no pop → push" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="384" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r4d" value="+ *" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="384" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r4e" value="3 4" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="384" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 5 -->
+        <mxCell id="r5a" value="5" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="424" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r5b" value="2" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="424" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r5c" value="NUMBER → append to output" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="424" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r5d" value="+ *" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="424" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r5e" value="3 4 2" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="424" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 6 -->
+        <mxCell id="r6a" value="6" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="464" width="50" height="48" as="geometry" /></mxCell>
+        <mxCell id="r6b" value="-" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="464" width="80" height="48" as="geometry" /></mxCell>
+        <mxCell id="r6c" value="OPERATOR (prec 2): pop &quot;*&quot; (3 &gt; 2); then pop &quot;+&quot; (2 == 2 and left-associative); stack empty → push &quot;-&quot;" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="464" width="470" height="48" as="geometry" /></mxCell>
+        <mxCell id="r6d" value="-" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="464" width="300" height="48" as="geometry" /></mxCell>
+        <mxCell id="r6e" value="3 4 2 * +" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="464" width="600" height="48" as="geometry" /></mxCell>
+
+        <!-- SY row 7 -->
+        <mxCell id="r7a" value="7" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="512" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r7b" value="(" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="512" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r7c" value="LEFT_PAREN → push; push argumentCount = 0" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="512" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r7d" value="- (" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="512" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r7e" value="3 4 2 * +" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="512" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 8 -->
+        <mxCell id="r8a" value="8" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="552" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r8b" value="1" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="552" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r8c" value="NUMBER → append to output" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="552" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r8d" value="- (" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="552" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r8e" value="3 4 2 * + 1" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="552" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 9 -->
+        <mxCell id="r9a" value="9" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="592" width="50" height="48" as="geometry" /></mxCell>
+        <mxCell id="r9b" value="-" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="592" width="80" height="48" as="geometry" /></mxCell>
+        <mxCell id="r9c" value="OPERATOR (prec 2): top is &quot;(&quot; (not operator/function) → stop popping → push &quot;-&quot;" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="592" width="470" height="48" as="geometry" /></mxCell>
+        <mxCell id="r9d" value="- ( -" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="592" width="300" height="48" as="geometry" /></mxCell>
+        <mxCell id="r9e" value="3 4 2 * + 1" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="592" width="600" height="48" as="geometry" /></mxCell>
+
+        <!-- SY row 10 -->
+        <mxCell id="r10a" value="10" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="640" width="50" height="40" as="geometry" /></mxCell>
+        <mxCell id="r10b" value="5" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="640" width="80" height="40" as="geometry" /></mxCell>
+        <mxCell id="r10c" value="NUMBER → append to output" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="640" width="470" height="40" as="geometry" /></mxCell>
+        <mxCell id="r10d" value="- ( -" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="640" width="300" height="40" as="geometry" /></mxCell>
+        <mxCell id="r10e" value="3 4 2 * + 1 5" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="640" width="600" height="40" as="geometry" /></mxCell>
+
+        <!-- SY row 11 -->
+        <mxCell id="r11a" value="11" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="680" width="50" height="48" as="geometry" /></mxCell>
+        <mxCell id="r11b" value=")" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="680" width="80" height="48" as="geometry" /></mxCell>
+        <mxCell id="r11c" value="RIGHT_PAREN: pop until &quot;(&quot; → pop &quot;-&quot; to output; discard &quot;(&quot;; pop argumentCount; top is no FUNCTION → done" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="680" width="470" height="48" as="geometry" /></mxCell>
+        <mxCell id="r11d" value="-" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="680" width="300" height="48" as="geometry" /></mxCell>
+        <mxCell id="r11e" value="3 4 2 * + 1 5 -" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="680" width="600" height="48" as="geometry" /></mxCell>
+
+        <!-- SY row 12 end -->
+        <mxCell id="r12a" value="end" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="728" width="50" height="48" as="geometry" /></mxCell>
+        <mxCell id="r12b" value="—" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="728" width="80" height="48" as="geometry" /></mxCell>
+        <mxCell id="r12c" value="No tokens left → drain operator stack → pop &quot;-&quot; to output (parens left here would be a SYNTAX_UNMATCHED_PAREN error)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="728" width="470" height="48" as="geometry" /></mxCell>
+        <mxCell id="r12d" value="(empty)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="640" y="728" width="300" height="48" as="geometry" /></mxCell>
+        <mxCell id="r12e" value="3 4 2 * + 1 5 - -   ← final RPN" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Courier New;fontStyle=1;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="940" y="728" width="600" height="48" as="geometry" /></mxCell>
+
+        <!-- PHASE 2 heading -->
+        <mxCell id="p2" value="Phase 2 — RPN evaluation (Evaluator.evaluate) on  3 4 2 * + 1 5 - -" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="1000" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- RPN header -->
+        <mxCell id="eh0" value="#" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="830" width="50" height="34" as="geometry" /></mxCell>
+        <mxCell id="eh1" value="Token" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="90" y="830" width="80" height="34" as="geometry" /></mxCell>
+        <mxCell id="eh2" value="Action (pop order: b = pop() top, then a = pop(); push a∘b)" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="830" width="620" height="34" as="geometry" /></mxCell>
+        <mxCell id="eh3" value="Value stack (bottom→top)" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="790" y="830" width="420" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="e1a" value="1" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="864" width="50" height="38" as="geometry" /></mxCell>
+        <mxCell id="e1b" value="3" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="864" width="80" height="38" as="geometry" /></mxCell>
+        <mxCell id="e1c" value="NUMBER → push BigNumber(3)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="864" width="620" height="38" as="geometry" /></mxCell>
+        <mxCell id="e1d" value="3" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="864" width="420" height="38" as="geometry" /></mxCell>
+
+        <mxCell id="e2a" value="2" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="902" width="50" height="38" as="geometry" /></mxCell>
+        <mxCell id="e2b" value="4" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="902" width="80" height="38" as="geometry" /></mxCell>
+        <mxCell id="e2c" value="NUMBER → push BigNumber(4)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="902" width="620" height="38" as="geometry" /></mxCell>
+        <mxCell id="e2d" value="3 4" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="902" width="420" height="38" as="geometry" /></mxCell>
+
+        <mxCell id="e3a" value="3" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="940" width="50" height="38" as="geometry" /></mxCell>
+        <mxCell id="e3b" value="2" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="940" width="80" height="38" as="geometry" /></mxCell>
+        <mxCell id="e3c" value="NUMBER → push BigNumber(2)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="940" width="620" height="38" as="geometry" /></mxCell>
+        <mxCell id="e3d" value="3 4 2" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="940" width="420" height="38" as="geometry" /></mxCell>
+
+        <mxCell id="e4a" value="4" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="978" width="50" height="44" as="geometry" /></mxCell>
+        <mxCell id="e4b" value="*" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="978" width="80" height="44" as="geometry" /></mxCell>
+        <mxCell id="e4c" value="OPERATOR: b = pop() = 2, a = pop() = 4 → push a*b = 8" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="978" width="620" height="44" as="geometry" /></mxCell>
+        <mxCell id="e4d" value="3 8" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="978" width="420" height="44" as="geometry" /></mxCell>
+
+        <mxCell id="e5a" value="5" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1022" width="50" height="44" as="geometry" /></mxCell>
+        <mxCell id="e5b" value="+" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1022" width="80" height="44" as="geometry" /></mxCell>
+        <mxCell id="e5c" value="OPERATOR: b = pop() = 8, a = pop() = 3 → push a+b = 11" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="1022" width="620" height="44" as="geometry" /></mxCell>
+        <mxCell id="e5d" value="11" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1022" width="420" height="44" as="geometry" /></mxCell>
+
+        <mxCell id="e6a" value="6" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1066" width="50" height="38" as="geometry" /></mxCell>
+        <mxCell id="e6b" value="1" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1066" width="80" height="38" as="geometry" /></mxCell>
+        <mxCell id="e6c" value="NUMBER → push BigNumber(1)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="1066" width="620" height="38" as="geometry" /></mxCell>
+        <mxCell id="e6d" value="11 1" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1066" width="420" height="38" as="geometry" /></mxCell>
+
+        <mxCell id="e7a" value="7" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1104" width="50" height="38" as="geometry" /></mxCell>
+        <mxCell id="e7b" value="5" style="rounded=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1104" width="80" height="38" as="geometry" /></mxCell>
+        <mxCell id="e7c" value="NUMBER → push BigNumber(5)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="170" y="1104" width="620" height="38" as="geometry" /></mxCell>
+        <mxCell id="e7d" value="11 1 5" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1104" width="420" height="38" as="geometry" /></mxCell>
+
+        <mxCell id="e8a" value="8" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1142" width="50" height="44" as="geometry" /></mxCell>
+        <mxCell id="e8b" value="-" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1142" width="80" height="44" as="geometry" /></mxCell>
+        <mxCell id="e8c" value="OPERATOR: b = pop() = 5, a = pop() = 1 → push a-b = -4" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="1142" width="620" height="44" as="geometry" /></mxCell>
+        <mxCell id="e8d" value="11 -4" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1142" width="420" height="44" as="geometry" /></mxCell>
+
+        <mxCell id="e9a" value="9" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1186" width="50" height="44" as="geometry" /></mxCell>
+        <mxCell id="e9b" value="-" style="rounded=0;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1186" width="80" height="44" as="geometry" /></mxCell>
+        <mxCell id="e9c" value="OPERATOR: b = pop() = -4, a = pop() = 11 → push a-b = 11-(-4) = 15" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="1186" width="620" height="44" as="geometry" /></mxCell>
+        <mxCell id="e9d" value="15" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1186" width="420" height="44" as="geometry" /></mxCell>
+
+        <mxCell id="e10a" value="end" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;" vertex="1" parent="1"><mxGeometry x="40" y="1230" width="50" height="44" as="geometry" /></mxCell>
+        <mxCell id="e10b" value="—" style="rounded=0;html=1;fillColor=#f5f5f5;strokeColor=#666;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="90" y="1230" width="80" height="44" as="geometry" /></mxCell>
+        <mxCell id="e10c" value="No tokens left → stack.size() == 1 → pop() → result. (size ≠ 1 would raise SYNTAX_UNEXPECTED_END)" style="rounded=0;html=1;fillColor=#fff;strokeColor=#666;align=left;spacingLeft=6;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="170" y="1230" width="620" height="44" as="geometry" /></mxCell>
+        <mxCell id="e10d" value="BigNumber(15)  ← result" style="rounded=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontFamily=Courier New;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="790" y="1230" width="420" height="44" as="geometry" /></mxCell>
+
+        <!-- rule box -->
+        <mxCell id="rules" value="Shunting-Yard pop rule (per incoming operator o):&#10;while top of stack is a FUNCTION, OR an operator with&#10;higher precedence than o, OR equal precedence and o is&#10;left-associative → pop top to output. Then push o.&#10;&#10;Factorial &quot;!&quot; is a postfix operator: appended to output&#10;immediately. ^ is the only right-associative operator." style="rounded=1;html=1;whiteSpace=wrap;align=left;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="864" width="320" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg" value="Legend:  Blue token = operand pushed   Purple token = operator applied   Yellow = parenthesis / rule   Green = final result   Monospace columns show live data-structure state." style="text;html=1;fontSize=12;align=left;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1290" width="1500" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

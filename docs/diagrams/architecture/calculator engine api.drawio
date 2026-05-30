@@ -1,0 +1,76 @@
+<mxfile host="Electron">
+  <diagram id="calculator-engine-api" name="02 · CalculatorEngine API">
+    <mxGraphModel dx="2934" dy="1201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="CalculatorEngine  ·  Public API Surface" vertex="1">
+          <mxGeometry height="56" width="1574" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="The single public entry class. Four method families differ only in how they report results — all share the identical evaluation pipeline (see diagram 07). Builder-style setters configure locale, error formatting and the LRU token cache. Every signature below is verified against CalculatorEngine.java." vertex="1">
+          <mxGeometry height="46" width="1560" x="44" y="96" as="geometry" />
+        </mxCell>
+        <mxCell id="cls" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=34;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=15;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="CalculatorEngine" vertex="1">
+          <mxGeometry height="470" width="400" x="40" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_f" parent="cls" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Fields&lt;/b&gt;&lt;br&gt;− Tokenizer tokenizer&lt;br&gt;− PostfixParser postfixParser&lt;br&gt;− Evaluator evaluator&lt;br&gt;− Locale locale = Locale.ENGLISH&lt;br&gt;− ErrorMode errorMode = RAW&lt;br&gt;− boolean expressionCacheEnabled = false&lt;br&gt;− int expressionCacheSize = 128&lt;br&gt;− Map&amp;lt;String,List&amp;lt;Token&amp;gt;&amp;gt; expressionCache&lt;br&gt;− static ThreadLocal&amp;lt;Map&amp;lt;String,String&amp;gt;&amp;gt; currentVariables" vertex="1">
+          <mxGeometry height="172" width="372" x="14" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_c" parent="cls" style="text;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Constructors&lt;/b&gt;&lt;br&gt;+ CalculatorEngine()&lt;br&gt;+ CalculatorEngine(int divisionPrecision)&lt;br&gt;+ CalculatorEngine(int, TrigonometricMode)&lt;br&gt;+ CalculatorEngine(MathContext)&lt;br&gt;+ CalculatorEngine(TrigonometricMode)&lt;br&gt;+ CalculatorEngine(MathContext, TrigonometricMode)&lt;br&gt;&lt;br&gt;&lt;i&gt;Defaults: precision 100 · HALF_UP · DEG&lt;/i&gt;" vertex="1">
+          <mxGeometry height="156" width="372" x="14" y="224" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_s" parent="cls" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Static&lt;/b&gt;&lt;br&gt;+ Map&amp;lt;String,String&amp;gt; getCurrentVariables() — copy of the thread-local variable context" vertex="1">
+          <mxGeometry height="68" width="372" x="14" y="388" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="1 · Throwing API  →  BigNumber" vertex="1">
+          <mxGeometry height="170" width="420" x="470" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="f1b" parent="f1" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="BigNumber evaluate(String)&lt;br&gt;BigNumber evaluate(String, Map&amp;lt;String,String&amp;gt; variables)&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#B91C1C&quot;&gt;Throws CalculatorException on any error.&lt;/font&gt; Use when a failure should abort the caller." vertex="1">
+          <mxGeometry height="116" width="392" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="2 · Text API  →  String" vertex="1">
+          <mxGeometry height="170" width="420" x="920" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="f2b" parent="f2" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="String evaluateToString(String [, Map])&lt;br&gt;String evaluateToPrettyString(String [, Map])&lt;br&gt;&lt;br&gt;Locale-aware formatting; the &lt;i&gt;Pretty&lt;/i&gt; variants add digit grouping. Throw on error like family 1." vertex="1">
+          <mxGeometry height="116" width="392" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="3 · Safe Text API  →  String (null-tolerant)" vertex="1">
+          <mxGeometry height="170" width="420" x="470" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="f3b" parent="f3" style="text;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="String evaluateSafeToString(String [, Map])&lt;br&gt;String evaluateSafeToPrettyString(String [, Map])&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#047857&quot;&gt;Never throws.&lt;/font&gt; On failure returns a localized prefix &quot;Error: &quot; / &quot;Fehler: &quot; + message. Ideal for direct UI binding." vertex="1">
+          <mxGeometry height="116" width="392" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="4 · Typed Result API  →  CalculatorResult&amp;lt;T&amp;gt;" vertex="1">
+          <mxGeometry height="170" width="420" x="920" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="f4b" parent="f4" style="text;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="CalculatorResult&amp;lt;BigNumber&amp;gt; evaluateSafe(String [, Map])&lt;br&gt;CalculatorResult&amp;lt;String&amp;gt; evaluateToStringResult(String [, Map])&lt;br&gt;CalculatorResult&amp;lt;String&amp;gt; evaluateToPrettyStringResult(String [, Map])&lt;br&gt;&lt;br&gt;Functional Success / Failure handling; no exceptions." vertex="1">
+          <mxGeometry height="116" width="392" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cfg" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="Configuration  (fluent, returns CalculatorEngine)" vertex="1">
+          <mxGeometry height="360" width="340" x="1370" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cfgb" parent="cfg" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="setLocale(Locale)&lt;br&gt;  output separators &amp;amp; error language&lt;br&gt;&lt;br&gt;setErrorMode(ErrorMode)&lt;br&gt;  RAW | USER_FRIENDLY&lt;br&gt;&lt;br&gt;setExpressionCacheEnabled(boolean)&lt;br&gt;&lt;br&gt;setExpressionCacheSize(int)&lt;br&gt;  LRU capacity (default 128)" vertex="1">
+          <mxGeometry height="306" width="306" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_res" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="CalculatorResult&amp;lt;T&amp;gt;  (sealed)" vertex="1">
+          <mxGeometry height="180" width="500" x="40" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="t_resb" parent="t_res" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="record Success&amp;lt;T&amp;gt;(T value)&lt;br&gt;record Failure&amp;lt;T&amp;gt;(CalculatorError error)&lt;br&gt;&lt;br&gt;boolean isSuccess() · isFailure()&lt;br&gt;Optional&amp;lt;T&amp;gt; value() · Optional&amp;lt;CalculatorError&amp;gt; error()&lt;br&gt;T valueOrThrow() — throws Syntax/ProcessingErrorException&lt;br&gt;&amp;lt;R&amp;gt; CalculatorResult&amp;lt;R&amp;gt; map(Function)" vertex="1">
+          <mxGeometry height="126" width="472" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_enum" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="Enums &amp;amp; runtime state" vertex="1">
+          <mxGeometry height="180" width="500" x="570" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="t_enumb" parent="t_enum" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="ErrorMode { RAW, USER_FRIENDLY }&lt;br&gt;TrigonometricMode { DEG, RAD }&lt;br&gt;&lt;br&gt;&lt;b&gt;Runtime state&lt;/b&gt;&lt;br&gt;LRU token cache — synchronized LinkedHashMap, access-order, evicts at capacity&lt;br&gt;ThreadLocal variable context — populated per evaluate(...) call" vertex="1">
+          <mxGeometry height="126" width="472" x="14" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="text;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=10;spacingTop=8;spacingRight=10;shadow=1;" value="&lt;b&gt;All four families converge&lt;/b&gt; on the same internal route:&lt;br&gt;tokenize → (optional cache) → substitute variables → validate → toPostfix → evaluate.&lt;br&gt;They differ only at the boundary: throw vs. return-string vs. return-Result.&lt;br&gt;&lt;br&gt;See diagram 07 (pipeline) and 08 (error handling)." vertex="1">
+          <mxGeometry height="180" width="514" x="1100" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  Blue = eager / throwing API  ·  Green = safe (no-throw) API  ·  Yellow = configuration  ·  Violet = core class / pipeline note  ·  Grey = supporting types" vertex="1">
+          <mxGeometry height="24" width="1560" x="44" y="860" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

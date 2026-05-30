@@ -1,0 +1,101 @@
+<mxfile host="Electron">
+  <diagram id="list-and-sorting" name="05 · BigNumberList and Sorting">
+    <mxGraphModel dx="2934" dy="1201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1000" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="BigNumberList  ·  Operations &amp; Size-Based Sort Selection" vertex="1">
+          <mxGeometry height="56" width="1574" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="BigNumberList implements List&lt;BigNumber&gt; and adds statistical and numerical operations. sort() automatically chooses a SortingAlgorithm by element count via chooseSortingAlgorithmBySize; sort(Class) forces a specific algorithm by reflection. Verified against BigNumberList.java and algorithms/*." vertex="1">
+          <mxGeometry height="50" width="1560" x="44" y="96" as="geometry" />
+        </mxCell>
+        <mxCell id="list" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=34;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=15;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="BigNumberList  implements List&amp;lt;BigNumber&amp;gt;" vertex="1">
+          <mxGeometry height="700" width="720" x="40" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="l_f" parent="list" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Factory &amp;amp; field&lt;/b&gt;&lt;br&gt;values : List&amp;lt;BigNumber&amp;gt; · of(BigNumber...) · fromStrings(List&amp;lt;String&amp;gt;)" vertex="1">
+          <mxGeometry height="48" width="692" x="14" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="l_sort" parent="list" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Sorting&lt;/b&gt;&lt;br&gt;sort() — auto-select · sort(Class&amp;lt;? extends SortingAlgorithm&amp;gt;) · sortAscending() · sortDescending()" vertex="1">
+          <mxGeometry height="50" width="692" x="14" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="l_stat" parent="list" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Statistics&lt;/b&gt;&lt;br&gt;sum · average · median · modes · min · max · range · variance · standardDeviation · geometricMean · harmonicMean" vertex="1">
+          <mxGeometry height="58" width="692" x="14" y="154" as="geometry" />
+        </mxCell>
+        <mxCell id="l_inplace" parent="list" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;In-place transforms&lt;/b&gt; (mutate &amp;amp; return this)&lt;br&gt;absAll · negateAll · scale(factor) · translate(offset) · powEach(exp) · clampAll(min, max) · normalizeToSum(target) · reverse" vertex="1">
+          <mxGeometry height="64" width="692" x="14" y="218" as="geometry" />
+        </mxCell>
+        <mxCell id="l_func" parent="list" style="text;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Functional&lt;/b&gt; (return new list)&lt;br&gt;map(op) · filter(pred) · distinct · append(other) · subListCopy(from, to)" vertex="1">
+          <mxGeometry height="56" width="692" x="14" y="288" as="geometry" />
+        </mxCell>
+        <mxCell id="l_pred" parent="list" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Predicates&lt;/b&gt;&lt;br&gt;anyMatch · allMatch · findFirst · isSortedAscending / Descending · isMonotonicIncreasing / Decreasing" vertex="1">
+          <mxGeometry height="54" width="692" x="14" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="l_conv" parent="list" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Copy &amp;amp; conversion&lt;/b&gt;&lt;br&gt;copy · immutableCopy · clone · toUnmodifiableList · toArray · toBigNumberArray · toStringList · toDoubleArray (lossy)" vertex="1">
+          <mxGeometry height="56" width="692" x="14" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="l_mut" parent="list" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;List interface (delegated to backing ArrayList)&lt;/b&gt;&lt;br&gt;add · remove · clear · size · isEmpty · contains · get · set · indexOf · iterator · stream · addFirst/Last · getFirst/Last · shuffle · rotate · reversed" vertex="1">
+          <mxGeometry height="64" width="692" x="14" y="472" as="geometry" />
+        </mxCell>
+        <mxCell id="l_note" parent="list" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Empty-list contract&lt;/b&gt; — statistics throw IllegalStateException when undefined (e.g. average of an empty list). geometricMean requires all values ≥ 0; harmonicMean requires no zeros." vertex="1">
+          <mxGeometry height="78" width="692" x="14" y="542" as="geometry" />
+        </mxCell>
+        <mxCell id="l_helper" parent="list" style="text;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Private helpers&lt;/b&gt;&lt;br&gt;chooseSortingAlgorithmBySize(list) · areAllIntegers(list) · transformInPlace(op, name)" vertex="1">
+          <mxGeometry height="56" width="692" x="14" y="626" as="geometry" />
+        </mxCell>
+        <mxCell id="dec" parent="1" style="rhombus;rounded=0;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" value="chooseSortingAlgorithmBySize(values)" vertex="1">
+          <mxGeometry height="120" width="240" x="960" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="o1" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" value="size ≤ 32  →  BubbleSort&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;minimal overhead for tiny lists&lt;/font&gt;" vertex="1">
+          <mxGeometry height="54" width="434" x="1280" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="o2" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" value="33 … 999  →  QuickSort&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;fast average case&lt;/font&gt;" vertex="1">
+          <mxGeometry height="54" width="434" x="1280" y="238" as="geometry" />
+        </mxCell>
+        <mxCell id="o3" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" value="≥ 1000 &amp;amp; all integers  →  RadixSort&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;O(d·n) digit-based&lt;/font&gt;" vertex="1">
+          <mxGeometry height="54" width="434" x="1280" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="o4" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#5B21B6;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" value="≥ 1000 (otherwise, decimals)  →  MergeSort&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;predictable O(n log n)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="54" width="434" x="1280" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="algos" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="SortingAlgorithm  (abstract base)" vertex="1">
+          <mxGeometry height="150" width="754" x="860" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="algosb" parent="algos" style="text;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="abstract List&amp;lt;BigNumber&amp;gt; sort(List&amp;lt;BigNumber&amp;gt;) — returns a sorted copy&lt;br&gt;protected helpers: cloneList(list) · isListValid(list)&lt;br&gt;&lt;br&gt;&lt;b&gt;8 implementations:&lt;/b&gt; BubbleSort · InsertionSort · SelectionSort · GnomeSort · QuickSort · MergeSort · RadixSort · TimSort" vertex="1">
+          <mxGeometry height="100" width="726" x="14" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="es" edge="1" parent="1" source="l_sort" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#F59E0B;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" target="dec" value="sort() resolves class via">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eb1" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#8B5CF6;strokeWidth=2;" target="o1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eb2" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#8B5CF6;strokeWidth=2;" target="o2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eb3" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#8B5CF6;strokeWidth=2;" target="o3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1240" y="240" />
+              <mxPoint x="1240" y="333" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eb4" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#8B5CF6;strokeWidth=2;" target="o4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1240" y="240" />
+              <mxPoint x="1240" y="401" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ea" edge="1" parent="1" source="dec" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=6 4;strokeColor=#94A3B8;strokeWidth=2;fontColor=#64748B;fontSize=11;fontFamily=Helvetica;" target="algos" value="instantiates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  Blue = public list type  ·  Yellow = sort decision  ·  Violet = chosen algorithm  ·  Grey = algorithm family / queries  ·  Red = empty-list contract" vertex="1">
+          <mxGeometry height="24" width="1560" x="44" y="890" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

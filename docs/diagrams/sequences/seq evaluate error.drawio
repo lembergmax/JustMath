@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="seq-evaluate-error" name="13 · Sequence: evaluate error case">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="950" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="banner" value="Sequence — evaluateSafe(&quot;1/0&quot;)  →  Failure" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="1420" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="A processing error (division by zero) on the safe Result API. The Evaluator raises ProcessingErrorException carrying PROCESSING_DIVISION_BY_ZERO; CalculatorEngine catches it and returns CalculatorResult.Failure instead of throwing. The caller renders the message via CalculatorError.format(locale, errorMode). Verified against Evaluator, exceptions/*, errors/*." style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="44" y="84" width="1416" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ll_caller" value="Caller" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#3B82F6;strokeColor=#2563EB;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="130" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_engine" value="CalculatorEngine" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="150" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_eval" value="Evaluator" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#8B5CF6;strokeColor=#7C3AED;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="520" y="150" width="130" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_expr" value="ExpressionElements (&quot;/&quot;)" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="730" y="150" width="180" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_err" value="CalculatorError" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;size=40;rounded=1;arcSize=18;fillColor=#EF4444;strokeColor=#DC2626;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="150" width="160" height="640" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="1: evaluateSafe(&quot;1/0&quot;)" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="125" y="230" as="sourcePoint" /><mxPoint x="360" y="230" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="2: evaluate([1, 0, /])" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="270" as="sourcePoint" /><mxPoint x="585" y="270" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="3: apply &quot;/&quot; (1, 0)" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="585" y="310" as="sourcePoint" /><mxPoint x="820" y="310" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4: throw ProcessingErrorException(PROCESSING_DIVISION_BY_ZERO)" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="820" y="360" as="sourcePoint" /><mxPoint x="585" y="360" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5: exception propagates" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="585" y="400" as="sourcePoint" /><mxPoint x="360" y="400" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="n1" value="self · catch &amp; wrap into CalculatorError(code, params, technicalDetail, position)" style="rounded=1;arcSize=12;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=10;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="418" width="420" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" value="6: build CalculatorError" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="470" as="sourcePoint" /><mxPoint x="1090" y="470" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m7" value="7: return CalculatorResult.Failure(error)" style="html=1;rounded=1;endArrow=open;dashed=1;dashPattern=6 4;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="520" as="sourcePoint" /><mxPoint x="125" y="520" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m8" value="8: error().format(locale, ErrorMode) → message string" style="html=1;rounded=1;endArrow=block;strokeColor=#334155;strokeWidth=2;fontColor=#1E293B;fontSize=11;fontFamily=Helvetica;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="125" y="580" as="sourcePoint" /><mxPoint x="1090" y="580" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="note" value="The throwing API (evaluate) would instead let the ProcessingErrorException escape to the caller. See diagram 08." style="rounded=1;arcSize=12;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#475569;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="620" width="600" height="44" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg" value="Legend:&#160;&#160;solid arrow = call&#160;&#160;·&#160;&#160;dashed arrow = return / throw&#160;&#160;·&#160;&#160;red = error path&#160;&#160;·&#160;&#160;yellow note = catch &amp; wrap" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" vertex="1" parent="1">
+          <mxGeometry x="44" y="810" width="1400" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

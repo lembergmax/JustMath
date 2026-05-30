@@ -28,9 +28,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mlprograms.justmath</groupId>
+    <!--
+        Maven coordinates.
+
+        groupId io.github.lembergmax is verified against the GitHub account of the same name
+        via Sonatype Central Portal's automated GitHub namespace verification. The Java package
+        root has been migrated to io.github.lembergmax.justmath to match. See README changelog.
+    -->
+    <groupId>io.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
-    <version>1.4.4</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -44,7 +51,6 @@
         <junit.version>5.10.2</junit.version>
         <pitest.version>1.15.2</pitest.version>
         <pitest.junit5.plugin.version>1.2.2</pitest.junit5.plugin.version>
-        <javafx.version>21.0.9</javafx.version>
     </properties>
 
     <licenses>
@@ -73,20 +79,6 @@
         <url>https://github.com/lembergmax/JustMath</url>
         <tag>HEAD</tag>
     </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <name>Sonatype OSSRH Release</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <name>Sonatype OSSRH Snapshot</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
 
         <!-- Lombok -->
@@ -134,39 +126,37 @@
             <version>1.8.3</version>
         </dependency>
 
-        <!-- JavaFX -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>21</version>
-        </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
-
-            <!-- Maven Surefire Plugin (for running tests) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-            </plugin>
-
-            <!-- JavaFX Maven Plugin (for `mvn javafx:run`) -->
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
+                <version>3.5.2</version>
                 <configuration>
-                    <mainClass>com.mlprograms.justmath.graphfx.GraphCalculatorApp</mainClass>
+                    <!-- Reuse the forked JVM across test classes for faster runs and fewer
+                         forks to shut down (each shutdown is the source of the dumpstream
+                         noise that motivated the upgrade). -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <excludes>
+                        <exclude>io/github/lembergmax/justmath/Main.class</exclude>
+                        <exclude>io/github/lembergmax/justmath/Main$*.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
             </plugin>
 
             <!-- PIT Mutation Testing -->
@@ -183,10 +173,10 @@
                 </dependencies>
                 <configuration>
                     <targetClasses>
-                        <param>com.mlprograms.justmath*</param>
+                        <param>io.github.lembergmax.justmath*</param>
                     </targetClasses>
                     <targetTests>
-                        <param>com.mlprograms.justmath*</param>
+                        <param>io.github.lembergmax.justmath*</param>
                     </targetTests>
                     <threads>4</threads>
                     <outputFormats>
@@ -198,7 +188,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Attach Sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -212,9 +201,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Keep the published source jar in sync with the binary jar: omit Main. -->
+                    <excludes>
+                        <exclude>io/github/lembergmax/justmath/Main.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
-
-            <!-- Attach Javadocs -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -240,39 +233,53 @@
                 </configuration>
             </plugin>
 
-            <!-- Sign Artifacts -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <!-- validated, not published: exit once Central accepts the bundle.
+                                 autoPublish=true still releases server-side. waitUntil=published
+                                 would block up to 30 min and time out before the index finishes. -->
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

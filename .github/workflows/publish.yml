@@ -1,0 +1,111 @@
+# Publishes JustMath to Sonatype Central Portal (Maven Central) on every push to main.
+#
+# Branch policy: triggers ONLY on push to main. Pushes to developer / feature branches
+# never deploy. A version that is already on Maven Central is detected and skipped, so
+# repeated pushes to main without bumping <version> in pom.xml are no-ops.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   CENTRAL_USERNAME   Sonatype Central Portal user-token name code
+#   CENTRAL_PASSWORD   Sonatype Central Portal user-token secret
+#   GPG_PRIVATE_KEY    ASCII-armored secret key (the full contents of
+#                      justmath-gpg-secret-BACKUP.asc, including the BEGIN/END lines)
+#   GPG_PASSPHRASE     Passphrase that unlocks GPG_PRIVATE_KEY
+
+name: Publish to Maven Central
+
+on:
+  push:
+    branches: [main]
+  # Manual trigger lets you re-run a publish for the current main HEAD without a new commit.
+  workflow_dispatch:
+
+# Single in-flight publish at a time. A second push while one is running queues, does not abort.
+concurrency:
+  group: maven-central-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build, sign, deploy to Central
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 + import GPG key + generate settings.xml
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          # Maps to <server id="central"> in the auto-generated ~/.m2/settings.xml.
+          # username/password are the env-var NAMES the action reads at deploy time.
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          # Env-var NAME (not value) the action passes to mvn for the gpg passphrase.
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Read project version
+        id: pom
+        run: |
+          v=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Project version: $v"
+
+      - name: Reject SNAPSHOT versions
+        run: |
+          v="${{ steps.pom.outputs.version }}"
+          if [[ "$v" == *-SNAPSHOT ]]; then
+            echo "::error::SNAPSHOT versions are not deployable via this workflow ($v)."
+            exit 1
+          fi
+
+      - name: Skip if version already on Maven Central
+        id: gate
+        run: |
+          v="${{ steps.pom.outputs.version }}"
+          url="https://repo1.maven.org/maven2/io/github/lembergmax/justmath/$v/justmath-$v.pom"
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          echo "GET $url -> HTTP $status"
+          if [[ "$status" == "200" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::io.github.lembergmax:justmath:$v already on Maven Central — skipping deploy."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run full test suite
+        if: steps.gate.outputs.skip != 'true'
+        run: mvn -B --no-transfer-progress test
+
+      - name: Deploy to Maven Central (sign + upload + auto-release)
+        if: steps.gate.outputs.skip != 'true'
+        run: mvn -P release -B --no-transfer-progress -DskipTests clean deploy
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          # maven-gpg-plugin picks the passphrase up via this property name when
+          # invoked from CI; locally the same property is supplied via settings.xml.
+          MAVEN_OPTS: -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Report deployment summary
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          v="${{ steps.pom.outputs.version }}"
+          {
+            echo "### Deployment submitted"
+            echo ""
+            echo "- groupId: \`io.github.lembergmax\`"
+            echo "- artifactId: \`justmath\`"
+            echo "- version: \`$v\`"
+            echo ""
+            echo "Central Portal validated the bundle and \`autoPublish=true\` will release"
+            echo "it server-side. Index propagation to https://repo1.maven.org/maven2 takes"
+            echo "up to ~30 min after this job ends."
+          } >> "$GITHUB_STEP_SUMMARY"

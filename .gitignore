@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
+/.idea/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -41,6 +42,15 @@ build/
 /.idea/copilot.data.migration.edit.xml
 /.idea/artifacts/justmath_latest_jar.xml
 /.idea/artifacts/justmath_jar.xml
-/.idea/
 /out/artifacts/justmath_jar/justmath.jar
 /.claude/
+
+### Claude ###
+/CLAUDE.md
+
+### draw.io ###
+*.bkp
+
+### graphify ###
+/graphify-out/
+/src/graphify-out/

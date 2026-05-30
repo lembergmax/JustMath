@@ -9,7 +9,7 @@ unlimited precision**, avoiding the limitations of primitive types like `double`
 - ✅ **Virtually unlimited precision** via `BigNumber`
 - ✅ **String-based expression evaluation**
 - ✅ **Supports trigonometry, logarithms, combinatorics, summations, coordinates, factorials, and many more**
-- ✅ **Locale-aware result formatting** — `setLocale(Locale)` drives both error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`)
+- ✅ **Locale-aware formatting & messages in 13 languages / 20 locales** — `setLocale(Locale)` drives error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`); `setInputLocale(Locale)` opts into comma-decimal input parsing; query the catalog via `CalculatorEngine.getSupportedLanguages()`
 
 ## 🔢 BigNumber
 
@@ -251,6 +251,55 @@ Error messages can be rendered in two modes via **`ErrorMode`**:
 
 The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
 `setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
+
+### 🧱 Error Categories & Three-Tier Fallback
+
+Every `CalculatorErrorCode` belongs to a **Casio-style category**. In `USER_FRIENDLY`
+mode the message is resolved in three tiers, so a missing translation never leaks an
+internal/English detail string:
+
+1. the **specific** message for the code (e.g. *“Factorial is undefined for negative numbers.”*);
+2. otherwise the **category** message — `Syntax Error`, `Math Error`, `Argument Error`,
+   `Stack Error`, `Range Error`, `Dimension Error`;
+3. otherwise a top-level **generic** message.
+
+In `RAW` mode `Throwable.getMessage()` returns the stable category label.
+
+> ⚠️ **Behaviour change (1.5.0):** division-by-zero and domain errors moved from the
+> `Processing Error` category to **`Math Error`**. In `RAW` mode their
+> `Throwable.getMessage()` is now `"Math Error"` (was `"Processing Error"`). The typed
+> `CalculatorErrorCode` values (`PROCESSING_DIVISION_BY_ZERO`, `PROCESSING_DOMAIN_ERROR`,
+> …) are unchanged — prefer branching on the code, not on the message string.
+
+### 🧪 Expression Syntax & Structural Validation
+
+Malformed input is rejected by a structural pre-pass **before** any (potentially
+expensive) evaluation — e.g. `50000!/` fails instantly instead of computing the
+factorial first. Each defect maps to a specific code:
+
+| Input | Result |
+|-------|--------|
+| `*5`, `/3` | `SYNTAX_LEADING_OPERATOR` |
+| `5+`, `50000!/` | `SYNTAX_TRAILING_OPERATOR` |
+| `()` | `SYNTAX_EMPTY_PARENTHESES` |
+| `sqrt()` | `SYNTAX_EMPTY_FUNCTION_ARGUMENT` |
+| `3 4` (whitespace), `5!sqrt(4)` | `SYNTAX_MISSING_OPERATOR` |
+| `sqrt(1;2)`, `atan2(1)`, `logbase(8)` | `SYNTAX_WRONG_ARGUMENT_COUNT` |
+| `!5`, `5!!` | `SYNTAX_INVALID_FACTORIAL` |
+
+Syntax rules to be aware of:
+
+- **Unary `+` / `-`** is supported before a group, function, constant or variable:
+  `-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`. It is right-associative and binds looser than
+  `^`, so `-3^2` follows the leading-signed-number rule while `-(3)^2 == -(3^2)`.
+- **Whitespace is a separator, not a no-op.** `1 + 2` is fine, but `3 4` is *not* `34`
+  — two operands with no operator is `SYNTAX_MISSING_OPERATOR`.
+- **No implicit multiplication after `!`.** `5!sqrt(4)` is an error, not `5! · sqrt(4)`
+  (write `5!*sqrt(4)`).
+- **Variable names are ASCII letters only.** Any other non-registered character
+  (e.g. `ß`, `±`) is reported as `SYNTAX_INVALID_CHARACTER` with its position.
+- **Coordinate functions** (`Pol`, `Rec`) intentionally return a `MultiValueResult`
+  rendered as `"r=…; θ=…"` / `"x=…; y=…"`.
 
 ### 🔣 Localized Result Formatting
 
@@ -603,8 +652,8 @@ Locale handling:
 * You can also pass an explicit `Locale`
 
 ```java
-import com.mlprograms.justmath.converter.UnitConverter;
-import com.mlprograms.justmath.converter.UnitValue;
+import io.github.lembergmax.justmath.converter.UnitConverter;
+import io.github.lembergmax.justmath.converter.UnitValue;
 
 UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
 UnitConverter converter = new UnitConverter();
@@ -622,8 +671,8 @@ The public facade `UnitElements` provides:
 * listing all built-in units
 
 ```java
-import com.mlprograms.justmath.converter.Unit;
-import com.mlprograms.justmath.converter.UnitElements;
+import io.github.lembergmax.justmath.converter.Unit;
+import io.github.lembergmax.justmath.converter.UnitElements;
 
 // parse symbol -> unit
 Unit km = UnitElements.parseUnit("km");
@@ -855,15 +904,60 @@ The registry validates at startup:
 * every symbol is unique
 * groups are consistent and deterministic
 
-## ⚙️ Maven (Coming Soon)
+## ⚠️ Known Limitations
 
-Cannot wait? Just download the latest jar:
+JustMath is a single-JAR library. The following constraints are deliberate and
+must be observed by callers:
+
+* **`CalculatorEngine` is not thread-safe.** Locale, error mode and the expression cache are
+  mutable per-instance state. Share an engine across threads only behind external
+  synchronization, or give each thread its own engine. The token cache itself uses the
+  engine's monitor (`synchronized`) plus `volatile` visibility on the enable-flag and cache
+  reference, so concurrent `setExpressionCacheEnabled(false)` + ongoing `evaluate(...)` is
+  safe — but every other field is unsynchronized.
+* **`Tokenizer` is not thread-safe.** It is documented as a per-thread component. If you
+  cache tokenizers, cache them per-thread or behind a lock.
+* **Input parsing is always US-locale.** `setLocale(Locale)` controls output formatting and
+  the language of `USER_FRIENDLY` error messages — not how the engine parses expressions.
+  `"1.5+1.5"` is valid under every locale; `"1,5+1,5"` is a syntax error because `,` is
+  reserved as the argument separator.
+
+## ⚙️ Installation
+
+> **Note:** JustMath is **not yet on Maven Central.** The build is fully configured for
+> publishing (GPG signing + the Sonatype `central-publishing-maven-plugin`), but no release
+> has been pushed yet. Until the first release lands, use the direct JAR download below.
+> Once published, the coordinates will be:
+
+```xml
+<dependency>
+    <groupId>io.github.lembergmax.justmath</groupId>
+    <artifactId>justmath</artifactId>
+    <version>1.6.0</version>
+</dependency>
+```
+
+```groovy
+implementation 'io.github.lembergmax.justmath:justmath:1.6.0'
+```
+
+**Available now — direct download.** Pick a release JAR below:
 
 <table style="width:100%">
   <tr>
     <th>Version</th>
     <th>Download</th>
     <th>Release Type</th>
+  </tr>
+  <tr>
+      <td>v1.6.0</td>
+      <td><a href="out/artifacts/justmath_jar/justmath-1.6.0.jar">JustMath v1.6.0</a></td>
+      <td>Release</td>
+  </tr>
+  <tr>
+      <td>v1.5.0</td>
+      <td><a href="out/artifacts/justmath_jar/justmath-1.5.0.jar">JustMath v1.5.0</a></td>
+      <td>Release</td>
   </tr>
   <tr>
       <td>v1.4.4</td>
@@ -948,6 +1042,38 @@ Cannot wait? Just download the latest jar:
 </table>
 
 Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
+
+## 🆕 Changelog
+
+### 1.6.0
+
+- **Added 13 supported languages / 20 locales** for error messages and locale-aware number
+  formatting: English, German (incl. `de-AT`, `de-CH`), Spanish, French (incl. `fr-BE`), Italian,
+  Portuguese (`pt`, `pt-PT`, `pt-BR`), Dutch (incl. `nl-BE`), Czech, Danish, Swedish, Norwegian
+  (`no`, `nb`), Finnish and Polish.
+- **Added the `SupportedLanguages` registry plus `CalculatorEngine.getSupportedLanguages()` /
+  `isLanguageSupported(Locale)`** so consuming applications can query exactly which languages
+  JustMath offers.
+- **Added opt-in, locale-aware input parsing via `CalculatorEngine.setInputLocale(Locale)`**
+  (additive; default `Locale.US`, so existing behaviour is unchanged). With a comma-decimal input
+  locale, expressions such as `1,5+2,5` are parsed strictly with `,` as the decimal separator,
+  while `;` stays the argument separator. Output formatting remains controlled separately by
+  `setLocale`.
+
+### 1.5.0
+
+- **Structural validation** runs before evaluation: malformed input fails fast with a
+  specific `CalculatorErrorCode` instead of computing an expensive sub-expression or
+  returning a misclassified *Processing Error* (`50000!/`, `5000!sqrt()`, `!5`, `*5`,
+  `()`, `3 4`, `sqrt(1;2)`, …).
+- **Prefix unary `+` / `-`** before groups, functions, constants and variables
+  (`-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`).
+- **Casio-style error categories** (`Syntax`, `Math`, `Argument`, `Stack`, `Range`,
+  `Dimension`) with a specific → category → generic three-tier localized fallback.
+- **Whitespace is now a separator** (`3 4` is an error, not `34`); variable names are
+  restricted to ASCII letters; no implicit multiplication after `!`.
+- ⚠️ Division-by-zero / domain errors recategorized to **`Math Error`** — `RAW`
+  `getMessage()` changed for these (typed codes unchanged).
 
 ## 📜 License
 

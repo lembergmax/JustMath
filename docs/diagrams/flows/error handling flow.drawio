@@ -1,0 +1,85 @@
+<mxfile host="Electron">
+  <diagram id="error-handling-flow" name="08 · Error Handling Flow">
+    <mxGraphModel dx="2445" dy="1001" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1100" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="banner" parent="1" style="rounded=1;arcSize=6;html=1;fillColor=#1E293B;strokeColor=#0F172A;fontColor=#FFFFFF;fontSize=24;fontStyle=1;fontFamily=Helvetica;align=left;verticalAlign=middle;spacingLeft=24;shadow=1;" value="Error Handling Flow" vertex="1">
+          <mxGeometry height="56" width="1574" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontColor=#475569;fontSize=13;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;" value="A failure is classified into a CalculatorErrorCode (23 codes, 5 categories), wrapped in a CalculatorError record, then surfaced as an exception (throwing API) or a CalculatorResult.Failure (safe API). CalculatorError.format(Locale, ErrorMode) renders the message — RAW = technical English; USER_FRIENDLY = localized template from the i18n bundle. Verified against errors/* and exceptions/*." vertex="1">
+          <mxGeometry height="56" width="1560" x="44" y="96" as="geometry" />
+        </mxCell>
+        <mxCell id="src" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FFEDD5;strokeColor=#F97316;fontColor=#7C2D12;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Failure detected in pipeline&lt;/b&gt;&lt;br&gt;tokenize · validate · toPostfix · evaluate" vertex="1">
+          <mxGeometry height="56" width="320" x="60" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="code" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#EF4444;strokeColor=#DC2626;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="CalculatorErrorCode  ·  23 codes / 5 categories" vertex="1">
+          <mxGeometry height="360" width="360" x="40" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="code_syn" parent="code" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=10;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Syntax&lt;/b&gt; INVALID_CHARACTER · MISSING_RIGHT_PAREN · UNMATCHED_PAREN · UNKNOWN_FUNCTION · UNKNOWN_VARIABLE · INCOMPLETE_EXPRESSION · TRAILING/LEADING_OPERATOR · MISSING_OPERAND/OPERATOR · EMPTY_PARENTHESES · EMPTY_FUNCTION_ARGUMENT · UNEXPECTED_END · WRONG_ARGUMENT_COUNT · MISPLACED_SEPARATOR · INVALID_FACTORIAL" vertex="1">
+          <mxGeometry height="150" width="336" x="12" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="code_rest" parent="code" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=10;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="&lt;b&gt;Argument&lt;/b&gt; COUNT_MISMATCH&lt;br&gt;&lt;b&gt;Math&lt;/b&gt; DIVISION_BY_ZERO · DOMAIN_ERROR · FACTORIAL_NEGATIVE · FACTORIAL_NON_INTEGER · LOG_NON_POSITIVE · ROOT_OF_NEGATIVE&lt;br&gt;&lt;b&gt;Range&lt;/b&gt; OVERFLOW&lt;br&gt;&lt;b&gt;Processing&lt;/b&gt; INTERNAL" vertex="1">
+          <mxGeometry height="152" width="336" x="12" y="196" as="geometry" />
+        </mxCell>
+        <mxCell id="cerr" parent="1" style="swimlane;rounded=1;arcSize=4;html=1;startSize=30;fillColor=#EF4444;strokeColor=#DC2626;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;verticalAlign=middle;swimlaneFillColor=#FFFFFF;shadow=1;" value="CalculatorError  (record)" vertex="1">
+          <mxGeometry height="120" width="360" x="440" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="cerrb" parent="cerr" style="text;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=11;fontFamily=Helvetica;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;arcSize=8;spacingLeft=8;spacingTop=6;spacingRight=8;" value="code : CalculatorErrorCode · params : Map · technicalDetail : String · position : Integer&lt;br&gt;BUNDLE_BASENAME = &quot;i18n.calculator_errors&quot;" vertex="1">
+          <mxGeometry height="70" width="336" x="12" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dec" parent="1" style="rhombus;rounded=0;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" value="Which API was called?" vertex="1">
+          <mxGeometry height="110" width="240" x="500" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="throw" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;fontColor=#7F1D1D;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Throwing API&lt;/b&gt; (evaluate, …)&lt;br&gt;→ SyntaxErrorException or ProcessingErrorException&lt;br&gt;(both extend CalculatorException, carry the CalculatorError)" vertex="1">
+          <mxGeometry height="80" width="380" x="890" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="result" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;Safe API&lt;/b&gt; (evaluateSafe, …)&lt;br&gt;→ CalculatorResult.Failure(error) (sealed; vs. Success)" vertex="1">
+          <mxGeometry height="70" width="380" x="890" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="fmt" parent="1" style="rhombus;rounded=0;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=12;fontFamily=Helvetica;whiteSpace=wrap;shadow=1;" value="CalculatorError.format(Locale, ErrorMode)" vertex="1">
+          <mxGeometry height="120" width="260" x="540" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="raw" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#F1F5F9;strokeColor=#64748B;fontColor=#334155;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;ErrorMode.RAW&lt;/b&gt;&lt;br&gt;return technicalDetail (English, technical) — legacy default" vertex="1">
+          <mxGeometry height="56" width="360" x="60" y="724" as="geometry" />
+        </mxCell>
+        <mxCell id="uf" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;ErrorMode.USER_FRIENDLY&lt;/b&gt;&lt;br&gt;ResourceBundle i18n.calculator_errors (+_en / _de)&lt;br&gt;tiered lookup: specific code key → category key → generic → fallback technicalDetail&lt;br&gt;substitute named placeholders {character} {function} {variable} {operator} {position} …" vertex="1">
+          <mxGeometry height="120" width="500" x="1050" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="i18n" parent="1" style="rounded=1;arcSize=10;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#78350F;fontSize=12;fontFamily=Helvetica;align=left;verticalAlign=middle;whiteSpace=wrap;spacingLeft=12;shadow=1;" value="&lt;b&gt;i18n resources&lt;/b&gt;&lt;br&gt;calculator_errors.properties (default) · _en · _de  |  Safe-API prefixes &quot;Error: &quot; / &quot;Fehler: &quot;" vertex="1">
+          <mxGeometry height="56" width="500" x="1050" y="884" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="src" style="endArrow=block;html=1;rounded=1;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" target="code" value="classify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="code" style="endArrow=block;html=1;rounded=1;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" target="cerr" value="wrap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="cerr" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;" target="dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;strokeColor=#DC2626;strokeWidth=2;fontColor=#B91C1C;fontSize=11;fontFamily=Helvetica;" target="throw" value="throwing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="dec" style="endArrow=block;html=1;rounded=1;strokeColor=#059669;strokeWidth=2;fontColor=#047857;fontSize=11;fontFamily=Helvetica;" target="result" value="safe">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="result" style="endArrow=block;html=1;rounded=1;strokeColor=#334155;strokeWidth=2;fontColor=#334155;fontSize=11;fontFamily=Helvetica;" target="fmt" value="render message">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="fmt" style="endArrow=block;html=1;rounded=1;strokeColor=#64748B;strokeWidth=2;fontColor=#475569;fontSize=11;fontFamily=Helvetica;" target="raw" value="RAW">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="fmt" style="endArrow=block;html=1;rounded=1;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" target="uf" value="USER_FRIENDLY">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="uf" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=6 4;strokeColor=#D97706;strokeWidth=2;fontColor=#B45309;fontSize=11;fontFamily=Helvetica;" target="i18n" value="loads template">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="text;html=1;fontColor=#475569;fontSize=12;fontFamily=Helvetica;align=left;" value="Legend:  Orange = detection  ·  Red = error code / exception  ·  Green = safe result  ·  Blue = decision  ·  Yellow = localized output  ·  Grey = raw output" vertex="1">
+          <mxGeometry height="24" width="1560" x="44" y="900" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
