@@ -3060,16 +3060,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Rounds the given {@code BigNumber} to the precision specified by the given {@link MathContext}.
      *
+     * <p>This method does not depend on any receiver — it is {@code static} and formats the result
+     * with the rounded {@code number}'s own locale, not some unrelated instance's locale.</p>
+     *
      * @param number      the {@code BigNumber} to round
      * @param mathContext the context specifying precision and rounding mode
      * @return a new {@code BigNumber} rounded according to the given {@link MathContext}
      */
-    public BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
+    public static BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
         // Use toBigDecimal() — toString() is locale-aware and would feed non-US
         // decimal separators (e.g. ',') into the BigDecimal constructor, causing a
         // NumberFormatException for non-US locales.
         BigDecimal rounded = number.toBigDecimal().round(mathContext);
-        return new BigNumber(rounded.toPlainString(), locale);
+        return new BigNumber(rounded.toPlainString(), number.getLocale());
     }
 
     /**
@@ -3278,8 +3281,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return true if there are decimals, false otherwise
      */
     public boolean hasDecimals() {
-        BigNumber temp = clone().trim();
-        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimalPoint().isEmpty();
+        // Numeric check on the canonical value — avoids the clone()/trim() allocations this hot
+        // predicate previously incurred. A value has a fractional part iff its stripped scale is
+        // positive: 5.0 -> 0, 5.1 -> 1, 100 -> -2, 0/0.00 -> 0.
+        return toBigDecimal().stripTrailingZeros().scale() > 0;
     }
 
     /**

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Locale;
 
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
@@ -117,5 +118,14 @@ class BigNumberMutationAndRoundingTest {
         final BigNumber bankersTwoPlaces = new BigNumber("0.125");
         bankersTwoPlaces.setMathContext(new MathContext(50, RoundingMode.HALF_EVEN));
         assertEquals("0.12", bankersTwoPlaces.roundAfterDecimals(2).toString(), "HALF_EVEN must round 0.125 -> 0.12");
+    }
+
+    @Test
+    @DisplayName("static round(number, mc) formats with the number's own locale, not a receiver's")
+    void roundStaticUsesNumbersOwnLocale() {
+        final BigNumber german = new BigNumber("1,23456", Locale.GERMANY);
+        final BigNumber rounded = BigNumber.round(german, new MathContext(3));
+        assertEquals(Locale.GERMANY, rounded.getLocale(), "result must keep the number's locale");
+        assertEquals("1,23", rounded.toString(), "German locale uses ',' as the decimal separator");
     }
 }
