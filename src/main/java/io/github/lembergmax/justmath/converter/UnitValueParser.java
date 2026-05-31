@@ -337,6 +337,13 @@ final class UnitValueParser {
      * If a match is found, the prefix is returned as the numeric text and the suffix as the unit symbol.
      * </p>
      *
+     * <p>
+     * When the longest matching suffix leaves an empty numeric prefix the token is exactly a unit symbol
+     * (e.g. {@code "km"}) with the number omitted. The search stops there instead of trying shorter
+     * suffixes, so the caller reports the structural "missing numeric value" error rather than a
+     * misleading "invalid numeric value" diagnostic produced by a shorter, wrong split.
+     * </p>
+     *
      * @param singleTokenInput the single token input, e.g. {@code "12.5km"}; must not be {@code null}
      * @return parsed parts consisting of numeric text and unit symbol; never {@code null}
      * @throws UnitConversionException if no known unit symbol is a suffix of the token or if the numeric prefix is empty
@@ -346,13 +353,6 @@ final class UnitValueParser {
         for (final String unitSymbolText : UNIT_SYMBOLS_SORTED_BY_LENGTH_DESCENDING) {
             if (singleTokenInput.endsWith(unitSymbolText)) {
                 final String numericText = singleTokenInput.substring(0, singleTokenInput.length() - unitSymbolText.length()).trim();
-                // The candidate list is sorted by descending symbol length, so the FIRST suffix
-                // that matches is the longest possible split. When that split leaves no numeric
-                // prefix, the input is *exactly* the unit symbol (e.g. "km") and the user clearly
-                // forgot the number — there is no point in trying shorter suffixes because that
-                // would only downgrade the diagnostic to "Invalid numeric value '<garbage>'" when
-                // the real problem is "Missing numeric value". Break out and let the explicit
-                // UnitConversionException below signal the structural error.
                 if (numericText.isEmpty()) {
                     break;
                 }
