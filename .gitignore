@@ -54,3 +54,4 @@ build/
 ### graphify ###
 /graphify-out/
 /src/graphify-out/
+/CODE.md
