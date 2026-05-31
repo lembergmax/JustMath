@@ -24,11 +24,13 @@
 package io.github.lembergmax.justmath.bignumber;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
 import java.util.function.Supplier;
 
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
@@ -82,5 +84,33 @@ class BigNumberConstantIntegrityTest {
     void blankEvaluationReduction() {
         final CalculatorEngine engine = new CalculatorEngine();
         mutateResultOf(() -> engine.evaluate("   "));
+    }
+
+    @Test
+    @DisplayName("min()/max() return a fresh instance, never the receiver, argument, or a shared constant")
+    void minMaxReturnFreshInstance() {
+        final BigNumber five = new BigNumber("5");
+        assertNotSame(BigNumbers.ZERO, BigNumbers.ZERO.min(five), "min() must not leak the ZERO constant");
+        assertNotSame(five, BigNumbers.ZERO.max(five), "max() must not alias its argument");
+        assertNotSame(BigNumbers.ONE, new BigNumber("5").min(BigNumbers.ONE), "min() must not leak the ONE constant");
+        assertEquals("0", BigNumbers.ZERO.min(five).toString());
+        assertEquals("5", BigNumbers.ZERO.max(five).toString());
+    }
+
+    @Test
+    @DisplayName("min()/max() returning a shared constant do not leak it under mutation")
+    void minMaxReductions() {
+        // ONE is the larger / NEGATIVE_ONE the smaller, so the constant itself would be returned
+        // and then negated — a detectable corruption if it were leaked by reference.
+        mutateResultOf(() -> BigNumbers.ONE.max(new BigNumber("-5")));
+        mutateResultOf(() -> BigNumbers.NEGATIVE_ONE.min(new BigNumber("5")));
+    }
+
+    @Test
+    @DisplayName("BigNumberParser.parse(\"\") returns a fresh zero, not the shared ZERO constant")
+    void blankParseDoesNotLeakConstant() {
+        final BigNumberParser parser = new BigNumberParser();
+        assertNotSame(BigNumbers.ZERO, parser.parse(""), "parse(\"\") must not leak the ZERO constant");
+        assertNotSame(BigNumbers.ZERO, parser.parse("  ", Locale.US), "parse(blank, locale) must not leak the ZERO constant");
     }
 }

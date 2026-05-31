@@ -229,6 +229,32 @@ public class BigNumberTest {
             assertThrows(IllegalArgumentException.class, () -> num1.permutation(num2));
         }
 
+        @ParameterizedTest
+        @CsvSource({
+                "5,-3",
+                "-5,3",
+                "-5,-3"
+        })
+        void combinationRejectsNegativeArguments(String inputN, String inputK) {
+            BigNumber n = new BigNumber(inputN, Locale.US);
+            BigNumber k = new BigNumber(inputK, Locale.US);
+            // C(5, -3) previously slipped past the symmetry logic and wrongly returned 1.
+            assertThrows(IllegalArgumentException.class, () -> n.combination(k));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "5,-1",
+                "-5,1",
+                "-5,-1"
+        })
+        void permutationRejectsNegativeArguments(String inputN, String inputK) {
+            BigNumber n = new BigNumber(inputN, Locale.US);
+            BigNumber k = new BigNumber(inputK, Locale.US);
+            // P(5, -1) previously evaluated to 1/(n+1) instead of raising a domain error.
+            assertThrows(IllegalArgumentException.class, () -> n.permutation(k));
+        }
+
     }
 
     @Nested
@@ -526,6 +552,20 @@ public class BigNumberTest {
             BigNumber num = new BigNumber(input, trigonometricMode);
             // assertEquals(expectedResult, num.acot(trigonometricMode).toString());
             assertThrows(ArithmeticException.class, () -> num.acot(trigonometricMode));
+        }
+
+        @Test
+        void acotNoArgUsesInstanceTrigonometricMode() {
+            BigNumber radiansInstance = new BigNumber("1", TrigonometricMode.RAD, Locale.US);
+            BigNumber degreesInstance = new BigNumber("1", TrigonometricMode.DEG, Locale.US);
+
+            // acot() previously hard-coded DEG; it must honor the instance mode like asin/acos/atan.
+            assertEquals(radiansInstance.acot(TrigonometricMode.RAD).toString(), radiansInstance.acot().toString(),
+                    "acot() must use the instance RAD mode");
+            assertEquals(degreesInstance.acot(TrigonometricMode.DEG).toString(), degreesInstance.acot().toString(),
+                    "acot() must use the instance DEG mode");
+            assertNotEquals(radiansInstance.acot().toString(), degreesInstance.acot().toString(),
+                    "RAD and DEG instances must yield different acot() results");
         }
 
     }

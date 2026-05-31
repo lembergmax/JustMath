@@ -1626,7 +1626,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return a new {@code BigNumber} representing acot(this)
      */
     public BigNumber acot() {
-        return acot(TrigonometricMode.DEG);
+        return acot(trigonometricMode);
     }
 
     /**
@@ -3014,13 +3014,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
-     * Rounds the value after the decimal point to the specified precision.
+     * Rounds the value after the decimal point to the specified number of decimal places, using this
+     * instance's configured {@link RoundingMode} (from {@link #getMathContext()}).
+     *
+     * <p>The rounding mode is taken from the instance rather than hard-coded so that, for example, a
+     * {@code HALF_EVEN}-configured number rounds with banker's rounding here too instead of silently
+     * falling back to {@code HALF_UP}. To round with an explicit mode, use
+     * {@link #roundAfterDecimals(MathContext)}.</p>
      *
      * @param precision the number of decimal places to round to
      * @return a new {@code BigNumber} rounded to the given precision
      */
     public BigNumber roundAfterDecimals(final int precision) {
-        return roundAfterDecimals(new MathContext(precision, RoundingMode.HALF_UP));
+        return roundAfterDecimals(new MathContext(precision, mathContext.getRoundingMode()));
     }
 
     /**
@@ -3239,23 +3245,31 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
-     * Returns the minimum of this BigNumber and the specified other BigNumber.
+     * Returns the minimum of this {@code BigNumber} and {@code other} as a new instance.
      *
-     * @param other the BigNumber to compare with
-     * @return the smaller of this and other; if other is null, returns this
+     * <p>The result is a {@link #clone()} of the smaller operand, never the receiver, the argument, or a
+     * shared {@link BigNumbers} constant by reference — so a caller mutating the result (via a setter,
+     * {@link #negateThis()} or {@link #trim()}) cannot corrupt a constant or an operand.</p>
+     *
+     * @param other the {@code BigNumber} to compare with; must not be {@code null}
+     * @return a fresh copy of the smaller of {@code this} and {@code other}; never {@code null}
      */
     public BigNumber min(@NonNull final BigNumber other) {
-        return isLessThan(other) ? this : other;
+        return (isLessThan(other) ? this : other).clone();
     }
 
     /**
-     * Returns the maximum of this BigNumber and the specified other BigNumber.
+     * Returns the maximum of this {@code BigNumber} and {@code other} as a new instance.
      *
-     * @param other the BigNumber to compare with
-     * @return the greater of this and other; if other is null, returns this
+     * <p>The result is a {@link #clone()} of the greater operand, never the receiver, the argument, or a
+     * shared {@link BigNumbers} constant by reference — so a caller mutating the result (via a setter,
+     * {@link #negateThis()} or {@link #trim()}) cannot corrupt a constant or an operand.</p>
+     *
+     * @param other the {@code BigNumber} to compare with; must not be {@code null}
+     * @return a fresh copy of the greater of {@code this} and {@code other}; never {@code null}
      */
     public BigNumber max(@NonNull final BigNumber other) {
-        return isGreaterThan(other) ? this : other;
+        return (isGreaterThan(other) ? this : other).clone();
     }
 
     /**

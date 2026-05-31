@@ -28,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 /**
@@ -98,5 +101,21 @@ class BigNumberMutationAndRoundingTest {
         assertEquals("-45", new BigNumber("-1").atan(TrigonometricMode.DEG).roundAfterDecimals(0).toString());
         // |x| > 1 reciprocal branch
         assertEquals("-1", new BigNumber("-1000000").atan(TrigonometricMode.DEG).signum() + "");
+    }
+
+    @Test
+    @DisplayName("roundAfterDecimals(int) honors the instance rounding mode, not a hard-coded HALF_UP")
+    void roundAfterDecimalsIntUsesInstanceRoundingMode() {
+        final BigNumber halfEven = new BigNumber("2.5");
+        halfEven.setMathContext(new MathContext(50, RoundingMode.HALF_EVEN));
+        assertEquals("2", halfEven.roundAfterDecimals(0).toString(), "HALF_EVEN must round 2.5 -> 2");
+
+        final BigNumber halfUp = new BigNumber("2.5");
+        halfUp.setMathContext(new MathContext(50, RoundingMode.HALF_UP));
+        assertEquals("3", halfUp.roundAfterDecimals(0).toString(), "HALF_UP must round 2.5 -> 3");
+
+        final BigNumber bankersTwoPlaces = new BigNumber("0.125");
+        bankersTwoPlaces.setMathContext(new MathContext(50, RoundingMode.HALF_EVEN));
+        assertEquals("0.12", bankersTwoPlaces.roundAfterDecimals(2).toString(), "HALF_EVEN must round 0.125 -> 0.12");
     }
 }

@@ -60,7 +60,9 @@ final class BigNumberParser {
      */
     BigNumber parse(@NonNull final String input) {
         if (input.isBlank()) {
-            return ZERO;
+            // Defensive clone: never hand back the shared BigNumbers.ZERO constant, which the caller
+            // could mutate (setter / negateThis / trim) and corrupt process-wide.
+            return ZERO.clone();
         }
 
         final Locale resolvedLocale = resolveLocale(input);
@@ -81,7 +83,8 @@ final class BigNumberParser {
      */
     BigNumber parse(@NonNull final String input, @NonNull final Locale locale) {
         if (input.isBlank()) {
-            return ZERO;
+            // Defensive clone — see parse(String): never expose the shared ZERO constant.
+            return ZERO.clone();
         }
 
         final String trimmedInput = input.trim();
@@ -113,7 +116,8 @@ final class BigNumberParser {
      */
     public BigNumber parseAndFormat(@NonNull final String input, @NonNull final Locale targetLocale) {
         if (input.isBlank()) {
-            return ZERO;
+            // Defensive clone — see parse(String): never expose the shared ZERO constant.
+            return ZERO.clone();
         }
 
         final Locale sourceLocale = resolveLocale(input);

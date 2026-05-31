@@ -24,7 +24,6 @@
 
 package io.github.lembergmax.justmath.bignumber.math;
 
-import static io.github.lembergmax.justmath.bignumber.BigNumbers.ONE;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
 
 import java.math.MathContext;
@@ -77,6 +76,12 @@ public final class CombinatoricsMath {
 			throw new IllegalArgumentException("Combination requires integer values for both n and k.");
 		}
 
+		if (n.isNegative() || k.isNegative()) {
+			// Without this guard a negative k slips past the symmetry logic with a negative iteration
+			// count, the loop never runs and C(5, -3) wrongly returns 1 instead of a domain error.
+			throw new IllegalArgumentException("Combination requires non-negative integer values for both n and k.");
+		}
+
 		if (k.compareTo(n) > 0) {
 			throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
 		}
@@ -102,7 +107,9 @@ public final class CombinatoricsMath {
 		// instances per step (i.add(ONE) twice, n.subtract(i) once). Replacing the counter with a
 		// primitive {@code int} eliminates ~3·k allocations and the corresponding string-based
 		// arithmetic — the only BigNumber math that remains is the actual product update.
-		BigNumber product = ONE;
+		// Start from a fresh instance, never the shared ONE constant: the trailing product.trim()
+		// would otherwise trim the global constant in place.
+		BigNumber product = new BigNumber("1", locale);
 		for (int i = 0; i < iterationCount; i++) {
 			final BigNumber iAsBigNumber = BigNumber.valueOf(i);
 			final BigNumber divisor = BigNumber.valueOf(i + 1L);
@@ -140,6 +147,12 @@ public final class CombinatoricsMath {
 
 		if (n.hasDecimals() || k.hasDecimals()) {
 			throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
+		}
+
+		if (n.isNegative() || k.isNegative()) {
+			// A negative k yields P(n, -1) = n!/(n+1)! = 1/(n+1) — a finite but meaningless value;
+			// reject it as a domain error instead.
+			throw new IllegalArgumentException("Permutations requires non-negative integer values for both n and k.");
 		}
 
 		if (k.compareTo(n) > 0) {

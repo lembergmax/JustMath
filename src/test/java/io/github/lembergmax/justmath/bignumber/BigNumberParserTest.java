@@ -56,8 +56,13 @@ class BigNumberParserTest {
 
         @Test
         void parse_blank_returnsZero() {
-            assertSame(ZERO, parser.parse("", LOCALE_US));
-            assertSame(ZERO, parser.parse("   ", LOCALE_US));
+            // Blank input yields zero, but a fresh instance — never the shared ZERO constant by
+            // reference, which a caller could mutate (setter / negateThis / trim) and corrupt
+            // process-wide.
+            assertNotSame(ZERO, parser.parse("", LOCALE_US));
+            assertNotSame(ZERO, parser.parse("   ", LOCALE_US));
+            assertEquals(ZERO, parser.parse("", LOCALE_US));
+            assertEquals(ZERO, parser.parse("   ", LOCALE_US));
         }
 
         @Test
