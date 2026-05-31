@@ -470,6 +470,18 @@ public class BigNumberTest {
             assertEquals(expectedResult, num.asin(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
         }
 
+        @Test
+        void asinRetainsSignificantDigitsForTinyArguments() {
+            // Regression: asin previously rounded to mathContext precision as DECIMAL PLACES, which
+            // truncated significant digits for small arguments (unlike acos, which rounds to
+            // significant digits). asin(x) ~= x for tiny x, so 7 significant digits must survive.
+            final MathContext mc = new MathContext(7);
+            BigNumber result = new BigNumber("0.0000012345", Locale.US).asin(mc, TrigonometricMode.RAD, Locale.US);
+            assertNotEquals("0.0000012", result.toString(), "asin must not truncate to 7 decimal places");
+            assertTrue(result.toString().startsWith("0.00000123"),
+                    "asin must retain its significant digits (1234500e-6), was: " + result);
+        }
+
         @ParameterizedTest
         @CsvSource({
                 "1,RAD,0",

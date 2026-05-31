@@ -86,7 +86,10 @@ public final class InverseTrigonometricMath {
             result = bigDecimalRadiansToDegrees(result, mathContext, locale);
         }
 
-        return new BigNumber(result.toPlainString(), locale, mathContext).roundAfterDecimals(mathContext).trim();
+        // Round to the math context's *significant* digits via the constructor, exactly like acos/atan.
+        // The previous extra roundAfterDecimals(mathContext) rounded to that many *decimal places*,
+        // which truncated significant digits for small arguments (e.g. asin(1.2345e-6) lost 2345).
+        return new BigNumber(result.toPlainString(), locale, mathContext).trim();
     }
 
     /**
