@@ -65,8 +65,6 @@ final class BigNumberParser {
      */
     BigNumber parse(@NonNull final String input) {
         if (input.isBlank()) {
-            // Defensive clone: never hand back the shared BigNumbers.ZERO constant, which the caller
-            // could mutate (setter / negateThis / trim) and corrupt process-wide.
             return ZERO.clone();
         }
 
@@ -88,7 +86,6 @@ final class BigNumberParser {
      */
     BigNumber parse(@NonNull final String input, @NonNull final Locale locale) {
         if (input.isBlank()) {
-            // Defensive clone — see parse(String): never expose the shared ZERO constant.
             return ZERO.clone();
         }
 
@@ -98,9 +95,6 @@ final class BigNumberParser {
             return parseScientificNotation(trimmedInput, locale);
         }
 
-        // Reject malformed input loudly. The previous behaviour silently returned ZERO,
-        // which let typos such as {@code new BigNumber("abc")} survive as the number 0 —
-        // a very surprising failure mode for users of an arbitrary-precision math library.
         if (!isNumber(trimmedInput, locale)) {
             throw new IllegalArgumentException(
                     "Input is not a valid number for locale " + locale + ": '" + input + "'");
@@ -121,7 +115,6 @@ final class BigNumberParser {
      */
     public BigNumber parseAndFormat(@NonNull final String input, @NonNull final Locale targetLocale) {
         if (input.isBlank()) {
-            // Defensive clone — see parse(String): never expose the shared ZERO constant.
             return ZERO.clone();
         }
 
@@ -253,8 +246,6 @@ final class BigNumberParser {
             final String plainString = decimal.toPlainString();
             return extractParts(plainString, locale);
         } catch (NumberFormatException exception) {
-            // Same rationale as {@link #parse(String, Locale)}: signal malformed scientific
-            // notation instead of silently materialising it as zero.
             throw new IllegalArgumentException(
                     "Input is not a valid scientific-notation number for locale " + locale + ": '" + input + "'",
                     exception);

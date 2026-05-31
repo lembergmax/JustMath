@@ -32,6 +32,7 @@ import java.util.Locale;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Provides combinatorial mathematical operations on {@link BigNumber} instances,
@@ -40,12 +41,8 @@ import lombok.NonNull;
  * This class enforces integer inputs and validates arguments to ensure
  * mathematically correct results for combinatorics.
  */
+@UtilityClass
 public final class CombinatoricsMath {
-
-	private CombinatoricsMath() {
-		// Utility class — never instantiated.
-	}
-
 
 	/**
 	 * Calculates the number of combinations (n choose k), denoted as C(n, k),
@@ -77,8 +74,6 @@ public final class CombinatoricsMath {
 		}
 
 		if (n.isNegative() || k.isNegative()) {
-			// Without this guard a negative k slips past the symmetry logic with a negative iteration
-			// count, the loop never runs and C(5, -3) wrongly returns 1 instead of a domain error.
 			throw new IllegalArgumentException("Combination requires non-negative integer values for both n and k.");
 		}
 
@@ -91,24 +86,12 @@ public final class CombinatoricsMath {
 			return new BigNumber("1", locale);
 		}
 
-		// Use symmetry property: C(n, k) = C(n, n-k). Choosing the smaller of the two values
-		// halves the iteration count and keeps the divisor sequence in the int range, which
-		// makes the primitive index loop below safe.
 		final BigNumber effectiveK = k.min(n.subtract(k));
 		if (effectiveK.isGreaterThan(BigNumber.valueOf(Integer.MAX_VALUE))) {
-			// Practically unreachable — a binomial with k > 2 billion would produce a result with
-			// hundreds of millions of digits — but guard against silent {@link BigDecimal#intValue}
-			// wrap-around just in case a caller hands us pathological inputs.
 			throw new IllegalArgumentException("combination is not supported for k > Integer.MAX_VALUE");
 		}
 		final int iterationCount = effectiveK.intValue();
 
-		// Previously this loop ran on {@link BigNumber} counters and allocated several throwaway
-		// instances per step (i.add(ONE) twice, n.subtract(i) once). Replacing the counter with a
-		// primitive {@code int} eliminates ~3·k allocations and the corresponding string-based
-		// arithmetic — the only BigNumber math that remains is the actual product update.
-		// Start from a fresh instance, never the shared ONE constant: the trailing product.trim()
-		// would otherwise trim the global constant in place.
 		BigNumber product = new BigNumber("1", locale);
 		for (int i = 0; i < iterationCount; i++) {
 			final BigNumber iAsBigNumber = BigNumber.valueOf(i);
@@ -150,8 +133,6 @@ public final class CombinatoricsMath {
 		}
 
 		if (n.isNegative() || k.isNegative()) {
-			// A negative k yields P(n, -1) = n!/(n+1)! = 1/(n+1) — a finite but meaningless value;
-			// reject it as a domain error instead.
 			throw new IllegalArgumentException("Permutations requires non-negative integer values for both n and k.");
 		}
 
