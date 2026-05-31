@@ -77,6 +77,9 @@ public class PostfixParser {
         List<Token> output = new ArrayList<>();
         Deque<Token> operatorStack = new ArrayDeque<>();
         Deque<Integer> argumentCountStack = new ArrayDeque<>();
+        // Tracks, per open parenthesis, whether it is a function-call paren. A ';' is only a valid
+        // argument separator inside one; in a bare paren such as "(1;2)" it is a misplaced separator.
+        Deque<Boolean> functionCallParenStack = new ArrayDeque<>();
         Token previousToken = null;
 
         for (Token token : tokens) {
@@ -88,11 +91,12 @@ public class PostfixParser {
                 case LEFT_PAREN -> {
                     operatorStack.push(token);
 
-                    boolean isUnlimitedCall = previousToken != null
-                            && previousToken.getType() == Token.Type.FUNCTION
-                            && isUnlimitedArgumentFunction(previousToken);
+                    boolean isFunctionCall = previousToken != null
+                            && previousToken.getType() == Token.Type.FUNCTION;
+                    boolean isUnlimitedCall = isFunctionCall && isUnlimitedArgumentFunction(previousToken);
 
                     argumentCountStack.push(isUnlimitedCall ? 1 : 0);
+                    functionCallParenStack.push(isFunctionCall);
                 }
 
                 case OPERATOR, UNARY_OPERATOR -> {
@@ -122,6 +126,9 @@ public class PostfixParser {
                     operatorStack.pop();
 
                     int argumentCount = argumentCountStack.isEmpty() ? 0 : argumentCountStack.pop();
+                    if (!functionCallParenStack.isEmpty()) {
+                        functionCallParenStack.pop();
+                    }
                     if (!operatorStack.isEmpty() && operatorStack.peek().getType() == Token.Type.FUNCTION) {
                         Token functionToken = operatorStack.pop();
 
@@ -139,6 +146,14 @@ public class PostfixParser {
                     }
                     if (operatorStack.isEmpty()) {
                         throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR, "Misplaced semicolon or mismatched parentheses");
+                    }
+
+                    if (functionCallParenStack.isEmpty() || !functionCallParenStack.peek()) {
+                        // A ';' inside a bare parenthesis (e.g. "(1;2)") is not a function-argument
+                        // separator; report it precisely instead of letting it surface as a generic
+                        // "unexpected end" once the evaluator finds two leftover operands.
+                        throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR,
+                                "Misplaced semicolon: ';' is only valid between function arguments");
                     }
 
                     if (!argumentCountStack.isEmpty()) {

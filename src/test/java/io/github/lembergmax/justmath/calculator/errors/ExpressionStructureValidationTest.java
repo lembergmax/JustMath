@@ -115,6 +115,8 @@ class ExpressionStructureValidationTest {
                     {"rootn(27)", CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT},
                     {"summation(1;5)", CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT},
                     {"sqrt(1;2)", CalculatorErrorCode.SYNTAX_WRONG_ARGUMENT_COUNT},
+                    {"(1;2)", CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR},
+                    {"(1;2;3)", CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR},
                     {"2!3", CalculatorErrorCode.SYNTAX_MISSING_OPERATOR},
                     {"sin", CalculatorErrorCode.SYNTAX_MISSING_OPERAND},
                     {"3 4", CalculatorErrorCode.SYNTAX_MISSING_OPERATOR},
