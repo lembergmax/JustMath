@@ -646,6 +646,10 @@ public class CalculatorEngine {
             return formatExceptionMessage(calculatorException);
         } catch (final Exception exception) {
             return formatExceptionMessage(classifyRuntimeException(exception));
+        } catch (final StackOverflowError stackOverflowError) {
+            // StackOverflowError is an Error, not an Exception: catch it explicitly so deep
+            // recursion (e.g. a long variable-reference chain) is reported, not propagated (H6).
+            return formatExceptionMessage(deeplyNestedException());
         }
     }
 
@@ -685,6 +689,9 @@ public class CalculatorEngine {
             return formatExceptionMessage(e);
         } catch (Exception e) {
             return formatExceptionMessage(classifyRuntimeException(e));
+        } catch (final StackOverflowError stackOverflowError) {
+            // See evaluateToString: keep the Text Output API's "never throws" contract on deep recursion.
+            return formatExceptionMessage(deeplyNestedException());
         }
     }
 
@@ -729,6 +736,9 @@ public class CalculatorEngine {
             return formatSafeError(calculatorException);
         } catch (final Exception exception) {
             return formatSafeError(exception);
+        } catch (final StackOverflowError stackOverflowError) {
+            // StackOverflowError is an Error: catch it so the Safe UI String API never throws (H6).
+            return formatSafeError(deeplyNestedException());
         }
     }
 
@@ -773,6 +783,9 @@ public class CalculatorEngine {
             return formatSafeError(calculatorException);
         } catch (final Exception exception) {
             return formatSafeError(exception);
+        } catch (final StackOverflowError stackOverflowError) {
+            // See evaluateSafeToString: keep the Safe UI String API's "never throws" contract.
+            return formatSafeError(deeplyNestedException());
         }
     }
 
@@ -800,6 +813,23 @@ public class CalculatorEngine {
             message = exception.getClass().getSimpleName();
         }
         return prefix + ": " + message;
+    }
+
+    /**
+     * Builds the error reported when evaluation recurses so deeply that the JVM raises a
+     * {@link StackOverflowError} — for example a pathologically long or deeply nested
+     * variable-reference chain such as {@code x1=x2+1, x2=x3+1, ...}. A {@code StackOverflowError}
+     * is an {@link Error}, not an {@link Exception}, so it would otherwise slip past the
+     * {@code catch (Exception)} clauses of the Safe / Text Output APIs and break their documented
+     * "never throws" contract. The Safe / Text boundaries catch it explicitly and route it through
+     * this typed error instead.
+     *
+     * @return a typed processing error describing the over-deep nesting; never {@code null}
+     */
+    private static ProcessingErrorException deeplyNestedException() {
+        return new ProcessingErrorException(
+                CalculatorErrorCode.PROCESSING_INTERNAL,
+                "Expression is nested too deeply to evaluate");
     }
 
     /**
@@ -844,6 +874,12 @@ public class CalculatorEngine {
                         Objects.requireNonNullElse(exception.getMessage(), "Unknown error"));
             }
             return CalculatorResult.failure(err);
+        } catch (final StackOverflowError stackOverflowError) {
+            // StackOverflowError is an Error, not an Exception: catch it so the Typed Result API
+            // honors its "never throws" contract on pathologically deep recursion (H6).
+            return CalculatorResult.failure(new CalculatorError(
+                    CalculatorErrorCode.PROCESSING_INTERNAL,
+                    "Expression is nested too deeply to evaluate"));
         }
     }
 
