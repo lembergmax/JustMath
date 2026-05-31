@@ -53,9 +53,14 @@ import lombok.Setter;
  * and flexible angle measurement via {@link TrigonometricMode}. Input strings can be automatically
  * parsed according to locale or explicitly specified.</p>
  *
- * <p>{@code BigNumber} is immutable in behavior and uses {@link CalculatorEngine} for computational logic.
- * Internally, most computations are delegated to utility classes like {@code BasicMath}, {@code RadicalMath},
- * or {@code LogarithmicMath}, ensuring modularity and clean separation of concerns.</p>
+ * <p>Arithmetic and other <em>operation</em> methods ({@code add}, {@code multiply}, {@code abs},
+ * {@code round}, the trigonometric/logarithmic methods, …) never mutate the receiver — they return a
+ * new instance. {@code BigNumber} is <strong>not</strong> fully immutable, however: it exposes a few
+ * mutators that change the receiver in place, namely the Lombok {@code @Setter}s and the
+ * {@code *This}/{@code trim} family (for example {@link #negateThis()}, {@link #trim()}). Treat an
+ * instance as immutable unless you deliberately call one of those. Computations are delegated to
+ * utility classes such as {@code BasicMath}, {@code RadicalMath} or {@code LogarithmicMath} (and
+ * {@link CalculatorEngine} for sub-expression evaluation), keeping a clean separation of concerns.</p>
  *
  * <p>Instances of this class are ideal for applications requiring precise decimal arithmetic,
  * such as financial systems, scientific calculations, or custom calculators.</p>

@@ -54,6 +54,11 @@ final class BigNumberParser {
      * is preferred if it is supported; otherwise the first supported locale is used as fallback.
      * </p>
      *
+     * <p><strong>Single-separator ambiguity:</strong> a value with a single separator (e.g.
+     * {@code "1,234"}) is read with the separator as the <em>decimal</em> point, so {@code "1,234"}
+     * becomes {@code 1.234}. To parse grouped input deterministically, pass the locale explicitly via
+     * {@link #parse(String, Locale)} — see {@link #resolveBySeparatorHeuristic(String)}.</p>
+     *
      * @param input the raw numeric string to parse
      * @return the parsed {@link BigNumber}
      * @throws IllegalArgumentException if the input is not a valid number in any supported locale
@@ -309,6 +314,14 @@ final class BigNumberParser {
      * - If both '.' and ',' exist in the significand, the last one is assumed to be the decimal separator.
      *   The other is assumed to be the grouping separator.
      * - If only one of them exists, it is assumed to be the decimal separator (grouping remains unknown).
+     *
+     * <p><strong>Known limitation (ambiguity):</strong> when a value contains a <em>single</em>
+     * separator it is irreducibly ambiguous — {@code "1,234"} is {@code 1.234} under a comma-decimal
+     * locale but {@code 1234} (grouped) under a comma-grouping locale. This auto-detection path always
+     * resolves a lone separator to the decimal separator, so {@code "1,234"} parses as {@code 1.234}.
+     * Callers that need grouped input parsed unambiguously must supply the locale explicitly via
+     * {@link #parse(String, Locale)} (or {@code CalculatorEngine.setInputLocale}); with an explicit
+     * locale {@code "1,234"} parses as {@code 1234} under {@link Locale#US}.</p>
      *
      * @param inputTrimmed trimmed input
      * @return a supported locale that matches the heuristic and validates, or null

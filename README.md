@@ -26,7 +26,7 @@ The `BigNumber` class supports a wide range of mathematical operations:
 | **Combinatorics**                | `combination`, `permutation`                                           |
 | **Series**                       | `summation`, `product`                                                 |
 | **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
-| **Miscellaneous**                | `randomIntegerForRange`, `percentFromM`, `isXPercentOfN`, `gcd`, `lcm` |
+| **Miscellaneous**                | `randomIntegerForRange`, `nPercentFromM`, `xIsNPercentOfN`, `gcd`, `lcm` |
 | **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
 | **Statistics**                   | `sum`, `average`, `median`                                             |
 
@@ -247,7 +247,7 @@ Error messages can be rendered in two modes via **`ErrorMode`**:
 | Mode            | Description                                                                                              |
 |-----------------|----------------------------------------------------------------------------------------------------------|
 | `RAW`           | Technical English detail including internal context (tokens, positions, stack sizes). This is the default. |
-| `USER_FRIENDLY` | Localized, end-user oriented message taken from `i18n/calculator_errors_*.properties` (currently `en`, `de`). |
+| `USER_FRIENDLY` | Localized, end-user oriented message taken from `i18n/calculator_errors_*.properties` (13 languages / 20 locales). |
 
 The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
 `setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
@@ -463,7 +463,6 @@ JustMath provides a suite of **static utility methods** grouped in dedicated cla
 |                                      | `randomIntegerBigNumberInRange`                                                                                                            | Random integer generation using `BigNumber`              |
 |                                      | `e`, `pi`                                                                                                                                  | Mathematical constants as `BigNumber`                    |
 | `SeriesMath`                         | `summation`                                                                                                                                | Summation logic                                          |
-|                                      | `product`                                                                                                                                  | Product logic                                            |
 |                                      | `product`                                                                                                                                  | Product logic                                            |
 | `SpecialFunctionMath`                | `gamma`, `beta`                                                                                                                            | Gamma and Beta special functions                         | 
 | `StatisticsMath`                     | `sum`, `average`, `median`                                                                                                                 | Sum and average of provided elements                     | 
@@ -917,10 +916,12 @@ must be observed by callers:
   safe — but every other field is unsynchronized.
 * **`Tokenizer` is not thread-safe.** It is documented as a per-thread component. If you
   cache tokenizers, cache them per-thread or behind a lock.
-* **Input parsing is always US-locale.** `setLocale(Locale)` controls output formatting and
-  the language of `USER_FRIENDLY` error messages — not how the engine parses expressions.
-  `"1.5+1.5"` is valid under every locale; `"1,5+1,5"` is a syntax error because `,` is
-  reserved as the argument separator.
+* **Input parsing defaults to US-locale; comma-decimal input is opt-in via `setInputLocale`.**
+  By default `.` is the decimal point and `,` is the argument separator, so `"1.5+1.5"` is valid
+  and `"1,5+1,5"` is a syntax error. Call `setInputLocale(Locale)` to opt into a comma-decimal
+  input locale (input is then parsed strictly with that locale's decimal separator).
+  `setLocale(Locale)` independently controls output formatting and the language of
+  `USER_FRIENDLY` error messages — not how the engine parses input.
 
 ## ⚙️ Installation
 
