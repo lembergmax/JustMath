@@ -26,6 +26,7 @@ package io.github.lembergmax.justmath.bignumber.algorithms;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
@@ -71,9 +72,11 @@ public class RadixSort extends SortingAlgorithm {
      * Sorts the list in-place using LSD RadixSort (base 10) for integer values.
      *
      * <p>This implementation supports negative integers by separating values into
-     * negative and non-negative lists. The negative part is sorted by absolute value
-     * and then reversed (because more negative means smaller) before being combined
-     * with the sorted non-negative part.</p>
+     * negative and non-negative lists. The negative part must end up ascending by value
+     * (most negative first) while remaining stable for equal values, so it is sorted with a
+     * reverse → stable-ascending-by-|x| → reverse pass rather than a plain reversal (a plain
+     * reversal would flip the relative order of equal negatives such as {@code "-5"} and
+     * {@code "-5.0"}). The result is combined with the sorted non-negative part.</p>
      *
      * @param numbers list of integer {@link BigNumber} values to sort
      */
@@ -90,13 +93,15 @@ public class RadixSort extends SortingAlgorithm {
         }
 
         lsdRadixSortByAbsValue(nonNegatives);
+
+        // Stable descending-by-|x| (= ascending-by-value): reverse, stable sort ascending by |x|,
+        // reverse again. Equal negatives therefore keep their original relative order.
+        Collections.reverse(negatives);
         lsdRadixSortByAbsValue(negatives);
+        Collections.reverse(negatives);
 
         numbers.clear();
-
-        for (int i = negatives.size() - 1; i >= 0; i--) {
-            numbers.add(negatives.get(i));
-        }
+        numbers.addAll(negatives);
         numbers.addAll(nonNegatives);
     }
 
