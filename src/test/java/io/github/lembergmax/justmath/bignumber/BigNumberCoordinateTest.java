@@ -31,7 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import io.github.lembergmax.justmath.calculator.internal.CoordinateType;
 
@@ -225,16 +227,18 @@ public class BigNumberCoordinateTest {
     }
 
     @Test
-    void trim_mutatesComponents_andReturnsSameInstance() {
+    void trim_returnsNewTrimmedInstance_leavesReceiverUntouched() {
         BigNumber x = new BigNumber("0000123.45000", Locale.US);
         BigNumber y = new BigNumber("-000000.12000", Locale.US);
         BigNumberCoordinate c = new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, Locale.US);
 
         BigNumberCoordinate returned = c.trim();
-        assertSame(c, returned, "trim() should return the same instance");
-        assertEquals("123.45", c.getX().toString());
-        assertEquals("-0.12", c.getY().toString());
-        assertEquals("x=123.45; y=-0.12", c.toString());
+        // K1: BigNumberCoordinate is immutable — trim() yields a new instance (no *This suffix).
+        assertNotSame(c, returned, "trim() must return a new instance, not mutate the receiver");
+        assertEquals(c, returned, "trimmed coordinate is numerically equal to the original");
+        assertEquals("123.45", returned.getX().toString());
+        assertEquals("-0.12", returned.getY().toString());
+        assertEquals("x=123.45; y=-0.12", returned.toString());
     }
 
     @Test
@@ -292,6 +296,79 @@ public class BigNumberCoordinateTest {
         assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(null, one, CoordinateType.CARTESIAN, Locale.US));
         assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(one, null, CoordinateType.CARTESIAN, Locale.US));
         assertThrows(NullPointerException.class, () -> new BigNumberCoordinate(one, one, CoordinateType.CARTESIAN, null));
+    }
+
+    // ---------------------------------------------------------------------
+    // K1: equality / hashCode / ordering must consider the full coordinate
+    // (type, x, y), not just the inherited x value. Prior to the fix the
+    // coordinate inherited BigNumber.equals/hashCode (x only), so distinct
+    // coordinates collapsed in hash-based collections.
+    // ---------------------------------------------------------------------
+
+    private static BigNumberCoordinate cart(String x, String y) {
+        return new BigNumberCoordinate(new BigNumber(x, Locale.US), new BigNumber(y, Locale.US), CoordinateType.CARTESIAN, Locale.US);
+    }
+
+    private static BigNumberCoordinate polar(String r, String theta) {
+        return new BigNumberCoordinate(new BigNumber(r, Locale.US), new BigNumber(theta, Locale.US), CoordinateType.POLAR, Locale.US);
+    }
+
+    @Test
+    @DisplayName("equals() distinguishes coordinates that share x but differ in y")
+    void equals_differentY_notEqual() {
+        assertNotEquals(cart("1", "2"), cart("1", "5"),
+                "(1,2) and (1,5) must not be equal — y differs");
+    }
+
+    @Test
+    @DisplayName("equals() distinguishes CARTESIAN from POLAR with identical components")
+    void equals_differentType_notEqual() {
+        assertNotEquals(cart("1", "2"), polar("1", "2"),
+                "CARTESIAN(1,2) and POLAR(1,2) must not be equal — type differs");
+    }
+
+    @Test
+    @DisplayName("equals() treats equal (type,x,y) coordinates as equal and ignores representation")
+    void equals_sameComponents_equal_numerically() {
+        assertEquals(cart("1.0", "2.00"), cart("1", "2"),
+                "numerically equal components must compare equal");
+        assertEquals(cart("1.0", "2.00").hashCode(), cart("1", "2").hashCode(),
+                "equal coordinates must share a hash code");
+    }
+
+    @Test
+    @DisplayName("a coordinate is never equal to a plain BigNumber (symmetric)")
+    void equals_plainBigNumber_notEqual_symmetric() {
+        BigNumber plain = new BigNumber("1", Locale.US);
+        BigNumberCoordinate coordinate = cart("1", "2");
+        assertNotEquals(coordinate, plain, "coordinate must not equal a plain scalar");
+        assertNotEquals(plain, coordinate, "a plain scalar must not equal a coordinate (symmetry)");
+    }
+
+    @Test
+    @DisplayName("HashSet deduplicates by the full coordinate, not by x alone")
+    void hashSet_dedupsByFullCoordinate() {
+        Set<BigNumberCoordinate> set = new HashSet<>();
+        set.add(cart("1", "2"));
+        set.add(cart("1", "5"));   // same x, different y — must be retained
+        set.add(cart("1", "2"));   // genuine duplicate — must collapse
+        assertEquals(2, set.size(), "two distinct coordinates expected, duplicate collapsed");
+    }
+
+    @Test
+    @DisplayName("compareTo stays consistent with equals across coordinate and scalar mixes")
+    void compareTo_consistentWithEquals() {
+        assertEquals(0, cart("1", "2").compareTo(cart("1", "2")), "equal coordinates compare to 0");
+        assertNotEquals(0, cart("1", "2").compareTo(cart("1", "5")), "differing y must not compare to 0");
+        assertNotEquals(0, cart("1", "2").compareTo(polar("1", "2")), "differing type must not compare to 0");
+
+        BigNumber plain = new BigNumber("1", Locale.US);
+        assertNotEquals(0, cart("1", "2").compareTo(plain), "coordinate vs plain must not compare to 0");
+        assertNotEquals(0, plain.compareTo(cart("1", "2")), "plain vs coordinate must not compare to 0");
+        // antisymmetry of the mixed comparison
+        assertEquals(-Integer.signum(cart("1", "2").compareTo(plain)),
+                Integer.signum(plain.compareTo(cart("1", "2"))),
+                "mixed comparison must be antisymmetric");
     }
 
 }

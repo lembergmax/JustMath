@@ -25,6 +25,7 @@
 package io.github.lembergmax.justmath.bignumber;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import io.github.lembergmax.justmath.calculator.internal.CoordinateType;
 import lombok.Getter;
@@ -34,8 +35,15 @@ import lombok.NonNull;
  * An immutable data structure representing a 2D coordinate with arbitrary precision,
  * based on {@link BigNumber} components.
  * <p>
- * This record encapsulates both Cartesian and polar coordinates, depending on the {@link CoordinateType}.
+ * This type encapsulates both Cartesian and polar coordinates, depending on the {@link CoordinateType}.
  * It uses {@link BigNumber} for the coordinate values to support high-precision mathematical computations.
+ * </p>
+ *
+ * <p>
+ * Instances are immutable: {@code x} and {@code y} are assigned once at construction and the
+ * {@link #trim()} method returns a new, trimmed coordinate instead of mutating the receiver. This makes
+ * {@code BigNumberCoordinate} safe to use as a key in hash-based collections. Equality and ordering are
+ * defined over the full {@code (type, x, y)} triple, not just the inherited {@code x} value (audit K1).
  * </p>
  *
  * <ul>
@@ -82,14 +90,14 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
      * in POLAR mode this represents the radius (r).
      */
     @NonNull
-    private BigNumber x;
+    private final BigNumber x;
 
     /**
      * Second component of the coordinate. In CARTESIAN mode this is the Y coordinate;
      * in POLAR mode this represents the angle (θ), typically in radians.
      */
     @NonNull
-    private BigNumber y;
+    private final BigNumber y;
 
     /**
      * Constructs a {@code BigNumberCoordinate} at the origin (0, 0) in Cartesian coordinates
@@ -199,15 +207,16 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
     }
 
     /**
-     * Removes insignificant leading and trailing zeros from the {@link BigNumber} x and y representation.
-     * This includes leading zeros before the decimal point and trailing zeros after the decimal point.
+     * Returns a new {@code BigNumberCoordinate} with insignificant leading and trailing zeros removed
+     * from both components (leading zeros before the decimal point, trailing zeros after it).
+     * <p>
+     * The receiver is not modified. Consistent with the project naming convention, the absence of a
+     * {@code *This} suffix signals that a fresh instance is returned rather than the receiver mutated.
      *
-     * @return this {@code BigNumber} instance with trimmed parts
+     * @return a new, trimmed {@code BigNumberCoordinate} preserving this coordinate's type and locale
      */
     public BigNumberCoordinate trim() {
-        x = x.trim();
-        y = y.trim();
-        return this;
+        return new BigNumberCoordinate(x.clone().trim(), y.clone().trim(), type, locale);
     }
 
     /**
@@ -322,6 +331,68 @@ public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
             case CARTESIAN -> "x=" + xCoordinate + "; y=" + yCoordinate;
             case POLAR -> "r=" + xCoordinate + "; θ=" + yCoordinate;
         };
+    }
+
+    /**
+     * Equality over the full coordinate triple {@code (type, x, y)} using numeric component equality.
+     * <p>
+     * The inherited {@link BigNumber#equals(Object)} only considers the first component and would treat
+     * {@code (1,2)} and {@code (1,5)}, or a Cartesian and a polar pair with identical numbers, as equal —
+     * silently corrupting hash-based and sorted collections. A coordinate is never equal to a plain
+     * {@link BigNumber}; {@link BigNumber#equals(Object)} enforces the mirror image so equality stays
+     * symmetric (audit K1).
+     *
+     * @param other the object to compare with
+     * @return {@code true} only if {@code other} is a {@code BigNumberCoordinate} with the same type and
+     * numerically equal {@code x} and {@code y}
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof BigNumberCoordinate otherCoordinate)) {
+            return false;
+        }
+        return type == otherCoordinate.type
+                && x.equals(otherCoordinate.x)
+                && y.equals(otherCoordinate.y);
+    }
+
+    /**
+     * Hash code consistent with {@link #equals(Object)}: derived from {@code type} and the numeric hashes
+     * of {@code x} and {@code y}, so coordinates that differ only in representation (for example
+     * {@code "1.0"} vs {@code "1.00"}) share a bucket.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, x, y);
+    }
+
+    /**
+     * Total ordering consistent with {@link #equals(Object)} (contract {@code (a.compareTo(b) == 0) ⇔
+     * a.equals(b)}). Coordinates are ordered lexicographically by {@code (type, x, y)}; any coordinate
+     * sorts after any plain {@link BigNumber}, mirrored by {@link BigNumber#compareTo(BigNumber)} so the
+     * mixed comparison is antisymmetric and never reports equality (audit K1).
+     *
+     * @param other the value to compare with; must not be {@code null}
+     * @return a negative integer, zero, or a positive integer as this coordinate is less than, equal to,
+     * or greater than {@code other}
+     */
+    @Override
+    public int compareTo(@NonNull final BigNumber other) {
+        if (!(other instanceof BigNumberCoordinate otherCoordinate)) {
+            return 1;
+        }
+        final int typeComparison = Integer.compare(type.ordinal(), otherCoordinate.type.ordinal());
+        if (typeComparison != 0) {
+            return typeComparison;
+        }
+        final int xComparison = x.compareTo(otherCoordinate.x);
+        if (xComparison != 0) {
+            return xComparison;
+        }
+        return y.compareTo(otherCoordinate.y);
     }
 
 }

@@ -3399,6 +3399,12 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     @Override
     public int compareTo(@NonNull final BigNumber other) {
+        if (other instanceof BigNumberCoordinate) {
+            // A multi-value coordinate is not a plain scalar: order all plain numbers before any
+            // coordinate so compareTo stays consistent with equals (which is never true here) and
+            // antisymmetric with BigNumberCoordinate.compareTo (audit K1).
+            return -1;
+        }
         return toBigDecimal().compareTo(other.toBigDecimal());
     }
 
@@ -3418,6 +3424,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     public boolean equals(final Object other) {
         if (this == other) {
             return true;
+        }
+        if (other instanceof BigNumberCoordinate) {
+            // A plain scalar is never equal to a multi-value coordinate; keep equals symmetric with
+            // BigNumberCoordinate.equals, which likewise rejects a plain BigNumber (audit K1).
+            return false;
         }
         if (!(other instanceof BigNumber otherBigNumber)) {
             return false;
