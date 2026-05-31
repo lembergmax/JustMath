@@ -75,15 +75,14 @@ public class TimSort extends SortingAlgorithm {
         }
 
         for (int runSize = minimumRun; runSize < size; runSize *= 2) {
-            // Outer doubling loop runs at most {@code log2(n)} times — a per-pass check costs
-            // essentially nothing while letting the algorithm respond to cancellation.
             abortIfInterrupted();
             for (int leftStart = 0; leftStart < size; leftStart += 2 * runSize) {
                 final int middle = Math.min(leftStart + runSize, size);
                 final int rightEndExclusive = Math.min(leftStart + 2 * runSize, size);
 
-                if (middle >= rightEndExclusive) {
-                    continue; // only one run present
+                final boolean onlyOneRunPresent = middle >= rightEndExclusive;
+                if (onlyOneRunPresent) {
+                    continue;
                 }
 
                 merge(sortedList, buffer, leftStart, middle, rightEndExclusive);

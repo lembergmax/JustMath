@@ -67,10 +67,6 @@ public class BubbleSort extends SortingAlgorithm {
         final int size = numbers.size();
 
         for (int pass = 0; pass < size - 1; pass++) {
-            // BubbleSort is O(n^2). On the inputs the algorithm is actually used for (≤ 32
-            // elements per {@link BigNumberList#sort()}'s adaptive cutoff) this is fine, but
-            // tests deliberately throw larger payloads at it; checking interruption per pass
-            // makes the algorithm responsive to {@code @Timeout} and other cancellation signals.
             abortIfInterrupted();
             boolean swapped = false;
 

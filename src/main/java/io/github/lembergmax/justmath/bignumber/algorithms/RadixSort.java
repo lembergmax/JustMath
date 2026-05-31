@@ -93,16 +93,26 @@ public class RadixSort extends SortingAlgorithm {
         }
 
         lsdRadixSortByAbsValue(nonNegatives);
-
-        // Stable descending-by-|x| (= ascending-by-value): reverse, stable sort ascending by |x|,
-        // reverse again. Equal negatives therefore keep their original relative order.
-        Collections.reverse(negatives);
-        lsdRadixSortByAbsValue(negatives);
-        Collections.reverse(negatives);
+        sortNegativesAscendingByValueStably(negatives);
 
         numbers.clear();
         numbers.addAll(negatives);
         numbers.addAll(nonNegatives);
+    }
+
+    /**
+     * Sorts {@code negatives} ascending by signed value (descending by absolute value) while keeping
+     * equal elements in their original relative order.
+     *
+     * <p>Stability is achieved by reversing the list, running the stable ascending-by-|x| radix sort,
+     * and reversing again, so equal negatives retain their input order.</p>
+     *
+     * @param negatives the negative values to sort in-place
+     */
+    private void sortNegativesAscendingByValueStably(@NonNull final List<BigNumber> negatives) {
+        Collections.reverse(negatives);
+        lsdRadixSortByAbsValue(negatives);
+        Collections.reverse(negatives);
     }
 
     /**
@@ -122,9 +132,6 @@ public class RadixSort extends SortingAlgorithm {
         BigInteger exp = BigInteger.ONE;
 
         while (maxAbs.compareTo(exp) >= 0) {
-            // Each LSD pass is O(n); the loop count equals the number of digits in the largest
-            // absolute value. Check before every pass so cancellation kicks in at most one pass
-            // late even on very large integer inputs.
             abortIfInterrupted();
             countingSortByDigit(values, exp);
             exp = exp.multiply(BigInteger.TEN);
