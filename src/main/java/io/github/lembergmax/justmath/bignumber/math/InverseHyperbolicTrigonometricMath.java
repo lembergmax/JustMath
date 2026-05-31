@@ -111,8 +111,8 @@ public final class InverseHyperbolicTrigonometricMath {
             return new BigNumber("0", locale);
         }
 
-        final boolean argumentIsNegative = isNegativeLiteral(argument);
-        final BigNumber absoluteArgument = absoluteValue(argument, locale);
+        final boolean argumentIsNegative = argument.isLessThan(ZERO);
+        final BigNumber absoluteArgument = argument.abs();
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
         final BigNumber magnitude = asinhMagnitude(absoluteArgument, internalMathContext, locale);
@@ -183,8 +183,8 @@ public final class InverseHyperbolicTrigonometricMath {
             return new BigNumber("0", locale);
         }
 
-        final boolean argumentIsNegative = isNegativeLiteral(argument);
-        final BigNumber absoluteArgument = absoluteValue(argument, locale);
+        final boolean argumentIsNegative = argument.isLessThan(ZERO);
+        final BigNumber absoluteArgument = argument.abs();
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
         final BigNumber magnitude = atanhMagnitude(absoluteArgument, internalMathContext, locale);
@@ -222,8 +222,8 @@ public final class InverseHyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
         ensureAbsoluteGreaterThanOne(argument);
 
-        final boolean argumentIsNegative = isNegativeLiteral(argument);
-        final BigNumber absoluteArgument = absoluteValue(argument, locale);
+        final boolean argumentIsNegative = argument.isLessThan(ZERO);
+        final BigNumber absoluteArgument = argument.abs();
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
         final BigNumber magnitude = acothMagnitude(absoluteArgument, internalMathContext, locale);
@@ -322,36 +322,9 @@ public final class InverseHyperbolicTrigonometricMath {
             return rewrapWithRequestedMathContext(positiveMagnitude, locale, requestedMathContext);
         }
 
-        final String magnitudeString = positiveMagnitude.toString().trim();
-        final String signedString = magnitudeString.startsWith("-") ? magnitudeString : "-" + magnitudeString;
-
-        return new BigNumber(signedString, locale, requestedMathContext).trim();
-    }
-
-    /**
-     * Determines whether the given number is negative by checking its string representation.
-     *
-     * @param value value to check; must not be {@code null}
-     * @return {@code true} if the string form starts with '-'
-     */
-    private static boolean isNegativeLiteral(final BigNumber value) {
-        return value.toString().trim().startsWith("-");
-    }
-
-    /**
-     * Returns the absolute value of a number without depending on other math operations.
-     *
-     * @param value  input value; must not be {@code null}
-     * @param locale locale used for constructing the returned number; must not be {@code null}
-     * @return absolute value of {@code value}
-     */
-    private static BigNumber absoluteValue(final BigNumber value, final Locale locale) {
-        final String raw = value.toString().trim();
-        if (!raw.startsWith("-")) {
-            return value;
-        }
-        final String withoutMinus = raw.substring(1);
-        return new BigNumber(withoutMinus, locale).trim();
+        // Numeric negation rather than string prefixing keeps the sign logic independent of the
+        // locale-aware toString() representation.
+        return rewrapWithRequestedMathContext(positiveMagnitude.negate(), locale, requestedMathContext);
     }
 
     /**

@@ -84,7 +84,8 @@ public class NumberTheoryMath {
 	 * <pre>
 	 * lcm(a, b) = |a * b| / gcd(a, b)
 	 * </pre>
-	 * This method requires that both inputs be integers (no decimal part).
+	 * This method requires that both inputs be integers (no decimal part). If either operand is
+	 * zero the result is {@code 0} (by the convention {@code lcm(a, 0) = 0}).
 	 *
 	 * @param a
 	 * 	first integer operand
@@ -103,6 +104,11 @@ public class NumberTheoryMath {
 
 		if (a.hasDecimals() || b.hasDecimals()) {
 			throw new IllegalArgumentException("LCM requires integer values.");
+		}
+
+		if (a.isEqualTo(ZERO) || b.isEqualTo(ZERO)) {
+			// lcm(a, 0) = 0 by convention; this also avoids the gcd(0, 0) = 0 division by zero.
+			return new BigNumber("0", locale);
 		}
 
 		BigNumber product = a.multiply(b, locale).abs();

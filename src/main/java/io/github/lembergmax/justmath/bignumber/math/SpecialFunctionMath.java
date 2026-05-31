@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import lombok.NonNull;
 
 /**
@@ -130,6 +131,13 @@ public final class SpecialFunctionMath {
 	 * 	If x or y are ≤ 0 or lead to undefined Γ evaluations.
 	 */
 	public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+		if (!x.isGreaterThan(BigNumbers.ZERO) || !y.isGreaterThan(BigNumbers.ZERO)) {
+			// The Beta function via Γ(x)Γ(y)/Γ(x+y) is only documented for x > 0 and y > 0; validate
+			// the domain here instead of returning a value for invalid input or propagating a raw
+			// Γ-pole exception.
+			throw new ArithmeticException("Beta function requires x > 0 and y > 0");
+		}
+
 		BigNumber xClone = x.clone();
 		BigNumber yClone = y.clone();
 

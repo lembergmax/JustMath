@@ -155,6 +155,12 @@ public class BigNumbers {
 	 * 	if {@code min} ≥ {@code max}, or if either value has decimal places
 	 */
 	public static BigNumber randomIntegerBigNumberInRange(@NonNull final BigNumber min, @NonNull final BigNumber max, @NonNull final Locale locale) {
+		if (min.hasDecimals() || max.hasDecimals()) {
+			// Match the documented contract: a non-integer bound is an IllegalArgumentException, not
+			// the raw ArithmeticException that toBigIntegerExact() would otherwise throw.
+			throw new IllegalArgumentException("min and max must be integers (no decimal part)");
+		}
+
 		final BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
 		final BigInteger maxInt = max.toBigDecimal().toBigIntegerExact();
 

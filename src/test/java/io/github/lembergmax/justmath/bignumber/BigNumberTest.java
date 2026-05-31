@@ -388,6 +388,18 @@ public class BigNumberTest {
             assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
         }
 
+        @Test
+        void asinhSignIsLocaleIndependent() {
+            // M8: the sign is derived from the numeric value, not from the locale-aware toString().
+            BigNumber result = new BigNumber("-2.5", Locale.GERMANY).asinh();
+            assertTrue(result.isLessThan(new BigNumber("0", Locale.GERMANY)),
+                    "asinh of a negative argument must be negative regardless of locale, was: " + result);
+            BigNumber positive = new BigNumber("2.5", Locale.US).asinh();
+            assertEquals(positive.roundAfterDecimals(8).toString(Locale.US),
+                    result.abs().roundAfterDecimals(8).toString(Locale.US),
+                    "|asinh(-2.5)| must equal asinh(2.5)");
+        }
+
         @ParameterizedTest
         @CsvSource({
                 "1,0",
@@ -699,6 +711,7 @@ public class BigNumberTest {
                 "5, 3, 15",
                 "0, 7, 0",
                 "7, 0, 0",
+                "0, 0, 0",
                 "-3, 5, 15",
                 "-2, -4, 4"
         })
@@ -800,6 +813,16 @@ public class BigNumberTest {
             BigNumber finalRoot = new BigNumber("4");
             assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
                     "Even root of negative number should throw exception");
+        }
+
+        @Test
+        void nthRootNegativeNonIntegerIndexThrows() {
+            // (-4)^(1/0.5) = 16, not -16: a non-integer index over a negative radicand is undefined as
+            // a real root and was previously mis-signed. It must be rejected.
+            BigNumber radicand = new BigNumber("-4");
+            BigNumber index = new BigNumber("0.5");
+            assertThrows(IllegalArgumentException.class, () -> radicand.nthRoot(index),
+                    "Non-integer index over a negative radicand should throw");
         }
 
     }
@@ -1083,6 +1106,21 @@ public class BigNumberTest {
 
             assertEquals(expected, betaXY);
             assertEquals(expected, betaYX);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "0, 2",
+                "2, 0",
+                "-0.5, 2",
+                "2, -0.5"
+        })
+        void betaRejectsNonPositiveArguments(String xVal, String yVal) {
+            // Beta via Γ(x)Γ(y)/Γ(x+y) is documented for x > 0, y > 0; invalid input must throw
+            // instead of returning a value or leaking a raw Γ-pole exception.
+            BigNumber x = new BigNumber(xVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber y = new BigNumber(yVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            assertThrows(ArithmeticException.class, () -> x.beta(y, MathContext.DECIMAL128));
         }
 
         @Test

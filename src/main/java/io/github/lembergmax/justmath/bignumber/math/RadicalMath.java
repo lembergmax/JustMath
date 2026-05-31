@@ -109,6 +109,7 @@ public final class RadicalMath {
 	 * <ul>
 	 *   <li>If the index is zero, throws IllegalArgumentException.</li>
 	 *   <li>If the index is negative, computes the positive root and returns its reciprocal.</li>
+	 *   <li>If the radicand is negative and the index is not an integer, throws IllegalArgumentException.</li>
 	 *   <li>If the radicand is negative and the root is even, throws IllegalArgumentException.</li>
 	 *   <li>If the radicand is negative and the root is odd, returns the negative root.</li>
 	 *   <li>Otherwise, returns the n-th root of the radicand.</li>
@@ -143,6 +144,13 @@ public final class RadicalMath {
 
 		boolean isEvenRoot = index.isInteger() && index.toBigDecimal().remainder(TWO_AS_BIG_DECIMAL).compareTo(BigDecimal.ZERO) == 0;
 		boolean radicandIsNegative = radicand.isNegative();
+
+		if (radicandIsNegative && !index.isInteger()) {
+			// A non-integer index over a negative radicand is not a well-defined real root: e.g.
+			// (-4)^(1/0.5) = 16 but (-4)^0.5 is imaginary. The odd-root negation below is only valid
+			// for integer indices, so reject the non-integer case instead of blindly negating.
+			throw new IllegalArgumentException("Root of a negative radicand requires an integer index");
+		}
 
 		if (radicandIsNegative && isEvenRoot) {
 			throw new IllegalArgumentException("Even root of a negative number is not a real number");

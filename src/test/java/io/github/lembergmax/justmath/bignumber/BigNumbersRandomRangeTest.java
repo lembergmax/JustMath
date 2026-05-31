@@ -75,4 +75,13 @@ class BigNumbersRandomRangeTest {
         assertThrows(IllegalArgumentException.class,
                 () -> BigNumbers.randomIntegerBigNumberInRange(new BigNumber("6"), new BigNumber("5"), Locale.US));
     }
+
+    @Test
+    @DisplayName("non-integer bounds are rejected with IllegalArgumentException, not ArithmeticException")
+    void nonIntegerBoundsRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> BigNumbers.randomIntegerBigNumberInRange(new BigNumber("1.5"), new BigNumber("5"), Locale.US));
+        assertThrows(IllegalArgumentException.class,
+                () -> BigNumbers.randomIntegerBigNumberInRange(new BigNumber("1"), new BigNumber("5.5"), Locale.US));
+    }
 }
