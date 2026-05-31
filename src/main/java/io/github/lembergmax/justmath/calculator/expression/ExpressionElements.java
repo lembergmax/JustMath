@@ -24,6 +24,8 @@
 
 package io.github.lembergmax.justmath.calculator.expression;
 
+import java.util.*;
+
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.calculator.expression.elements.Constant;
@@ -31,15 +33,9 @@ import io.github.lembergmax.justmath.calculator.expression.elements.Parenthesis;
 import io.github.lembergmax.justmath.calculator.expression.elements.Separator;
 import io.github.lembergmax.justmath.calculator.expression.elements.function.*;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.BinaryOperator;
-import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
+import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
 import lombok.Getter;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Utility class for managing all supported mathematical expression elements.
@@ -125,8 +121,6 @@ public class ExpressionElements {
     public static final String FUNC_ACOS = "acos";
     public static final String FUNC_COS_S = "cos⁻¹";
     public static final String FUNC_ACOSH = "acosh";
-    // Surrogate for the inverse hyperbolic cosine. Previously misnamed FUNC_ACOS_S, which
-    // looked like the inverse cosine surrogate but in fact held the {@code cosh⁻¹} symbol.
     public static final String FUNC_ACOSH_S = "cosh⁻¹";
     //
     public static final String FUNC_TAN = "tan";
@@ -172,7 +166,7 @@ public class ExpressionElements {
     public static final String FUNC_BETA_S = "beta";
     //
     public static final String FUNC_ABS = "abs";
-    public static final String SURRFUNC_ABS_S = "|"; // that is special :0
+    public static final String SURRFUNC_ABS_S = "|"; // this is special :0
     //
     public static final String FUNC_AVG = "avg";
     public static final String FUNC_AVG_S = "average";
