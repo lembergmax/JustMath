@@ -36,7 +36,7 @@
         root has been migrated to io.github.lembergmax.justmath to match. See README changelog.
     -->
     <groupId>io.github.lembergmax</groupId>
-    <artifactId>justmath</artifactId>
+    <artifactId>JustMath</artifactId>
     <version>1.6.0</version>
     <packaging>jar</packaging>
 
