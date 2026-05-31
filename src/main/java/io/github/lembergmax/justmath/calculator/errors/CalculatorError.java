@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.NonNull;
 
@@ -177,19 +179,35 @@ public record CalculatorError(
      * @param position optional one-based position, or {@code null} to skip position substitution
      * @return the substituted text
      */
+    /** Matches a single {@code {name}} placeholder (no nested braces). */
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]+)}");
+
     private static String applyNamedParameters(
             @NonNull final String template,
             @NonNull final Map<String, String> params,
             final Integer position
     ) {
-        String result = template;
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+        // Single left-to-right scan: each placeholder is replaced with its value and that value is
+        // appended literally, so a value that itself contains "{position}" (or any other placeholder)
+        // is never re-substituted. The previous chained String.replace re-scanned inserted values,
+        // which turned a parameter value of "{position}" into the numeric position.
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
+        final StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            final String name = matcher.group(1);
+            final String replacement;
+            if (params.containsKey(name)) {
+                replacement = params.get(name);
+            } else if ("position".equals(name) && position != null) {
+                replacement = Integer.toString(position);
+            } else {
+                // Unknown placeholder: leave it untouched.
+                replacement = matcher.group(0);
+            }
+            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
-        if (position != null) {
-            result = result.replace("{position}", Integer.toString(position));
-        }
-        return result;
+        matcher.appendTail(result);
+        return result.toString();
     }
 
 }

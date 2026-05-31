@@ -61,6 +61,20 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void parameterValueContainingPlaceholderIsNotReinjected() {
+        // A parameter value that literally contains "{position}" must not be turned into the numeric
+        // position by a second substitution pass. Template: "Invalid character '{character}' at
+        // position {position}." with character = "{position}" and position = 7.
+        CalculatorError err = new CalculatorError(
+                CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                java.util.Map.of("character", "{position}"),
+                "Invalid character '{position}' at position 7",
+                7);
+        assertEquals("Invalid character '{position}' at position 7.",
+                err.format(Locale.ENGLISH, ErrorMode.USER_FRIENDLY));
+    }
+
+    @Test
     void englishDivisionByZeroIsLocalized() {
         CalculatorError err = new CalculatorError(
                 CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO,
