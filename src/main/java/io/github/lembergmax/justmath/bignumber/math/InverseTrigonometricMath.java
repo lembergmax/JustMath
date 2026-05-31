@@ -24,6 +24,15 @@
 
 package io.github.lembergmax.justmath.bignumber.math;
 
+import static io.github.lembergmax.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
+
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.Locale;
+
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
@@ -31,15 +40,6 @@ import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
-import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.Locale;
-import java.util.Map;
-
-import static io.github.lembergmax.justmath.bignumber.math.utils.MathUtils.bigDecimalRadiansToDegrees;
 
 /**
  * Provides high-precision implementations of inverse trigonometric functions
@@ -86,9 +86,6 @@ public final class InverseTrigonometricMath {
             result = bigDecimalRadiansToDegrees(result, mathContext, locale);
         }
 
-        // Round to the math context's *significant* digits via the constructor, exactly like acos/atan.
-        // The previous extra roundAfterDecimals(mathContext) rounded to that many *decimal places*,
-        // which truncated significant digits for small arguments (e.g. asin(1.2345e-6) lost 2345).
         return new BigNumber(result.toPlainString(), locale, mathContext).trim();
     }
 
