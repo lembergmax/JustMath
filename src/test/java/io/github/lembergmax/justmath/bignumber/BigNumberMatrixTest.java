@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -302,6 +303,25 @@ class BigNumberMatrixTest {
 
         BigNumberMatrix m2 = new BigNumberMatrix("5", locale);
         assertEquals(new BigNumber("5", locale).toPrettyString(), m2.determinant().toPrettyString());
+    }
+
+    @Test
+    void testDeterminant4x4IntegerIsExact() {
+        // Tridiagonal matrix (2 on the diagonal, 1 off-diagonal): the determinant follows
+        // D_n = 2*D_{n-1} - D_{n-2}, so D_4 = 5. Plain LU elimination introduces 1/2, 4/3, ...
+        // (non-terminating, rounded) and drifts to ~4.999...; the Bareiss fraction-free elimination
+        // keeps an integer matrix's determinant exactly 5.
+        BigNumberMatrix m = matrix("2,1,0,0;1,2,1,0;0,1,2,1;0,0,1,2");
+        assertEquals("5", m.determinant().toString());
+        // The MathContext overload yields the same exact integer determinant.
+        assertEquals("5", m.determinant(new MathContext(50)).toString());
+    }
+
+    @Test
+    void testDeterminant5x5IntegerIsExact() {
+        // Same tridiagonal family at n=5: D_5 = 2*5 - 4 = 6.
+        BigNumberMatrix m = matrix("2,1,0,0,0;1,2,1,0,0;0,1,2,1,0;0,0,1,2,1;0,0,0,1,2");
+        assertEquals("6", m.determinant().toString());
     }
 
     @Test

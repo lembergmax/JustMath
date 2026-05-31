@@ -29,6 +29,7 @@ import io.github.lembergmax.justmath.bignumber.BigNumberMatrix;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.bignumber.matrix.MatrixMessages;
 
+import java.math.MathContext;
 import java.util.Locale;
 import java.util.Map;
 
@@ -188,10 +189,27 @@ public final class MatrixMath {
 	 * 	if any argument is {@code null}
 	 */
 	public static BigNumberMatrix divide(@NonNull final BigNumberMatrix dividend, @NonNull final BigNumberMatrix divisor) {
+		return divide(dividend, divisor, BigNumbers.DEFAULT_MATH_CONTEXT);
+	}
+
+	/**
+	 * Element-wise division of one matrix by another using the supplied {@link MathContext} for the
+	 * per-element quotients, so callers can control precision and rounding instead of relying on the
+	 * dividend's instance default.
+	 *
+	 * @param dividend    the numerator matrix
+	 * @param divisor     the denominator matrix, of the same dimensions as {@code dividend}
+	 * @param mathContext the precision and rounding for each element-wise quotient
+	 * @return a new matrix holding the element-wise quotients
+	 * @throws IllegalArgumentException if the dimensions differ
+	 * @throws ArithmeticException      if any divisor element is zero
+	 * @throws NullPointerException     if any argument is {@code null}
+	 */
+	public static BigNumberMatrix divide(@NonNull final BigNumberMatrix dividend, @NonNull final BigNumberMatrix divisor, @NonNull final MathContext mathContext) {
 		checkParamsForSameMatrixSize(dividend, divisor);
 
 		final BigNumberMatrix result = new BigNumberMatrix(dividend.getRows(), dividend.getColumns(), dividend.getLocale());
-		dividend.forEachElement((row, col, dividendValue) -> result.set(row, col, dividendValue.divide(divisor.get(row, col))));
+		dividend.forEachElement((row, col, dividendValue) -> result.set(row, col, dividendValue.divide(divisor.get(row, col), mathContext)));
 		return result;
 	}
 
@@ -257,6 +275,23 @@ public final class MatrixMath {
 	 * 	if {@code matrix} is {@code null}
 	 */
 	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix) {
+		return determinant(matrix, BigNumbers.DEFAULT_MATH_CONTEXT);
+	}
+
+	/**
+	 * Computes the determinant of a square matrix using the supplied {@link MathContext} for the
+	 * fraction-free elimination divisions.
+	 * <p>
+	 * The 1×1, 2×2 and 3×3 cases use exact closed forms and ignore {@code mathContext}. For
+	 * {@code n ≥ 4} the determinant is computed via {@link #determinantViaBareiss}, whose divisions
+	 * are exact for integer matrices, so an integer matrix yields its exact integer determinant.
+	 *
+	 * @param matrix      the square matrix whose determinant is to be computed
+	 * @param mathContext the precision/rounding for the elimination divisions (n ≥ 4)
+	 * @return the determinant as a {@link BigNumber}
+	 * @throws NullPointerException if any argument is {@code null}
+	 */
+	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix, @NonNull final MathContext mathContext) {
 		final BigNumber sizeAsBigNumber = matrix.getRows();
 		if (sizeAsBigNumber.isEqualTo(BigNumbers.ZERO)) {
 			// Convention: the determinant of the empty 0×0 matrix is the multiplicative identity 1.
@@ -275,7 +310,7 @@ public final class MatrixMath {
 		if (size == 3) {
 			return determinantThreeByThree(matrix);
 		}
-		return determinantViaLuDecomposition(matrix, size);
+		return determinantViaBareiss(matrix, size, mathContext);
 	}
 
 	/**
@@ -310,44 +345,57 @@ public final class MatrixMath {
 	}
 
 	/**
-	 * Computes the determinant via in-place LU decomposition with partial pivoting in
-	 * {@code O(n^3)} arithmetic operations — a dramatic improvement over the previous Laplace
-	 * expansion which ran in {@code O(n!)} and made matrices larger than ~7×7 effectively
-	 * intractable.
+	 * Computes the determinant via the Bareiss fraction-free elimination algorithm in
+	 * {@code O(n^3)} arithmetic operations.
 	 *
-	 * <p>The matrix is copied into a primitive 2D {@link BigNumber} array so that the inner
-	 * pivoting and elimination loops can use direct array access instead of going through
-	 * {@link BigNumberMatrix#get(BigNumber, BigNumber) get}/{@code set} (which themselves
-	 * wrap their indices in {@code BigNumber} arithmetic). After {@code n - 1} elimination
-	 * steps the determinant equals the product of the pivot diagonal, multiplied by
-	 * {@code -1} for each row swap performed during pivoting. A zero pivot anywhere on the
-	 * diagonal means the matrix is singular and the determinant is exactly zero.</p>
+	 * <p>Bareiss is used instead of plain LU decomposition because every division it performs is
+	 * <em>exact</em> for an integer matrix (the Bareiss identity guarantees the running quotient
+	 * divides without remainder). An integer matrix therefore yields its <em>exact</em> integer
+	 * determinant — e.g. an integer 4×4 matrix whose determinant is 3 returns exactly {@code 3},
+	 * not {@code 2.999…} as the rounding LU division could. For non-integer matrices the divisions
+	 * fall back to {@code mathContext} precision.</p>
 	 *
-	 * @param matrix the square source matrix; must not be {@code null}
-	 * @param size   the matrix dimension, guaranteed to fit in {@code int}
+	 * <p>The matrix is copied into a primitive 2D {@link BigNumber} array so the inner loops use
+	 * direct array access. Because the arithmetic is exact, no magnitude-based partial pivoting is
+	 * needed; a row is only swapped to step over a zero pivot, and each swap flips the sign. A
+	 * column with no non-zero entry at or below the diagonal means the matrix is singular and the
+	 * determinant is exactly zero.</p>
+	 *
+	 * @param matrix      the square source matrix; must not be {@code null}
+	 * @param size        the matrix dimension, guaranteed to fit in {@code int}
+	 * @param mathContext precision/rounding for the (exact-for-integers) elimination divisions
 	 * @return the determinant of {@code matrix}
 	 */
-	private static BigNumber determinantViaLuDecomposition(final BigNumberMatrix matrix, final int size) {
+	private static BigNumber determinantViaBareiss(final BigNumberMatrix matrix, final int size, final MathContext mathContext) {
 		final BigNumber[][] workingCopy = toPrimitiveArray(matrix, size);
 		boolean rowSwapNegatesSign = false;
+		BigNumber previousPivot = BigNumbers.ONE;
 
 		for (int pivotColumn = 0; pivotColumn < size - 1; pivotColumn++) {
-			final int pivotRow = findPivotRow(workingCopy, pivotColumn, size);
-			if (workingCopy[pivotRow][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
-				// Fresh instance, never the shared constant: the caller may mutate the determinant.
-				return new BigNumber("0", matrix.getLocale());
-			}
-			if (pivotRow != pivotColumn) {
-				swapRows(workingCopy, pivotRow, pivotColumn);
+			if (workingCopy[pivotColumn][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
+				final int swapRow = findNonZeroRowInColumn(workingCopy, pivotColumn, size);
+				if (swapRow == -1) {
+					// Fresh instance, never the shared constant: the caller may mutate the determinant.
+					return new BigNumber("0", matrix.getLocale());
+				}
+				swapRows(workingCopy, pivotColumn, swapRow);
 				rowSwapNegatesSign = !rowSwapNegatesSign;
 			}
-			eliminateBelowPivot(workingCopy, pivotColumn, size);
+
+			final BigNumber pivotValue = workingCopy[pivotColumn][pivotColumn];
+			for (int eliminationRow = pivotColumn + 1; eliminationRow < size; eliminationRow++) {
+				for (int columnIndex = pivotColumn + 1; columnIndex < size; columnIndex++) {
+					final BigNumber numerator = workingCopy[eliminationRow][columnIndex].multiply(pivotValue)
+							.subtract(workingCopy[eliminationRow][pivotColumn].multiply(workingCopy[pivotColumn][columnIndex]));
+					// Exact for integer matrices (Bareiss identity); rounds to mathContext otherwise.
+					workingCopy[eliminationRow][columnIndex] = numerator.divide(previousPivot, mathContext);
+				}
+				workingCopy[eliminationRow][pivotColumn] = BigNumbers.ZERO;
+			}
+			previousPivot = pivotValue;
 		}
 
-		BigNumber determinant = workingCopy[0][0];
-		for (int diagonalIndex = 1; diagonalIndex < size; diagonalIndex++) {
-			determinant = determinant.multiply(workingCopy[diagonalIndex][diagonalIndex]);
-		}
+		final BigNumber determinant = workingCopy[size - 1][size - 1];
 		return rowSwapNegatesSign ? determinant.negate() : determinant;
 	}
 
@@ -366,48 +414,24 @@ public final class MatrixMath {
 	}
 
 	/**
-	 * Returns the index of the row containing the largest absolute pivot candidate in column
-	 * {@code pivotColumn} below row {@code pivotColumn} (inclusive). Partial pivoting keeps
-	 * intermediate values numerically meaningful and avoids dividing by tiny near-zero pivots
-	 * during elimination.
+	 * Returns the index of the first row strictly below the diagonal whose entry in
+	 * {@code pivotColumn} is non-zero, or {@code -1} if none exists (the column is all zeros at and
+	 * below the diagonal, so the matrix is singular). Exact arithmetic needs no magnitude-based
+	 * partial pivoting; a row swap is only required to step over a zero pivot.
 	 */
-	private static int findPivotRow(final BigNumber[][] matrix, final int pivotColumn, final int size) {
-		int bestRow = pivotColumn;
-		BigNumber bestAbsolute = matrix[pivotColumn][pivotColumn].abs();
+	private static int findNonZeroRowInColumn(final BigNumber[][] matrix, final int pivotColumn, final int size) {
 		for (int candidateRow = pivotColumn + 1; candidateRow < size; candidateRow++) {
-			final BigNumber candidateAbsolute = matrix[candidateRow][pivotColumn].abs();
-			if (candidateAbsolute.isGreaterThan(bestAbsolute)) {
-				bestRow = candidateRow;
-				bestAbsolute = candidateAbsolute;
+			if (!matrix[candidateRow][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
+				return candidateRow;
 			}
 		}
-		return bestRow;
+		return -1;
 	}
 
 	private static void swapRows(final BigNumber[][] matrix, final int firstRow, final int secondRow) {
 		final BigNumber[] temporaryReference = matrix[firstRow];
 		matrix[firstRow] = matrix[secondRow];
 		matrix[secondRow] = temporaryReference;
-	}
-
-	/**
-	 * Subtracts a multiple of the pivot row from every row below it so that the column below the
-	 * pivot becomes zero. Operates in place on the working copy.
-	 */
-	private static void eliminateBelowPivot(final BigNumber[][] matrix, final int pivotColumn, final int size) {
-		final BigNumber pivotValue = matrix[pivotColumn][pivotColumn];
-		for (int eliminationRow = pivotColumn + 1; eliminationRow < size; eliminationRow++) {
-			final BigNumber leadingValue = matrix[eliminationRow][pivotColumn];
-			if (leadingValue.isEqualTo(BigNumbers.ZERO)) {
-				continue;
-			}
-			final BigNumber rowMultiplier = leadingValue.divide(pivotValue);
-			matrix[eliminationRow][pivotColumn] = BigNumbers.ZERO;
-			for (int columnIndex = pivotColumn + 1; columnIndex < size; columnIndex++) {
-				matrix[eliminationRow][columnIndex] = matrix[eliminationRow][columnIndex]
-						.subtract(rowMultiplier.multiply(matrix[pivotColumn][columnIndex]));
-			}
-		}
 	}
 
 	/**
@@ -430,14 +454,29 @@ public final class MatrixMath {
 	 * 	if {@code matrix} is {@code null}
 	 */
 	public static BigNumberMatrix inverse(@NonNull final BigNumberMatrix matrix) {
-		final BigNumber determinant = determinant(matrix);
+		return inverse(matrix, BigNumbers.DEFAULT_MATH_CONTEXT);
+	}
+
+	/**
+	 * Computes the inverse using the supplied {@link MathContext} for the determinant elimination and
+	 * the {@code 1/det} scaling, so callers can control precision instead of inheriting a constant's
+	 * default context.
+	 *
+	 * @param matrix      the square matrix to invert
+	 * @param mathContext the precision/rounding for the determinant and the reciprocal scale factor
+	 * @return the inverse of the matrix
+	 * @throws IllegalArgumentException if the matrix is not invertible (determinant is zero)
+	 * @throws NullPointerException     if any argument is {@code null}
+	 */
+	public static BigNumberMatrix inverse(@NonNull final BigNumberMatrix matrix, @NonNull final MathContext mathContext) {
+		final BigNumber determinant = determinant(matrix, mathContext);
 
 		if (determinant.isEqualTo(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException(
 					MatrixMessages.get(matrix.getLocale(), "matrix.error.singular"));
 		}
 
-		return scalarMultiply(adjugate(matrix), BigNumbers.ONE.divide(determinant));
+		return scalarMultiply(adjugate(matrix, mathContext), BigNumbers.ONE.divide(determinant, mathContext));
 	}
 
 	/**
@@ -554,6 +593,19 @@ public final class MatrixMath {
 	 * @return the adjugate matrix
 	 */
 	public static BigNumberMatrix adjugate(@NonNull final BigNumberMatrix matrix) {
+		return adjugate(matrix, BigNumbers.DEFAULT_MATH_CONTEXT);
+	}
+
+	/**
+	 * Computes the adjugate using the supplied {@link MathContext} for the cofactor minor
+	 * determinants (relevant only when the minors are 4×4 or larger).
+	 *
+	 * @param matrix      the input square matrix
+	 * @param mathContext the precision/rounding forwarded to each minor determinant
+	 * @return the adjugate matrix
+	 * @throws NullPointerException if any argument is {@code null}
+	 */
+	public static BigNumberMatrix adjugate(@NonNull final BigNumberMatrix matrix, @NonNull final MathContext mathContext) {
 		final BigNumber sizeAsBigNumber = matrix.getRows();
 		final int size = sizeAsBigNumber.intValue();
 		final BigNumberMatrix cofactorMatrix = new BigNumberMatrix(sizeAsBigNumber, sizeAsBigNumber, matrix.getLocale());
@@ -563,7 +615,7 @@ public final class MatrixMath {
 			for (int columnIndex = 0; columnIndex < size; columnIndex++) {
 				final BigNumber columnIndexAsBigNumber = BigNumber.valueOf(columnIndex);
 				final BigNumber sign = ((rowIndex + columnIndex) & 1) == 0 ? BigNumbers.ONE : BigNumbers.NEGATIVE_ONE;
-				final BigNumber minorDeterminant = determinant(minor(matrix, rowIndexAsBigNumber, columnIndexAsBigNumber));
+				final BigNumber minorDeterminant = determinant(minor(matrix, rowIndexAsBigNumber, columnIndexAsBigNumber), mathContext);
 				cofactorMatrix.set(rowIndexAsBigNumber, columnIndexAsBigNumber, sign.multiply(minorDeterminant));
 			}
 		}

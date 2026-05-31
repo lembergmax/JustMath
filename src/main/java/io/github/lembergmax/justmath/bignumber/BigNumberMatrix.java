@@ -24,6 +24,7 @@
 
 package io.github.lembergmax.justmath.bignumber;
 
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -490,6 +491,24 @@ public class BigNumberMatrix implements Cloneable {
 	}
 
 	/**
+	 * Element-wise (Hadamard) division using the supplied {@link MathContext} for the per-element
+	 * quotients, so the precision and rounding of the result are caller-controlled.
+	 *
+	 * @param other
+	 * 	the divisor matrix (must be the same size)
+	 * @param mathContext
+	 * 	the precision/rounding for each element-wise quotient
+	 *
+	 * @return the result of element-wise division
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if dimensions do not match or division by zero occurs
+	 */
+	public BigNumberMatrix divide(@NonNull final BigNumberMatrix other, @NonNull final MathContext mathContext) {
+		return MatrixMath.divide(this, other, mathContext);
+	}
+
+	/**
 	 * Returns the transpose of this matrix (rows become columns and vice versa).
 	 *
 	 * @return the transposed matrix
@@ -544,6 +563,27 @@ public class BigNumberMatrix implements Cloneable {
 	}
 
 	/**
+	 * Computes the determinant using the supplied {@link MathContext} for the fraction-free
+	 * elimination divisions (relevant for n ≥ 4). Integer matrices yield their exact integer
+	 * determinant regardless of {@code mathContext}.
+	 *
+	 * @param mathContext
+	 * 	the precision/rounding for the elimination divisions
+	 *
+	 * @return the determinant as a {@link BigNumber}
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square
+	 */
+	public BigNumber determinant(@NonNull final MathContext mathContext) {
+		if (!isSquare()) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareDeterminant"));
+		}
+
+		return MatrixMath.determinant(this, mathContext);
+	}
+
+	/**
 	 * Computes the inverse of this matrix.
 	 * <p>
 	 * The inverse matrix {@code A⁻¹} satisfies the condition: {@code A × A⁻¹ = I}, where {@code I}
@@ -560,6 +600,26 @@ public class BigNumberMatrix implements Cloneable {
 		}
 
 		return MatrixMath.inverse(this);
+	}
+
+	/**
+	 * Computes the inverse using the supplied {@link MathContext} for the determinant and the
+	 * {@code 1/det} scaling, so the precision and rounding of the result are caller-controlled.
+	 *
+	 * @param mathContext
+	 * 	the precision/rounding for the determinant and reciprocal scale factor
+	 *
+	 * @return the inverse of this matrix
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the matrix is not square or not invertible
+	 */
+	public BigNumberMatrix inverse(@NonNull final MathContext mathContext) {
+		if (!isSquare()) {
+			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.notSquareInverse"));
+		}
+
+		return MatrixMath.inverse(this, mathContext);
 	}
 
 	/**
