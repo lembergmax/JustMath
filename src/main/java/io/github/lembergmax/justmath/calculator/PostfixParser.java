@@ -77,8 +77,6 @@ public class PostfixParser {
         List<Token> output = new ArrayList<>();
         Deque<Token> operatorStack = new ArrayDeque<>();
         Deque<Integer> argumentCountStack = new ArrayDeque<>();
-        // Tracks, per open parenthesis, whether it is a function-call paren. A ';' is only a valid
-        // argument separator inside one; in a bare paren such as "(1;2)" it is a misplaced separator.
         Deque<Boolean> functionCallParenStack = new ArrayDeque<>();
         Token previousToken = null;
 
@@ -100,13 +98,8 @@ public class PostfixParser {
                 }
 
                 case OPERATOR, UNARY_OPERATOR -> {
-                    // Factorial is the only postfix operator in the grammar; it has the same RPN
-                    // form as the input (the value it consumes is already in {@code output}), so
-                    // we emit it directly without running the precedence loop. The previous
-                    // implementation used {@code break;} inside an arrow-form switch arm to skip
-                    // the precedence loop — this still worked but read as if it were exiting the
-                    // outer {@code for}-loop. An explicit {@code if/else} makes the control flow
-                    // obvious to readers.
+                    // Factorial is postfix: its operand is already in the output, so emit it directly
+                    // instead of running the shunting-yard precedence loop.
                     final boolean isFactorial = token.getType() == Token.Type.OPERATOR
                             && token.getValue().equals(ExpressionElements.OP_FACTORIAL);
                     if (isFactorial) {
@@ -149,9 +142,6 @@ public class PostfixParser {
                     }
 
                     if (functionCallParenStack.isEmpty() || !functionCallParenStack.peek()) {
-                        // A ';' inside a bare parenthesis (e.g. "(1;2)") is not a function-argument
-                        // separator; report it precisely instead of letting it surface as a generic
-                        // "unexpected end" once the evaluator finds two leftover operands.
                         throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR,
                                 "Misplaced semicolon: ';' is only valid between function arguments");
                     }

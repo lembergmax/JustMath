@@ -101,8 +101,8 @@ public final class SupportedLanguages {
             Locale.forLanguageTag("pl")       // Polish
     );
 
+    /** Non-instantiable utility class. */
     private SupportedLanguages() {
-        // utility class — no instances
     }
 
     /**

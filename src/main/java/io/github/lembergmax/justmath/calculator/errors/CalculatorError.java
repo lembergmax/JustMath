@@ -109,9 +109,10 @@ public record CalculatorError(
      * In {@link ErrorMode#RAW} the technical detail is returned verbatim (English). In
      * {@link ErrorMode#USER_FRIENDLY} the matching resource bundle is loaded for the given
      * locale and the localized template is filled in via simple named-placeholder
-     * substitution. If the bundle does not contain an entry for {@link #code()}, the method
-     * defensively falls back to the technical detail so that no
-     * {@link MissingResourceException} is propagated to the caller.
+     * substitution. Message resolution is tiered (Casio-style): the most specific key
+     * ({@link #code()}) is tried first, then the mid-tier category key, then the top-level
+     * generic key; if even that is absent the method defensively falls back to the technical
+     * detail so that no {@link MissingResourceException} is propagated to the caller.
      * </p>
      *
      * @param locale target locale for the localized message; must not be {@code null}
@@ -130,10 +131,6 @@ public record CalculatorError(
             return technicalDetail;
         }
 
-        // Casio-style tiered resolution: try the most specific message first, then the
-        // mid-tier category message (e.g. "Math Error"), then the top-level generic
-        // message, and only fall back to the technical English detail if even the
-        // generic key is absent.
         String template = lookup(bundle, code.getBundleKey());
         if (template == null) {
             template = lookup(bundle, code.getCategoryBundleKey());
@@ -187,10 +184,7 @@ public record CalculatorError(
             @NonNull final Map<String, String> params,
             final Integer position
     ) {
-        // Single left-to-right scan: each placeholder is replaced with its value and that value is
-        // appended literally, so a value that itself contains "{position}" (or any other placeholder)
-        // is never re-substituted. The previous chained String.replace re-scanned inserted values,
-        // which turned a parameter value of "{position}" into the numeric position.
+        // Single regex pass so a substituted value that itself contains "{...}" is never re-substituted.
         final Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
         final StringBuilder result = new StringBuilder();
         while (matcher.find()) {
@@ -201,7 +195,6 @@ public record CalculatorError(
             } else if ("position".equals(name) && position != null) {
                 replacement = Integer.toString(position);
             } else {
-                // Unknown placeholder: leave it untouched.
                 replacement = matcher.group(0);
             }
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));

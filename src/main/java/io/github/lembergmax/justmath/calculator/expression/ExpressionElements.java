@@ -166,7 +166,7 @@ public class ExpressionElements {
     public static final String FUNC_BETA_S = "beta";
     //
     public static final String FUNC_ABS = "abs";
-    public static final String SURRFUNC_ABS_S = "|"; // this is special :0
+    public static final String SURRFUNC_ABS_S = "|";
     //
     public static final String FUNC_AVG = "avg";
     public static final String FUNC_AVG_S = "average";

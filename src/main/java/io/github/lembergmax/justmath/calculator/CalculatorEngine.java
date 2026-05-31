@@ -244,6 +244,11 @@ public class CalculatorEngine {
      * <p>Declared {@code volatile} together with {@link #expressionCacheEnabled} so that the
      * {@code null}-write performed by the cache-discarding setters becomes visible promptly
      * to other threads — even outside the synchronized lookup/store helpers.</p>
+     *
+     * <p>All reads and writes of this field happen under this engine's monitor (the cache setters and
+     * {@code lookupCache}/{@code storeCache} are all {@code synchronized} on {@code this}), so a
+     * cache-discarding setter can never null the reference out from under an in-flight lookup or
+     * store.</p>
      */
     private volatile Map<String, List<Token>> expressionCache;
 
@@ -419,11 +424,6 @@ public class CalculatorEngine {
     public synchronized CalculatorEngine setInputLocale(@NonNull final Locale inputLocale) {
         this.inputLocale = inputLocale;
         this.inputDecimalSeparator = getDecimalSeparator(inputLocale);
-        // synchronized + the volatile cache field: discard the cache under the same monitor as
-        // setExpressionCacheEnabled/Size and lookupCache/storeCache, so there is no race between
-        // this discard and an in-flight cache lookup/store (consistent with the other mutators).
-        // Cached tokens were produced for the previous input separator; discard them so a
-        // subsequent evaluation re-tokenizes with the new locale's decimal separator.
         this.expressionCache = null;
         return this;
     }
@@ -445,10 +445,6 @@ public class CalculatorEngine {
      * @return this engine for builder-style chaining
      */
     public synchronized CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
-        // Synchronized on {@code this} so it shares the same monitor as {@link #lookupCache(String)}
-        // and {@link #storeCache(String, List)}: without the lock, this setter could write
-        // {@code expressionCache = null} while another thread sat inside a synchronized lookup
-        // and was about to dereference the field.
         this.expressionCacheEnabled = enabled;
         if (!enabled) {
             this.expressionCache = null;
@@ -465,9 +461,6 @@ public class CalculatorEngine {
      * @throws IllegalArgumentException if {@code size} is not strictly positive
      */
     public synchronized CalculatorEngine setExpressionCacheSize(final int size) {
-        // See {@link #setExpressionCacheEnabled(boolean)} — same lock-sharing rationale: this
-        // setter discards the cache reference, and that write must not race with concurrent
-        // lookups/stores that already hold this engine's monitor.
         if (size <= 0) {
             throw new IllegalArgumentException("expressionCacheSize must be positive");
         }
@@ -501,8 +494,6 @@ public class CalculatorEngine {
      */
     public BigNumber evaluate(@NonNull final String expression, @NonNull final Map<String, String> variables) {
         if (expression.isBlank()) {
-            // Fresh instance, never the shared constant: this value is returned to callers who
-            // may mutate it (e.g. negateThis), which must not corrupt the global BigNumbers.ZERO.
             return new BigNumber("0");
         }
 
@@ -525,12 +516,6 @@ public class CalculatorEngine {
             }
 
             List<Token> tokens;
-            // Both reads of {@code expressionCacheEnabled} are delegated to the synchronized
-            // {@link #lookupCache(String)} / {@link #storeCache(String, List)} helpers, which
-            // re-check the flag inside the monitor. This eliminates the race window where the
-            // flag flipped to {@code false} (and the cache was discarded) between an
-            // unsynchronized check at this site and the actual cache mutation. See
-            // {@link #setExpressionCacheEnabled(boolean)} for the writer side.
             List<Token> cachedTokens = lookupCache(normalized);
             if (cachedTokens != null) {
                 tokens = new ArrayList<>(cachedTokens);
@@ -540,11 +525,6 @@ public class CalculatorEngine {
                 } catch (final CalculatorException calculatorException) {
                     throw calculatorException;
                 } catch (final RuntimeException tokenizerFailure) {
-                    // Any unchecked failure from the tokenizer is a malformed-input
-                    // problem, not an internal processing error: classify it as a
-                    // syntax error so it never surfaces as "Processing Error". The
-                    // original throwable is chained as the cause so callers and tests
-                    // can still inspect the underlying root reason.
                     throw new SyntaxErrorException(
                             CalculatorErrorCode.SYNTAX_INCOMPLETE_EXPRESSION,
                             Map.of(),
@@ -556,9 +536,6 @@ public class CalculatorEngine {
                 storeCache(normalized, List.copyOf(tokens));
             }
 
-            // Structural pre-checks run BEFORE variable substitution and the evaluator,
-            // so an expensive subexpression (e.g. a large factorial) is never computed
-            // for an expression that cannot yield a result.
             validateInfixStructure(tokens);
 
             try {
@@ -588,8 +565,6 @@ public class CalculatorEngine {
                         parserFailure);
             }
 
-            // Arity dry run: reject under-supplied operators / leftover operands before
-            // the evaluator performs any (potentially expensive) computation.
             validatePostfixArity(postfix);
 
             try {
@@ -654,8 +629,6 @@ public class CalculatorEngine {
         } catch (final Exception exception) {
             return formatExceptionMessage(classifyRuntimeException(exception));
         } catch (final StackOverflowError stackOverflowError) {
-            // StackOverflowError is an Error, not an Exception: catch it explicitly so deep
-            // recursion (e.g. a long variable-reference chain) is reported, not propagated (H6).
             return formatExceptionMessage(deeplyNestedException());
         }
     }
@@ -697,7 +670,6 @@ public class CalculatorEngine {
         } catch (Exception e) {
             return formatExceptionMessage(classifyRuntimeException(e));
         } catch (final StackOverflowError stackOverflowError) {
-            // See evaluateToString: keep the Text Output API's "never throws" contract on deep recursion.
             return formatExceptionMessage(deeplyNestedException());
         }
     }
@@ -744,7 +716,6 @@ public class CalculatorEngine {
         } catch (final Exception exception) {
             return formatSafeError(exception);
         } catch (final StackOverflowError stackOverflowError) {
-            // StackOverflowError is an Error: catch it so the Safe UI String API never throws (H6).
             return formatSafeError(deeplyNestedException());
         }
     }
@@ -791,7 +762,6 @@ public class CalculatorEngine {
         } catch (final Exception exception) {
             return formatSafeError(exception);
         } catch (final StackOverflowError stackOverflowError) {
-            // See evaluateSafeToString: keep the Safe UI String API's "never throws" contract.
             return formatSafeError(deeplyNestedException());
         }
     }
@@ -882,8 +852,6 @@ public class CalculatorEngine {
             }
             return CalculatorResult.failure(err);
         } catch (final StackOverflowError stackOverflowError) {
-            // StackOverflowError is an Error, not an Exception: catch it so the Typed Result API
-            // honors its "never throws" contract on pathologically deep recursion (H6).
             return CalculatorResult.failure(new CalculatorError(
                     CalculatorErrorCode.PROCESSING_INTERNAL,
                     "Expression is nested too deeply to evaluate"));
@@ -1009,10 +977,8 @@ public class CalculatorEngine {
                 || lower.contains("normalize list with sum 0")) {
             code = CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO;
         } else if (lower.contains("factorial") && lower.contains("non-negative")) {
-            // "Factorial is only defined for non-negative integers."
             code = CalculatorErrorCode.MATH_FACTORIAL_NEGATIVE;
         } else if (lower.contains("factorial") && lower.contains("integer")) {
-            // "Factorial is only defined for integers."
             code = CalculatorErrorCode.MATH_FACTORIAL_NON_INTEGER;
         } else if (lower.contains("ln(x) undefined")
                 || lower.contains("number must be positive")

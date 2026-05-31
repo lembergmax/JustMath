@@ -155,18 +155,19 @@ public class Tokenizer {
      * separated by {@code ';'}.
      * </p>
      *
+     * <p>
+     * Input containing the internal {@link #WHITESPACE_BOUNDARY} sentinel — a non-typeable control
+     * character that {@link #removeWhitespace(String)} injects to mark deliberate token splits — is
+     * rejected as an invalid character; otherwise a caller could smuggle a boundary past a naive input
+     * filter and the scan loop would silently collapse the surrounding characters (audit fix K5).
+     * </p>
+     *
      * @param input            the mathematical expression to tokenize; must not be {@code null}
      * @param decimalSeparator the decimal separator of the active input locale (typically {@code '.'} or {@code ','})
      * @return a list of tokens representing the lexemes of the expression
      * @throws SyntaxErrorException if the input contains invalid characters or malformed expressions
      */
     public List<Token> tokenize(@NonNull final String input, final char decimalSeparator) {
-        // Reject the internal whitespace-boundary sentinel if it appears in caller input.
-        // The sentinel is a non-typeable control character injected by removeWhitespace to
-        // mark deliberate token splits; if user input already contains it, the main scan
-        // loop would silently skip it (collapsing e.g. "1<sentinel>2" into "12") and let an
-        // attacker smuggle a boundary past a naive input filter. Treat it as an invalid
-        // character with a precise position instead.
         final int sentinelIndex = input.indexOf(WHITESPACE_BOUNDARY);
         if (sentinelIndex >= 0) {
             throw new SyntaxErrorException(
@@ -176,10 +177,8 @@ public class Tokenizer {
                     sentinelIndex);
         }
 
-        // Normalise the locale decimal separator to '.' before scanning (no-op for '.').
         final String source = normalizeDecimalSeparator(input, decimalSeparator);
 
-        // Tracks whether the next absolute-value bar opens or closes a context.
         boolean nextAbsoluteIsOpen = true;
 
         List<Token> tokens = new ArrayList<>();
@@ -189,7 +188,6 @@ public class Tokenizer {
         while (index < expression.length()) {
             char character = expression.charAt(index);
 
-            // A whitespace boundary marker only forces a token split; consume and skip.
             if (character == WHITESPACE_BOUNDARY) {
                 index++;
                 continue;
@@ -243,8 +241,6 @@ public class Tokenizer {
 
                 String inside = expression.substring(functionStart + 1, closingParenthesis);
 
-                // Split on the top-level separator only — nested parentheses must not be broken up,
-                // otherwise e.g. iif(max(a;b);c;d) would be mis-parsed.
                 List<String> parts = splitTopLevel(inside, ExpressionElements.SEP_SEMICOLON.charAt(0));
                 if (parts.size() != 3) {
                     throw new SyntaxErrorException(
@@ -274,9 +270,6 @@ public class Tokenizer {
             }
         }
 
-        // Insert implicit multiplication tokens where necessary. Signs are never
-        // folded into number literals and consecutive '+'/'-' runs are already
-        // collapsed by tokenizeSignRun, so no post-pass normalisation is needed.
         insertImplicitMultiplicationTokens(tokens);
 
         return tokens;
@@ -326,7 +319,6 @@ public class Tokenizer {
             if (netMinus) {
                 tokens.add(new Token(Token.Type.UNARY_OPERATOR, ExpressionElements.OP_MINUS));
             }
-            // Unary '+' is a no-op: emit nothing.
         } else {
             tokens.add(new Token(Token.Type.OPERATOR,
                     netMinus ? ExpressionElements.OP_MINUS : ExpressionElements.OP_PLUS));
@@ -349,15 +341,13 @@ public class Tokenizer {
             Token current = tokens.get(i);
             Token next = tokens.get(i + 1);
 
-            // Skip if the next token is an operator or semicolon – no implicit * needed
             if (next.getType() == Token.Type.OPERATOR || next.getType() == Token.Type.SEMICOLON) {
                 continue;
             }
 
-            // Insert * where implicit multiplication is likely
             if (needsMultiplicationSign(current, next)) {
                 tokens.add(i + 1, new Token(Token.Type.OPERATOR, ExpressionElements.OP_MULTIPLY));
-                i++; // Skip the inserted token
+                i++;
             }
         }
     }
@@ -614,18 +604,12 @@ public class Tokenizer {
                 return false;
             }
             case FUNCTION -> {
-                // Trailing token of a pre-expanded multi-argument function
-                // (e.g. "summation(1;3;k)") — a completed operand, so the sign
-                // is binary. Real prefix functions are followed by '(', never a sign.
                 return false;
             }
             case OPERATOR -> {
-                // Binary after the postfix factorial ("3!-2"); unary after any
-                // other (binary) operator (e.g. "2*-3").
                 return !ExpressionElements.OP_FACTORIAL.equals(previous.getValue());
             }
             default -> {
-                // LEFT_PAREN, SEMICOLON
                 return true;
             }
         }
@@ -783,10 +767,18 @@ public class Tokenizer {
     }
 
     /**
-     * Removes all whitespace characters from the input string.
+     * Removes whitespace from the input, inserting a {@link #WHITESPACE_BOUNDARY} sentinel where the
+     * gap is semantically significant so that whitespace acts as a separator rather than a no-op.
+     *
+     * <p>A boundary sentinel is inserted when whitespace sits between two operand characters
+     * (letter/digit/{@code '.'} on both sides), so {@code "3 4"} stays two tokens instead of merging
+     * into {@code "34"}; and between two sign characters ({@code '+'}/{@code '-'} on both sides), so the
+     * sign-run merge in {@link #tokenizeSignRun} cannot collapse a deliberate gap — {@code "5 - -3"}
+     * parses as {@code 5}, binary {@code '-'}, unary {@code '-'}, {@code 3} rather than a single net
+     * sign.</p>
      *
      * @param input the string to process
-     * @return the input string with all whitespace removed
+     * @return the input with whitespace removed and boundary sentinels inserted where required
      */
     private String removeWhitespace(final String input) {
         if (input == null || input.isEmpty()) {
@@ -802,14 +794,6 @@ public class Tokenizer {
                 stringBuilder.append(charAt);
                 continue;
             }
-            // Whitespace is a separator, not a no-op:
-            //   1) Between two operand characters (letter/digit/'.' on BOTH sides)
-            //      operands must not silently merge ("3 4" → not "34"); a boundary
-            //      sentinel is inserted so they stay separate tokens.
-            //   2) Between two sign characters ('+' or '-' on both sides) the
-            //      aggressive sign-run merger in tokenizeSignRun must not collapse
-            //      them across a deliberate whitespace gap. "5 - -3" must parse
-            //      as 5, binary '-', unary '-', 3 — not as a single net sign.
             int j = i;
             while (j < length && Character.isWhitespace(input.charAt(j))) {
                 j++;
@@ -826,8 +810,6 @@ public class Tokenizer {
             i = j - 1;
         }
 
-        // Note: a space may be replaced 1:1 by the boundary sentinel, so the length
-        // can stay equal while the content changed — always return the rebuilt string.
         return stringBuilder.toString();
     }
 
@@ -918,11 +900,6 @@ public class Tokenizer {
         int currentIndex = startIndex;
         boolean decimalPointSeen = false;
 
-        // Sign characters are never folded into a number literal (see
-        // startsNumericLiteral); the input here always begins with a digit
-        // or decimal point. Walk forward over the operand chars.
-        // A number literal may contain at most one '.': "1.2.3" is rejected
-        // with a clear syntax error rather than silently producing one token.
         while (currentIndex < expression.length() && isDigitOrDecimal(expression.charAt(currentIndex))) {
             if (expression.charAt(currentIndex) == '.') {
                 if (decimalPointSeen) {
@@ -981,10 +958,6 @@ public class Tokenizer {
 
             if (VALID_OPERATORS_AND_FUNCTIONS.contains(candidate)) {
                 if (candidate.equalsIgnoreCase(ExpressionElements.OP_FACTORIAL)) {
-                    // must not be in the beginning or after another expressionElement.
-                    // Check emptiness BEFORE getLast(): a leading '!' (empty token list)
-                    // would otherwise raise an uncaught NoSuchElementException that is
-                    // misclassified as a generic processing error instead of a syntax error.
                     if (tokens.isEmpty()) {
                         throw new SyntaxErrorException(
                                 CalculatorErrorCode.SYNTAX_INVALID_FACTORIAL,
@@ -1017,10 +990,6 @@ public class Tokenizer {
         }
 
         StringBuilder variable = new StringBuilder();
-        // Variable names are restricted to ASCII letters. Registered non-ASCII symbols
-        // (pi, the square-root sign, Greek letters, etc.) are matched earlier via the
-        // registry; any remaining non-ASCII character is a genuine invalid character
-        // and is reported as such by the caller instead of becoming an unknown variable.
         while (startIndex < expression.length() && isAsciiLetter(expression.charAt(startIndex))) {
             variable.append(expression.charAt(startIndex));
             startIndex++;
