@@ -37,8 +37,8 @@ import lombok.NonNull;
 
 public final class MatrixMath {
 
+	/** Non-instantiable utility class. */
 	private MatrixMath() {
-		// Utility class: never instantiated.
 	}
 
 
@@ -70,10 +70,6 @@ public final class MatrixMath {
 
 		final BigNumberMatrix result = new BigNumberMatrix(augend.getRows(), augend.getColumns(), locale);
 		augend.forEachElement((row, col, valueA) -> result.set(row, col, valueA.add(addend.get(row, col))));
-		// The previous code wrapped {@code result} in a defensive copy via the {@link BigNumberMatrix}
-		// copy constructor — that copy is now redundant because {@code result} is a freshly allocated
-		// matrix owned exclusively by this method, and the copy constructor itself already performs
-		// a deep copy, so the wrap doubled up the work.
 		return result;
 	}
 
@@ -145,10 +141,6 @@ public final class MatrixMath {
 							"rightCols", multiplicand.getColumns().toString())));
 		}
 
-		// Dimensions are bounded by {@code Integer.MAX_VALUE} (see {@code BigNumberMatrix#validateDimensions}),
-		// so the inner dot-product loop can run with primitive {@code int} counters instead of
-		// allocating a fresh {@link BigNumber} per increment via {@code k.add(BigNumbers.ONE)}.
-		// For an n×n×n multiplication this saves roughly n^3 throw-away BigNumber allocations.
 		final int innerCount = multiplier.getColumns().intValue();
 		final BigNumberMatrix result = new BigNumberMatrix(multiplier.getRows(), multiplicand.getColumns(), multiplier.getLocale());
 		result.forEachElement((rowIndex, columnIndex, ignoredZero) -> {
@@ -288,16 +280,14 @@ public final class MatrixMath {
 	 *
 	 * @param matrix      the square matrix whose determinant is to be computed
 	 * @param mathContext the precision/rounding for the elimination divisions (n ≥ 4)
-	 * @return the determinant as a {@link BigNumber}
+	 * @return the determinant as a {@link BigNumber}; the determinant of the empty {@code 0×0} matrix is
+	 * 	{@code 1} by convention, which keeps recursive cofactor expansion for {@code 1×1} inverses correct
 	 * @throws NullPointerException if any argument is {@code null}
 	 */
 	public static BigNumber determinant(@NonNull final BigNumberMatrix matrix, @NonNull final MathContext mathContext) {
 		final BigNumber sizeAsBigNumber = matrix.getRows();
 		if (sizeAsBigNumber.isEqualTo(BigNumbers.ZERO)) {
-			// Convention: the determinant of the empty 0×0 matrix is the multiplicative identity 1.
-			// This makes the recursive cofactor expansion for 1×1 inverses produce the correct result.
-			// Fresh instance, never the shared constant: the caller may mutate the result.
-			return new BigNumber("1", matrix.getLocale());
+			return freshOne(matrix.getLocale());
 		}
 
 		final int size = sizeAsBigNumber.intValue();
@@ -375,8 +365,7 @@ public final class MatrixMath {
 			if (workingCopy[pivotColumn][pivotColumn].isEqualTo(BigNumbers.ZERO)) {
 				final int swapRow = findNonZeroRowInColumn(workingCopy, pivotColumn, size);
 				if (swapRow == -1) {
-					// Fresh instance, never the shared constant: the caller may mutate the determinant.
-					return new BigNumber("0", matrix.getLocale());
+					return freshZero(matrix.getLocale());
 				}
 				swapRows(workingCopy, pivotColumn, swapRow);
 				rowSwapNegatesSign = !rowSwapNegatesSign;
@@ -387,7 +376,6 @@ public final class MatrixMath {
 				for (int columnIndex = pivotColumn + 1; columnIndex < size; columnIndex++) {
 					final BigNumber numerator = workingCopy[eliminationRow][columnIndex].multiply(pivotValue)
 							.subtract(workingCopy[eliminationRow][pivotColumn].multiply(workingCopy[pivotColumn][columnIndex]));
-					// Exact for integer matrices (Bareiss identity); rounds to mathContext otherwise.
 					workingCopy[eliminationRow][columnIndex] = numerator.divide(previousPivot, mathContext);
 				}
 				workingCopy[eliminationRow][pivotColumn] = BigNumbers.ZERO;
@@ -508,9 +496,6 @@ public final class MatrixMath {
 		BigNumberMatrix squaringBase = base.clone();
 		BigNumber remainingExponent = exponent;
 
-		// Exponentiation by squaring on an arbitrary-precision exponent: while the exponent is
-		// non-zero, fold the current squared base into the accumulator on odd bits, then square
-		// the base and shift the exponent right by one (modelled as integer division by two).
 		while (remainingExponent.isGreaterThan(BigNumbers.ZERO)) {
 			if (remainingExponent.modulo(BigNumbers.TWO).isEqualTo(BigNumbers.ONE)) {
 				accumulator = multiply(accumulator, squaringBase);
@@ -650,6 +635,32 @@ public final class MatrixMath {
 		if (!augend.getRows().isGreaterThan(BigNumbers.ZERO) || !augend.getColumns().isGreaterThan(BigNumbers.ZERO)) {
 			throw new IllegalArgumentException(MatrixMessages.get(locale, "matrix.error.zeroDim"));
 		}
+	}
+
+	/**
+	 * Returns a fresh {@link BigNumber} equal to zero.
+	 *
+	 * <p>Always a new instance rather than the shared {@code BigNumbers.ZERO} constant, because the
+	 * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+	 *
+	 * @param locale the locale used for formatting; must not be {@code null}
+	 * @return a new {@link BigNumber} equal to {@code 0}; never {@code null}
+	 */
+	private static BigNumber freshZero(final Locale locale) {
+		return new BigNumber("0", locale);
+	}
+
+	/**
+	 * Returns a fresh {@link BigNumber} equal to one.
+	 *
+	 * <p>Always a new instance rather than the shared {@code BigNumbers.ONE} constant, because the
+	 * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+	 *
+	 * @param locale the locale used for formatting; must not be {@code null}
+	 * @return a new {@link BigNumber} equal to {@code 1}; never {@code null}
+	 */
+	private static BigNumber freshOne(final Locale locale) {
+		return new BigNumber("1", locale);
 	}
 
 }

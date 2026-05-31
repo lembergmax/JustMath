@@ -46,8 +46,8 @@ public final class RadicalMath {
 	 */
 	private static final BigDecimal TWO_AS_BIG_DECIMAL = BigDecimal.valueOf(2);
 
+	/** Non-instantiable utility class. */
 	private RadicalMath() {
-		// Utility class — never instantiated.
 	}
 
 	/**
@@ -71,8 +71,6 @@ public final class RadicalMath {
 	public static BigNumber squareRoot(@NonNull final BigNumber radicand, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		// {@link #nthRoot} already returns a freshly allocated, locale-aware {@link BigNumber};
-		// wrapping it in the copy constructor would just double the allocation cost.
 		return nthRoot(radicand, TWO, mathContext, locale);
 	}
 
@@ -109,7 +107,10 @@ public final class RadicalMath {
 	 * <ul>
 	 *   <li>If the index is zero, throws IllegalArgumentException.</li>
 	 *   <li>If the index is negative, computes the positive root and returns its reciprocal.</li>
-	 *   <li>If the radicand is negative and the index is not an integer, throws IllegalArgumentException.</li>
+	 *   <li>If the radicand is negative and the index is not an integer, throws IllegalArgumentException.
+	 *       A non-integer index over a negative radicand is not a well-defined real root: e.g.
+	 *       {@code (-4)^(1/0.5) = 16} but {@code (-4)^0.5} is imaginary, and the odd-root negation is
+	 *       only valid for integer indices.</li>
 	 *   <li>If the radicand is negative and the root is even, throws IllegalArgumentException.</li>
 	 *   <li>If the radicand is negative and the root is odd, returns the negative root.</li>
 	 *   <li>Otherwise, returns the n-th root of the radicand.</li>
@@ -146,9 +147,6 @@ public final class RadicalMath {
 		boolean radicandIsNegative = radicand.isNegative();
 
 		if (radicandIsNegative && !index.isInteger()) {
-			// A non-integer index over a negative radicand is not a well-defined real root: e.g.
-			// (-4)^(1/0.5) = 16 but (-4)^0.5 is imaginary. The odd-root negation below is only valid
-			// for integer indices, so reject the non-integer case instead of blindly negating.
 			throw new IllegalArgumentException("Root of a negative radicand requires an integer index");
 		}
 
@@ -157,8 +155,8 @@ public final class RadicalMath {
 		}
 
 		if (radicandIsNegative) {
-			BigDecimal absValue = radicand.toBigDecimal().negate();  // |-x|
-			BigDecimal root = BigDecimalMath.root(absValue, index.toBigDecimal(), mathContext);
+			BigDecimal magnitude = radicand.toBigDecimal().negate();
+			BigDecimal root = BigDecimalMath.root(magnitude, index.toBigDecimal(), mathContext);
 			return new BigNumber(root.negate().toPlainString(), locale, mathContext).trim();
 		}
 

@@ -990,8 +990,6 @@ public final class BasicMath {
         final boolean anyFollowingNonZeroDigit = hasNonZeroDigitAfterIndex(digits, cutIndexExclusive);
 
         final char lastKeptDigit = digits.charAt(cutIndexExclusive - 1);
-        // Honour the caller's rounding mode (MathContext) instead of the library default —
-        // otherwise directed modes such as FLOOR/CEILING/UP/DOWN are silently ignored.
         final boolean incrementRequired = shouldIncrementAccordingToRoundingMode(roundingMode, normalizedValue.sign(), lastKeptDigit, roundingDigit, anyFollowingNonZeroDigit);
 
         final String keptDigits = digits.substring(0, cutIndexExclusive);
@@ -1015,7 +1013,6 @@ public final class BasicMath {
         if (removedDigitCount <= originalScale) {
             return originalScale - removedDigitCount;
         }
-        // Removing more digits than fractional digits means we truncated integer digits; represent with scale=0.
         return 0;
     }
 

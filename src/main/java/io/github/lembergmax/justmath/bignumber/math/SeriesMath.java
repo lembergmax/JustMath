@@ -44,8 +44,8 @@ import lombok.NonNull;
  */
 public final class SeriesMath {
 
+    /** Non-instantiable utility class. */
     private SeriesMath() {
-        // Utility class — never instantiated.
     }
 
 
@@ -121,20 +121,14 @@ public final class SeriesMath {
 
         final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
 
-        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
         final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(externalVariables);
 
         BigNumber result = BigNumbers.ZERO;
-        // BigNumber.add(...) is non-mutating, so kStart itself is safe — no clone needed.
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            // Use the locale-independent canonical form: {@link BigNumber#toString()} would emit
-            // the iteration index using k's own locale (for instance {@code "1,5"} for DE), which
-            // the calculator engine — that always expects {@code .} as the decimal separator —
-            // would then reject as a syntax error. Plain US-style ASCII digits side-step that.
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.add(currentCalculation);
@@ -306,7 +300,6 @@ public final class SeriesMath {
 
         final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
 
-        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
         final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(externalVariables);
 
@@ -314,8 +307,7 @@ public final class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            // Same canonical-form rationale as {@link #summation}.
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.multiply(currentCalculation);
@@ -323,6 +315,21 @@ public final class SeriesMath {
         }
 
         return new BigNumber(result, locale, mathContext, trigonometricMode);
+    }
+
+    /**
+     * Renders {@code value} as a locale-independent decimal literal for the calculator engine.
+     *
+     * <p>The engine always expects {@code .} as the decimal separator, so {@link BigNumber#toString()}
+     * (which is locale-aware and would emit e.g. {@code "1,5"} under a German locale) cannot be used for
+     * the iteration-variable substitution; the canonical {@link java.math.BigDecimal} plain string is
+     * used instead, which the engine accepts as a syntactically valid number in every locale.
+     *
+     * @param value the iteration value to render; must not be {@code null}
+     * @return the value as a plain US-style decimal string; never {@code null}
+     */
+    private static String toEngineDecimalLiteral(final BigNumber value) {
+        return value.toBigDecimal().toPlainString();
     }
 
     /**

@@ -94,7 +94,8 @@ public class NumberTheoryMath {
 	 * @param mathContext
 	 * 	the {@link MathContext} specifying precision and rounding mode for division
 	 *
-	 * @return the least common multiple of |a| and |b|
+	 * @return the least common multiple of |a| and |b|; {@code 0} by convention if either {@code a} or
+	 * 	{@code b} is zero
 	 *
 	 * @throws IllegalArgumentException
 	 * 	if a or b is not an integer
@@ -107,7 +108,6 @@ public class NumberTheoryMath {
 		}
 
 		if (a.isEqualTo(ZERO) || b.isEqualTo(ZERO)) {
-			// lcm(a, 0) = 0 by convention; this also avoids the gcd(0, 0) = 0 division by zero.
 			return new BigNumber("0", locale);
 		}
 

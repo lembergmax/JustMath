@@ -50,8 +50,8 @@ import lombok.NonNull;
  */
 public final class InverseTrigonometricMath {
 
+    /** Non-instantiable utility class. */
     private InverseTrigonometricMath() {
-        // Utility class — never instantiated.
     }
 
 
@@ -154,6 +154,9 @@ public final class InverseTrigonometricMath {
      * Internally, the result is computed by symbolically evaluating a summation expression via {@link CalculatorEngine}.
      * The number of summation terms is chosen based on {@link MathContext#getPrecision()}, with an upper limit to ensure performance.
      *
+     * <p>The Taylor series converges only for {@code |argument| ≤ 1}; for larger magnitudes the value is
+     * obtained from the identity {@code atan(x) = ±π/2 − atan(1/x)}.
+     *
      * @param argument          the input value for which the arctangent is to be computed (may be negative or greater than 1)
      * @param mathContext       the precision and rounding mode used for all intermediate and final calculations
      * @param trigonometricMode whether the result should be returned in radians or degrees
@@ -170,10 +173,6 @@ public final class InverseTrigonometricMath {
 
         BigNumber result;
 
-        // The Taylor series for atan only converges for |x| ≤ 1. The previous check
-        // {@code argument.isLessThanOrEqualTo(ONE)} mistakenly treated any negative argument as
-        // "in range" because it ignored the magnitude — so atan(-5) silently fed -5 into the
-        // diverging series. Comparing the absolute value gates the series path correctly.
         if (argument.abs().isLessThanOrEqualTo(BigNumbers.ONE)) {
             result = computeAtanSeries(argument, mathContext);
         } else {
@@ -296,7 +295,7 @@ public final class InverseTrigonometricMath {
         }
 
         Apfloat apfloatArgument = new Apfloat(argument.toBigDecimal(), mathContext.getPrecision());
-        Apfloat reciprocal = ApfloatMath.inverseRoot(apfloatArgument, 1); // = 1/x
+        Apfloat reciprocal = ApfloatMath.inverseRoot(apfloatArgument, 1);
 
         Apfloat acotValue = ApfloatMath.atan(reciprocal);
 

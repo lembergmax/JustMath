@@ -38,8 +38,8 @@ import lombok.NonNull;
  */
 public final class PercentageMath {
 
+	/** Non-instantiable utility class. */
 	private PercentageMath() {
-		// Utility class — never instantiated.
 	}
 
 

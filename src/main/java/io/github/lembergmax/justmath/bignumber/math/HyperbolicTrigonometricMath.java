@@ -93,8 +93,7 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("0", locale);
+            return freshZero(locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -128,8 +127,7 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("1", locale);
+            return freshOne(locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -163,8 +161,7 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("0", locale);
+            return freshZero(locale);
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -324,6 +321,32 @@ public final class HyperbolicTrigonometricMath {
      */
     private static BigNumber rewrapWithRequestedMathContext(final BigNumber intermediateResult, final Locale locale, final MathContext requestedMathContext) {
         return new BigNumber(intermediateResult.toString(), locale, requestedMathContext).trim();
+    }
+
+    /**
+     * Returns a fresh {@link BigNumber} equal to zero.
+     *
+     * <p>Always a new instance rather than the shared {@code BigNumbers.ZERO} constant, because the
+     * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+     *
+     * @param locale the locale used for formatting; must not be {@code null}
+     * @return a new {@link BigNumber} equal to {@code 0}; never {@code null}
+     */
+    private static BigNumber freshZero(final Locale locale) {
+        return new BigNumber("0", locale);
+    }
+
+    /**
+     * Returns a fresh {@link BigNumber} equal to one.
+     *
+     * <p>Always a new instance rather than the shared {@code BigNumbers.ONE} constant, because the
+     * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+     *
+     * @param locale the locale used for formatting; must not be {@code null}
+     * @return a new {@link BigNumber} equal to {@code 1}; never {@code null}
+     */
+    private static BigNumber freshOne(final Locale locale) {
+        return new BigNumber("1", locale);
     }
 
 }

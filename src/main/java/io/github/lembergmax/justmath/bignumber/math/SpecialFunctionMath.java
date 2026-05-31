@@ -42,8 +42,8 @@ import lombok.NonNull;
  */
 public final class SpecialFunctionMath {
 
+	/** Non-instantiable utility class. */
 	private SpecialFunctionMath() {
-		// Utility class — never instantiated.
 	}
 
 
@@ -86,13 +86,11 @@ public final class SpecialFunctionMath {
 	 * @return The evaluated Gamma function Γ(x) as a {@link BigNumber}.
 	 *
 	 * @throws ArithmeticException
-	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined.
+	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined. Domain enforcement is delegated
+	 * 	to {@link BigDecimalMath#gamma}, whose Lanczos approximation raises {@link ArithmeticException} at
+	 * 	those poles, rather than maintaining a parallel pre-check.
 	 */
 	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		// {@link BigDecimalMath#gamma} already raises {@link ArithmeticException} for the
-		// non-positive integer singularities (its lanczos approximation diverges there). We
-		// therefore delegate domain enforcement to the underlying library rather than carrying
-		// a parallel pre-check that has to stay in lock-step with library updates.
 		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
 	}
 
@@ -132,9 +130,6 @@ public final class SpecialFunctionMath {
 	 */
 	public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		if (!x.isGreaterThan(BigNumbers.ZERO) || !y.isGreaterThan(BigNumbers.ZERO)) {
-			// The Beta function via Γ(x)Γ(y)/Γ(x+y) is only documented for x > 0 and y > 0; validate
-			// the domain here instead of returning a value for invalid input or propagating a raw
-			// Γ-pole exception.
 			throw new ArithmeticException("Beta function requires x > 0 and y > 0");
 		}
 

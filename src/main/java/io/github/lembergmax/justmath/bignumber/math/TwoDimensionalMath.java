@@ -39,8 +39,8 @@ import lombok.NonNull;
  */
 public final class TwoDimensionalMath {
 
+	/** Non-instantiable utility class. */
 	private TwoDimensionalMath() {
-		// Utility class — never instantiated.
 	}
 
 
@@ -74,8 +74,6 @@ public final class TwoDimensionalMath {
 	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		// Only the origin is undefined; axis points (x=0 or y=0 alone) are well-defined and map
-		// to multiples of π/2. The previous check rejected three quarters of the unit circle.
 		if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
 			throw new IllegalArgumentException("atan2 is undefined at the origin (0, 0)");
 		}

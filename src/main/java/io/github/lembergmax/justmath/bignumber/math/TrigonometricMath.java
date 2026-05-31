@@ -42,8 +42,8 @@ import lombok.NonNull;
  */
 public final class TrigonometricMath {
 
+	/** Non-instantiable utility class. */
 	private TrigonometricMath() {
-		// Utility class — never instantiated.
 	}
 
 
@@ -152,8 +152,7 @@ public final class TrigonometricMath {
 			return false;
 		}
 		final BigDecimal degrees = angle.toBigDecimal();
-		if (degrees.stripTrailingZeros().scale() > 0) {
-			// Has a fractional part — cannot be an exact 90 + k·180.
+		if (hasFractionalPart(degrees)) {
 			return false;
 		}
 		final java.math.BigInteger integerDegrees = degrees.toBigIntegerExact();
@@ -208,11 +207,22 @@ public final class TrigonometricMath {
 			return false;
 		}
 		final BigDecimal degrees = angle.toBigDecimal();
-		if (degrees.stripTrailingZeros().scale() > 0) {
+		if (hasFractionalPart(degrees)) {
 			return false;
 		}
 		final java.math.BigInteger integerDegrees = degrees.toBigIntegerExact();
 		return integerDegrees.mod(java.math.BigInteger.valueOf(180)).signum() == 0;
+	}
+
+	/**
+	 * Returns whether the given degree value has a non-zero fractional part and therefore cannot be an
+	 * exact integer multiple of a degree such as {@code 90° + k·180°}.
+	 *
+	 * @param degrees the angle expressed in degrees
+	 * @return {@code true} if {@code degrees} is not a whole number of degrees
+	 */
+	private static boolean hasFractionalPart(final BigDecimal degrees) {
+		return degrees.stripTrailingZeros().scale() > 0;
 	}
 
 }

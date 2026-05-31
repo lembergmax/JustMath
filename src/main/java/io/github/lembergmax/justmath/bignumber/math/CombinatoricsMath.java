@@ -82,8 +82,7 @@ public final class CombinatoricsMath {
 		}
 
 		if (k.isEqualTo(ZERO) || k.isEqualTo(n)) {
-			// Fresh instance, never the shared constant: the caller may mutate the result.
-			return new BigNumber("1", locale);
+			return freshOne(locale);
 		}
 
 		final BigNumber effectiveK = k.min(n.subtract(k));
@@ -92,7 +91,7 @@ public final class CombinatoricsMath {
 		}
 		final int iterationCount = effectiveK.intValue();
 
-		BigNumber product = new BigNumber("1", locale);
+		BigNumber product = freshOne(locale);
 		for (int i = 0; i < iterationCount; i++) {
 			final BigNumber iAsBigNumber = BigNumber.valueOf(i);
 			final BigNumber divisor = BigNumber.valueOf(i + 1L);
@@ -143,6 +142,19 @@ public final class CombinatoricsMath {
 		BigNumber nFactorial = n.factorial(mathContext, locale);
 		BigNumber nMinusKFactorial = n.subtract(k).factorial(mathContext, locale);
 		return new BigNumber(nFactorial.divide(nMinusKFactorial, mathContext, locale).trim());
+	}
+
+	/**
+	 * Returns a fresh {@link BigNumber} equal to one.
+	 *
+	 * <p>Always a new instance rather than the shared {@code BigNumbers.ONE} constant, because the
+	 * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+	 *
+	 * @param locale the locale used for formatting; must not be {@code null}
+	 * @return a new {@link BigNumber} equal to {@code 1}; never {@code null}
+	 */
+	private static BigNumber freshOne(final Locale locale) {
+		return new BigNumber("1", locale);
 	}
 
 }

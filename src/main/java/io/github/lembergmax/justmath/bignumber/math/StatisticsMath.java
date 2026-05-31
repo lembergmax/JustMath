@@ -36,8 +36,8 @@ import lombok.NonNull;
 
 public final class StatisticsMath {
 
+    /** Non-instantiable utility class. */
     private StatisticsMath() {
-        // Utility class — never instantiated.
     }
 
 

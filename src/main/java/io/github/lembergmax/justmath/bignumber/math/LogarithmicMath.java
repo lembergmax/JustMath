@@ -47,8 +47,8 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
  */
 public final class LogarithmicMath {
 
+	/** Non-instantiable utility class. */
 	private LogarithmicMath() {
-		// Utility class — never instantiated.
 	}
 
 
@@ -72,13 +72,13 @@ public final class LogarithmicMath {
 	 * @return a {@link BigNumber} representing log₂(argument)
 	 *
 	 * @throws ArithmeticException
-	 * 	if {@code argument <= 0} (logarithm undefined for non-positive inputs)
+	 * 	if {@code argument <= 0}; the logarithm is undefined for non-positive inputs (an
+	 * 	{@link ArithmeticException}, consistent with {@code ln} and the JDK convention for
+	 * 	mathematical-domain errors such as {@code BigDecimal.divide} by zero)
 	 */
 	public static BigNumber log2(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
 
-		// Use ArithmeticException to match {@link #ln(BigNumber, MathContext, Locale)} and the
-		// JDK convention for mathematical-domain errors (BigDecimal.divide(zero) etc.).
 		if (argument.compareTo(ZERO) <= 0) {
 			throw new ArithmeticException("log2(x) undefined for x <= 0");
 		}
