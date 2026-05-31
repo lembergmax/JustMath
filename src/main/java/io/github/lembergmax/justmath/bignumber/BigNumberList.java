@@ -396,6 +396,10 @@ public class BigNumberList implements List<BigNumber> {
      * If the list is empty, an empty {@link Set} is returned.
      * </p>
      *
+     * <p>Values are grouped by canonical numeric value (trailing zeros stripped, so {@code "1"} and
+     * {@code "1.0"} count as one). First-occurrence order is preserved, so the returned set is stable
+     * across runs.</p>
+     *
      * @return a {@link Set} of {@link BigNumber} values that occur most frequently
      */
     public Set<BigNumber> modes() {
@@ -403,9 +407,6 @@ public class BigNumberList implements List<BigNumber> {
             return Set.of();
         }
 
-        // Group by numeric value (BigDecimal stripped of trailing zeros) so that "1" and "1.0"
-        // collapse to the same key. A LinkedHashMap preserves first-occurrence order, which
-        // makes the resulting LinkedHashSet stable across runs and easy to test.
         final java.util.LinkedHashMap<BigDecimal, int[]> countsByValue = new java.util.LinkedHashMap<>();
         final java.util.LinkedHashMap<BigDecimal, BigNumber> representativeByValue = new java.util.LinkedHashMap<>();
         for (final BigNumber value : values) {
@@ -1221,11 +1222,6 @@ public class BigNumberList implements List<BigNumber> {
      * @return a new {@code BigNumberList} referencing the same internal list as this instance
      */
     public BigNumberList clone() {
-        // {@code clone()} intentionally shares the underlying list storage (legacy contract,
-        // exercised by {@code cloneSharesInternalStorage}). The {@code BigNumberList(List)}
-        // constructor assigns the supplied list by reference (no defensive copy), which gives
-        // us the desired aliasing. For an independent copy use {@link #copy()} or the
-        // {@link #BigNumberList(BigNumberList)} copy constructor (which is defensive).
         return new BigNumberList(this.values);
     }
 
@@ -1274,11 +1270,15 @@ public class BigNumberList implements List<BigNumber> {
         return values.isEmpty();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The query is deliberately not annotated {@code @NonNull}: the {@link List} contract permits a
+     * {@code null} argument (the backing list returns {@code false} when no {@code null} element is
+     * present), so a non-null annotation would throw and break that contract.</p>
+     */
     @Override
     public boolean contains(final Object object) {
-        // List#contains accepts null per the interface contract; the backing ArrayList
-        // returns false for a null query when no null element is present. Do not annotate
-        // with @NonNull — that would throw NPE and break the List contract.
         return values.contains(object);
     }
 
@@ -1307,9 +1307,14 @@ public class BigNumberList implements List<BigNumber> {
         return values.add(bigNumber);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument.</p>
+     */
     @Override
     public boolean remove(final Object object) {
-        // List#remove(Object) accepts null per the interface contract.
         return values.remove(object);
     }
 
@@ -1378,15 +1383,25 @@ public class BigNumberList implements List<BigNumber> {
         return values.remove(index);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument (returning {@code -1} when absent).</p>
+     */
     @Override
     public int indexOf(final Object object) {
-        // List#indexOf accepts null per the interface contract (returns -1 when absent).
         return values.indexOf(object);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument (returning {@code -1} when absent).</p>
+     */
     @Override
     public int lastIndexOf(final Object object) {
-        // List#lastIndexOf accepts null per the interface contract (returns -1 when absent).
         return values.lastIndexOf(object);
     }
 

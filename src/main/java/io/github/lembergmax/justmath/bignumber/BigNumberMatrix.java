@@ -118,6 +118,9 @@ public class BigNumberMatrix implements Cloneable {
 	 * @param locale
 	 * 	the locale used for output formatting of the resulting matrix
 	 *
+	 * <p>The {@code data} is defensively copied row by row, so later mutations of the caller's list or
+	 * its rows do not affect this matrix.</p>
+	 *
 	 * @throws IllegalArgumentException
 	 * 	if {@code data} is empty, any row is empty, or rows have inconsistent lengths
 	 */
@@ -142,8 +145,6 @@ public class BigNumberMatrix implements Cloneable {
 		}
 
 		this.locale = locale;
-		// Defensive copy: detach the matrix from the caller's list so that subsequent mutations
-		// to the input list (add/remove rows, replace cells) do not silently corrupt this matrix.
 		final List<List<BigNumber>> defensiveData = new ArrayList<>(data.size());
 		for (final List<BigNumber> row : data) {
 			defensiveData.add(new ArrayList<>(row));
@@ -694,9 +695,6 @@ public class BigNumberMatrix implements Cloneable {
 			return false;
 		}
 
-		// Direct int-indexed scan over the backing data with an early exit on the first
-		// asymmetric pair. The previous forEachIndex + AtomicBoolean variant allocated a
-		// BigNumber per index step and always scanned the whole matrix even after a mismatch.
 		final int size = data.size();
 		for (int row = 0; row < size; row++) {
 			final List<BigNumber> rowValues = data.get(row);
@@ -883,9 +881,6 @@ public class BigNumberMatrix implements Cloneable {
 			return false;
 		}
 
-		// Direct int-indexed scan with early exit on the first differing cell, replacing the
-		// forEachIndex + AtomicBoolean variant that allocated BigNumber indices and always
-		// scanned every cell even after a mismatch was found.
 		final List<List<BigNumber>> otherData = other.getData();
 		final int rowCount = data.size();
 		for (int row = 0; row < rowCount; row++) {

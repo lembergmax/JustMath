@@ -62,7 +62,6 @@ public final class NumberChecker {
         int start = 0;
         int end = length;
 
-        // Manual trim without allocating a new String
         while (start < end && isWhitespace(input.charAt(start))) {
             start++;
         }
@@ -79,7 +78,6 @@ public final class NumberChecker {
 
         int i = start;
 
-        // Optional sign
         final char first = input.charAt(i);
         if (first == '+' || first == '-') {
             i++;
@@ -91,7 +89,6 @@ public final class NumberChecker {
         boolean sawDigit = false;
         boolean sawDecimal = false;
 
-        // Mantissa: digits, optional grouping (before decimal), optional decimal separator
         while (i < end) {
             final char charAt = input.charAt(i);
 
@@ -102,7 +99,6 @@ public final class NumberChecker {
             }
 
             if (charAt == groupingSep) {
-                // grouping allowed only after at least one digit and only before decimal
                 if (!sawDigit || sawDecimal) {
                     return false;
                 }
@@ -126,7 +122,6 @@ public final class NumberChecker {
             return false;
         }
 
-        // Optional exponent
         if (i < end && isExponentMarker(input.charAt(i))) {
             i++;
             if (i >= end) {
@@ -154,7 +149,6 @@ public final class NumberChecker {
             return sawExpDigit;
         }
 
-        // No trailing characters allowed
         return i == end;
     }
 

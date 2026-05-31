@@ -180,6 +180,9 @@ final class BigNumberParser {
     /**
      * Normalizes the input by removing grouping separators
      * and converting the decimal separator to '.' (US format).
+     *
+     * <p>When the locale's grouping separator is a non-breaking space ({@code U+00A0}), regular spaces
+     * are stripped as well, because users commonly type a normal space where the locale expects an NBSP.</p>
      */
     private String normalize(@NonNull final String value, @NonNull final Locale fromLocale) {
         final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(fromLocale);
@@ -188,7 +191,6 @@ final class BigNumberParser {
 
         String noGrouping = value.replace(String.valueOf(groupingSeparator), "");
 
-        // Some locales use NBSP for grouping; users often input normal spaces.
         if (groupingSeparator == '\u00A0') {
             noGrouping = noGrouping.replace(" ", "").replace("\u00A0", "");
         }
@@ -291,7 +293,6 @@ final class BigNumberParser {
             }
         }
 
-        // Ambiguous / separator-free numbers: prefer system format locale if supported, else first supported, else US.
         final Locale fallback = resolveFallbackLocale();
         if (scientific ? canParseScientific(trimmed, fallback) : isNumber(trimmed, fallback)) {
             return fallback;

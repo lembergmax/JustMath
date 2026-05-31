@@ -60,8 +60,8 @@ public final class MatrixMessages {
      */
     public static final String BUNDLE_BASENAME = "i18n.matrix_errors";
 
+    /** Non-instantiable utility class. */
     private MatrixMessages() {
-        // utility class
     }
 
     /**

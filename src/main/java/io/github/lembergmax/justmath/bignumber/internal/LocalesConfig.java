@@ -145,14 +145,12 @@ public final class LocalesConfig {
 	private static Locale[] buildSupportedLocales() {
 		final Set<Locale> ordered = new LinkedHashSet<>();
 
-		// preferred first
 		for (Locale locale : PREFERRED_LOCALES) {
 			if (locale != null) {
 				ordered.add(locale);
 			}
 		}
 
-		// then all available
 		for (Locale locale : Locale.getAvailableLocales()) {
 			if (locale != null) {
 				ordered.add(locale);
