@@ -923,23 +923,30 @@ must be observed by callers:
   `setLocale(Locale)` independently controls output formatting and the language of
   `USER_FRIENDLY` error messages — not how the engine parses input.
 
-## ⚙️ Installation
+## 🌐 Links
 
-> **Note:** JustMath is **not yet on Maven Central.** The build is fully configured for
-> publishing (GPG signing + the Sonatype `central-publishing-maven-plugin`), but no release
-> has been pushed yet. Until the first release lands, use the direct JAR download below.
-> Once published, the coordinates will be:
+Maven Repository:
+```
+https://mvnrepository.com/artifact/io.github.lembergmax/justmath
+```
+
+Maven Central Repository:
+```
+https://central.sonatype.com/artifact/io.github.lembergmax/justmath
+```
+
+## ⚙️ Installation
 
 ```xml
 <dependency>
     <groupId>io.github.lembergmax.justmath</groupId>
     <artifactId>justmath</artifactId>
-    <version>1.6.0</version>
+    <version>x.x.x</version>
 </dependency>
 ```
 
 ```groovy
-implementation 'io.github.lembergmax.justmath:justmath:1.6.0'
+implementation 'io.github.lembergmax.justmath:justmath:x.x.x'
 ```
 
 **Available now — direct download.** Pick a release JAR below:
