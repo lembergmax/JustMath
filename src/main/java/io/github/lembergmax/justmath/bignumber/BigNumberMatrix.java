@@ -994,6 +994,51 @@ public class BigNumberMatrix implements Cloneable {
 	}
 
 	/**
+	 * Compares this matrix to another object for <em>value</em> equality.
+	 *
+	 * <p>Two {@code BigNumberMatrix} instances are equal when they have the same dimensions and every
+	 * corresponding element is numerically equal (via {@link BigNumber#isEqualTo(BigNumber)}), matching the
+	 * semantics of {@link #equalsMatrix(BigNumberMatrix)}. The {@link #getLocale() locale} is not part of
+	 * equality. This makes the type usable as a {@code HashSet}/{@code HashMap} key and in
+	 * {@code List.contains}/{@code assertEquals}, consistent with {@link #hashCode()}.</p>
+	 *
+	 * @param other the object to compare against; may be {@code null}
+	 * @return {@code true} if {@code other} is a {@code BigNumberMatrix} with equal dimensions and numerically
+	 * equal elements
+	 */
+	@Override
+	public boolean equals(final Object other) {
+		if (this == other) {
+			return true;
+		}
+		if (!(other instanceof BigNumberMatrix matrix)) {
+			return false;
+		}
+		return equalsMatrix(matrix);
+	}
+
+	/**
+	 * Returns a hash code consistent with {@link #equals(Object)}.
+	 *
+	 * <p>The hash is derived from the dimensions and each element's value-normalized
+	 * {@link BigNumber#hashCode()} (which strips trailing zeros), so two numerically equal matrices — e.g.
+	 * one holding {@code "1.0"} and another {@code "1.00"} — hash identically.</p>
+	 *
+	 * @return the value-based hash code of this matrix
+	 */
+	@Override
+	public int hashCode() {
+		int result = rows.hashCode();
+		result = 31 * result + columns.hashCode();
+		for (final List<BigNumber> row : data) {
+			for (final BigNumber value : row) {
+				result = 31 * result + value.hashCode();
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Creates a deep copy of this matrix.
 	 * <p>
 	 * Equivalent to the copy constructor {@link #BigNumberMatrix(BigNumberMatrix)}.
