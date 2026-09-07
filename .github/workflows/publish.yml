@@ -79,20 +79,18 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run full test suite
+      - name: Deploy to Maven Central (test + sign + upload + auto-release)
         if: steps.gate.outputs.skip != 'true'
-        run: mvn -B --no-transfer-progress test
-
-      - name: Deploy to Maven Central (sign + upload + auto-release)
-        if: steps.gate.outputs.skip != 'true'
-        run: mvn -P release -B --no-transfer-progress -DskipTests clean deploy
+        # A single build runs the full test suite (via the verify phase reached by deploy) AND signs +
+        # uploads from the same artifacts, so the released bits are exactly what was tested. The previous
+        # split (separate `test`, then `clean deploy -DskipTests`) could publish an unvalidated release build.
+        run: mvn -P release -B --no-transfer-progress clean deploy
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          # maven-gpg-plugin reads the passphrase from this env var (wired into settings.xml by
+          # actions/setup-java). Not passed on the command line, to avoid exposing it in process args.
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          # maven-gpg-plugin picks the passphrase up via this property name when
-          # invoked from CI; locally the same property is supplied via settings.xml.
-          MAVEN_OPTS: -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
 
       - name: Report deployment summary
         if: steps.gate.outputs.skip != 'true'
