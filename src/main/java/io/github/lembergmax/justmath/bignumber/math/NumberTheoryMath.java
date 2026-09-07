@@ -38,7 +38,11 @@ import lombok.NonNull;
  * <p>
  * Implements the calculation of the greatest common divisor (GCD) and least common multiple (LCM).
  */
-public class NumberTheoryMath {
+public final class NumberTheoryMath {
+
+	/** Non-instantiable utility class. */
+	private NumberTheoryMath() {
+	}
 
 	/**
 	 * Computes the greatest common divisor (GCD) of two integers a and b using the Euclidean algorithm.

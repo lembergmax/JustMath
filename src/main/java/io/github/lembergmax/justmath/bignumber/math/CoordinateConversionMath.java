@@ -48,7 +48,11 @@ import lombok.NonNull;
  * <strong>Note:</strong> Input values are subject to certain mathematical restrictions. See
  * individual method documentation for details.
  */
-public class CoordinateConversionMath {
+public final class CoordinateConversionMath {
+
+	/** Non-instantiable utility class. */
+	private CoordinateConversionMath() {
+	}
 
 	/**
 	 * Converts polar coordinates (r, θ) to Cartesian coordinates (x, y).
@@ -106,13 +110,15 @@ public class CoordinateConversionMath {
 	 * <p>
 	 * <strong>Restrictions:</strong>
 	 * <ul>
-	 *   <li>Neither {@code x} nor {@code y} may be zero. The angle is undefined at the origin (0,0).</li>
+	 *   <li>Only the origin {@code (0, 0)} is rejected — the angle is undefined there. Points on an axis
+	 *       (one coordinate zero, e.g. {@code (0, 5)} or {@code (5, 0)}) are valid and supported, consistent
+	 *       with {@code atan2}.</li>
 	 * </ul>
 	 *
 	 * @param x
-	 * 	the x-coordinate in a Cartesian system (must not be zero)
+	 * 	the x-coordinate in a Cartesian system
 	 * @param y
-	 * 	the y-coordinate in a Cartesian system (must not be zero)
+	 * 	the y-coordinate in a Cartesian system
 	 * @param mathContext
 	 * 	the {@link MathContext} controlling precision and rounding for calculations
 	 * @param locale
@@ -121,13 +127,13 @@ public class CoordinateConversionMath {
 	 * @return a {@link BigNumberCoordinate} representing the polar coordinates (r, θ in degrees)
 	 *
 	 * @throws IllegalArgumentException
-	 * 	if {@code x} or {@code y} is zero
+	 * 	if both {@code x} and {@code y} are zero (the origin)
 	 */
 	public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
 		MathUtils.checkMathContext(mathContext);
-		
-		if (x.isEqualTo(ZERO) || y.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("x or y cannot be zero");
+
+		if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
+			throw new IllegalArgumentException("Polar coordinates are undefined at the origin (0, 0)");
 		}
 
 		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)

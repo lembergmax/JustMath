@@ -297,11 +297,24 @@ public class BigNumberTest {
         }
 
         @Test
-        void cartesianToPolarCoordinateInvalidTest() {
-            BigNumber num1 = new BigNumber("-1", Locale.US);
-            BigNumber num2 = new BigNumber("0", Locale.US);
+        void cartesianToPolarCoordinateOriginThrows() {
+            // Only the origin (0,0) is undefined.
+            BigNumber zero = new BigNumber("0", Locale.US);
+            assertThrows(IllegalArgumentException.class, () -> zero.cartesianToPolarCoordinates(zero));
+        }
 
-            assertThrows(IllegalArgumentException.class, () -> num1.cartesianToPolarCoordinates(num2));
+        @Test
+        void cartesianToPolarCoordinateOnAxisIsValid() {
+            // Points on an axis (one coordinate zero) are valid: (0,5) -> r=5, θ=90°; (5,0) -> r=5, θ=0°.
+            BigNumberCoordinate onYAxis = new BigNumber("0", Locale.US)
+                    .cartesianToPolarCoordinates(new BigNumber("5", Locale.US), BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
+            assertEquals("5", onYAxis.getX().roundAfterDecimals(6).trim().toString());
+            assertEquals("90", onYAxis.getY().roundAfterDecimals(6).trim().toString());
+
+            BigNumberCoordinate onXAxis = new BigNumber("5", Locale.US)
+                    .cartesianToPolarCoordinates(new BigNumber("0", Locale.US), BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
+            assertEquals("5", onXAxis.getX().roundAfterDecimals(6).trim().toString());
+            assertEquals("0", onXAxis.getY().roundAfterDecimals(6).trim().toString());
         }
 
     }
@@ -1547,7 +1560,7 @@ public class BigNumberTest {
             assertEquals(1, new BigNumber("1.123").signum());
             assertEquals(-1, new BigNumber("-0.123").signum());
             assertEquals(-1, new BigNumber("-1").signum());
-            assertEquals(-1, new BigNumber("-1..123").signum());
+            assertEquals(-1, new BigNumber("-1.123").signum());
         }
 
     }
