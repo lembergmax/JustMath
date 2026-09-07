@@ -30,6 +30,7 @@ import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
@@ -38,19 +39,24 @@ import io.github.lembergmax.justmath.calculator.CalculatorEngine;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElements;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility class for performing mathematical series operations with arbitrary precision.
  */
+@UtilityClass
 public final class SeriesMath {
 
-    /** Non-instantiable utility class. */
-    private SeriesMath() {
-    }
-
+    /**
+     * Upper bound on the number of terms a single {@code summation}/{@code product} may iterate. Each term
+     * parses and evaluates a full sub-expression, so an unbounded range such as
+     * {@code summation(1; 100000000000; k)} would run effectively forever — a denial-of-service reachable
+     * from untrusted input. Ranges larger than this are rejected with a typed "too large" error.
+     */
+    private static final long MAX_SERIES_ITERATIONS = 1_000_000L;
 
     /**
-     * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+     * Evaluates and returns the result of a summation expression over an integer range, similar to the mathematical
      * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
      * <p>
      * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
@@ -84,7 +90,7 @@ public final class SeriesMath {
     }
 
     /**
-     * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+     * Evaluates and returns the result of a summation expression over an integer range, similar to the mathematical
      * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
      * <p>
      * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
@@ -128,6 +134,9 @@ public final class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
+            if (Thread.interrupted()) {
+                throw new CancellationException("Summation was interrupted before completion");
+            }
             combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
@@ -307,6 +316,9 @@ public final class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
+            if (Thread.interrupted()) {
+                throw new CancellationException("Product was interrupted before completion");
+            }
             combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
@@ -357,6 +369,10 @@ public final class SeriesMath {
 
         if (!kStart.isInteger() || !kEnd.isInteger()) {
             throw new IllegalArgumentException("Start and end values must be integers.");
+        }
+
+        if (kEnd.subtract(kStart).isGreaterThanOrEqualTo(BigNumber.valueOf(MAX_SERIES_ITERATIONS))) {
+            throw new ArithmeticException("Series range is too large (maximum " + MAX_SERIES_ITERATIONS + " terms)");
         }
 
         if (externalVariables.containsKey(ExpressionElements.K_SERIES_MATH_VARIABLE)) {

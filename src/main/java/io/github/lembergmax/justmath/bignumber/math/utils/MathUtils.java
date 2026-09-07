@@ -48,6 +48,15 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.pi;
 public class MathUtils {
 
     /**
+     * Upper bound on {@link MathContext} precision accepted by the library. Requesting an astronomically
+     * large precision (e.g. via a crafted untrusted input that reaches a precision-taking operation) would
+     * make a single computation allocate gigabytes and run for minutes, a denial-of-service vector. The
+     * bound is generous — far above any realistic need (the default division precision is 100) — so it never
+     * rejects legitimate use, only absurd requests.
+     */
+    public static final int MAX_MATH_CONTEXT_PRECISION = 1_000_000;
+
+    /**
      * Converts the given angle to radians depending on the specified {@link TrigonometricMode}.
      * <p>
      * If the {@code trigonometricMode} is {@link TrigonometricMode#DEG}, the angle is treated as
@@ -119,6 +128,10 @@ public class MathUtils {
     public static void checkMathContext(@NonNull final MathContext mathContext) {
         if (mathContext.getPrecision() <= 0) {
             throw new IllegalArgumentException("MathContext precision must be greater than zero");
+        }
+        if (mathContext.getPrecision() > MAX_MATH_CONTEXT_PRECISION) {
+            throw new ArithmeticException("MathContext precision " + mathContext.getPrecision()
+                    + " is too large (maximum " + MAX_MATH_CONTEXT_PRECISION + ")");
         }
     }
 

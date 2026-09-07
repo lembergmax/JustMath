@@ -71,6 +71,33 @@ public final class BasicMath {
     private static final double EXP_FAST_DOUBLE_MAX_ABS_ARGUMENT = 50.0;
 
     /**
+     * Maximum requested precision (in significant digits) for which a {@code double}-based fast path may be
+     * used to produce a <em>final</em> result (for {@code exp} and non-integer {@code power}).
+     * <p>
+     * A {@code double} carries at most ~15–17 significant decimal digits, so returning a {@code double}
+     * result when the caller requested higher precision would silently deliver fewer correct digits than
+     * promised by the {@link MathContext}. Above this threshold the exact (Taylor / exp·ln) path runs.
+     */
+    private static final int DOUBLE_FAST_PATH_MAX_PRECISION = 15;
+
+    /**
+     * Upper bound on the argument of {@link #factorial}. {@code n!} has on the order of
+     * {@code n·log10(n)} digits, so without a cap an expression like {@code 1000000!} would build a
+     * multi-million-digit number — minutes of CPU and large heap — turning a one-line untrusted input
+     * into a denial-of-service. {@code 100000!} (~456 500 digits) is comfortably within reach; larger
+     * arguments are rejected with a typed "too large" error.
+     */
+    private static final int MAX_FACTORIAL_ARGUMENT = 100_000;
+
+    /**
+     * Upper bound on the number of decimal digits a single integer {@link #power} result may have.
+     * {@code base^exponent} has about {@code exponent·log10(base)} digits, so {@code 9^9999999999} or
+     * {@code 2^100000000000} would each produce billions of digits and exhaust memory. The projected size
+     * is estimated cheaply before the (expensive) computation and rejected if it exceeds this bound.
+     */
+    private static final long MAX_POWER_RESULT_DIGITS = 1_000_000L;
+
+    /**
      * Extra working precision used internally for exp Taylor series to reduce rounding noise while staying fast.
      */
     private static final int EXP_WORKING_GUARD_DIGITS = 8;
@@ -262,9 +289,11 @@ public final class BasicMath {
             return toBigNumber(integerPowerResult, locale, mathContext);
         }
 
-        final String fastDoublePowerPlain = tryComputeNonIntegerPowerUsingDouble(baseParts, exponentParts);
-        if (fastDoublePowerPlain != null) {
-            return new BigNumber(adaptPlainDecimalToLocale(fastDoublePowerPlain, locale), locale, mathContext).trim();
+        if (mathContext.getPrecision() <= DOUBLE_FAST_PATH_MAX_PRECISION) {
+            final String fastDoublePowerPlain = tryComputeNonIntegerPowerUsingDouble(baseParts, exponentParts);
+            if (fastDoublePowerPlain != null) {
+                return new BigNumber(adaptPlainDecimalToLocale(fastDoublePowerPlain, locale), locale, mathContext).trim();
+            }
         }
 
         final ParsedDecimalNumber fallbackPowerResult = powerNonIntegerFallback(baseParts, exponentParts, mathContext);
@@ -326,9 +355,11 @@ public final class BasicMath {
 
         final ParsedDecimalNumber exponentParts = normalize(parseFromBigNumber(argument));
 
-        final String fastExpPlain = tryComputeExpUsingDouble(exponentParts);
-        if (fastExpPlain != null) {
-            return new BigNumber(adaptPlainDecimalToLocale(fastExpPlain, locale), locale, mathContext).trim();
+        if (mathContext.getPrecision() <= DOUBLE_FAST_PATH_MAX_PRECISION) {
+            final String fastExpPlain = tryComputeExpUsingDouble(exponentParts);
+            if (fastExpPlain != null) {
+                return new BigNumber(adaptPlainDecimalToLocale(fastExpPlain, locale), locale, mathContext).trim();
+            }
         }
 
         final ParsedDecimalNumber exponentialParts = expParsed(exponentParts, mathContext);
@@ -2163,6 +2194,8 @@ public final class BasicMath {
         final boolean exponentIsOdd = isOddUnsigned(exponentAbsoluteDigits);
         final int resultSign = (baseIsNegative && exponentIsOdd) ? -1 : +1;
 
+        rejectPowerIfResultTooLarge(baseAbsolute, exponentAbsoluteDigits);
+
         ParsedDecimalNumber result = oneParts();
         ParsedDecimalNumber basePower = baseAbsolute;
 
@@ -2185,6 +2218,50 @@ public final class BasicMath {
         }
 
         return divideParsed(oneParts(), result, mathContext);
+    }
+
+    /**
+     * Rejects an integer power whose plain-decimal result would be impractically large, before the
+     * (expensive) squaring loop runs. The size of {@code |base|^exponent} grows like
+     * {@code exponent · digitsPerFactor}, where {@code digitsPerFactor} bounds both the growth of the
+     * significant digits ({@code log10} of the base significand) and the growth of the fractional part
+     * ({@code scale} extra places per factor for a base with {@code scale} fractional digits). A base of
+     * magnitude {@code 1} (the result is exactly {@code 1}), a zero base and a zero exponent are never
+     * rejected.
+     *
+     * @param baseAbsolute           the absolute, normalized base
+     * @param exponentAbsoluteDigits unsigned integer-exponent digit string
+     * @throws ArithmeticException if the projected result size exceeds {@link #MAX_POWER_RESULT_DIGITS}
+     */
+    private static void rejectPowerIfResultTooLarge(final ParsedDecimalNumber baseAbsolute, final String exponentAbsoluteDigits) {
+        final String strippedExponent = stripLeadingZeros(exponentAbsoluteDigits);
+        if (strippedExponent.equals("0") || isZero(baseAbsolute) || isOne(baseAbsolute)) {
+            return;
+        }
+
+        final double digitsPerFactor = Math.max(baseAbsolute.scale(), log10OfSignificand(baseAbsolute));
+        if (digitsPerFactor <= 0.0) {
+            return;
+        }
+
+        final boolean exponentExceedsLong = strippedExponent.length() > 18;
+        if (exponentExceedsLong || Long.parseLong(strippedExponent) > (long) (MAX_POWER_RESULT_DIGITS / digitsPerFactor)) {
+            throw new ArithmeticException("Power result is too large (would exceed " + MAX_POWER_RESULT_DIGITS + " digits)");
+        }
+    }
+
+    /**
+     * Base-10 logarithm of the base's significand — its digit string read as an integer, ignoring the
+     * scale. Only the leading (up to 15) digits are used, which is ample precision for a size estimate.
+     *
+     * @param baseAbsolute the absolute, normalized, non-zero base
+     * @return {@code log10} of the significand; never negative
+     */
+    private static double log10OfSignificand(final ParsedDecimalNumber baseAbsolute) {
+        final String digits = stripLeadingZeros(baseAbsolute.digits());
+        final String head = digits.length() <= 15 ? digits : digits.substring(0, 15);
+        final double significand = Double.parseDouble(head.charAt(0) + "." + head.substring(1));
+        return Math.log10(significand) + (digits.length() - 1);
     }
 
     /**
@@ -2279,6 +2356,10 @@ public final class BasicMath {
         }
         if (argumentParts.sign() < 0) {
             throw new IllegalArgumentException("Factorial is only defined for non-negative integers.");
+        }
+        final Integer argumentAsInt = tryParseUnsignedInt(argumentParts.digits());
+        if (argumentAsInt == null || argumentAsInt > MAX_FACTORIAL_ARGUMENT) {
+            throw new ArithmeticException("Factorial argument is too large (maximum " + MAX_FACTORIAL_ARGUMENT + ")");
         }
     }
 
