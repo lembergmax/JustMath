@@ -375,7 +375,7 @@ class UnitRegistry {
             // =========================
             define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
             define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
-            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "0.5555555555555555555555555556", "-17.7777777777777777777777777778"),
+            defineAffineFraction(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "5", "9", "-160", "9"),
 
             // =========================
             // PRESSURE (base: pascal)
@@ -1195,6 +1195,48 @@ class UnitRegistry {
         final BigNumber den = new BigNumber(denominator);
 
         final ConversionFormula formula = ConversionFormulas.linear(num, den);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+
+        return new UnitSpec(unit, definition, false);
+    }
+
+    /**
+     * Creates one declarative built-in definition entry whose affine scale <em>and</em> offset are
+     * expressed as exact rationals:
+     *
+     * <pre>
+     * base = value * (scaleNumerator / scaleDenominator) + (offsetNumerator / offsetDenominator)
+     * </pre>
+     *
+     * <p>
+     * Prefer this factory over {@link #define(Unit, String, String, String, String)} for any affine unit
+     * whose scale or offset has no finite decimal representation (e.g. {@code °F}: scale {@code 5/9},
+     * offset {@code -160/9}). Storing the factors as exact ratios and deferring a single division to
+     * conversion time avoids the rounding artifacts of pre-rounded decimal constants, so canonical points
+     * such as {@code 32 °F → 0 °C} are exact.
+     * </p>
+     *
+     * @param unit              the unit identifier; must not be {@code null}
+     * @param displayName       human-readable display name; must not be {@code null}
+     * @param symbol            unit symbol; must not be {@code null}
+     * @param scaleNumerator    numerator of the scale into base unit; must not be {@code null}
+     * @param scaleDenominator  denominator of the scale into base unit; must not be {@code null}
+     * @param offsetNumerator   numerator of the offset into base unit; must not be {@code null}
+     * @param offsetDenominator denominator of the offset into base unit; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
+     */
+    private static UnitSpec defineAffineFraction(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String scaleNumerator,
+            @NonNull final String scaleDenominator,
+            @NonNull final String offsetNumerator,
+            @NonNull final String offsetDenominator
+    ) {
+        final ConversionFormula formula = ConversionFormulas.affine(
+                new BigNumber(scaleNumerator), new BigNumber(scaleDenominator),
+                new BigNumber(offsetNumerator), new BigNumber(offsetDenominator));
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
 
         return new UnitSpec(unit, definition, false);
