@@ -251,7 +251,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Constructs a BigNumber from a string and locale using the default math context.
      *
      * @param number       the string representation of the number
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
+     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
+     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
+     *                     that locale.
      */
     public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale) {
         this(number, targetLocale, DEFAULT_MATH_CONTEXT);
@@ -272,7 +275,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Constructs a BigNumber from a string, locale, and math context using the default trigonometric mode (DEG).
      *
      * @param number       the string representation of the number
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
+     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
+     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
+     *                     that locale.
      * @param mathContext  the math context to use for precision and rounding
      */
     public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext) {
@@ -281,7 +287,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
 
     /**
      * Constructs a BigNumber from a string, locale, math context, and trigonometric mode.
-     * Parses and formats the input string according to the specified locale.
+     *
+     * <p>The input string's locale is auto-detected and the result is <em>formatted</em> in
+     * {@code targetLocale}; {@code targetLocale} is not used to disambiguate the input. To parse a
+     * grouped/locale-specific input string deterministically (e.g. read German {@code "1.234"} as
+     * {@code 1234}), normalize it to a {@code .}-decimal string first.</p>
      *
      * @param number            the string representation of the number
      * @param targetLocale      the locale to use for parsing and formatting
@@ -380,7 +390,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Constructs a BigNumber from a BigDecimal and locale.
      *
      * @param bigDecimal   the BigDecimal value to convert
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
+     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
+     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
+     *                     that locale.
      */
     public BigNumber(@NonNull final BigDecimal bigDecimal, @NonNull final Locale targetLocale) {
         this(bigDecimal.toPlainString(), targetLocale);
@@ -2907,10 +2920,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
      * to avoid double-rounding artifacts at tie boundaries.</p>
      *
-     * @param mathContext precision and rounding for the result; must not be {@code null}
+     * @param mathContext precision and rounding for the result; must not be {@code null} and must have positive precision
      * @return a new BigNumber representing the value in degrees
+     * @throws IllegalArgumentException if {@code mathContext} has non-positive precision (e.g. {@link MathContext#UNLIMITED}),
+     *                                  which would otherwise silently cap the result to the guard-digit precision
      */
     public BigNumber toDegrees(@NonNull final MathContext mathContext) {
+        MathUtils.checkMathContext(mathContext);
         final MathContext guard = withAngleConversionGuardDigits(mathContext);
         return multiply(ONE_HUNDRED_EIGHTY, locale).divide(BigNumbers.pi(guard), guard, locale).round(mathContext);
     }
@@ -2921,10 +2937,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
      * to avoid double-rounding artifacts at tie boundaries.</p>
      *
-     * @param mathContext precision and rounding for the result; must not be {@code null}
+     * @param mathContext precision and rounding for the result; must not be {@code null} and must have positive precision
      * @return a new BigNumber representing the value in radians
+     * @throws IllegalArgumentException if {@code mathContext} has non-positive precision (e.g. {@link MathContext#UNLIMITED}),
+     *                                  which would otherwise silently cap the result to the guard-digit precision
      */
     public BigNumber toRadians(@NonNull final MathContext mathContext) {
+        MathUtils.checkMathContext(mathContext);
         final MathContext guard = withAngleConversionGuardDigits(mathContext);
         return multiply(BigNumbers.pi(guard)).divide(ONE_HUNDRED_EIGHTY, guard).round(mathContext);
     }
@@ -3038,18 +3057,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Rounds the value after the decimal point using the provided {@link MathContext}.
      *
-     * @param mathContext the context specifying precision and rounding mode
-     * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
+     * <p>The receiver is not modified; a new instance is returned. The result keeps the receiver's
+     * {@link #getLocale() locale} (it is threaded into the constructed result), so the rounded value
+     * formats with the same separators as the receiver and the operation is deterministic across machines
+     * (it does not fall back to the JVM-default locale).</p>
+     *
+     * @param mathContext the context specifying the number of decimal places and the rounding mode
+     * @return a new {@code BigNumber} rounded to the given number of decimal places and trimmed; the receiver
+     * is not modified
      */
     public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-        BigDecimal value = toBigDecimal();
-        int precisionAfterDecimal = mathContext.getPrecision();
-
-        if (precisionAfterDecimal <= 0) {
-            return new BigNumber(value.setScale(0, mathContext.getRoundingMode()).toPlainString()).trim();
-        }
-
-        return new BigNumber(value.setScale(precisionAfterDecimal, mathContext.getRoundingMode()).toPlainString()).trim();
+        final BigDecimal value = toBigDecimal();
+        final int scale = Math.max(0, mathContext.getPrecision());
+        return new BigNumber(value.setScale(scale, mathContext.getRoundingMode()).toPlainString(), locale).trim();
     }
 
     /**

@@ -309,18 +309,22 @@ public final class HyperbolicTrigonometricMath {
     }
 
     /**
-     * Re-wraps an intermediate {@link BigNumber} result with the caller-provided {@link MathContext}.
+     * Rounds an intermediate {@link BigNumber} (computed with extra guard digits) to the precision and
+     * rounding mode requested by the caller.
      *
-     * <p>This method does not change the numeric value; it only ensures the returned {@link BigNumber}
-     * carries the requested context if your {@link BigNumber} type stores/uses it.</p>
+     * <p>The intermediate is computed at {@code requestedPrecision + INTERNAL_GUARD_DIGITS}; this method
+     * performs the single, final rounding back to the caller's {@link MathContext}. Without it the guard
+     * digits would leak to the caller, so the returned value would carry more significant digits than the
+     * caller asked for and the {@link MathContext} contract documented on the public methods would be
+     * violated.</p>
      *
      * @param intermediateResult   intermediate computed result; must not be {@code null}
      * @param locale               locale used for parsing/formatting; must not be {@code null}
-     * @param requestedMathContext context to attach; must not be {@code null}
-     * @return a result BigNumber associated with the requested math context
+     * @param requestedMathContext the caller-provided precision/rounding to round to; must not be {@code null}
+     * @return the result rounded to {@code requestedMathContext}; never {@code null}
      */
     private static BigNumber rewrapWithRequestedMathContext(final BigNumber intermediateResult, final Locale locale, final MathContext requestedMathContext) {
-        return new BigNumber(intermediateResult.toString(), locale, requestedMathContext).trim();
+        return new BigNumber(intermediateResult.toString(), locale).round(requestedMathContext).trim();
     }
 
     /**

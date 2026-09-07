@@ -86,6 +86,14 @@ public final class InverseHyperbolicTrigonometricMath {
     private static final double DOUBLE_SAFE_MAGNITUDE = 10e300;
 
     /**
+     * Maximum requested precision (in significant digits) for which a {@code double}-based fast path may be
+     * used to produce a <em>final</em> result. A {@code double} carries at most ~15–17 significant decimal
+     * digits, so returning a {@code double} result for a higher requested precision would silently deliver
+     * fewer correct digits than the caller asked for. Above this threshold the exact (Newton) path must run.
+     */
+    private static final int DOUBLE_FAST_PATH_MAX_PRECISION = 15;
+
+    /**
      * Computes the inverse hyperbolic sine {@code asinh(x)} for any real {@code x}.
      *
      * <p>Definition:
@@ -303,18 +311,17 @@ public final class InverseHyperbolicTrigonometricMath {
     }
 
     /**
-     * Applies the sign for an odd function to a non-negative magnitude result.
+     * Applies the sign for an odd function to a non-negative magnitude result and rounds to the requested
+     * {@link MathContext}.
      *
-     * <p>This method applies the sign via string prefixing to avoid relying on any arithmetic negation
-     * that might be under refactor elsewhere.</p>
+     * <p>The sign is applied by numeric {@link BigNumber#negate()}, which depends only on the numeric value
+     * and is therefore independent of the locale-aware {@link BigNumber#toString()} representation.</p>
      *
      * @param positiveMagnitude    magnitude computed for {@code |x|}; must not be {@code null}
      * @param shouldBeNegative     whether the final value should be negative
      * @param locale               the locale used for parsing/formatting; must not be {@code null}
      * @param requestedMathContext the caller requested MathContext; must not be {@code null}
-     * @return signed result wrapped with {@code requestedMathContext}; the sign is applied by numeric
-     * negation rather than string prefixing, keeping it independent of the locale-aware
-     * {@link BigNumber#toString()} representation
+     * @return the signed result rounded to {@code requestedMathContext}; never {@code null}
      */
     private static BigNumber applyOddSign(final BigNumber positiveMagnitude, final boolean shouldBeNegative, final Locale locale, final MathContext requestedMathContext) {
         if (!shouldBeNegative || positiveMagnitude.isEqualTo(ZERO)) {
@@ -372,15 +379,20 @@ public final class InverseHyperbolicTrigonometricMath {
     }
 
     /**
-     * Re-wraps an intermediate result using the requested MathContext.
+     * Rounds an intermediate result (computed with {@link #INTERNAL_GUARD_DIGITS} extra digits) back to the
+     * caller-requested {@link MathContext}.
+     *
+     * <p>This is the single, final rounding step. Without it the internal guard digits would leak to the
+     * caller and the returned value would carry far more significant digits than requested, breaking the
+     * {@link MathContext} contract documented on the public methods.</p>
      *
      * @param intermediateResult   intermediate computed value; must not be {@code null}
      * @param locale               locale; must not be {@code null}
-     * @param requestedMathContext requested MathContext; must not be {@code null}
-     * @return BigNumber carrying the requested MathContext
+     * @param requestedMathContext requested MathContext to round to; must not be {@code null}
+     * @return the result rounded to {@code requestedMathContext}; never {@code null}
      */
     private static BigNumber rewrapWithRequestedMathContext(final BigNumber intermediateResult, final Locale locale, final MathContext requestedMathContext) {
-        return new BigNumber(intermediateResult.toString(), locale, requestedMathContext).trim();
+        return new BigNumber(intermediateResult.toString(), locale).round(requestedMathContext).trim();
     }
 
     /**
@@ -494,9 +506,11 @@ public final class InverseHyperbolicTrigonometricMath {
             return freshZero(locale);
         }
 
-        final String fastLnPlain = tryLnUsingDouble(positiveValue, locale);
-        if (fastLnPlain != null) {
-            return new BigNumber(fastLnPlain, locale, mathContext).trim();
+        if (mathContext.getPrecision() <= DOUBLE_FAST_PATH_MAX_PRECISION) {
+            final String fastLnPlain = tryLnUsingDouble(positiveValue, locale);
+            if (fastLnPlain != null) {
+                return new BigNumber(fastLnPlain, locale, mathContext).trim();
+            }
         }
 
         return lnNewton(positiveValue, mathContext, locale);
