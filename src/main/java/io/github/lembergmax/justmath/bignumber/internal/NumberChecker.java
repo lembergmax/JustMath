@@ -102,6 +102,12 @@ public final class NumberChecker {
                 if (!sawDigit || sawDecimal) {
                     return false;
                 }
+                // A grouping separator must be followed by a digit: this rejects a trailing separator
+                // ("1,"), consecutive separators ("1,,234") and a separator adjacent to the decimal
+                // point or exponent ("1,.5", "1,e3").
+                if (i + 1 >= end || !isAsciiDigit(input.charAt(i + 1))) {
+                    return false;
+                }
                 i++;
                 continue;
             }
