@@ -37,13 +37,22 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * A mutable, list-like container for {@link BigNumber} instances implementing the full {@link List} interface.
+ * A mutable, list-like container for {@link BigNumber} instances implementing the {@link List} interface
+ * (with a non-null-element policy, see below).
  *
  * <p>
  * This class acts as a domain-specific wrapper around a {@link List} of {@link BigNumber} objects.
  * It delegates core list operations to an internal list and adds convenience methods for
  * numerical and statistical operations that are natural for lists of numbers.
  * </p>
+ *
+ * <p><b>Null-element policy.</b> This is a <em>non-null-element</em> list: the element-inserting methods
+ * ({@code add}, {@code set}, {@code addFirst}, {@code addLast}) reject {@code null} with a
+ * {@link NullPointerException}, because a {@code null} element would break the numeric/statistical
+ * operations (sorting, {@code sum}, {@code average}, …). Consistent with the {@link List} contract, the
+ * <em>query</em> methods ({@code contains}, {@code indexOf}, {@code lastIndexOf}, {@code remove(Object)})
+ * still accept a {@code null} argument and simply report "not found"; they never throw on a {@code null}
+ * query.</p>
  *
  * <p><b>Design notes</b></p>
  * <ul>
@@ -1207,22 +1216,22 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     /**
-     * Creates a new {@code BigNumberList} that <strong>aliases</strong> the internal list storage
-     * of this instance.
+     * Creates a structurally independent copy of this list, honouring the conventional
+     * {@link Cloneable} contract.
      *
-     * <p>This is intentional and asymmetric to {@link #copy()} / {@link #BigNumberList(BigNumberList)},
-     * both of which produce structurally independent lists. The aliasing behaviour exists for
-     * legacy callers (verified by the {@code cloneSharesInternalStorage} regression test); new
-     * code should prefer {@link #copy()} when independence is required, and treat {@code clone()}
-     * as the explicit opt-in to shared storage.</p>
+     * <p>The returned list has its own backing storage, so a structural mutation of one list
+     * ({@code add}/{@code remove}/{@code sort}/{@code clear}/{@code reverse}/…) is not visible on the
+     * other — consistent with {@link #copy()} / {@link #BigNumberList(BigNumberList)} and with every other
+     * {@code clone()} in the library. (Element {@link BigNumber} objects are reference-shared, which is safe
+     * because list operations that change values produce new elements.)</p>
      *
-     * <p>Element objects ({@link BigNumber}) are reference-shared in either case — they are
-     * effectively immutable from the perspective of list semantics.</p>
+     * <p>If a thin aliasing view over the same backing list is genuinely wanted, construct one explicitly
+     * with {@link #BigNumberList(List)} passing {@link #getValues()}.</p>
      *
-     * @return a new {@code BigNumberList} referencing the same internal list as this instance
+     * @return a new {@code BigNumberList} that is structurally independent of this instance
      */
     public BigNumberList clone() {
-        return new BigNumberList(this.values);
+        return new BigNumberList(this);
     }
 
     /**

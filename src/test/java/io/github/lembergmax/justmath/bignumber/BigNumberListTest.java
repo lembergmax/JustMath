@@ -103,13 +103,13 @@ class BigNumberListTest {
         }
 
         @Test
-        void cloneSharesInternalStorage() {
+        void cloneIsStructurallyIndependent() {
             BigNumberList original = listOf("1", "2");
             BigNumberList clone = original.clone();
 
             original.add(getNewBigNumber("3"));
 
-            assertEquals(3, clone.size(), "Clone shares internal list with original");
+            assertEquals(2, clone.size(), "clone() must not share storage with the original (Cloneable contract)");
         }
     }
 
