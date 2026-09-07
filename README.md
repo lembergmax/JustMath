@@ -939,14 +939,14 @@ https://central.sonatype.com/artifact/io.github.lembergmax/justmath
 
 ```xml
 <dependency>
-    <groupId>io.github.lembergmax.justmath</groupId>
+    <groupId>io.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
-    <version>x.x.x</version>
+    <version>1.7.0</version>
 </dependency>
 ```
 
 ```groovy
-implementation 'io.github.lembergmax.justmath:justmath:x.x.x'
+implementation 'io.github.lembergmax:justmath:1.7.0'
 ```
 
 **Available now — direct download.** Pick a release JAR below:
@@ -1052,6 +1052,36 @@ implementation 'io.github.lembergmax.justmath:justmath:x.x.x'
 Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
 
 ## 🆕 Changelog
+
+### 1.7.0
+
+- **Abuse-resistance limits**: crafted inputs that would previously hang or exhaust memory now fail
+  fast with a typed *Math / Range* error instead of being computed — huge factorials (`1000000!`),
+  huge integer powers (`9^9999999999`), huge `nPr` / `nCr`, huge `summation` / `product` ranges,
+  multi-megabyte expression strings, and absurd `MathContext` precisions. Small, legitimate results
+  such as `1^n`, `2^2000000`, `10!` or `summation(1;100;k)` are unaffected.
+- **Combinations & permutations are now exact** — computed with `BigInteger` arithmetic (no rounding
+  to the 100-digit division precision) and without materializing the full `n!`.
+- **`atan` / `acot` reimplemented** on `BigDecimalMath` with guard digits: accurate across the whole
+  real line (including the previously weak neighbourhood of `|x| = 1`) and correctly rounded once to
+  the caller's `MathContext`. `acot(x)` follows the `atan(1/x)` branch (range `(-π/2, π/2) \ {0}`).
+- **Exact Fahrenheit conversion**: `°F` now uses an exact-rational affine formula (`5/9`, `-160/9`),
+  so canonical points such as `32 °F → 0 °C` come out exact.
+- ⚠️ **`BigNumberList.clone()`** now returns a **structurally independent** copy (consistent with
+  `copy()` and every other `clone()` in the library), no longer a view that shares backing storage.
+  Construct `new BigNumberList(list.getValues())` explicitly if a shared view is wanted.
+- ⚠️ **`BigNumber.toDegrees(MathContext)` / `toRadians(MathContext)`** now throw
+  `IllegalArgumentException` for a non-positive precision (e.g. `MathContext.UNLIMITED`) instead of
+  silently capping the result to the guard-digit precision.
+- **`BigNumber.roundAfterDecimals`** now formats its result in the receiver's locale, so the operation
+  is deterministic across machines (no fallback to the JVM-default locale).
+- **`BigNumberMatrix`** now implements value-based `equals` / `hashCode` (equal dimensions and
+  numerically equal elements; locale is not part of equality).
+- ⚠️ **`CalculatorEngine`**: the internal pipeline components (`Evaluator`, `PostfixParser`,
+  `Tokenizer`) and the live expression cache are no longer reachable through public getters — they
+  are internal implementation detail, not API.
+- **Build**: removed the unused `apfloat` and `mockito` dependencies; the compiler is now pinned via
+  `maven.compiler.release` (enforces the Java 21 API surface, reproducible across JDKs).
 
 ### 1.6.0
 
