@@ -772,7 +772,7 @@ for (Unit unit : UnitElements.all()) {
 | Finger (cloth) | finger     | `Unit.Length.FINGER_CLOTH`  |
 | Hand           | hand       | `Unit.Length.HAND`          |
 | Handbreadth    | hb         | `Unit.Length.HANDBREADTH`   |
-| Nail (cloth)   | nail       | `Unit.Length.NAIL_COTH`     |
+| Nail (cloth)   | nail       | `Unit.Length.NAIL_CLOTH`    |
 | Fingerbreadth  | fb         | `Unit.Length.FINGERBREADTH` |
 | Barleycorn     | barleycorn | `Unit.Length.BARLEYCORN`    |
 | Yard           | yd         | `Unit.Length.YARD`          |
@@ -807,7 +807,7 @@ for (Unit unit : UnitElements.all()) {
 | Short Ton        | st     | `Unit.Mass.SHORT_TON`        |
 | Pound            | lb     | `Unit.Mass.POUND`            |
 | Ounce            | oz     | `Unit.Mass.OUNCE`            |
-| Carat            | ct     | `Unit.Mass.CARRAT`           |
+| Carat            | ct     | `Unit.Mass.CARAT`            |
 | Atomic Mass Unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
 
 #### 🌡️ Temperature (Unit.Temperature) — base: kelvin

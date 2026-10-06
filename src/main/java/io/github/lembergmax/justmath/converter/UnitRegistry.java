@@ -142,7 +142,7 @@ class UnitRegistry {
             define(Unit.Length.FINGER_CLOTH, "Finger (cloth)", "finger", "0.1143"),
             define(Unit.Length.HAND, "Hand", "hand", "0.1016"),
             define(Unit.Length.HANDBREADTH, "Handbreadth", "hb", "0.0762"),
-            define(Unit.Length.NAIL_COTH, "Nail (cloth)", "nail", "0.05715"),
+            define(Unit.Length.NAIL_CLOTH, "Nail (cloth)", "nail", "0.05715"),
             define(Unit.Length.FINGERBREADTH, "Fingerbreadth", "fb", "0.01905"),
             defineFraction(Unit.Length.BARLEYCORN, "Barleycorn", "barleycorn", "0.0254", "3"),
             define(Unit.Length.YARD, "Yard", "yd", "0.9144"),
@@ -314,7 +314,7 @@ class UnitRegistry {
             define(Unit.Mass.FEMTOGRAM, "Femtogram", "fg", "1.0E-18"),
             define(Unit.Mass.ATTOGRAM, "Attogram", "ag", "1.0E-21"),
 
-            define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
+            define(Unit.Mass.CARAT, "Carat", "ct", "0.0002"),
             define(Unit.Mass.GRAIN, "Grain", "gr", "0.00006479891"),
             define(Unit.Mass.PENNYWEIGHT, "Pennyweight", "dwt", "0.00155517384"),
             define(Unit.Mass.SCRUPLE_APOTHECARY, "Scruple (Apothecary)", "℈", "0.0012959782"),
@@ -808,18 +808,18 @@ class UnitRegistry {
             define(Unit.DataStorage.QUADRUPLE_WORD, "Quadruple-Word", "quadruple-word", "64"),
             define(Unit.DataStorage.BLOCK, "Block", "block", "4096"),
 
-            define(Unit.DataStorage.KILOBIT, "Kibibit", "Kibit", "1024"),
-            define(Unit.DataStorage.KILOBYTE, "Kibibyte", "KiB", "8192"),
-            define(Unit.DataStorage.MEGABIT, "Mebibit", "Mibit", "1048576"),
-            define(Unit.DataStorage.MEGABYTE, "Mebibyte", "MiB", "8388608"),
-            define(Unit.DataStorage.GIGABIT, "Gibibit", "Gibit", "1073741824"),
-            define(Unit.DataStorage.GIGABYTE, "Gibibyte", "GiB", "8589934592"),
-            define(Unit.DataStorage.TERABIT, "Tebibit", "Tibit", "1099511627776"),
-            define(Unit.DataStorage.TERABYTE, "Tebibyte", "TiB", "8796093022208"),
-            define(Unit.DataStorage.PETABIT, "Pebibit", "Pibit", "1125899906842624"),
-            define(Unit.DataStorage.PETABYTE, "Pebibyte", "PiB", "9007199254740992"),
-            define(Unit.DataStorage.EXABIT, "Exbibit", "Eibit", "1152921504606846976"),
-            define(Unit.DataStorage.EXABYTE, "Exbibyte", "EiB", "9223372036854775808"),
+            define(Unit.DataStorage.KIBIBIT, "Kibibit", "Kibit", "1024"),
+            define(Unit.DataStorage.KIBIBYTE, "Kibibyte", "KiB", "8192"),
+            define(Unit.DataStorage.MEBIBIT, "Mebibit", "Mibit", "1048576"),
+            define(Unit.DataStorage.MEBIBYTE, "Mebibyte", "MiB", "8388608"),
+            define(Unit.DataStorage.GIBIBIT, "Gibibit", "Gibit", "1073741824"),
+            define(Unit.DataStorage.GIBIBYTE, "Gibibyte", "GiB", "8589934592"),
+            define(Unit.DataStorage.TEBIBIT, "Tebibit", "Tibit", "1099511627776"),
+            define(Unit.DataStorage.TEBIBYTE, "Tebibyte", "TiB", "8796093022208"),
+            define(Unit.DataStorage.PEBIBIT, "Pebibit", "Pibit", "1125899906842624"),
+            define(Unit.DataStorage.PEBIBYTE, "Pebibyte", "PiB", "9007199254740992"),
+            define(Unit.DataStorage.EXBIBIT, "Exbibit", "Eibit", "1152921504606846976"),
+            define(Unit.DataStorage.EXBIBYTE, "Exbibyte", "EiB", "9223372036854775808"),
 
             define(Unit.DataStorage.KILOBYTE_DECIMAL, "Kilobyte (10^3 bytes)", "kB", "8000"),
             define(Unit.DataStorage.MEGABYTE_DECIMAL, "Megabyte (10^6 bytes)", "MB", "8000000"),
@@ -845,6 +845,35 @@ class UnitRegistry {
             define(Unit.DataStorage.DVD_2L_1S, "DVD (2 layer, 1 side)", "dvd_2L_1S", "73014444032"),
             define(Unit.DataStorage.DVD_1L_2S, "DVD (1 layer, 2 side)", "dvd_1L_2S", "80745385164.8"),
             define(Unit.DataStorage.DVD_2L_2S, "DVD (2 layer, 2 side)", "dvd_2L_2S", "146028888064")
+    );
+
+    /**
+     * Deprecated unit constants and the canonical unit each one resolves to.
+     *
+     * <p>
+     * A constant that was renamed (misspelled or misleading) stays in its enum as a deprecated alias so that
+     * existing callers keep working. An alias has no entry of its own in {@link #BUILT_IN}: every lookup
+     * resolves it to the canonical unit first, so it shares that unit's symbol, display name and conversion
+     * formula and never appears in {@link #allUnits()} or in the symbol table. Removal is planned for the
+     * next major version.
+     * </p>
+     */
+    @SuppressWarnings("deprecation")
+    private static final Map<Unit, Unit> DEPRECATED_ALIASES = Map.ofEntries(
+            Map.entry(Unit.Length.NAIL_COTH, Unit.Length.NAIL_CLOTH),
+            Map.entry(Unit.Mass.CARRAT, Unit.Mass.CARAT),
+            Map.entry(Unit.DataStorage.KILOBIT, Unit.DataStorage.KIBIBIT),
+            Map.entry(Unit.DataStorage.KILOBYTE, Unit.DataStorage.KIBIBYTE),
+            Map.entry(Unit.DataStorage.MEGABIT, Unit.DataStorage.MEBIBIT),
+            Map.entry(Unit.DataStorage.MEGABYTE, Unit.DataStorage.MEBIBYTE),
+            Map.entry(Unit.DataStorage.GIGABIT, Unit.DataStorage.GIBIBIT),
+            Map.entry(Unit.DataStorage.GIGABYTE, Unit.DataStorage.GIBIBYTE),
+            Map.entry(Unit.DataStorage.TERABIT, Unit.DataStorage.TEBIBIT),
+            Map.entry(Unit.DataStorage.TERABYTE, Unit.DataStorage.TEBIBYTE),
+            Map.entry(Unit.DataStorage.PETABIT, Unit.DataStorage.PEBIBIT),
+            Map.entry(Unit.DataStorage.PETABYTE, Unit.DataStorage.PEBIBYTE),
+            Map.entry(Unit.DataStorage.EXABIT, Unit.DataStorage.EXBIBIT),
+            Map.entry(Unit.DataStorage.EXABYTE, Unit.DataStorage.EXBIBYTE)
     );
 
     /**
@@ -934,6 +963,7 @@ class UnitRegistry {
         }
 
         BY_UNIT = Map.copyOf(byUnit);
+        validateAliases(byUnit);
         BY_SYMBOL = Map.copyOf(bySymbol);
 
         final Map<Class<? extends Unit>, List<Unit>> immutableGroupMap = new LinkedHashMap<>();
@@ -945,6 +975,36 @@ class UnitRegistry {
     }
 
     /**
+     * Verifies that every deprecated alias points at a defined unit of the same group and is not defined itself.
+     *
+     * @param definitions the definitions built from {@link #BUILT_IN}; must not be {@code null}
+     * @throws IllegalStateException if an alias is itself defined, points at an undefined unit or crosses groups
+     */
+    private static void validateAliases(final Map<Unit, UnitDefinition> definitions) {
+        for (final Map.Entry<Unit, Unit> alias : DEPRECATED_ALIASES.entrySet()) {
+            if (definitions.containsKey(alias.getKey())) {
+                throw new IllegalStateException("Deprecated alias must not have its own definition: " + alias.getKey());
+            }
+            if (!definitions.containsKey(alias.getValue())) {
+                throw new IllegalStateException("Alias " + alias.getKey() + " points at an undefined unit: " + alias.getValue());
+            }
+            if (!groupTypeOf(alias.getKey()).equals(groupTypeOf(alias.getValue()))) {
+                throw new IllegalStateException("Alias " + alias.getKey() + " points at a unit of another group: " + alias.getValue());
+            }
+        }
+    }
+
+    /**
+     * Resolves a deprecated alias to the canonical unit it stands for.
+     *
+     * @param unit the unit identifier, possibly a deprecated alias; must not be {@code null}
+     * @return the canonical unit; {@code unit} itself when it is not an alias; never {@code null}
+     */
+    static Unit canonical(@NonNull final Unit unit) {
+        return DEPRECATED_ALIASES.getOrDefault(unit, unit);
+    }
+
+    /**
      * Returns the immutable {@link UnitDefinition} for a given unit identifier or throws
      * if no definition exists.
      *
@@ -953,7 +1013,7 @@ class UnitRegistry {
      * @throws IllegalStateException if no definition exists for {@code unit}
      */
     static UnitDefinition requireDefinition(@NonNull final Unit unit) {
-        final UnitDefinition definition = BY_UNIT.get(unit);
+        final UnitDefinition definition = BY_UNIT.get(canonical(unit));
         if (definition == null) {
             throw new IllegalStateException("No unit definition found for unit: " + unit);
         }
