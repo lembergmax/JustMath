@@ -46,6 +46,10 @@ public final class DecimalArbitraries {
      */
     public static final String SEED = "20261006";
 
+    private static final int SMALL_DIGITS = 4;
+
+    private static final int SMALL_SCALE = 3;
+
     private static final int SHORT_DIGITS = 40;
 
     private static final int SHORT_SCALE = 25;
@@ -74,7 +78,7 @@ public final class DecimalArbitraries {
     }
 
     public static Arbitrary<BigDecimal> smallDecimals() {
-        return randomDecimals(6, 4);
+        return randomDecimals(SMALL_DIGITS, SMALL_SCALE);
     }
 
     public static Arbitrary<BigDecimal> nonZeroSmallDecimals() {

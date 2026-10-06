@@ -115,6 +115,34 @@ public final class BasicMath {
     private static final int EXP_MAX_ITERATIONS_HARD_LIMIT = 2000;
 
     /**
+     * Smallest reduction power used for an exp argument above 10.
+     */
+    private static final int EXP_MIN_REDUCTION_POWER_FOR_LARGE_ARGUMENT = 4;
+
+    /**
+     * Extra working digits for a power with a fractional exponent, on top of the integer digits of the product
+     * {@code exponent * ln(|base|)}, whose relative error the final {@code exp} multiplies by its own size.
+     */
+    private static final int POWER_WORKING_GUARD_DIGITS = 10;
+
+    /**
+     * Largest absolute value of {@code exponent * ln(|base|)} for which the double fast path of a fractional power is
+     * used. {@code Math.exp} multiplies the relative error of its argument by the argument, so a larger product would
+     * cost the digits that the fast path promises.
+     */
+    private static final double POWER_FAST_DOUBLE_MAX_ABS_PRODUCT = 50.0;
+
+    /**
+     * {@code log10(e)}: the number of decimal digits that {@code exp(x)} has per unit of {@code x}.
+     */
+    private static final double LOG10_OF_E = 0.4342944819032518;
+
+    /**
+     * {@code log2(10)}: the number of bits that a decimal digit has.
+     */
+    private static final double LOG2_OF_10 = 3.321928094887362;
+
+    /**
      * The number zero as a string
      */
     private static final String ZERO_AS_STRING = "0";
@@ -1401,6 +1429,14 @@ public final class BasicMath {
             return "0";
         }
 
+        final int leftTrailingZeroCount = countTrailingZeros(leftNormalized);
+        final int rightTrailingZeroCount = countTrailingZeros(rightNormalized);
+        if (leftTrailingZeroCount + rightTrailingZeroCount > 0) {
+            final String leftWithoutTrailingZeros = leftNormalized.substring(0, leftNormalized.length() - leftTrailingZeroCount);
+            final String rightWithoutTrailingZeros = rightNormalized.substring(0, rightNormalized.length() - rightTrailingZeroCount);
+            return multiplyUnsigned(leftWithoutTrailingZeros, rightWithoutTrailingZeros) + "0".repeat(leftTrailingZeroCount + rightTrailingZeroCount);
+        }
+
         final int leftLength = leftNormalized.length();
         final int rightLength = rightNormalized.length();
         final int[] accumulator = new int[leftLength + rightLength];
@@ -1431,6 +1467,22 @@ public final class BasicMath {
         }
 
         return product.toString();
+    }
+
+    /**
+     * Counts the zeros at the end of a digit string. A product of two numbers with trailing zeros is computed
+     * from the digits in front of the zeros, so that a value with a huge magnitude and few significant digits,
+     * such as {@code exp(1000000)} rounded to 20 digits, multiplies as fast as its significant digits allow.
+     *
+     * @param unsignedDigits canonical digit string
+     * @return the number of trailing zeros; 0 for the string "0"
+     */
+    private static int countTrailingZeros(final String unsignedDigits) {
+        int zeroCount = 0;
+        while (zeroCount < unsignedDigits.length() - 1 && unsignedDigits.charAt(unsignedDigits.length() - 1 - zeroCount) == '0') {
+            zeroCount++;
+        }
+        return zeroCount;
     }
 
     /**
@@ -2327,17 +2379,40 @@ public final class BasicMath {
     /**
      * Fallback implementation for non-integer powers using {@code exp(exponent * ln(|base|))}.
      *
+     * <p>The logarithm, the product and the exponential are computed with guard digits and the result is rounded
+     * once. The product {@code exponent * ln(|base|)} is the argument of {@code exp}, which multiplies its relative
+     * error by its size, so the guard grows with the integer digits of the product.</p>
+     *
      * @param baseParts     base value
      * @param exponentParts exponent value (non-integer)
      * @param mathContext   rounding context
      * @return power result (real-only)
      */
     private static ParsedDecimalNumber powerNonIntegerFallback(final ParsedDecimalNumber baseParts, final ParsedDecimalNumber exponentParts, final MathContext mathContext) {
-        final ParsedDecimalNumber lnAbsBase = lnParsed(absoluteValue(baseParts), mathContext);
+        final ParsedDecimalNumber absoluteBase = absoluteValue(baseParts);
+        final MathContext workingContext = createPowerWorkingMathContext(absoluteBase, exponentParts, mathContext);
+
+        final ParsedDecimalNumber lnAbsBase = lnParsed(absoluteBase, workingContext);
         final ParsedDecimalNumber exponentTimesLn = normalize(multiplyParsed(exponentParts, lnAbsBase));
-        final ParsedDecimalNumber absoluteResult = expParsed(exponentTimesLn, mathContext);
+        final ParsedDecimalNumber absoluteResult = normalize(roundToMathContext(expParsed(exponentTimesLn, workingContext), mathContext));
 
         return baseParts.sign() < 0 ? negate(absoluteResult) : absoluteResult;
+    }
+
+    /**
+     * Creates the working {@link MathContext} of a power with a fractional exponent.
+     *
+     * @param absoluteBase  absolute value of the base, greater than zero
+     * @param exponentParts the exponent
+     * @param mathContext   requested context
+     * @return a context with the precision of the request plus guard digits and the rounding mode of the caller
+     */
+    private static MathContext createPowerWorkingMathContext(final ParsedDecimalNumber absoluteBase, final ParsedDecimalNumber exponentParts, final MathContext mathContext) {
+        final double estimatedLogarithm = Math.abs(estimateNaturalLogarithmAsDouble(normalize(absoluteBase)));
+        final int logarithmIntegerDigits = estimatedLogarithm < 1.0 ? 0 : (int) Math.floor(Math.log10(estimatedLogarithm)) + 1;
+        final int productIntegerDigits = integerDigitCount(normalize(exponentParts)) + logarithmIntegerDigits;
+        final int workingPrecision = mathContext.getPrecision() + POWER_WORKING_GUARD_DIGITS + productIntegerDigits;
+        return new MathContext(workingPrecision, mathContext.getRoundingMode());
     }
 
     /**
@@ -2345,6 +2420,9 @@ public final class BasicMath {
      * <pre>
      *   a^b ≈ exp(b * ln(|a|)), then apply sign(a) if a is negative
      * </pre>
+     *
+     * <p>The fast path is skipped if {@code |b * ln(|a|)|} exceeds {@link #POWER_FAST_DOUBLE_MAX_ABS_PRODUCT}, because
+     * the relative error of the double result grows with that product.</p>
      *
      * @param baseParts     parsed base
      * @param exponentParts parsed exponent (non-integer)
@@ -2361,7 +2439,12 @@ public final class BasicMath {
             return null;
         }
 
-        final double absoluteResult = Math.exp(exponent * Math.log(absoluteBase));
+        final double product = exponent * Math.log(absoluteBase);
+        if (Math.abs(product) > POWER_FAST_DOUBLE_MAX_ABS_PRODUCT) {
+            return null;
+        }
+
+        final double absoluteResult = Math.exp(product);
         if (!Double.isFinite(absoluteResult)) {
             return null;
         }
@@ -2572,15 +2655,21 @@ public final class BasicMath {
      *
      * <p>Implementation:
      * <ol>
-     *   <li>If x is negative: compute 1/exp(|x|).</li>
-     *   <li>Choose a small reduction power k and compute x' = x / 2^k using fast int division.</li>
+     *   <li>Reject an argument whose result would exceed {@link #MAX_POWER_RESULT_DIGITS} digits.</li>
+     *   <li>Work with guard digits that grow with the integer digits of x, because every squaring of the range
+     *       reduction doubles the relative error.</li>
+     *   <li>If x is negative: compute 1/exp(|x|) from the unrounded value, so that the result is rounded once.</li>
+     *   <li>Choose a reduction power k so that {@code |x / 2^k| <= 1} and compute x' = x / 2^k using fast int
+     *       division.</li>
      *   <li>Compute exp(x') by Taylor series with fast division term/n.</li>
      *   <li>Undo reduction by repeated squaring (k times).</li>
      * </ol>
      *
      * @param exponentParts exponent x
      * @param mathContext   precision and rounding mode
-     * @return exp(x) as parsed number
+     * @return exp(x) as parsed number, rounded once to {@code mathContext}
+     * @throws MathArithmeticException if the result would exceed the size limit, or if the precision is too large for
+     *                                 the Taylor series to converge within its iteration limit
      */
     private static ParsedDecimalNumber expParsed(final ParsedDecimalNumber exponentParts, final MathContext mathContext) {
         final ParsedDecimalNumber normalizedExponent = normalize(exponentParts);
@@ -2589,38 +2678,83 @@ public final class BasicMath {
             return oneParts();
         }
 
+        requireExpResultWithinSizeLimit(normalizedExponent);
+
+        final MathContext workingContext = createWorkingMathContext(mathContext, normalizedExponent);
         if (normalizedExponent.sign() < 0) {
-            final ParsedDecimalNumber positiveExponent = negate(normalizedExponent);
-            final ParsedDecimalNumber positiveExp = expParsed(positiveExponent, mathContext);
+            final ParsedDecimalNumber positiveExp = expOfPositiveParsed(negate(normalizedExponent), workingContext);
             return normalize(divideParsed(oneParts(), positiveExp, mathContext));
         }
 
-        final MathContext workingContext = createWorkingMathContext(mathContext);
-        final int reductionPower = chooseReductionPowerForExp(normalizedExponent);
-
-        final ParsedDecimalNumber reducedExponent = reduceExponentByPowerOfTwo(normalizedExponent, reductionPower, workingContext);
-        final ParsedDecimalNumber reducedExpValue = expTaylorSeries(reducedExponent, workingContext, mathContext.getPrecision());
-
-        final ParsedDecimalNumber scaled = undoReductionBySquaring(reducedExpValue, reductionPower, workingContext);
-        return normalize(roundToMathContext(scaled, mathContext));
+        return normalize(roundToMathContext(expOfPositiveParsed(normalizedExponent, workingContext), mathContext));
     }
 
     /**
-     * Creates a working {@link MathContext} with slightly increased precision for intermediate exp computations.
+     * Computes {@code exp(x)} for {@code x > 0} at the working precision, without the final rounding.
+     *
+     * @param positiveExponent exponent x > 0
+     * @param workingContext   working precision, including guard digits
+     * @return exp(x), rounded to the working precision
+     */
+    private static ParsedDecimalNumber expOfPositiveParsed(final ParsedDecimalNumber positiveExponent, final MathContext workingContext) {
+        final int reductionPower = chooseReductionPowerForExp(positiveExponent);
+
+        final ParsedDecimalNumber reducedExponent = reduceExponentByPowerOfTwo(positiveExponent, reductionPower, workingContext);
+        final ParsedDecimalNumber reducedExpValue = expTaylorSeries(reducedExponent, workingContext);
+
+        return undoReductionBySquaring(reducedExpValue, reductionPower, workingContext);
+    }
+
+    /**
+     * Rejects an exponent whose {@code exp} has more than {@link #MAX_POWER_RESULT_DIGITS} digits before or after the
+     * decimal point. A small argument such as {@code 10000000} would otherwise produce a result with millions of
+     * digits, which is the same denial of service that the limit on integer powers prevents.
+     *
+     * @param normalizedExponent normalized exponent x, not zero
+     * @throws MathArithmeticException with {@code MATH_OVERFLOW} if {@code |x| * log10(e)} exceeds the limit
+     */
+    private static void requireExpResultWithinSizeLimit(final ParsedDecimalNumber normalizedExponent) {
+        final Double asDouble = tryConvertToFiniteDouble(normalizedExponent);
+        final boolean exceedsLimit = asDouble == null || Math.abs(asDouble) * LOG10_OF_E > MAX_POWER_RESULT_DIGITS;
+        if (exceedsLimit) {
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW,
+                    "exp result is too large (would exceed " + MAX_POWER_RESULT_DIGITS + " digits)");
+        }
+    }
+
+    /**
+     * Counts the digits of a value that lie left of the decimal point.
+     *
+     * @param value parsed value
+     * @return the number of integer digits; 0 if the value is below 1
+     */
+    private static int integerDigitCount(final ParsedDecimalNumber value) {
+        return Math.max(0, value.digits().length() - value.scale());
+    }
+
+    /**
+     * Creates a working {@link MathContext} with increased precision for intermediate exp computations.
+     *
+     * <p>The guard digits cover the rounding noise of the Taylor series and the squarings of the range reduction.
+     * The squarings multiply the relative error by about {@code |x|}, so the guard grows with the integer digits
+     * of the exponent.</p>
      *
      * @param requestedContext requested context
-     * @return working context with guard digits
+     * @param exponent         exponent x of the exp computation
+     * @return working context with guard digits and the rounding mode of the caller
      */
-    private static MathContext createWorkingMathContext(final MathContext requestedContext) {
-        final int workingPrecision = Math.max(10, requestedContext.getPrecision() + EXP_WORKING_GUARD_DIGITS);
+    private static MathContext createWorkingMathContext(final MathContext requestedContext, final ParsedDecimalNumber exponent) {
+        final int guardDigits = EXP_WORKING_GUARD_DIGITS + integerDigitCount(exponent);
+        final int workingPrecision = Math.max(10, requestedContext.getPrecision() + guardDigits);
         return new MathContext(workingPrecision, requestedContext.getRoundingMode());
     }
 
     /**
-     * Chooses a small reduction power k for exp reduction {@code x -> x / 2^k}.
+     * Chooses a reduction power k for exp reduction {@code x -> x / 2^k}.
      *
-     * <p>This is a performance heuristic:
-     * smaller |x| -> smaller k to avoid overhead; larger |x| -> slightly larger k to improve Taylor convergence.</p>
+     * <p>Small arguments use a small k to avoid overhead. For {@code |x| > 10} the power grows with
+     * {@code log2(|x|)}, so that the reduced exponent stays below 1 and the Taylor series converges within its
+     * iteration limit whatever the argument.</p>
      *
      * @param nonNegativeNormalizedExponent normalized exponent with non-negative sign
      * @return reduction power k >= 0
@@ -2639,18 +2773,10 @@ public final class BasicMath {
                 return 3;
             }
 
-            return 4;
+            return Math.max(EXP_MIN_REDUCTION_POWER_FOR_LARGE_ARGUMENT, (int) Math.ceil(Math.log(absolute) / Math.log(2.0)) + 1);
         }
 
-        final int integerDigits = Math.max(0, nonNegativeNormalizedExponent.digits().length() - nonNegativeNormalizedExponent.scale());
-        if (integerDigits <= 1) {
-            return 0;
-        }
-        if (integerDigits == 2) {
-            return 2;
-        }
-
-        return 4;
+        return Math.max(EXP_MIN_REDUCTION_POWER_FOR_LARGE_ARGUMENT, (int) Math.ceil(integerDigitCount(nonNegativeNormalizedExponent) * LOG2_OF_10) + 1);
     }
 
     /**
@@ -2682,18 +2808,21 @@ public final class BasicMath {
      *   term_{n} = term_{n-1} * x / n
      * </pre>
      *
-     * <p>Division by {@code n} is performed using the fast int division routine to maximize speed.</p>
+     * <p>Division by {@code n} is performed using the fast int division routine to maximize speed. The series stops
+     * when a term is below the working precision, so that the truncation error stays below the guard digits.</p>
      *
-     * @param reducedExponent    reduced exponent x
-     * @param workingContext     working rounding context for intermediate steps
-     * @param requestedPrecision requested precision used to build epsilon threshold
+     * @param reducedExponent reduced exponent x, with {@code |x| <= 1}
+     * @param workingContext  working rounding context for intermediate steps
      * @return exp(x) approximation
+     * @throws MathArithmeticException with {@code MATH_OVERFLOW} if the series does not converge within
+     *                                 {@link #EXP_MAX_ITERATIONS_HARD_LIMIT} terms, which happens for precisions of
+     *                                 several thousand digits
      */
-    private static ParsedDecimalNumber expTaylorSeries(final ParsedDecimalNumber reducedExponent, final MathContext workingContext, final int requestedPrecision) {
+    private static ParsedDecimalNumber expTaylorSeries(final ParsedDecimalNumber reducedExponent, final MathContext workingContext) {
         ParsedDecimalNumber sum = oneParts();
         ParsedDecimalNumber term = oneParts();
 
-        final ParsedDecimalNumber epsilon = normalize(new ParsedDecimalNumber(+1, "1", requestedPrecision));
+        final ParsedDecimalNumber epsilon = normalize(new ParsedDecimalNumber(+1, "1", workingContext.getPrecision()));
         final int maxIterations = Math.clamp((long) workingContext.getPrecision() * 6, 200, EXP_MAX_ITERATIONS_HARD_LIMIT);
 
         for (int n = 1; n <= maxIterations; n++) {
@@ -2704,11 +2833,12 @@ public final class BasicMath {
 
             final ParsedDecimalNumber absTerm = term.sign() < 0 ? negate(term) : term;
             if (compareAbsolute(absTerm, epsilon) < 0) {
-                break;
+                return sum;
             }
         }
 
-        return sum;
+        throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW,
+                "exp does not converge for a precision of " + workingContext.getPrecision() + " digits");
     }
 
     /**
@@ -2778,15 +2908,26 @@ public final class BasicMath {
      * @return initial y ~ ln(x)
      */
     private static ParsedDecimalNumber initialGuessForLn(final ParsedDecimalNumber normalizedPositiveX) {
-        final int exponentBase10 = estimateBase10Exponent(normalizedPositiveX);
-        final double mantissa = estimateMantissaAsDouble(normalizedPositiveX);
-
-        double guess = Math.log(mantissa) + exponentBase10 * Math.log(10.0);
+        double guess = estimateNaturalLogarithmAsDouble(normalizedPositiveX);
         if (!Double.isFinite(guess)) {
             guess = 0.0;
         }
 
         return normalize(parseToParts(toPlainDecimalStringFromDouble(guess), Locale.US));
+    }
+
+    /**
+     * Estimates {@code ln(x)} for {@code x > 0} with a double, from the leading digits and the decimal exponent, so
+     * that it works for values beyond the range of a double.
+     *
+     * @param normalizedPositiveX normalized positive x
+     * @return an approximation of ln(x) with about 15 correct digits
+     */
+    private static double estimateNaturalLogarithmAsDouble(final ParsedDecimalNumber normalizedPositiveX) {
+        final int exponentBase10 = estimateBase10Exponent(normalizedPositiveX);
+        final double mantissa = estimateMantissaAsDouble(normalizedPositiveX);
+
+        return Math.log(mantissa) + exponentBase10 * Math.log(10.0);
     }
 
     /**
