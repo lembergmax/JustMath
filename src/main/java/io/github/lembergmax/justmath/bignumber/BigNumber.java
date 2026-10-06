@@ -69,6 +69,12 @@ import lombok.Setter;
 public class BigNumber extends Number implements Comparable<BigNumber>, Cloneable {
 
     /**
+     * Version of the serialized form. The lazily created {@link CalculatorEngine} is derived state and is
+     * not part of it.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Shared instance of the parser used to convert input strings into BigNumber objects.
      * This static parser ensures consistent parsing logic across all BigNumber instances.
      */
@@ -213,9 +219,12 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>Because the engine is created per instance and never shared across clones (see
      * {@link #clone()}), one holder's mutable engine configuration (locale, error mode, expression
      * cache) cannot leak into another holder.</p>
+     *
+     * <p>The field is {@code transient}: the engine is not serializable and is created again on demand after
+     * deserialization.</p>
      */
     @Setter
-    private CalculatorEngine calculatorEngine;
+    private transient CalculatorEngine calculatorEngine;
 
     /**
      * Returns this instance's {@link CalculatorEngine}, creating it lazily on first access. The
