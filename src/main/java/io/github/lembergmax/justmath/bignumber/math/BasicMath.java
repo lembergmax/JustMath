@@ -976,11 +976,14 @@ public final class BasicMath {
         }
 
         final StringBuilder keptDigits = new StringBuilder(roundingDecision.keptDigits());
-        int adjustedScale = adjustScaleAfterTruncation(normalizedValue.scale(), roundingDecision.removedDigitCount());
 
         if (roundingDecision.incrementRequired()) {
             incrementUnsignedDecimalDigits(keptDigits);
         }
+
+        final int removedIntegerDigitCount = removedIntegerDigitCount(normalizedValue.scale(), roundingDecision.removedDigitCount());
+        keptDigits.append("0".repeat(removedIntegerDigitCount));
+        final int adjustedScale = adjustScaleAfterTruncation(normalizedValue.scale(), roundingDecision.removedDigitCount());
 
         return normalize(new ParsedDecimalNumber(normalizedValue.sign(), stripLeadingZeros(keptDigits.toString()), adjustedScale));
     }
@@ -1034,8 +1037,9 @@ public final class BasicMath {
      * Adjusts the decimal scale after truncating unscaled digits.
      *
      * <p>If digits are removed from the end of the unscaled representation, scale is reduced if possible.
-     * If more digits are removed than the current scale, the "extra removal" corresponds to removing integer digits,
-     * which is represented by appending zeros and setting scale to 0.</p>
+     * If more digits are removed than the current scale, the "extra removal" corresponds to removing integer digits.
+     * The scale is then 0, and the caller restores the magnitude with {@link #removedIntegerDigitCount(int, int)}
+     * zeros.</p>
      *
      * @param originalScale     original scale
      * @param removedDigitCount number of removed unscaled digits
@@ -1046,6 +1050,18 @@ public final class BasicMath {
             return originalScale - removedDigitCount;
         }
         return 0;
+    }
+
+    /**
+     * Counts the integer digits that rounding removed, which must come back as trailing zeros so that the
+     * rounded value keeps its magnitude.
+     *
+     * @param originalScale     original scale
+     * @param removedDigitCount number of removed unscaled digits
+     * @return the number of removed digits that lie left of the decimal point; 0 if only fractional digits were removed
+     */
+    private static int removedIntegerDigitCount(final int originalScale, final int removedDigitCount) {
+        return Math.max(0, removedDigitCount - originalScale);
     }
 
     /**
