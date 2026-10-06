@@ -273,7 +273,10 @@ public interface Unit {
         FINGER_CLOTH,
         /**
          * Nail (cloth) – historical (varies).
+         *
+         * @deprecated since 1.7.0, misspelled. Use {@link #NAIL_CLOTH}.
          */
+        @Deprecated(since = "1.7.0")
         NAIL_COTH,
         /**
          * Barleycorn – historical (often 1/3 inch; varies).
@@ -346,7 +349,12 @@ public interface Unit {
         /**
          * Em (em) – relative to current font size.
          */
-        EM
+        EM,
+
+        /**
+         * Nail (cloth), historical (varies).
+         */
+        NAIL_CLOTH
 
     }
 
@@ -895,7 +903,10 @@ public interface Unit {
 
         /**
          * Carat.
+         *
+         * @deprecated since 1.7.0, misspelled. Use {@link #CARAT}.
          */
+        @Deprecated(since = "1.7.0")
         CARRAT,
         /**
          * Grain.
@@ -970,7 +981,12 @@ public interface Unit {
         SLUG,
         /**
          * Poundal.
+         *
+         * @deprecated since 1.7.0, a poundal is a unit of force and this constant never had a conversion
+         * definition, so using it in a conversion throws an {@link IllegalStateException}. Use
+         * {@link Unit.Force#POUNDAL}. Planned for removal in 2.0.
          */
+        @Deprecated(since = "1.7.0", forRemoval = true)
         POUNDAL,
         /**
          * Kilopound.
@@ -1086,7 +1102,12 @@ public interface Unit {
         /**
          * Lepton (Biblical Roman).
          */
-        BIBLICAL_ROMAN_LEPTON
+        BIBLICAL_ROMAN_LEPTON,
+
+        /**
+         * Carat (ct), 0.0002 kg.
+         */
+        CARAT
 
     }
 
@@ -2692,12 +2713,18 @@ public interface Unit {
 
         /**
          * 1 kilobit (kb) = 1024 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #KIBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         KILOBIT,
 
         /**
          * 1 kilobyte (kB) = 8192 bits = 1024 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #KIBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         KILOBYTE,
 
         /**
@@ -2707,12 +2734,18 @@ public interface Unit {
 
         /**
          * 1 megabit (Mb) = 1,048,576 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #MEBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         MEGABIT,
 
         /**
          * 1 megabyte (MB) = 8,388,608 bits = 1,048,576 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #MEBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         MEGABYTE,
 
         /**
@@ -2722,12 +2755,18 @@ public interface Unit {
 
         /**
          * 1 gigabit (Gb) = 1,073,741,824 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #GIBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         GIGABIT,
 
         /**
          * 1 gigabyte (GB) = 8,589,934,592 bits = 1,073,741,824 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #GIBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         GIGABYTE,
 
         /**
@@ -2737,12 +2776,18 @@ public interface Unit {
 
         /**
          * 1 terabit (Tb) = 1,099,511,627,776 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #TEBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         TERABIT,
 
         /**
          * 1 terabyte (TB) = 8,796,093,022,208 bits = 1,099,511,627,776 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #TEBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         TERABYTE,
 
         /**
@@ -2752,12 +2797,18 @@ public interface Unit {
 
         /**
          * 1 petabit (Pb) = 1,125,899,906,842,624 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #PEBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         PETABIT,
 
         /**
          * 1 petabyte (PB) = 9,007,199,254,740,992 bits = 1,125,899,906,842,624 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #PEBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         PETABYTE,
 
         /**
@@ -2767,12 +2818,18 @@ public interface Unit {
 
         /**
          * 1 exabit (Eb) = 1,152,921,504,606,846,976 bits (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #EXBIBIT}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         EXABIT,
 
         /**
          * 1 exabyte (EB) = 9,223,372,036,854,775,808 bits = 1,152,921,504,606,846,976 bytes (binary).
+         *
+         * @deprecated since 1.7.0, the name suggests a decimal multiple (1000) but the unit is binary (1024). Use {@link #EXBIBYTE}, which carries the IEC name.
          */
+        @Deprecated(since = "1.7.0")
         EXABYTE,
 
         /**
@@ -2853,7 +2910,67 @@ public interface Unit {
         /**
          * DVD (2 layer, 2 side) = 146,028,888,064 bits.
          */
-        DVD_2L_2S
+        DVD_2L_2S,
+
+        /**
+         * 1 kibibit (Kibit) = 1,024 bits.
+         */
+        KIBIBIT,
+
+        /**
+         * 1 kibibyte (KiB) = 8,192 bits = 1,024 bytes.
+         */
+        KIBIBYTE,
+
+        /**
+         * 1 mebibit (Mibit) = 1,048,576 bits.
+         */
+        MEBIBIT,
+
+        /**
+         * 1 mebibyte (MiB) = 8,388,608 bits = 1,048,576 bytes.
+         */
+        MEBIBYTE,
+
+        /**
+         * 1 gibibit (Gibit) = 1,073,741,824 bits.
+         */
+        GIBIBIT,
+
+        /**
+         * 1 gibibyte (GiB) = 8,589,934,592 bits = 1,073,741,824 bytes.
+         */
+        GIBIBYTE,
+
+        /**
+         * 1 tebibit (Tibit) = 1,099,511,627,776 bits.
+         */
+        TEBIBIT,
+
+        /**
+         * 1 tebibyte (TiB) = 8,796,093,022,208 bits = 1,099,511,627,776 bytes.
+         */
+        TEBIBYTE,
+
+        /**
+         * 1 pebibit (Pibit) = 1,125,899,906,842,624 bits.
+         */
+        PEBIBIT,
+
+        /**
+         * 1 pebibyte (PiB) = 9,007,199,254,740,992 bits = 1,125,899,906,842,624 bytes.
+         */
+        PEBIBYTE,
+
+        /**
+         * 1 exbibit (Eibit) = 1,152,921,504,606,846,976 bits.
+         */
+        EXBIBIT,
+
+        /**
+         * 1 exbibyte (EiB) = 9,223,372,036,854,775,808 bits = 1,152,921,504,606,846,976 bytes.
+         */
+        EXBIBYTE
 
     }
 

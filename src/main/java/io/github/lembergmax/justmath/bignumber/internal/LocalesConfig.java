@@ -25,6 +25,7 @@
 package io.github.lembergmax.justmath.bignumber.internal;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ import lombok.NoArgsConstructor;
  * </ol>
  *
  * <p>
- * The resulting array is stable, unique, and prioritizes the most common locales first.
+ * The resulting list is unmodifiable, stable, unique, and prioritizes the most common locales first.
  * </p>
  */
 @NoArgsConstructor
@@ -111,7 +112,7 @@ public final class LocalesConfig {
 	 * Full list of locales used for numeric parsing auto-detection.
 	 *
 	 * <p>
-	 * The array is built once during class initialization and contains:
+	 * The list is built once during class initialization, cannot be modified by callers, and contains:
 	 * </p>
 	 * <ul>
 	 *   <li>all locales from {@link #PREFERRED_LOCALES} (in the exact order defined there)</li>
@@ -127,10 +128,10 @@ public final class LocalesConfig {
 	 * to validate an input format against multiple locales.
 	 * </p>
 	 */
-	public static final Locale[] SUPPORTED_LOCALES = buildSupportedLocales();
+	public static final List<Locale> SUPPORTED_LOCALES = buildSupportedLocales();
 
 	/**
-	 * Builds the prioritized {@link #SUPPORTED_LOCALES} array.
+	 * Builds the prioritized {@link #SUPPORTED_LOCALES} list.
 	 *
 	 * <p>
 	 * Implementation details:
@@ -140,9 +141,9 @@ public final class LocalesConfig {
 	 *   <li>{@code null} locales are ignored defensively.</li>
 	 * </ul>
 	 *
-	 * @return an array of unique locales where preferred locales come first, followed by all JVM locales
+	 * @return an unmodifiable list of unique locales where preferred locales come first, followed by all JVM locales
 	 */
-	private static Locale[] buildSupportedLocales() {
+	private static List<Locale> buildSupportedLocales() {
 		final Set<Locale> ordered = new LinkedHashSet<>();
 
 		for (Locale locale : PREFERRED_LOCALES) {
@@ -157,7 +158,7 @@ public final class LocalesConfig {
 			}
 		}
 
-		return ordered.toArray(Locale[]::new);
+		return List.copyOf(ordered);
 	}
 
 }

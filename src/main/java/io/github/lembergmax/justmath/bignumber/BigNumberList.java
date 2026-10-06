@@ -321,7 +321,7 @@ public class BigNumberList implements List<BigNumber> {
      * and the remaining elements are passed as arguments.
      * </p>
      *
-     * @return a new {@link BigNumber} representing the sum of all elements
+     * @return a new {@link BigNumber} representing the sum of all elements (a copy of the element for a one-element list)
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber sum() {
@@ -330,7 +330,7 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         if (values.size() == 1) {
-            return values.getFirst();
+            return values.getFirst().clone();
         }
 
         return values.getFirst().sum(values.subList(1, values.size()));
@@ -354,7 +354,7 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         if (values.size() == 1) {
-            return values.getFirst();
+            return values.getFirst().clone();
         }
 
         return values.getFirst().average(values.subList(1, values.size()));
@@ -388,7 +388,7 @@ public class BigNumberList implements List<BigNumber> {
         final int middleIndex = size / 2;
 
         if (size % 2 == 1) {
-            return sorted.get(middleIndex);
+            return sorted.get(middleIndex).clone();
         }
 
         final BigNumber lower = sorted.get(middleIndex - 1);
@@ -409,7 +409,8 @@ public class BigNumberList implements List<BigNumber> {
      * {@code "1.0"} count as one). First-occurrence order is preserved, so the returned set is stable
      * across runs.</p>
      *
-     * @return a {@link Set} of {@link BigNumber} values that occur most frequently
+     * @return a {@link Set} of copies of the {@link BigNumber} values that occur most frequently; mutating
+     * a returned value does not change this list
      */
     public Set<BigNumber> modes() {
         if (isEmpty()) {
@@ -437,7 +438,7 @@ public class BigNumberList implements List<BigNumber> {
         final Set<BigNumber> result = new LinkedHashSet<>();
         for (final var entry : countsByValue.entrySet()) {
             if (entry.getValue()[0] == maxCount) {
-                result.add(representativeByValue.get(entry.getKey()));
+                result.add(representativeByValue.get(entry.getKey()).clone());
             }
         }
         return result;
@@ -459,7 +460,7 @@ public class BigNumberList implements List<BigNumber> {
     /**
      * Returns the smallest {@link BigNumber} in this list according to the natural ordering.
      *
-     * @return the minimum value in this list
+     * @return a copy of the minimum value in this list; never an element of this list
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber min() {
@@ -475,13 +476,13 @@ public class BigNumberList implements List<BigNumber> {
             }
         }
 
-        return currentMin;
+        return currentMin.clone();
     }
 
     /**
      * Returns the largest {@link BigNumber} in this list according to the natural ordering.
      *
-     * @return the maximum value in this list
+     * @return a copy of the maximum value in this list; never an element of this list
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber max() {
@@ -497,7 +498,7 @@ public class BigNumberList implements List<BigNumber> {
             }
         }
 
-        return currentMax;
+        return currentMax.clone();
     }
 
     /**

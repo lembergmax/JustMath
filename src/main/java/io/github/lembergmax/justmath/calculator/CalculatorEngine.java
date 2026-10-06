@@ -128,6 +128,18 @@ import lombok.NonNull;
  * {@code .}-as-decimal output of earlier releases.
  * </p>
  *
+ * <h2>Thread safety</h2>
+ *
+ * <p>
+ * An engine is meant to be used from one thread at a time. Evaluating does not change the engine except for
+ * the optional expression cache, which is guarded by the engine's monitor. The configuration fields
+ * ({@code locale}, {@code inputLocale}, {@code errorMode}, {@code expressionCacheSize} and the cache flags)
+ * are {@code volatile}, so a change made on one thread becomes visible to the others. The setters are not
+ * atomic as a group: an evaluation that runs between two setter calls sees a mix of old and new settings.
+ * Callers that need a consistent configuration across threads have to synchronize externally or give each
+ * thread its own engine.
+ * </p>
+ *
  * <h2>Backwards compatibility</h2>
  *
  * <p>
@@ -193,7 +205,7 @@ public class CalculatorEngine {
      */
     @NonNull
     @Getter
-    private Locale locale = Locale.ENGLISH;
+    private volatile Locale locale = Locale.ENGLISH;
 
     /**
      * Locale that governs how numeric literals in the <em>input</em> expression are parsed,
@@ -205,7 +217,7 @@ public class CalculatorEngine {
      */
     @NonNull
     @Getter
-    private Locale inputLocale = Locale.US;
+    private volatile Locale inputLocale = Locale.US;
 
     /**
      * Decimal separator derived from {@link #inputLocale}, cached so the hot evaluation path
@@ -226,7 +238,7 @@ public class CalculatorEngine {
      */
     @NonNull
     @Getter
-    private ErrorMode errorMode = ErrorMode.RAW;
+    private volatile ErrorMode errorMode = ErrorMode.RAW;
 
     /**
      * Whether the token cache is enabled. Defaults to {@code false}.
@@ -245,7 +257,7 @@ public class CalculatorEngine {
      * Maximum size (LRU capacity) of the token cache. Defaults to {@code 128}.
      */
     @Getter
-    private int expressionCacheSize = 128;
+    private volatile int expressionCacheSize = 128;
 
     /**
      * Lazily initialized LRU cache for tokenized expressions. Keys are the normalized
