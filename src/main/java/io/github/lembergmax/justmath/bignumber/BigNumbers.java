@@ -28,10 +28,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
+import io.github.lembergmax.justmath.bignumber.internal.BoundedCache;
 import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
 import lombok.NonNull;
 
@@ -123,17 +123,25 @@ public class BigNumbers {
     public static final BigNumber ONE_HUNDRED_EIGHTY = new BigNumber("180", DEFAULT_MATH_CONTEXT);
 
     /**
+     * Number of {@link MathContext}s for which the values of pi and e are cached, per constant. A caller that
+     * asks for more distinct precisions than this evicts the least recently used one, so memory use stays
+     * bounded even at the largest accepted precision.
+     */
+    private static final int MAX_CACHED_PRECISIONS = 32;
+
+    /**
      * Cache of pi values computed via {@link BigDecimalMath#pi(MathContext)}, keyed by
      * {@link MathContext}. Locale only controls presentation and is intentionally not part
-     * of the cache key: the underlying numeric value is locale-independent.
+     * of the cache key: the underlying numeric value is locale-independent. Holds at most
+     * {@link #MAX_CACHED_PRECISIONS} entries.
      */
-    private static final ConcurrentHashMap<MathContext, BigDecimal> PI_BD_CACHE = new ConcurrentHashMap<>();
+    private static final BoundedCache<MathContext, BigDecimal> PI_BD_CACHE = new BoundedCache<>(MAX_CACHED_PRECISIONS);
 
     /**
      * Cache of Euler's number values computed via {@link BigDecimalMath#e(MathContext)},
-     * keyed by {@link MathContext}.
+     * keyed by {@link MathContext}. Holds at most {@link #MAX_CACHED_PRECISIONS} entries.
      */
-    private static final ConcurrentHashMap<MathContext, BigDecimal> E_BD_CACHE = new ConcurrentHashMap<>();
+    private static final BoundedCache<MathContext, BigDecimal> E_BD_CACHE = new BoundedCache<>(MAX_CACHED_PRECISIONS);
 
     /**
      * Generates a uniformly distributed random integer {@link BigNumber} within the range [min, max).
@@ -198,6 +206,8 @@ public class BigNumbers {
      * Returns the mathematical constant e (Euler's number) with the specified precision.
      * <p>
      * Uses {@link BigDecimalMath#e(MathContext)} to compute the value of e to the desired precision.
+     * <p>
+     * The values for the 32 most recently used {@code MathContext}s are cached.
      *
      * @param mathContext
      * 	the {@link MathContext} specifying the precision and rounding mode
@@ -228,6 +238,8 @@ public class BigNumbers {
      * Returns the mathematical constant π (pi) with the specified precision.
      * <p>
      * Uses {@link BigDecimalMath#pi(MathContext)} to compute the value of pi to the desired precision.
+     * <p>
+     * The values for the 32 most recently used {@code MathContext}s are cached.
      *
      * @param mathContext
      * 	the {@link MathContext} specifying the precision and rounding mode
