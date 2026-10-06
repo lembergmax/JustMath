@@ -141,6 +141,9 @@ public class BigNumbers {
 	 * Mathematically: returns a value x such that {@code min ≤ x < max}, where x is an integer.
 	 * <p>
 	 * Both {@code min} and {@code max} must be exact integers (no decimal part), and {@code min < max}.
+	 * <p>
+	 * The values come from {@link ThreadLocalRandom}. They are meant for simulations and for the calculator's
+	 * {@code RandInt} function and are not suitable for security purposes such as keys, tokens or nonces.
 	 *
 	 * @param min
 	 * 	the inclusive lower bound (must be an integer)

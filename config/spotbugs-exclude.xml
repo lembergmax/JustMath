@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Exclusions for SpotBugs (with the FindSecBugs rules). Every entry needs a reason; an entry without one
+  does not belong here. Fix the code instead of adding an exclusion whenever that is possible.
+-->
+<FindBugsFilter>
+
+    <!--
+      CT_CONSTRUCTOR_THROW: a finalizer attack needs a class that can be subclassed, whose constructor throws
+      after a reference has escaped, and whose finalizer or cleanup then does something harmful. No class in
+      the library has a finalizer, holds native resources or relies on finalize or Cleaner. The constructors
+      reject invalid arguments on purpose (@NonNull, MathContext checks, dimension checks).
+    -->
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!--
+      EI_EXPOSE_REP2 on BigNumberList(List): the constructor aliases the given list on purpose. This is
+      documented in its JavaDoc, and callers who want an independent list use BigNumberList(BigNumberList)
+      or copy().
+    -->
+    <Match>
+        <Class name="io.github.lembergmax.justmath.bignumber.BigNumberList"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+      EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC: BigNumberCoordinate narrows equals to coordinates, and
+      BigNumber.equals rejects coordinates explicitly (audit fix K1), so equals is symmetric in both
+      directions. BigNumberCoordinateEqualsSymmetryTest pins this, including compareTo and hashCode.
+    -->
+    <Match>
+        <Class name="io.github.lembergmax.justmath.bignumber.BigNumberCoordinate"/>
+        <Method name="equals"/>
+        <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC"/>
+    </Match>
+
+    <!--
+      CN_IDIOM_NO_SUPER_CALL on BigNumberMatrix.clone(): the matrix has final fields (rows, columns, data), so
+      the copy cannot be completed after super.clone(). clone() delegates to the copy constructor, which
+      deep-copies the data, and BigNumberMatrixTest checks that the copy is independent.
+    -->
+    <Match>
+        <Class name="io.github.lembergmax.justmath.bignumber.BigNumberMatrix"/>
+        <Method name="clone"/>
+        <Bug pattern="CN_IDIOM_NO_SUPER_CALL"/>
+    </Match>
+
+    <!--
+      PREDICTABLE_RANDOM in BigNumbers.randomIntegerBigNumberInRange: this backs the RandInt function of the
+      calculator. It is not meant for keys, tokens or nonces, and its JavaDoc says so.
+    -->
+    <Match>
+        <Class name="io.github.lembergmax.justmath.bignumber.BigNumbers"/>
+        <Method name="randomIntegerBigNumberInRange"/>
+        <Bug pattern="PREDICTABLE_RANDOM"/>
+    </Match>
+
+</FindBugsFilter>
