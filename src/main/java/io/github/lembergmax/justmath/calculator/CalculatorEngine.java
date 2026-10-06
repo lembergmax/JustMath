@@ -132,7 +132,7 @@ import lombok.NonNull;
  *
  * <p>
  * An engine is meant to be used from one thread at a time. Evaluating does not change the engine except for
- * the optional expression cache, which is guarded by the engine's monitor. The configuration fields
+ * the optional expression cache, which is guarded by a private lock. The configuration fields
  * ({@code locale}, {@code inputLocale}, {@code errorMode}, {@code expressionCacheSize} and the cache flags)
  * are {@code volatile}, so a change made on one thread becomes visible to the others. The setters are not
  * atomic as a group: an evaluation that runs between two setter calls sees a mix of old and new settings.
@@ -226,8 +226,7 @@ public class CalculatorEngine {
      * {@link CalculatorEngineUtils}); it is internal state, not public API.
      *
      * <p>Declared {@code volatile} so the unsynchronized read on the {@link #evaluate} hot path sees
-     * the value written by a concurrent {@link #setInputLocale(Locale)} (which is otherwise
-     * synchronized to keep the cache discard consistent with the other cache mutators).</p>
+     * the value written by a concurrent {@link #setInputLocale(Locale)}.</p>
      */
     @Getter(AccessLevel.PACKAGE)
     private volatile char inputDecimalSeparator = '.';
@@ -247,7 +246,7 @@ public class CalculatorEngine {
      * {@link #evaluate(String, Map)} observes the latest value written by
      * {@link #setExpressionCacheEnabled(boolean)} or {@link #setExpressionCacheSize(int)} on
      * another thread. The actual cache mutation (lookup / store / discard) is still serialized
-     * through this engine's monitor — the {@code volatile} only fixes the visibility gap
+     * through the private {@link #cacheLock}; the {@code volatile} only fixes the visibility gap
      * between the setter and the fast-path enabled-check in callers.</p>
      */
     @Getter
@@ -276,16 +275,22 @@ public class CalculatorEngine {
      * {@code null}-write performed by the cache-discarding setters becomes visible promptly
      * to other threads — even outside the synchronized lookup/store helpers.</p>
      *
-     * <p>All reads and writes of this field happen under this engine's monitor (the cache setters and
-     * {@code lookupCache}/{@code storeCache} are all {@code synchronized} on {@code this}), so a
-     * cache-discarding setter can never null the reference out from under an in-flight lookup or
-     * store.</p>
+     * <p>All writes of this field and all lookups and stores happen under the private {@link #cacheLock}
+     * (the cache setters, {@code lookupCache} and {@code storeCache}), so a cache-discarding setter can
+     * never null the reference out from under an in-flight lookup or store.</p>
      *
      * <p>Exposed only package-privately (for white-box tests in the same package); the live cache is never
-     * part of the public API, so external callers cannot mutate or iterate it outside this engine's monitor.</p>
+     * part of the public API, so external callers cannot mutate or iterate it outside the cache lock.</p>
      */
     @Getter(AccessLevel.PACKAGE)
     private volatile Map<String, List<Token>> expressionCache;
+
+    /**
+     * Guards the cache reference together with the cache-enabled flag. The lock is private on purpose:
+     * code outside the engine cannot synchronize on it, so holding the engine's own monitor can never stall
+     * configuration or evaluation.
+     */
+    private final Object cacheLock = new Object();
 
     /**
      * Default constructor that uses {@link BigNumbers#DEFAULT_DIVISION_PRECISION} and
@@ -456,10 +461,10 @@ public class CalculatorEngine {
      * @param inputLocale locale whose decimal separator is used when parsing input; must not be {@code null}
      * @return this engine for builder-style chaining
      */
-    public synchronized CalculatorEngine setInputLocale(@NonNull final Locale inputLocale) {
+    public CalculatorEngine setInputLocale(@NonNull final Locale inputLocale) {
         this.inputLocale = inputLocale;
         this.inputDecimalSeparator = getDecimalSeparator(inputLocale);
-        this.expressionCache = null;
+        discardCache();
         return this;
     }
 
@@ -479,10 +484,12 @@ public class CalculatorEngine {
      * @param enabled {@code true} to enable caching of tokenized expressions
      * @return this engine for builder-style chaining
      */
-    public synchronized CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
-        this.expressionCacheEnabled = enabled;
-        if (!enabled) {
-            this.expressionCache = null;
+    public CalculatorEngine setExpressionCacheEnabled(final boolean enabled) {
+        synchronized (cacheLock) {
+            this.expressionCacheEnabled = enabled;
+            if (!enabled) {
+                this.expressionCache = null;
+            }
         }
         return this;
     }
@@ -495,12 +502,12 @@ public class CalculatorEngine {
      * @return this engine for builder-style chaining
      * @throws IllegalArgumentException if {@code size} is not strictly positive
      */
-    public synchronized CalculatorEngine setExpressionCacheSize(final int size) {
+    public CalculatorEngine setExpressionCacheSize(final int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("expressionCacheSize must be positive");
         }
         this.expressionCacheSize = size;
-        this.expressionCache = null;
+        discardCache();
         return this;
     }
 
@@ -1070,35 +1077,48 @@ public class CalculatorEngine {
     /**
      * Looks up a cached token list, initializing the cache lazily if necessary. When the cache
      * is disabled this method returns {@code null} without allocating, so callers do not need
-     * to pre-check {@link #expressionCacheEnabled} on the fast path — the check inside the
-     * monitor is the single source of truth and rules out the disable-vs-lookup race that
+     * to pre-check {@link #expressionCacheEnabled} on the fast path. The check inside the
+     * lock is the single source of truth and rules out the disable-vs-lookup race that
      * could previously leak a write into a cache that was supposed to be off.
      *
      * @param key normalized expression string; must not be {@code null}
      * @return cached token list, or {@code null} if no entry exists or the cache is disabled
      */
-    private synchronized List<Token> lookupCache(@NonNull final String key) {
-        if (!expressionCacheEnabled) {
-            return null;
+    private List<Token> lookupCache(@NonNull final String key) {
+        synchronized (cacheLock) {
+            if (!expressionCacheEnabled) {
+                return null;
+            }
+            ensureCache();
+            return expressionCache.get(key);
         }
-        ensureCache();
-        return expressionCache.get(key);
     }
 
     /**
      * Stores an immutable token list in the cache, initializing it lazily if necessary. When
      * the cache is disabled this method silently no-ops, see {@link #lookupCache(String)} for
-     * the rationale behind centralising the enabled-check inside the monitor.
+     * the rationale behind centralising the enabled-check inside the lock.
      *
      * @param key   normalized expression string; must not be {@code null}
      * @param value immutable token list captured before variable substitution; must not be {@code null}
      */
-    private synchronized void storeCache(@NonNull final String key, @NonNull final List<Token> value) {
-        if (!expressionCacheEnabled) {
-            return;
+    private void storeCache(@NonNull final String key, @NonNull final List<Token> value) {
+        synchronized (cacheLock) {
+            if (!expressionCacheEnabled) {
+                return;
+            }
+            ensureCache();
+            expressionCache.put(key, value);
         }
-        ensureCache();
-        expressionCache.put(key, value);
+    }
+
+    /**
+     * Drops the cache so that the next access builds a new one with the current capacity.
+     */
+    private void discardCache() {
+        synchronized (cacheLock) {
+            this.expressionCache = null;
+        }
     }
 
     /**
@@ -1106,11 +1126,10 @@ public class CalculatorEngine {
      * subsequent calls to {@link #setExpressionCacheSize(int)} discard the existing cache so
      * that this method can rebuild it with the new capacity.
      *
-     * <p><strong>Threading contract:</strong> the method is intentionally not declared
-     * {@code synchronized} because every existing caller ({@link #lookupCache(String)},
-     * {@link #storeCache(String, List)}) already holds this engine's monitor. New callers must
-     * hold the same monitor before invoking this method; otherwise the {@code null}-check and
-     * the assignment race with the cache-discarding setters.</p>
+     * <p><strong>Threading contract:</strong> the method does not lock by itself because every existing
+     * caller ({@link #lookupCache(String)}, {@link #storeCache(String, List)}) already holds the
+     * {@link #cacheLock}. New callers must hold it before invoking this method; otherwise the
+     * {@code null}-check and the assignment race with the cache-discarding setters.</p>
      */
     private void ensureCache() {
         if (expressionCache == null) {

@@ -911,7 +911,7 @@ must be observed by callers:
 * **`CalculatorEngine` is not thread-safe.** Locale, error mode and the expression cache are
   mutable per-instance state. Share an engine across threads only behind external
   synchronization, or give each thread its own engine. The token cache itself uses the
-  engine's monitor (`synchronized`) plus `volatile` visibility on the enable-flag and cache
+  a private lock plus `volatile` visibility on the enable-flag and cache
   reference, so concurrent `setExpressionCacheEnabled(false)` + ongoing `evaluate(...)` is
   safe. The other configuration fields (`locale`, `inputLocale`, `errorMode`, `expressionCacheSize`)
   are `volatile`, so a change made on one thread becomes visible to the others. The setters are not
