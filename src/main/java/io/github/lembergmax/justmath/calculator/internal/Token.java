@@ -43,33 +43,33 @@ import lombok.ToString;
 @AllArgsConstructor
 public class Token {
 
-	private final Type type;
-	private final String value;
+    private final Type type;
+    private final String value;
 
-	/**
-	 * Returns the matching ArithmeticOperator if available.
-	 *
-	 * @return Optional of ArithmeticOperator
-	 */
-	public Optional<ExpressionElement> asArithmeticOperator() {
-		return type == Type.UNARY_OPERATOR
-				? ExpressionElements.findUnaryBySymbol(value)
-				: ExpressionElements.findBySymbol(value);
-	}
+    /**
+     * Returns the matching ArithmeticOperator if available.
+     *
+     * @return Optional of ArithmeticOperator
+     */
+    public Optional<ExpressionElement> asArithmeticOperator() {
+        return type == Type.UNARY_OPERATOR
+                ? ExpressionElements.findUnaryBySymbol(value)
+                : ExpressionElements.findBySymbol(value);
+    }
 
-	/**
-	 * Enumeration of token types.
-	 */
-	public enum Type {
-		NUMBER,
-		OPERATOR,
-		UNARY_OPERATOR,
-		FUNCTION,
-		LEFT_PAREN,
-		RIGHT_PAREN,
-		SEMICOLON,
-		STRING,
-		CONSTANT,
-		VARIABLE
-	}
+    /**
+     * Enumeration of token types.
+     */
+    public enum Type {
+        NUMBER,
+        OPERATOR,
+        UNARY_OPERATOR,
+        FUNCTION,
+        LEFT_PAREN,
+        RIGHT_PAREN,
+        SEMICOLON,
+        STRING,
+        CONSTANT,
+        VARIABLE
+    }
 }

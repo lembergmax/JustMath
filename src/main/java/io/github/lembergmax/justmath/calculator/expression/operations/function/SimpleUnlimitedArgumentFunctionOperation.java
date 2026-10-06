@@ -32,6 +32,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface SimpleUnlimitedArgumentFunctionOperation {
 
-	BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, Locale locale);
+    BigNumber apply(BigNumber bigNumber, List<BigNumber> bigNumbers, Locale locale);
 
 }

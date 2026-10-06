@@ -71,6 +71,11 @@ import lombok.NonNull;
 public class BigNumberCoordinate extends BigNumber implements MultiValueResult {
 
     /**
+     * Version of the serialized form.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Type of this coordinate. Determines how {@code x} and {@code y} are interpreted:
      * - {@code CARTESIAN}: {@code x} and {@code y} are Cartesian coordinates.
      * - {@code POLAR}: {@code x} is radius (r) and {@code y} is angle (θ).

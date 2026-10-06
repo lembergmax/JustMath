@@ -31,6 +31,6 @@ package io.github.lembergmax.justmath.calculator.internal;
  */
 public enum TrigonometricMode {
 
-	DEG, RAD;
+    DEG, RAD;
 
 }

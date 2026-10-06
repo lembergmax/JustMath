@@ -23,6 +23,7 @@
  */
 package io.github.lembergmax.justmath.calculator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.lembergmax.justmath.calculator.errors.ErrorMode;
@@ -42,6 +43,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Visibility contract of the {@link CalculatorEngine} configuration. The setters may run on a
@@ -101,6 +103,29 @@ class CalculatorEngineVisibilityTest {
             start.countDown();
             for (final Future<Void> future : futures) {
                 future.get();
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    @DisplayName("holding the engine's own monitor on another thread does not block configuration or evaluation")
+    void externalLockOnTheEngineDoesNotBlock() throws Exception {
+        final CalculatorEngine engine = new CalculatorEngine();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        try {
+            synchronized (engine) {
+                final Future<String> work = executor.submit(() -> {
+                    engine.setExpressionCacheEnabled(true);
+                    engine.setExpressionCacheSize(8);
+                    engine.setInputLocale(Locale.US);
+                    return engine.evaluateToString("1+1");
+                });
+
+                assertEquals("2", work.get(5, TimeUnit.SECONDS));
             }
         } finally {
             executor.shutdownNow();

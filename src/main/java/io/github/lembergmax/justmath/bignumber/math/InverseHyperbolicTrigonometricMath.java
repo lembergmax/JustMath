@@ -43,9 +43,9 @@ import lombok.NonNull;
  * <h2>Definitions</h2>
  * <pre>
  * asinh(x) = ln(x + sqrt(x^2 + 1))
- * acosh(x) = ln(x + sqrt(x^2 - 1))           domain: x >= 1
- * atanh(x) = 0.5 * ln((1 + x) / (1 - x))     domain: |x| < 1
- * acoth(x) = 0.5 * ln((x + 1) / (x - 1))     domain: |x| > 1
+ * acosh(x) = ln(x + sqrt(x^2 - 1))           domain: x &gt;= 1
+ * atanh(x) = 0.5 * ln((1 + x) / (1 - x))     domain: |x| &lt; 1
+ * acoth(x) = 0.5 * ln((x + 1) / (x - 1))     domain: |x| &gt; 1
  * </pre>
  *
  * <h2>Robust sign handling</h2>

@@ -25,7 +25,6 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.bignumber.internal.LocaleSeparators;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import lombok.NonNull;
@@ -335,13 +334,12 @@ public final class BasicMath {
      * (no exponent notation). This makes small exp calls extremely fast (your test suite).</p>
      *
      * <p>Fallback path:
-     * uses a string-based exp implementation with:
+     * uses a string-based exp implementation with:</p>
      * <ul>
      *   <li>power-of-two reduction {@code e^x = (e^{x/2^k})^{2^k}}</li>
      *   <li>Taylor series for the reduced exponent</li>
      *   <li>fast division by small integers for series term updates (critical for speed)</li>
      * </ul>
-     * </p>
      *
      * @param argument    exponent argument {@code x}; must not be {@code null}
      * @param mathContext precision and rounding mode; must not be {@code null} and precision must be > 0
@@ -1717,7 +1715,7 @@ public final class BasicMath {
      *   <li>{@code modulo}: returns a non-negative result for negative dividends (your existing behavior).</li>
      * </ul>
      *
-     * <h2>Algorithm overview</h2>
+     * <p><b>Algorithm overview</b></p>
      * <ol>
      *   <li>Parse both operands into (sign, digits, scale) and normalize.</li>
      *   <li>Scale both operands to a common integer scale by appending zeros.</li>

@@ -37,31 +37,31 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class SimpleCoordinateFunction extends CoordinateFunction {
 
-	private final SimpleCoordinateFunctionOperation operation;
+    private final SimpleCoordinateFunctionOperation operation;
 
-	public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
-		super(symbol, precedence, wrap(operation));
-		this.operation = operation;
-	}
+    public SimpleCoordinateFunction(String symbol, int precedence, SimpleCoordinateFunctionOperation operation) {
+        super(symbol, precedence, wrap(operation));
+        this.operation = operation;
+    }
 
-	/**
-	 * Wraps a SimpleCoordinateFunctionOperation into a CoordinateFunctionOperation.
-	 * Ignores the trigonometricMode parameter, delegating to the underlying operation.
-	 *
-	 * @param operation
-	 * 	the SimpleCoordinateFunctionOperation to wrap
-	 *
-	 * @return a CoordinateFunctionOperation that delegates to the given operation
-	 */
-	private static CoordinateFunctionOperation wrap(SimpleCoordinateFunctionOperation operation) {
-		return (a, b, mathContext, trigonometricMode, locale) -> operation.apply(a, b, mathContext, locale);
-	}
+    /**
+     * Wraps a SimpleCoordinateFunctionOperation into a CoordinateFunctionOperation.
+     * Ignores the trigonometricMode parameter, delegating to the underlying operation.
+     *
+     * @param operation
+     * 	the SimpleCoordinateFunctionOperation to wrap
+     *
+     * @return a CoordinateFunctionOperation that delegates to the given operation
+     */
+    private static CoordinateFunctionOperation wrap(SimpleCoordinateFunctionOperation operation) {
+        return (a, b, mathContext, trigonometricMode, locale) -> operation.apply(a, b, mathContext, locale);
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        BigNumber b = ensureScalar(stack.pop());
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a, b, mathContext, locale));
+    }
 
 }

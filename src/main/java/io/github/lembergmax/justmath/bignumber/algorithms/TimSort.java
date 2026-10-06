@@ -43,12 +43,12 @@ public class TimSort extends SortingAlgorithm {
      *
      * <p>
      * This is a TimSort-style hybrid:
+     * </p>
      * <ul>
      *   <li>Splits the list into small runs (minimum run length derived from {@code MIN_MERGE})</li>
      *   <li>Sorts each run using insertion sort</li>
      *   <li>Merges runs iteratively (stable merge)</li>
      * </ul>
-     * </p>
      *
      * <p>This implementation is stable: equal elements keep their original relative order.</p>
      *

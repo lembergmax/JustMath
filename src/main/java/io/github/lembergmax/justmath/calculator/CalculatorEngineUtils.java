@@ -62,22 +62,24 @@ public class CalculatorEngineUtils {
      *
      * <p>
      * The replacement follows this rule:
+     * </p>
      * <ul>
      *   <li>The first occurrence of the absolute sign ({@link ExpressionElements#SURRFUNC_ABS_S})
      *       is replaced with {@code abs(} (opening the absolute value function).</li>
      *   <li>The second occurrence is replaced with a closing parenthesis {@code )}.</li>
      *   <li>The third again with {@code abs(}, the fourth with {@code )}, and so forth.</li>
      * </ul>
+     * <p>
      * As a result, an even number of absolute signs is required to form valid pairs.
      * </p>
      *
      * <p>
      * For example:
+     * </p>
      * <ul>
      *   <li>Input: {@code |x+2|} → Output: {@code abs(x+2)}</li>
      *   <li>Input: {@code |x-1| + |y|} → Output: {@code abs(x-1) + abs(y)}</li>
      * </ul>
-     * </p>
      *
      * @param expression the mathematical expression containing absolute value signs
      * @return the expression with all absolute signs replaced by {@code abs(...)} notation

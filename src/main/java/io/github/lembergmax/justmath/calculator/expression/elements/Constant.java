@@ -34,16 +34,16 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class Constant extends Function {
 
-	private final ConstantOperation operation;
+    private final ConstantOperation operation;
 
-	public Constant(String symbol, ConstantOperation operation) {
-		super(symbol, 1);
-		this.operation = operation;
-	}
+    public Constant(String symbol, ConstantOperation operation) {
+        super(symbol, 1);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		stack.push(operation.apply(mathContext, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        stack.push(operation.apply(mathContext, locale));
+    }
 
 }

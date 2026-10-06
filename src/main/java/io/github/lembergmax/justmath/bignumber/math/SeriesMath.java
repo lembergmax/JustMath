@@ -211,7 +211,6 @@ public final class SeriesMath {
      * </ol>
      * <p>
      * If {@code kStart} is greater than {@code kEnd}, the product returns the multiplicative identity {@code 1}.
-     * <p>
      *
      * @param kStart            The start integer value of {@code k} (inclusive).
      * @param kEnd              The end integer value of {@code k} (inclusive).
@@ -291,7 +290,6 @@ public final class SeriesMath {
      * </ol>
      * <p>
      * If {@code kStart} is greater than {@code kEnd}, the product returns the multiplicative identity {@code 1}.
-     * <p>
      *
      * @param kStart            The start integer value of {@code k} (inclusive).
      * @param kEnd              The end integer value of {@code k} (inclusive).

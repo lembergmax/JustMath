@@ -39,46 +39,46 @@ import lombok.NonNull;
  */
 public final class TwoDimensionalMath {
 
-	/** Non-instantiable utility class. */
-	private TwoDimensionalMath() {
-	}
+    /** Non-instantiable utility class. */
+    private TwoDimensionalMath() {
+    }
 
 
-	/**
-	 * Computes the angle θ between the positive x-axis and the point (x, y).
-	 * <p>
-	 * This method calculates the arctangent of y/x while taking into account the signs of both arguments
-	 * to determine the correct quadrant of the angle. The result is returned in radians and lies within
-	 * the interval [-π, π].
-	 * <p>
-	 * Mathematically, this function represents:
-	 * <pre>
-	 *     θ = atan2(y, x)
-	 * </pre>
-	 * where θ is the angle between the vector (x, y) and the positive x-axis in the Cartesian plane.
-	 * <p>
-	 * <strong>Restrictions:</strong>
-	 * <ul>
-	 *   <li>{@code x} and {@code y} may not both be zero — the angle is undefined at the origin (0, 0).
-	 *       All other combinations (including {@code y = 0} or {@code x = 0} on its own) are valid:
-	 *       e.g. {@code atan2(5, 0) = π/2}, {@code atan2(0, -5) = π}.</li>
-	 * </ul>
-	 *
-	 * @param y           the y-coordinate
-	 * @param x           the x-coordinate
-	 * @param mathContext the {@link MathContext} controlling precision and rounding
-	 * @param locale      the {@link Locale} used for number formatting
-	 * @return the angle θ in radians as a {@link BigNumber}, in the range {@code (-π, π]}
-	 * @throws IllegalArgumentException if {@code x} and {@code y} are both zero
-	 */
-	public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Computes the angle θ between the positive x-axis and the point (x, y).
+     * <p>
+     * This method calculates the arctangent of y/x while taking into account the signs of both arguments
+     * to determine the correct quadrant of the angle. The result is returned in radians and lies within
+     * the interval [-π, π].
+     * <p>
+     * Mathematically, this function represents:
+     * <pre>
+     *     θ = atan2(y, x)
+     * </pre>
+     * where θ is the angle between the vector (x, y) and the positive x-axis in the Cartesian plane.
+     * <p>
+     * <strong>Restrictions:</strong>
+     * <ul>
+     *   <li>{@code x} and {@code y} may not both be zero — the angle is undefined at the origin (0, 0).
+     *       All other combinations (including {@code y = 0} or {@code x = 0} on its own) are valid:
+     *       e.g. {@code atan2(5, 0) = π/2}, {@code atan2(0, -5) = π}.</li>
+     * </ul>
+     *
+     * @param y           the y-coordinate
+     * @param x           the x-coordinate
+     * @param mathContext the {@link MathContext} controlling precision and rounding
+     * @param locale      the {@link Locale} used for number formatting
+     * @return the angle θ in radians as a {@link BigNumber}, in the range {@code (-π, π]}
+     * @throws IllegalArgumentException if {@code x} and {@code y} are both zero
+     */
+    public static BigNumber atan2(@NonNull final BigNumber y, @NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("atan2 is undefined at the origin (0, 0)");
-		}
+        if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
+            throw new IllegalArgumentException("atan2 is undefined at the origin (0, 0)");
+        }
 
-		return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();
-	}
+        return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+    }
 
 }

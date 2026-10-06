@@ -36,19 +36,19 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class ThreeArgumentFunction extends Function {
 
-	private final ThreeArgumentFunctionOperation operation;
+    private final ThreeArgumentFunctionOperation operation;
 
-	public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
-		super(symbol, precedence);
-		this.operation = operation;
-	}
+    public ThreeArgumentFunction(String symbol, int precedence, ThreeArgumentFunctionOperation operation) {
+        super(symbol, precedence);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		String c = String.valueOf(stack.pop());
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        String c = String.valueOf(stack.pop());
+        BigNumber b = ensureScalar(stack.pop());
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a, b, c, mathContext, trigonometricMode, locale));
+    }
 
 }
