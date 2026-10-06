@@ -752,8 +752,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Raises this number to the power of the specified {@link BigNumber} exponent using the given {@link MathContext}.
      *
-     * <p>This method delegates the computation to {@link BigDecimalMath#pow(BigDecimal, BigDecimal, MathContext)}
-     * for high-precision exponentiation, and returns the result as a localized {@code BigNumber}.</p>
+     * <p>This method delegates the computation to {@link BasicMath#power(BigNumber, BigNumber, MathContext, Locale)}
+     * and returns the result as a localized {@code BigNumber}. A power with a non-negative integer exponent is exact
+     * and ignores the precision of {@code mathContext}. A power with a negative integer exponent or a fractional
+     * exponent is rounded to {@code mathContext}.</p>
      *
      * @param exponent    the exponent
      * @param mathContext the context specifying precision and rounding mode

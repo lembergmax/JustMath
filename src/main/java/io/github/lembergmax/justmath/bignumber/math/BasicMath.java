@@ -264,9 +264,14 @@ public final class BasicMath {
      *
      * <p>Behavior:
      * <ul>
-     *   <li>Integer exponent: exponentiation by squaring (fast, supports arbitrarily large integer exponents).</li>
-     *   <li>Non-integer exponent: prefers fast finite-double approximation (termination + speed) if safe,
-     *       otherwise uses {@code exp(exponent * ln(|base|))} fallback.</li>
+     *   <li>Integer exponent {@code >= 0}: exponentiation by squaring. The result is exact and is <em>not</em>
+     *       rounded to {@code mathContext}; a result of more than {@code 1,000,000} digits is rejected with
+     *       {@code MATH_OVERFLOW}.</li>
+     *   <li>Integer exponent {@code < 0}: the reciprocal of the exact positive power, rounded once to
+     *       {@code mathContext}.</li>
+     *   <li>Non-integer exponent: rounded to {@code mathContext}, accurate to within one unit in the last place.
+     *       It prefers a fast finite-double approximation if the precision is at most 15 digits and the result is
+     *       safely representable, otherwise it uses {@code exp(exponent * ln(|base|))} with guard digits.</li>
      *   <li>Negative base + non-integer exponent: returns a real-only approximation by applying the base sign.</li>
      * </ul>
      *
