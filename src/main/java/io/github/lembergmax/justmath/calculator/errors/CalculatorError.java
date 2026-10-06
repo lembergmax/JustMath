@@ -78,6 +78,14 @@ public record CalculatorError(
     public static final String BUNDLE_BASENAME = "i18n.calculator_errors";
 
     /**
+     * Canonical constructor. The parameter map is copied, so later changes to the caller's map do not
+     * affect this error and {@link #params()} never exposes a modifiable map.
+     */
+    public CalculatorError {
+        params = Map.copyOf(params);
+    }
+
+    /**
      * Convenience constructor that creates an error without parameters and without a position.
      *
      * @param code            the structured error code; must not be {@code null}
