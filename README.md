@@ -913,7 +913,9 @@ must be observed by callers:
   synchronization, or give each thread its own engine. The token cache itself uses the
   engine's monitor (`synchronized`) plus `volatile` visibility on the enable-flag and cache
   reference, so concurrent `setExpressionCacheEnabled(false)` + ongoing `evaluate(...)` is
-  safe — but every other field is unsynchronized.
+  safe. The other configuration fields (`locale`, `inputLocale`, `errorMode`, `expressionCacheSize`)
+  are `volatile`, so a change made on one thread becomes visible to the others. The setters are not
+  atomic as a group: an evaluation that runs between two setter calls sees a mix of old and new settings.
 * **`Tokenizer` is not thread-safe.** It is documented as a per-thread component. If you
   cache tokenizers, cache them per-thread or behind a lock.
 * **Input parsing defaults to US-locale; comma-decimal input is opt-in via `setInputLocale`.**
