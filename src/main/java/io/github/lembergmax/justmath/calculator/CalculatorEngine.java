@@ -40,7 +40,6 @@ import io.github.lembergmax.justmath.calculator.errors.ErrorMode;
 import io.github.lembergmax.justmath.calculator.exceptions.CalculatorException;
 import io.github.lembergmax.justmath.calculator.exceptions.ProcessingErrorException;
 import io.github.lembergmax.justmath.calculator.exceptions.SyntaxErrorException;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -297,7 +296,7 @@ public class CalculatorEngine {
      * {@link TrigonometricMode#DEG}.
      */
     public CalculatorEngine() {
-        this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
+        this(BigNumbers.getDefaultMathContext(DEFAULT_DIVISION_PRECISION), TrigonometricMode.DEG);
     }
 
     /**
@@ -306,7 +305,7 @@ public class CalculatorEngine {
      * @param divisionPrecision precision used for division operations
      */
     public CalculatorEngine(int divisionPrecision) {
-        this(getDefaultMathContext(divisionPrecision), TrigonometricMode.DEG);
+        this(BigNumbers.getDefaultMathContext(divisionPrecision), TrigonometricMode.DEG);
     }
 
     /**
@@ -316,7 +315,7 @@ public class CalculatorEngine {
      * @param trigonometricMode trigonometric mode (DEG or RAD); must not be {@code null}
      */
     public CalculatorEngine(int divisionPrecision, @NonNull TrigonometricMode trigonometricMode) {
-        this(getDefaultMathContext(divisionPrecision), trigonometricMode);
+        this(BigNumbers.getDefaultMathContext(divisionPrecision), trigonometricMode);
     }
 
     /**
@@ -334,7 +333,7 @@ public class CalculatorEngine {
      * @param trigonometricMode trigonometric mode; must not be {@code null}
      */
     public CalculatorEngine(@NonNull TrigonometricMode trigonometricMode) {
-        this(getDefaultMathContext(DEFAULT_DIVISION_PRECISION), trigonometricMode);
+        this(BigNumbers.getDefaultMathContext(DEFAULT_DIVISION_PRECISION), trigonometricMode);
     }
 
     /**

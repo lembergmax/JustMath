@@ -36,7 +36,6 @@ import io.github.lembergmax.justmath.calculator.expression.elements.Constant;
 import io.github.lembergmax.justmath.calculator.expression.elements.Parenthesis;
 import io.github.lembergmax.justmath.calculator.expression.elements.Separator;
 import io.github.lembergmax.justmath.calculator.expression.elements.function.ThreeArgumentFunction;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import lombok.NonNull;
 
 /**
@@ -67,7 +66,7 @@ import lombok.NonNull;
  * This class is not thread-safe; each instance should be used by a single thread or
  * externally synchronized if shared.
  */
-public class Tokenizer {
+class Tokenizer {
 
     /**
      * Candidate descriptor for registered three-argument functions used by the tokenizer.

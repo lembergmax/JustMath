@@ -31,8 +31,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.bignumber.internal.LocaleSeparators;
-import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
 import io.github.lembergmax.justmath.converter.exception.ConversionException;
 import io.github.lembergmax.justmath.converter.exception.UnitConversionException;
 import lombok.AccessLevel;
@@ -77,12 +77,12 @@ final class UnitValueParser {
      * Default {@link MathContext} used for numeric parsing when callers do not provide one explicitly.
      *
      * <p>
-     * The value is derived from the calculator module's default math context creation, using
+     * The value is created with {@link io.github.lembergmax.justmath.bignumber.BigNumbers#getDefaultMathContext(int)}, using
      * {@link io.github.lembergmax.justmath.bignumber.BigNumbers#DEFAULT_DIVISION_PRECISION} so that calculator and converter behavior remains consistent.
      * </p>
      */
     private static final MathContext DEFAULT_MATH_CONTEXT =
-            CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+            BigNumbers.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
     /**
      * Pre-compiled whitespace splitter pattern reused by

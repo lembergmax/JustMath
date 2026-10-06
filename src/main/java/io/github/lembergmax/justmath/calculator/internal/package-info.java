@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 /**
- * Token type of the expression pipeline and two enums that are part of the public API.
+ * Two enums that appear in public method signatures and are therefore part of the public API.
  *
- * <p>{@link io.github.lembergmax.justmath.calculator.internal.TrigonometricMode} and
- * {@link io.github.lembergmax.justmath.calculator.internal.CoordinateType} appear in public method
- * signatures. {@link io.github.lembergmax.justmath.calculator.internal.Token} is an implementation detail of the
- * tokenizer and the parser.</p>
+ * <p>{@link io.github.lembergmax.justmath.calculator.internal.TrigonometricMode} selects degrees or radians for
+ * the trigonometric functions of {@code BigNumber} and {@code CalculatorEngine}.
+ * {@link io.github.lembergmax.justmath.calculator.internal.CoordinateType} is the coordinate system of a
+ * {@code BigNumberCoordinate}. The package keeps its name for compatibility; the tokenizer, the parser and the
+ * evaluator that used to live next to them are no longer public.</p>
  */
 package io.github.lembergmax.justmath.calculator.internal;

@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import io.github.lembergmax.justmath.calculator.exceptions.SyntaxErrorException;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 
 class TokenizerTest {
 

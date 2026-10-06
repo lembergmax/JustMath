@@ -916,8 +916,6 @@ must be observed by callers:
   safe. The other configuration fields (`locale`, `inputLocale`, `errorMode`, `expressionCacheSize`)
   are `volatile`, so a change made on one thread becomes visible to the others. The setters are not
   atomic as a group: an evaluation that runs between two setter calls sees a mix of old and new settings.
-* **`Tokenizer` is not thread-safe.** It is documented as a per-thread component. If you
-  cache tokenizers, cache them per-thread or behind a lock.
 * **Input parsing defaults to US-locale; comma-decimal input is opt-in via `setInputLocale`.**
   By default `.` is the decimal point and `,` is the argument separator, so `"1.5+1.5"` is valid
   and `"1,5+1,5"` is a syntax error. Call `setInputLocale(Locale)` to opt into a comma-decimal
@@ -1082,6 +1080,12 @@ Need something newer than the latest release? You can find the newest (possibly 
 - ⚠️ **`CalculatorEngine`**: the internal pipeline components (`Evaluator`, `PostfixParser`,
   `Tokenizer`) and the live expression cache are no longer reachable through public getters — they
   are internal implementation detail, not API.
+- ⚠️ **Public API surface of the `calculator` package**: `Tokenizer`, `PostfixParser`,
+  `CalculatorEngineUtils` and `calculator.internal.Token` are now package-private. Only
+  `CalculatorEngine` and `SupportedLanguages` are public in `calculator`; `TrigonometricMode` and
+  `CoordinateType` stay public in `calculator.internal` because public methods take them as
+  parameters. `CalculatorEngineUtils.getDefaultMathContext(int)` moved to
+  `BigNumbers.getDefaultMathContext(int)`.
 - **Build**: removed the unused `apfloat` and `mockito` dependencies; the compiler is now pinned via
   `maven.compiler.release` (enforces the Java 21 API surface, reproducible across JDKs).
 
