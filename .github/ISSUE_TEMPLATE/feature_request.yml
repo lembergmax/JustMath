@@ -1,0 +1,23 @@
+name: Feature request
+description: A new function, a unit, or another improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do?
+      description: Describe the task you cannot do today, or that is awkward.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+      description: For a function, give the name, the arguments and an example with the result. For a unit, give the symbol and a source for the conversion factor.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What have you tried?
+      description: Workarounds, or other libraries that do it.
