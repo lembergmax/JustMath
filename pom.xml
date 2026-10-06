@@ -285,6 +285,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Whitespace formatting of the Java sources: four spaces, no trailing whitespace, final newline,
+                 no unused imports. Run ./mvnw spotless:apply to fix findings. -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.10.3</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/**/*.java</include>
+                        </includes>
+                        <removeUnusedImports/>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                        <indentWithSpaces>
+                            <spacesPerTab>4</spacesPerTab>
+                        </indentWithSpaces>
+                    </java>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

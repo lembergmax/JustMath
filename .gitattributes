@@ -1,0 +1,22 @@
+# Text files are stored with LF in the repository. In the working tree they follow each developer's
+# git settings (core.autocrlf or core.eol).
+* text=auto
+
+*.java text diff=java
+*.md text diff=markdown
+
+# Scripts keep their line endings on every platform: the shell wrapper needs LF, Windows batch files CRLF.
+mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.zip binary
+*.gz binary
