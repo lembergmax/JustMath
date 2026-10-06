@@ -32,6 +32,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface TwoArgumentFunctionOperation {
 
-	BigNumber apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
+    BigNumber apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
 
 }

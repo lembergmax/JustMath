@@ -36,18 +36,18 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class TwoArgumentFunction extends Function {
 
-	private final TwoArgumentFunctionOperation operation;
+    private final TwoArgumentFunctionOperation operation;
 
-	public TwoArgumentFunction(String symbol, int precedence, TwoArgumentFunctionOperation operation) {
-		super(symbol, precedence);
-		this.operation = operation;
-	}
+    public TwoArgumentFunction(String symbol, int precedence, TwoArgumentFunctionOperation operation) {
+        super(symbol, precedence);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        BigNumber b = ensureScalar(stack.pop());
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a, b, mathContext, locale));
+    }
 
 }

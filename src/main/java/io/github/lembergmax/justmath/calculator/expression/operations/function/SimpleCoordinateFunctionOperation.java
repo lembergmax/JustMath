@@ -33,6 +33,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumberCoordinate;
 @FunctionalInterface
 public interface SimpleCoordinateFunctionOperation {
 
-	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
+    BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, Locale locale);
 
 }

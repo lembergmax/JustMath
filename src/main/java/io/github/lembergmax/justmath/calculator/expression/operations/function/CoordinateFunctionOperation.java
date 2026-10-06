@@ -34,6 +34,6 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 @FunctionalInterface
 public interface CoordinateFunctionOperation {
 
-	BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
+    BigNumberCoordinate apply(BigNumber a, BigNumber b, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }

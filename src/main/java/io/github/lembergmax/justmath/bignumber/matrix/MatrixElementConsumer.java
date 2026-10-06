@@ -29,6 +29,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface MatrixElementConsumer {
 
-	void accept(BigNumber row, BigNumber col, BigNumber value);
+    void accept(BigNumber row, BigNumber col, BigNumber value);
 
 }

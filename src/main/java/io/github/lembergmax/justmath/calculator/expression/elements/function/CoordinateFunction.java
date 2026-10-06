@@ -36,18 +36,18 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class CoordinateFunction extends Function {
 
-	private final CoordinateFunctionOperation operation;
+    private final CoordinateFunctionOperation operation;
 
-	public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
-		super(symbol, precedence);
-		this.operation = operation;
-	}
+    public CoordinateFunction(String symbol, int precedence, CoordinateFunctionOperation operation) {
+        super(symbol, precedence);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, mathContext, trigonometricMode, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        BigNumber b = ensureScalar(stack.pop());
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a, b, mathContext, trigonometricMode, locale));
+    }
 
 }

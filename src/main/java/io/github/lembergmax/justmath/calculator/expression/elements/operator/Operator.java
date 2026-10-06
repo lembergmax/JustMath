@@ -28,8 +28,8 @@ import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
 
 public class Operator extends ExpressionElement {
 
-	public Operator(String symbol, int precedence) {
-		super(symbol, false, precedence);
-	}
+    public Operator(String symbol, int precedence) {
+        super(symbol, false, precedence);
+    }
 
 }

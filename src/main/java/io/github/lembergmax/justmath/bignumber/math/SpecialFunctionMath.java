@@ -42,105 +42,105 @@ import lombok.NonNull;
  */
 public final class SpecialFunctionMath {
 
-	/** Non-instantiable utility class. */
-	private SpecialFunctionMath() {
-	}
+    /** Non-instantiable utility class. */
+    private SpecialFunctionMath() {
+    }
 
 
-	/**
-	 * Computes the Gamma function Γ(x) using the Lanczos approximation.
-	 * <p>
-	 * The Gamma function is a generalization of the factorial function to real and complex numbers.
-	 * For all positive integers n, the identity holds:
-	 * <pre>
-	 *     Γ(n) = (n - 1)!
-	 * </pre>
-	 * More generally, for real and complex values (excluding non-positive integers),
-	 * the function is defined via the improper integral:
-	 * <pre>
-	 *     Γ(x) = ∫₀^∞ t^(x-1) · e^(-t) dt
-	 * </pre>
-	 * The Gamma function is undefined for non-positive integers due to the presence of simple poles.
-	 * <p>
-	 * This implementation uses the Lanczos approximation, which is a numerically stable and accurate
-	 * approximation suitable for arbitrary-precision arithmetic. For arguments with {@code x < 0},
-	 * the reflection formula is applied:
-	 * <pre>
-	 *     Γ(x) = π / (sin(πx) · Γ(1 - x))
-	 * </pre>
-	 * which allows evaluation for negative non-integer arguments.
-	 *
-	 * <p><b>Mathematical properties:</b></p>
-	 * <ul>
-	 *     <li>Γ(x+1) = x · Γ(x)</li>
-	 *     <li>Γ(1) = 1, Γ(1/2) = √π</li>
-	 *     <li>The function grows rapidly for large x (super-exponential growth).</li>
-	 *     <li>The logarithm of Γ(x) is often used for numerical stability in applications.</li>
-	 * </ul>
-	 *
-	 * @param x
-	 * 	The input value for which to compute the Gamma function. Must not be a non-positive integer.
-	 * @param mathContext
-	 * 	The precision and rounding settings to use for the calculation.
-	 *
-	 * @return The evaluated Gamma function Γ(x) as a {@link BigNumber}.
-	 *
-	 * @throws ArithmeticException
-	 * 	If {@code x} is a non-positive integer, where Γ(x) is undefined. Domain enforcement is delegated
-	 * 	to {@link BigDecimalMath#gamma}, whose Lanczos approximation raises {@link ArithmeticException} at
-	 * 	those poles, rather than maintaining a parallel pre-check.
-	 */
-	public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
-	}
+    /**
+     * Computes the Gamma function Γ(x) using the Lanczos approximation.
+     * <p>
+     * The Gamma function is a generalization of the factorial function to real and complex numbers.
+     * For all positive integers n, the identity holds:
+     * <pre>
+     *     Γ(n) = (n - 1)!
+     * </pre>
+     * More generally, for real and complex values (excluding non-positive integers),
+     * the function is defined via the improper integral:
+     * <pre>
+     *     Γ(x) = ∫₀^∞ t^(x-1) · e^(-t) dt
+     * </pre>
+     * The Gamma function is undefined for non-positive integers due to the presence of simple poles.
+     * <p>
+     * This implementation uses the Lanczos approximation, which is a numerically stable and accurate
+     * approximation suitable for arbitrary-precision arithmetic. For arguments with {@code x < 0},
+     * the reflection formula is applied:
+     * <pre>
+     *     Γ(x) = π / (sin(πx) · Γ(1 - x))
+     * </pre>
+     * which allows evaluation for negative non-integer arguments.
+     *
+     * <p><b>Mathematical properties:</b></p>
+     * <ul>
+     *     <li>Γ(x+1) = x · Γ(x)</li>
+     *     <li>Γ(1) = 1, Γ(1/2) = √π</li>
+     *     <li>The function grows rapidly for large x (super-exponential growth).</li>
+     *     <li>The logarithm of Γ(x) is often used for numerical stability in applications.</li>
+     * </ul>
+     *
+     * @param x
+     * 	The input value for which to compute the Gamma function. Must not be a non-positive integer.
+     * @param mathContext
+     * 	The precision and rounding settings to use for the calculation.
+     *
+     * @return The evaluated Gamma function Γ(x) as a {@link BigNumber}.
+     *
+     * @throws ArithmeticException
+     * 	If {@code x} is a non-positive integer, where Γ(x) is undefined. Domain enforcement is delegated
+     * 	to {@link BigDecimalMath#gamma}, whose Lanczos approximation raises {@link ArithmeticException} at
+     * 	those poles, rather than maintaining a parallel pre-check.
+     */
+    public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
+    }
 
-	/**
-	 * Computes the Beta function B(x, y) using its definition in terms of the Gamma function.
-	 * <p>
-	 * The Beta function, also known as Euler's integral of the first kind, is defined as:
-	 * <pre>
-	 *     B(x, y) = ∫₀¹ t^(x-1) · (1 - t)^(y-1) dt
-	 * </pre>
-	 * for real numbers {@code x > 0} and {@code y > 0}.
-	 * <p>
-	 * Alternatively, it is related to the Gamma function by the identity:
-	 * <pre>
-	 *     B(x, y) = Γ(x) · Γ(y) / Γ(x + y)
-	 * </pre>
-	 * which is used in this implementation for computational accuracy and speed.
-	 * <p>
-	 * The Beta function appears in:
-	 * <ul>
-	 *     <li>Combinatorics and binomial integrals</li>
-	 *     <li>Probability distributions such as the Beta and F-distributions</li>
-	 *     <li>Normalization constants in Bayesian statistics</li>
-	 * </ul>
-	 *
-	 * @param x
-	 * 	The first argument of the Beta function (must be > 0).
-	 * @param y
-	 * 	The second argument of the Beta function (must be > 0).
-	 * @param mathContext
-	 * 	The precision and rounding mode used for all intermediate computations.
-	 *
-	 * @return The evaluated Beta function B(x, y) as a {@link BigNumber}.
-	 *
-	 * @throws ArithmeticException
-	 * 	If x or y are ≤ 0 or lead to undefined Γ evaluations.
-	 */
-	public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		if (!x.isGreaterThan(BigNumbers.ZERO) || !y.isGreaterThan(BigNumbers.ZERO)) {
-			throw new ArithmeticException("Beta function requires x > 0 and y > 0");
-		}
+    /**
+     * Computes the Beta function B(x, y) using its definition in terms of the Gamma function.
+     * <p>
+     * The Beta function, also known as Euler's integral of the first kind, is defined as:
+     * <pre>
+     *     B(x, y) = ∫₀¹ t^(x-1) · (1 - t)^(y-1) dt
+     * </pre>
+     * for real numbers {@code x > 0} and {@code y > 0}.
+     * <p>
+     * Alternatively, it is related to the Gamma function by the identity:
+     * <pre>
+     *     B(x, y) = Γ(x) · Γ(y) / Γ(x + y)
+     * </pre>
+     * which is used in this implementation for computational accuracy and speed.
+     * <p>
+     * The Beta function appears in:
+     * <ul>
+     *     <li>Combinatorics and binomial integrals</li>
+     *     <li>Probability distributions such as the Beta and F-distributions</li>
+     *     <li>Normalization constants in Bayesian statistics</li>
+     * </ul>
+     *
+     * @param x
+     * 	The first argument of the Beta function (must be > 0).
+     * @param y
+     * 	The second argument of the Beta function (must be > 0).
+     * @param mathContext
+     * 	The precision and rounding mode used for all intermediate computations.
+     *
+     * @return The evaluated Beta function B(x, y) as a {@link BigNumber}.
+     *
+     * @throws ArithmeticException
+     * 	If x or y are ≤ 0 or lead to undefined Γ evaluations.
+     */
+    public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        if (!x.isGreaterThan(BigNumbers.ZERO) || !y.isGreaterThan(BigNumbers.ZERO)) {
+            throw new ArithmeticException("Beta function requires x > 0 and y > 0");
+        }
 
-		BigNumber xClone = x.clone();
-		BigNumber yClone = y.clone();
+        BigNumber xClone = x.clone();
+        BigNumber yClone = y.clone();
 
-		BigNumber gammaX = gamma(xClone, mathContext, locale);
-		BigNumber gammaY = gamma(yClone, mathContext, locale);
-		BigNumber gammaXY = gamma(xClone.add(yClone), mathContext, locale);
+        BigNumber gammaX = gamma(xClone, mathContext, locale);
+        BigNumber gammaY = gamma(yClone, mathContext, locale);
+        BigNumber gammaXY = gamma(xClone.add(yClone), mathContext, locale);
 
-		return new BigNumber(gammaX.multiply(gammaY).divide(gammaXY, mathContext));
-	}
+        return new BigNumber(gammaX.multiply(gammaY).divide(gammaXY, mathContext));
+    }
 
 }

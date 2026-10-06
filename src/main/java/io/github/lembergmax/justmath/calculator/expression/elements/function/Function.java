@@ -28,8 +28,8 @@ import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
 
 public class Function extends ExpressionElement {
 
-	public Function(String symbol, int precedence) {
-		super(symbol, true, precedence);
-	}
+    public Function(String symbol, int precedence) {
+        super(symbol, true, precedence);
+    }
 
 }

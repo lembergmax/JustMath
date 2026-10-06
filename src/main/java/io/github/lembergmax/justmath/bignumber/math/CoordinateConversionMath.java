@@ -50,98 +50,98 @@ import lombok.NonNull;
  */
 public final class CoordinateConversionMath {
 
-	/** Non-instantiable utility class. */
-	private CoordinateConversionMath() {
-	}
+    /** Non-instantiable utility class. */
+    private CoordinateConversionMath() {
+    }
 
-	/**
-	 * Converts polar coordinates (r, θ) to Cartesian coordinates (x, y).
-	 * <p>
-	 * Uses the standard conversion formulas:
-	 * <pre>
-	 *     x = r * cos(θ)
-	 *     y = r * sin(θ)
-	 * </pre>
-	 * where θ can be given in degrees or radians depending on {@code trigonometricMode}.
-	 * <p>
-	 * <strong>Restrictions:</strong>
-	 * <ul>
-	 *   <li>{@code r} must be greater than or equal to zero. Negative radius values are not allowed.</li>
-	 *   <li>{@code theta} may be any real number; periodic wrapping is handled by the trigonometric implementation.</li>
-	 * </ul>
-	 *
-	 * @param r
-	 * 	the radius (distance from origin), must be non-negative
-	 * @param theta
-	 * 	the angle component (θ), interpreted according to {@code trigonometricMode}
-	 * @param mathContext
-	 * 	the {@link MathContext} controlling calculation precision and rounding
-	 * @param trigonometricMode
-	 * 	the mode specifying whether the angle {@code theta} is in degrees or radians
-	 * @param locale
-	 * 	the {@link Locale} for number formatting during intermediate calculations
-	 *
-	 * @return a {@link BigNumberCoordinate} representing the Cartesian coordinates (x, y)
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if {@code r} is negative
-	 */
-	public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Converts polar coordinates (r, θ) to Cartesian coordinates (x, y).
+     * <p>
+     * Uses the standard conversion formulas:
+     * <pre>
+     *     x = r * cos(θ)
+     *     y = r * sin(θ)
+     * </pre>
+     * where θ can be given in degrees or radians depending on {@code trigonometricMode}.
+     * <p>
+     * <strong>Restrictions:</strong>
+     * <ul>
+     *   <li>{@code r} must be greater than or equal to zero. Negative radius values are not allowed.</li>
+     *   <li>{@code theta} may be any real number; periodic wrapping is handled by the trigonometric implementation.</li>
+     * </ul>
+     *
+     * @param r
+     * 	the radius (distance from origin), must be non-negative
+     * @param theta
+     * 	the angle component (θ), interpreted according to {@code trigonometricMode}
+     * @param mathContext
+     * 	the {@link MathContext} controlling calculation precision and rounding
+     * @param trigonometricMode
+     * 	the mode specifying whether the angle {@code theta} is in degrees or radians
+     * @param locale
+     * 	the {@link Locale} for number formatting during intermediate calculations
+     *
+     * @return a {@link BigNumberCoordinate} representing the Cartesian coordinates (x, y)
+     *
+     * @throws IllegalArgumentException
+     * 	if {@code r} is negative
+     */
+    public static BigNumberCoordinate polarToCartesianCoordinates(@NonNull final BigNumber r, @NonNull final BigNumber theta, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		if (r.isLessThan(ZERO)) {
-			throw new IllegalArgumentException("r cannot be less than zero");
-		}
+        if (r.isLessThan(ZERO)) {
+            throw new IllegalArgumentException("r cannot be less than zero");
+        }
 
-		BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
-		BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
-		return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, locale).trim();
-	}
+        BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
+        BigNumber y = r.multiply(theta.sin(mathContext, trigonometricMode, locale));
+        return new BigNumberCoordinate(x, y, CoordinateType.CARTESIAN, locale).trim();
+    }
 
-	/**
-	 * Converts Cartesian coordinates (x, y) to polar coordinates (r, θ).
-	 * <p>
-	 * Calculates the radius r and angle θ (in degrees):
-	 * <pre>
-	 *     r = √(x² + y²)
-	 *     θ = atan2(y, x) (converted to degrees)
-	 * </pre>
-	 * The angle θ is returned in degrees for consistency and ease of use.
-	 * <p>
-	 * <strong>Restrictions:</strong>
-	 * <ul>
-	 *   <li>Only the origin {@code (0, 0)} is rejected — the angle is undefined there. Points on an axis
-	 *       (one coordinate zero, e.g. {@code (0, 5)} or {@code (5, 0)}) are valid and supported, consistent
-	 *       with {@code atan2}.</li>
-	 * </ul>
-	 *
-	 * @param x
-	 * 	the x-coordinate in a Cartesian system
-	 * @param y
-	 * 	the y-coordinate in a Cartesian system
-	 * @param mathContext
-	 * 	the {@link MathContext} controlling precision and rounding for calculations
-	 * @param locale
-	 * 	the {@link Locale} for formatting intermediate {@link BigNumber} values
-	 *
-	 * @return a {@link BigNumberCoordinate} representing the polar coordinates (r, θ in degrees)
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if both {@code x} and {@code y} are zero (the origin)
-	 */
-	public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+    /**
+     * Converts Cartesian coordinates (x, y) to polar coordinates (r, θ).
+     * <p>
+     * Calculates the radius r and angle θ (in degrees):
+     * <pre>
+     *     r = √(x² + y²)
+     *     θ = atan2(y, x) (converted to degrees)
+     * </pre>
+     * The angle θ is returned in degrees for consistency and ease of use.
+     * <p>
+     * <strong>Restrictions:</strong>
+     * <ul>
+     *   <li>Only the origin {@code (0, 0)} is rejected — the angle is undefined there. Points on an axis
+     *       (one coordinate zero, e.g. {@code (0, 5)} or {@code (5, 0)}) are valid and supported, consistent
+     *       with {@code atan2}.</li>
+     * </ul>
+     *
+     * @param x
+     * 	the x-coordinate in a Cartesian system
+     * @param y
+     * 	the y-coordinate in a Cartesian system
+     * @param mathContext
+     * 	the {@link MathContext} controlling precision and rounding for calculations
+     * @param locale
+     * 	the {@link Locale} for formatting intermediate {@link BigNumber} values
+     *
+     * @return a {@link BigNumberCoordinate} representing the polar coordinates (r, θ in degrees)
+     *
+     * @throws IllegalArgumentException
+     * 	if both {@code x} and {@code y} are zero (the origin)
+     */
+    public static BigNumberCoordinate cartesianToPolarCoordinates(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
-			throw new IllegalArgumentException("Polar coordinates are undefined at the origin (0, 0)");
-		}
+        if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
+            throw new IllegalArgumentException("Polar coordinates are undefined at the origin (0, 0)");
+        }
 
-		BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
-			              .add(y.power(BigNumbers.TWO, mathContext, locale))
-			              .squareRoot(mathContext, locale);
-		BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees(mathContext);
+        BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)
+                          .add(y.power(BigNumbers.TWO, mathContext, locale))
+                          .squareRoot(mathContext, locale);
+        BigNumber thetaDeg = y.atan2(x, mathContext, locale).toDegrees(mathContext);
 
-		return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR, locale).trim();
-	}
+        return new BigNumberCoordinate(r, thetaDeg, CoordinateType.POLAR, locale).trim();
+    }
 
 }

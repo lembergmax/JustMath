@@ -33,6 +33,6 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 @FunctionalInterface
 public interface OneArgumentTrigonometricFunctionOperation {
 
-	BigNumber apply(BigNumber a, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
+    BigNumber apply(BigNumber a, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale);
 
 }

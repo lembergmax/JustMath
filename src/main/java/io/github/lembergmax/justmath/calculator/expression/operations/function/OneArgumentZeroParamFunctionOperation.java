@@ -29,6 +29,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface OneArgumentZeroParamFunctionOperation {
 
-	BigNumber apply(BigNumber a);
+    BigNumber apply(BigNumber a);
 
 }
