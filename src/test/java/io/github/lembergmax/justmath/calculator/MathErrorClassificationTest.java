@@ -73,15 +73,15 @@ class MathErrorClassificationTest {
             1000000!                      | MATH_OVERFLOW
             10000000000000!               | MATH_OVERFLOW
             9^9999999999                  | MATH_OVERFLOW
-            comb(2.5;1)                   | PROCESSING_INTERNAL
+            comb(2.5;1)                   | PROCESSING_DOMAIN_ERROR
             comb(0-1;1)                   | PROCESSING_DOMAIN_ERROR
             comb(3;5)                     | PROCESSING_DOMAIN_ERROR
             perm(3;5)                     | PROCESSING_DOMAIN_ERROR
-            perm(2.5;1)                   | PROCESSING_INTERNAL
+            perm(2.5;1)                   | PROCESSING_DOMAIN_ERROR
             comb(999999999;400000000)     | MATH_OVERFLOW
             perm(999999999;999999999)     | MATH_OVERFLOW
-            gcd(1.5;2)                    | PROCESSING_INTERNAL
-            lcm(1.5;2)                    | PROCESSING_INTERNAL
+            gcd(1.5;2)                    | PROCESSING_DOMAIN_ERROR
+            lcm(1.5;2)                    | PROCESSING_DOMAIN_ERROR
             acosh(0.5)                    | PROCESSING_DOMAIN_ERROR
             atanh(2)                      | PROCESSING_DOMAIN_ERROR
             acoth(0.5)                    | PROCESSING_DOMAIN_ERROR
@@ -92,7 +92,7 @@ class MathErrorClassificationTest {
             gamma(0-1)                    | PROCESSING_DOMAIN_ERROR
             summation(1;0;k)              | PROCESSING_DOMAIN_ERROR
             summation(1.5;3;k)            | PROCESSING_DOMAIN_ERROR
-            summation(1;3;5)              | PROCESSING_INTERNAL
+            summation(1;3;5)              | PROCESSING_DOMAIN_ERROR
             summation(1;100000000000;k)   | MATH_OVERFLOW
             RandInt(5;1)                  | PROCESSING_DOMAIN_ERROR
             RandInt(1.5;3)                | PROCESSING_DOMAIN_ERROR

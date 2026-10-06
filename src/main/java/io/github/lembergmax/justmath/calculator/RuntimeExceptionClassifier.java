@@ -27,6 +27,7 @@ package io.github.lembergmax.justmath.calculator;
 import java.util.Locale;
 import java.util.Objects;
 
+import io.github.lembergmax.justmath.bignumber.math.exceptions.ErrorCodeProvider;
 import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.exceptions.ProcessingErrorException;
 import lombok.NonNull;
@@ -38,61 +39,55 @@ import lombok.NonNull;
  */
 final class RuntimeExceptionClassifier {
 
+    private static final String BIG_DECIMAL_DIVISION_BY_ZERO = "division by zero";
+
+    private static final String BIG_DECIMAL_OVERFLOW = "overflow";
+
     private RuntimeExceptionClassifier() {
     }
 
     /**
-     * Maps an unchecked runtime exception that bubbled out of the lower-level math layer
-     * (typically {@link ArithmeticException} or {@link IllegalArgumentException} from
-     * {@code BigNumber} operations) to a typed {@link ProcessingErrorException} with a
-     * matching {@link CalculatorErrorCode} so that downstream formatting can resolve a
-     * localized template. Without this mapping such exceptions would surface verbatim in
-     * English and bypass the {@code i18n/calculator_errors_*.properties} bundles entirely.
+     * Maps an unchecked exception that escaped the math layer to a typed
+     * {@link ProcessingErrorException}, so that downstream formatting can resolve a localized
+     * template instead of showing the English technical message.
+     *
+     * <p>A math exception that implements {@link ErrorCodeProvider} supplies its own code and is never
+     * classified by its message. Only exceptions from other libraries, such as {@link java.math.BigDecimal},
+     * go through {@link #classifyForeignException}.</p>
      *
      * @param throwable the unchecked exception thrown during evaluation; must not be {@code null}
      * @return a localized-friendly {@link ProcessingErrorException}; never {@code null}
      */
     static ProcessingErrorException classify(@NonNull final Throwable throwable) {
         final String message = Objects.requireNonNullElse(throwable.getMessage(), "");
-        final String lower = message.toLowerCase(Locale.ROOT);
-        final CalculatorErrorCode code;
-        if (lower.contains("division by zero")
-                || lower.contains("divisor zero")
-                || lower.contains("undefined for value 0")
-                || lower.contains("undefined for x = 0")
-                || lower.contains("normalize list with sum 0")) {
-            code = CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO;
-        } else if (lower.contains("factorial") && lower.contains("non-negative")) {
-            code = CalculatorErrorCode.MATH_FACTORIAL_NEGATIVE;
-        } else if (lower.contains("factorial") && lower.contains("integer")) {
-            code = CalculatorErrorCode.MATH_FACTORIAL_NON_INTEGER;
-        } else if (lower.contains("ln(x) undefined")
-                || lower.contains("number must be positive")
-                || lower.contains("base must be positive")
-                || ((lower.contains("log") || lower.contains("logarith")) && lower.contains("positive"))) {
-            code = CalculatorErrorCode.MATH_LOG_NON_POSITIVE;
-        } else if (lower.contains("root of a negative")
-                || lower.contains("sqrt is only defined for non-negative")) {
-            code = CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE;
-        } else if (lower.contains("overflow") || lower.contains("too large")) {
-            code = CalculatorErrorCode.MATH_OVERFLOW;
-        } else if (throwable instanceof ArithmeticException
-                || lower.contains("undefined")
-                || lower.contains("only defined")
-                || lower.contains("must be")
-                || lower.contains("must satisfy")
-                || lower.contains("cannot be")
-                || lower.contains("non-negative")
-                || lower.contains("not a real number")
-                || lower.contains("must not be")
-                || lower.contains("only positive")
-                || lower.contains("greater than")
-                || lower.contains("less than")) {
-            code = CalculatorErrorCode.PROCESSING_DOMAIN_ERROR;
-        } else {
-            code = CalculatorErrorCode.PROCESSING_INTERNAL;
-        }
+        final CalculatorErrorCode code = throwable instanceof ErrorCodeProvider errorCodeProvider
+                ? errorCodeProvider.getErrorCode()
+                : classifyForeignException(throwable, message);
         return new ProcessingErrorException(code, message.isEmpty() ? "Processing error" : message);
+    }
+
+    /**
+     * Classifies an exception that does not carry an error code. The JDK and the libraries the math
+     * layer builds on report these cases only through the exception type and message:
+     * {@code BigDecimal} reports {@code "Division by zero"} and {@code "Overflow"}, and any other
+     * {@link ArithmeticException} means the calculation has no result.
+     *
+     * @param throwable the exception to classify; must not be {@code null}
+     * @param message   the message of {@code throwable}, empty if it has none; must not be {@code null}
+     * @return the error code; never {@code null}
+     */
+    private static CalculatorErrorCode classifyForeignException(final Throwable throwable, final String message) {
+        final String lowerCaseMessage = message.toLowerCase(Locale.ROOT);
+        if (lowerCaseMessage.contains(BIG_DECIMAL_DIVISION_BY_ZERO)) {
+            return CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO;
+        }
+        if (lowerCaseMessage.contains(BIG_DECIMAL_OVERFLOW)) {
+            return CalculatorErrorCode.MATH_OVERFLOW;
+        }
+        if (throwable instanceof ArithmeticException) {
+            return CalculatorErrorCode.PROCESSING_DOMAIN_ERROR;
+        }
+        return CalculatorErrorCode.PROCESSING_INTERNAL;
     }
 
 }
