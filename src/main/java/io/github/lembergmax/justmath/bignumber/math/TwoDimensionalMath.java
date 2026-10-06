@@ -31,7 +31,9 @@ import java.util.Locale;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 /**
@@ -75,7 +77,7 @@ public final class TwoDimensionalMath {
         MathUtils.checkMathContext(mathContext);
 
         if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
-            throw new IllegalArgumentException("atan2 is undefined at the origin (0, 0)");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "atan2 is undefined at the origin (0, 0)");
         }
 
         return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();

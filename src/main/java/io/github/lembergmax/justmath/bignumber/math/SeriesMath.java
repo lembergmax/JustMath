@@ -34,8 +34,11 @@ import java.util.concurrent.CancellationException;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElements;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -358,23 +361,23 @@ public final class SeriesMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!containsIterationVariable(kCalculation)) {
-            throw new IllegalArgumentException("Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
 
         if (kStart.isGreaterThan(kEnd)) {
-            throw new IllegalArgumentException("End value must be greater than or equal to the start value.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "End value must be greater than or equal to the start value.");
         }
 
         if (!kStart.isInteger() || !kEnd.isInteger()) {
-            throw new IllegalArgumentException("Start and end values must be integers.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Start and end values must be integers.");
         }
 
         if (kEnd.subtract(kStart).isGreaterThanOrEqualTo(BigNumber.valueOf(MAX_SERIES_ITERATIONS))) {
-            throw new ArithmeticException("Series range is too large (maximum " + MAX_SERIES_ITERATIONS + " terms)");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Series range is too large (maximum " + MAX_SERIES_ITERATIONS + " terms)");
         }
 
         if (externalVariables.containsKey(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
-            throw new IllegalArgumentException("External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
     }
 

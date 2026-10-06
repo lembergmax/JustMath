@@ -32,7 +32,9 @@ import java.util.Locale;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumberCoordinate;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.internal.CoordinateType;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
@@ -90,7 +92,7 @@ public final class CoordinateConversionMath {
         MathUtils.checkMathContext(mathContext);
 
         if (r.isLessThan(ZERO)) {
-            throw new IllegalArgumentException("r cannot be less than zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "r cannot be less than zero");
         }
 
         BigNumber x = r.multiply(theta.cos(mathContext, trigonometricMode, locale));
@@ -133,7 +135,7 @@ public final class CoordinateConversionMath {
         MathUtils.checkMathContext(mathContext);
 
         if (x.isEqualTo(ZERO) && y.isEqualTo(ZERO)) {
-            throw new IllegalArgumentException("Polar coordinates are undefined at the origin (0, 0)");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Polar coordinates are undefined at the origin (0, 0)");
         }
 
         BigNumber r = x.power(BigNumbers.TWO, mathContext, locale)

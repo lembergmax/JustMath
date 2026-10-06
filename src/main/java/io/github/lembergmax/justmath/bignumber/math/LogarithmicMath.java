@@ -27,7 +27,9 @@ package io.github.lembergmax.justmath.bignumber.math;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -80,7 +82,7 @@ public final class LogarithmicMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.compareTo(ZERO) <= 0) {
-            throw new ArithmeticException("log2(x) undefined for x <= 0");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "log2(x) undefined for x <= 0");
         }
 
         return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -111,7 +113,7 @@ public final class LogarithmicMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.compareTo(ZERO) <= 0) {
-            throw new ArithmeticException("log10(x) undefined for x <= 0");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "log10(x) undefined for x <= 0");
         }
 
         return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
@@ -141,8 +143,9 @@ public final class LogarithmicMath {
     public static BigNumber ln(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        if (argument.compareTo(ZERO) <= 0)
-            throw new ArithmeticException("ln(x) undefined for x <= 0");
+        if (argument.compareTo(ZERO) <= 0) {
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_LOG_NON_POSITIVE, "ln(x) undefined for x <= 0");
+        }
 
         BigDecimal result = BigDecimalMath.log(argument.toBigDecimal(), mathContext);
         return new BigNumber(result.toPlainString(), locale).trim();
@@ -176,10 +179,10 @@ public final class LogarithmicMath {
         MathUtils.checkMathContext(mathContext);
 
         if (number.compareTo(ZERO) <= 0) {
-            throw new ArithmeticException("logBase(x, b) undefined for x <= 0");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "logBase(x, b) undefined for x <= 0");
         }
         if (base.compareTo(ZERO) <= 0 || base.isEqualTo(BigNumbers.ONE)) {
-            throw new ArithmeticException("logBase(x, b) undefined for b <= 0 or b == 1");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "logBase(x, b) undefined for b <= 0 or b == 1");
         }
 
         BigDecimal lnNumber = BigDecimalMath.log(number.toBigDecimal(), mathContext);

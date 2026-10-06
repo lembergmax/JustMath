@@ -30,7 +30,9 @@ import java.math.MathContext;
 import java.util.Locale;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 /**
@@ -66,7 +68,7 @@ public final class NumberTheoryMath {
      */
     public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final Locale locale) {
         if (a.hasDecimals() || b.hasDecimals()) {
-            throw new IllegalArgumentException("GCD requires integer values.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "GCD requires integer values.");
         }
 
         BigNumber aClone = a.clone().abs();
@@ -108,7 +110,7 @@ public final class NumberTheoryMath {
         MathUtils.checkMathContext(mathContext);
 
         if (a.hasDecimals() || b.hasDecimals()) {
-            throw new IllegalArgumentException("LCM requires integer values.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "LCM requires integer values.");
         }
 
         if (a.isEqualTo(ZERO) || b.isEqualTo(ZERO)) {

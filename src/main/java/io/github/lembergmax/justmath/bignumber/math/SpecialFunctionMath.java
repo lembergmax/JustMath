@@ -30,6 +30,8 @@ import java.util.Locale;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 /**
@@ -130,7 +132,7 @@ public final class SpecialFunctionMath {
      */
     public static BigNumber beta(@NonNull final BigNumber x, @NonNull final BigNumber y, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         if (!x.isGreaterThan(BigNumbers.ZERO) || !y.isGreaterThan(BigNumbers.ZERO)) {
-            throw new ArithmeticException("Beta function requires x > 0 and y > 0");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Beta function requires x > 0 and y > 0");
         }
 
         BigNumber xClone = x.clone();
