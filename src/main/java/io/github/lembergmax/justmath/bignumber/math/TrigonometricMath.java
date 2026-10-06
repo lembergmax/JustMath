@@ -32,7 +32,9 @@ import java.util.Locale;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -128,8 +130,7 @@ public final class TrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (isTangentSingularity(angle, trigonometricMode)) {
-            throw new ArithmeticException(
-                    "tan is undefined at " + angle.toString() + " (cosine is zero at this point)");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "tan is undefined at " + angle.toString() + " (cosine is zero at this point)");
         }
 
         BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
@@ -185,8 +186,7 @@ public final class TrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (isCotangentSingularity(angle, trigonometricMode)) {
-            throw new ArithmeticException(
-                    "cot is undefined at " + angle.toString() + " (sine is zero at this point)");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "cot is undefined at " + angle.toString() + " (sine is zero at this point)");
         }
 
         BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);

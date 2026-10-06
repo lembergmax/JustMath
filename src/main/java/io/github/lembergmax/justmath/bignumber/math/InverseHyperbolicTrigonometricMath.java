@@ -29,7 +29,9 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.*;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.bignumber.internal.LocaleSeparators;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 
 import java.math.MathContext;
 import java.util.Locale;
@@ -339,7 +341,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static void ensureGreaterOrEqualToOne(final BigNumber argument) {
         if (argument.isLessThan(ONE)) {
-            throw new IllegalArgumentException("argument must be greater than or equal to 1");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument must be greater than or equal to 1");
         }
     }
 
@@ -351,7 +353,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static void ensureAbsoluteLessThanOne(final BigNumber argument) {
         if (argument.isGreaterThanOrEqualTo(ONE) || argument.isLessThanOrEqualTo(NEGATIVE_ONE)) {
-            throw new IllegalArgumentException("argument must satisfy |argument| < 1");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument must satisfy |argument| < 1");
         }
     }
 
@@ -363,7 +365,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static void ensureAbsoluteGreaterThanOne(final BigNumber argument) {
         if (argument.isGreaterThanOrEqualTo(NEGATIVE_ONE) && argument.isLessThanOrEqualTo(ONE)) {
-            throw new IllegalArgumentException("argument must satisfy |argument| > 1");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument must satisfy |argument| > 1");
         }
     }
 
@@ -431,7 +433,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static BigNumber sqrtNonNegative(final BigNumber nonNegativeValue, final MathContext mathContext, final Locale locale) {
         if (nonNegativeValue.isNegative()) {
-            throw new IllegalArgumentException("sqrt is only defined for non-negative values in real arithmetic");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE, "sqrt is only defined for non-negative values in real arithmetic");
         }
         if (nonNegativeValue.isEqualTo(ZERO)) {
             return freshZero(locale);
@@ -500,7 +502,7 @@ public final class InverseHyperbolicTrigonometricMath {
      */
     private static BigNumber lnPositive(final BigNumber positiveValue, final MathContext mathContext, final Locale locale) {
         if (positiveValue.isLessThanOrEqualTo(ZERO)) {
-            throw new IllegalArgumentException("ln(x) is only defined for x > 0");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_LOG_NON_POSITIVE, "ln(x) is only defined for x > 0");
         }
         if (positiveValue.isEqualTo(ONE)) {
             return freshZero(locale);
