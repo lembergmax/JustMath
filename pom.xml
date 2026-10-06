@@ -49,6 +49,7 @@
              build is reproducible across JDKs. -->
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lombok.version>1.18.38</lombok.version>
         <junit.version>5.10.2</junit.version>
         <pitest.version>1.15.2</pitest.version>
         <pitest.junit5.plugin.version>1.2.2</pitest.junit5.plugin.version>
@@ -86,7 +87,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -115,6 +116,15 @@
                 <version>3.13.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
+                    <!-- JDK 23+ no longer runs annotation processors found on the classpath implicitly, so
+                         Lombok has to be named here or the generated getters and constructors are missing. -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
