@@ -66,7 +66,7 @@ import lombok.NonNull;
  * </ul>
  */
 @Getter
-public class BigNumberList implements List<BigNumber> {
+public class BigNumberList implements List<BigNumber>, Cloneable {
 
     /**
      * Internal storage for the elements of this {@code BigNumberList}.
@@ -1232,7 +1232,13 @@ public class BigNumberList implements List<BigNumber> {
      * @return a new {@code BigNumberList} that is structurally independent of this instance
      */
     public BigNumberList clone() {
-        return new BigNumberList(this);
+        try {
+            final BigNumberList cloned = (BigNumberList) super.clone();
+            cloned.values = new ArrayList<>(values);
+            return cloned;
+        } catch (final CloneNotSupportedException cloneNotSupportedException) {
+            throw new AssertionError(cloneNotSupportedException);
+        }
     }
 
     /**
