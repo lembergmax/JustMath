@@ -83,6 +83,11 @@ public final class BasicMath {
     private static final int DOUBLE_FAST_PATH_MAX_PRECISION = 15;
 
     /**
+     * Digit appended to a quotient that still has a remainder, so that rounding sees a non-zero tail.
+     */
+    private static final char STICKY_DIGIT = '1';
+
+    /**
      * Upper bound on the argument of {@link #factorial}. {@code n!} has on the order of
      * {@code n·log10(n)} digits, so without a cap an expression like {@code 1000000!} would build a
      * multi-million-digit number — minutes of CPU and large heap — turning a one-line untrusted input
@@ -197,9 +202,8 @@ public final class BasicMath {
      * Divides {@code dividend} by {@code divisor} and rounds according to {@link MathContext}.
      *
      * <p>This method produces a result rounded to {@code mathContext.getPrecision()} significant digits.
-     * It uses string long division and includes an early-termination rule for extremely small quotients:
-     * if the first significant digit would appear far beyond the requested precision, the rounded result
-     * must be zero.</p>
+     * It uses string long division. A quotient far below 1, such as {@code 1 / 10^200}, keeps its magnitude: the
+     * precision counts significant digits, not decimal places.</p>
      *
      * @param dividend    the dividend; must not be {@code null}
      * @param divisor     the divisor; must not be {@code null} and not zero
@@ -895,11 +899,16 @@ public final class BasicMath {
      * <p>The method:
      * <ul>
      *   <li>Starts with the integer quotient digits</li>
+     *   <li>Skips the leading zeros of a quotient below 1 in one step, see
+     *       {@link #leadingZeroFractionDigitCount(String, String)}</li>
      *   <li>Appends fractional digits by repeatedly dividing (remainder * 10) by divisor</li>
      *   <li>Stops when (precision + 1) significant digits are reached or remainder becomes 0</li>
+     *   <li>Appends one non-zero sticky digit if a remainder is left, so that the rounding decision can tell a
+     *       value above a tie from an exact tie, and a value above the kept digits from an exact one</li>
      * </ul>
      *
-     * <p>Includes an early-zero rule for extreme cases (see class-level description).</p>
+     * <p>The magnitude of the quotient is never cut off: a quotient such as {@code 10^-200} keeps its first
+     * significant digit 200 places after the decimal point.</p>
      *
      * @param integerQuotientDigits  initial integer quotient digits
      * @param initialRemainderDigits initial remainder digits
@@ -908,7 +917,7 @@ public final class BasicMath {
      * @return quotient digits and resulting scale
      */
     private static QuotientDigits generateQuotientDigits(final String integerQuotientDigits, final String initialRemainderDigits, final String divisorDigits, final int precision) {
-        StringBuilder remainderDigits = new StringBuilder(initialRemainderDigits);
+        StringBuilder remainderDigits = new StringBuilder(stripLeadingZeros(initialRemainderDigits));
 
         final StringBuilder digitsBuilder = new StringBuilder(integerQuotientDigits);
         int scale = 0;
@@ -916,12 +925,18 @@ public final class BasicMath {
         boolean significantStarted = !integerQuotientDigits.equals("0");
         int significantCount = significantStarted ? digitsBuilder.length() : 0;
 
-        int leadingZeroFractionDigits = 0;
+        if (!significantStarted && !isZeroString(remainderDigits.toString())) {
+            final int skippedZeroCount = leadingZeroFractionDigitCount(remainderDigits.toString(), divisorDigits);
+            digitsBuilder.append("0".repeat(skippedZeroCount));
+            remainderDigits.append("0".repeat(skippedZeroCount));
+            scale += skippedZeroCount;
+        }
+
         final int targetSignificantDigits = precision + 1;
         final int iterationLimit = Math.max(10_000, precision * 50);
         int iterationCount = 0;
 
-        while (significantCount < targetSignificantDigits && !remainderDigits.toString().equals("0")) {
+        while (significantCount < targetSignificantDigits && !isZeroString(remainderDigits.toString())) {
             iterationCount++;
             if (iterationCount > iterationLimit) {
                 break;
@@ -936,23 +951,41 @@ public final class BasicMath {
             digitsBuilder.append(nextDigit);
             scale++;
 
-            if (!significantStarted) {
-                if (nextDigit == '0') {
-                    leadingZeroFractionDigits++;
-                    if (leadingZeroFractionDigits > precision + 2) {
-                        return new QuotientDigits("0", 0);
-                    }
-                } else {
-                    significantStarted = true;
-                    significantCount = 1;
-                }
-            } else {
+            if (significantStarted) {
                 significantCount++;
+            } else if (nextDigit != '0') {
+                significantStarted = true;
+                significantCount = 1;
             }
+        }
+
+        if (!isZeroString(remainderDigits.toString())) {
+            digitsBuilder.append(STICKY_DIGIT);
+            scale++;
         }
 
         final String digits = stripLeadingZeros(digitsBuilder.toString());
         return new QuotientDigits(digits, scale);
+    }
+
+    /**
+     * Counts the zeros that follow the decimal point of a quotient below 1 before its first significant digit,
+     * not counting the zero produced by the division step that follows.
+     *
+     * <p>The first significant digit appears after the smallest {@code k >= 1} for which
+     * {@code remainder * 10^k >= divisor}. Comparing the lengths of the two numbers finds {@code k} without
+     * generating the zeros one at a time, which would take as many division steps as the quotient has leading
+     * zeros.</p>
+     *
+     * @param remainderDigits remainder digits; not zero and smaller than the divisor
+     * @param divisorDigits   divisor digits; no leading zeros
+     * @return the number of fractional zeros that can be skipped, at least 0
+     */
+    private static int leadingZeroFractionDigitCount(final String remainderDigits, final String divisorDigits) {
+        final int lengthDifference = Math.max(0, divisorDigits.length() - remainderDigits.length());
+        final String remainderShiftedToDivisorLength = remainderDigits + "0".repeat(lengthDifference);
+        final boolean firstDigitIsNotAfterTheShift = compareUnsigned(remainderShiftedToDivisorLength, divisorDigits) >= 0;
+        return firstDigitIsNotAfterTheShift ? Math.max(0, lengthDifference - 1) : lengthDifference;
     }
 
     /**
@@ -1495,7 +1528,8 @@ public final class BasicMath {
      * Estimates a single quotient digit in the range {@code 0..9} for base-10 long division.
      *
      * <p>The method returns the maximum digit {@code d} such that {@code divisor * d <= remainder}.
-     * It performs a binary search over the digit range {@code 0..9}. During the search, products
+     * A remainder with fewer digits than the divisor is smaller than the divisor, so the digit is 0 without any
+     * product being computed. Otherwise it performs a binary search over the digit range {@code 0..9}. During the search, products
      * are not materialized as strings; instead, {@code divisor * d} is computed into {@code productBuffer}
      * and compared directly against the remainder view.</p>
      *
@@ -1522,6 +1556,10 @@ public final class BasicMath {
      * @return the largest digit {@code d} in {@code 0..9} with {@code divisor * d <= remainder}
      */
     private static int estimateQuotientDigit(final char[] remainderDigits, final int remainderOffset, final int remainderLength, final String divisorUnsignedDigits, final char[] productBuffer) {
+        if (remainderLength < divisorUnsignedDigits.length()) {
+            return 0;
+        }
+
         int lowDigit = 0;
         int highDigit = 9;
         int bestDigit = 0;
