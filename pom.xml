@@ -205,6 +205,35 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Expands the Lombok annotations into plain sources for the Javadoc run only. It is bound to
+                 prepare-package so that compiling and testing are not slowed down. -->
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.20.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>delombok-for-javadoc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+                            <addOutputDirectory>false</addOutputDirectory>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -219,9 +248,13 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Do not fail the build on Javadoc issues yet, but DO surface them: doclint runs for
-                         syntax/reference errors (broken @link, malformed HTML) while tolerating missing tags. -->
-                    <failOnError>false</failOnError>
+                    <!-- Javadoc runs on the delomboked sources so that links to Lombok-generated getters
+                         resolve and the getters appear in the published API documentation. Any doclint
+                         finding (broken @link, malformed HTML) fails the build; missing tags are tolerated. -->
+                    <sourcepath>${project.build.directory}/delombok</sourcepath>
+                    <excludePackageNames>io.github.lembergmax.justmath</excludePackageNames>
+                    <failOnError>true</failOnError>
+                    <failOnWarnings>true</failOnWarnings>
                     <encoding>UTF-8</encoding>
                     <docencoding>UTF-8</docencoding>
                     <charset>UTF-8</charset>
