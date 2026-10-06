@@ -299,9 +299,10 @@
                         <removeUnusedImports/>
                         <trimTrailingWhitespace/>
                         <endWithNewline/>
-                        <indentWithSpaces>
+                        <indent>
+                            <spaces>true</spaces>
                             <spacesPerTab>4</spacesPerTab>
-                        </indentWithSpaces>
+                        </indent>
                     </java>
                 </configuration>
             </plugin>
