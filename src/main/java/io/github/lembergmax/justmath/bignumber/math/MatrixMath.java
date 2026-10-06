@@ -111,7 +111,7 @@ public final class MatrixMath {
 	 * <em>B</em>:
 	 * </p>
 	 * <pre>
-	 *     C<sub>ij</sub> = Σ<sub>k=1 to p</sub> A<sub>ik</sub> × B<sub>kj</sub>
+	 *     C(i,j) = Σ over k = 1 to p of A(i,k) × B(k,j)
 	 * </pre>
 	 * <p>
 	 * Matrix multiplication is only defined if the number of columns in the first matrix equals
@@ -230,7 +230,7 @@ public final class MatrixMath {
 	 * is given by:
 	 * </p>
 	 * <pre>
-	 *     A<sup>T</sup><sub>ij</sub> = A<sub>ji</sub>
+	 *     transpose(A)(i,j) = A(j,i)
 	 * </pre>
 	 * <p>
 	 * Transposition reflects the matrix across its main diagonal.

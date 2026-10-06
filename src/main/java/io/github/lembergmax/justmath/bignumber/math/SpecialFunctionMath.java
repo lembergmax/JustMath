@@ -70,7 +70,7 @@ public final class SpecialFunctionMath {
 	 * </pre>
 	 * which allows evaluation for negative non-integer arguments.
 	 *
-	 * <h3>Mathematical Properties:</h3>
+	 * <p><b>Mathematical properties:</b></p>
 	 * <ul>
 	 *     <li>Γ(x+1) = x · Γ(x)</li>
 	 *     <li>Γ(1) = 1, Γ(1/2) = √π</li>

@@ -85,7 +85,7 @@ public abstract class SortingAlgorithm {
     }
 
     /**
-     * Throws a {@link CancellationException} when the current thread has been interrupted.
+     * Throws a {@link java.util.concurrent.CancellationException} when the current thread has been interrupted.
      *
      * <p>Long-running sorts (BubbleSort and friends on tens of thousands of {@link BigNumber}s)
      * are CPU bound and otherwise ignore JUnit {@code @Timeout} interrupts and external

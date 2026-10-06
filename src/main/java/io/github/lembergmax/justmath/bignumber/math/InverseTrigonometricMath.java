@@ -191,7 +191,7 @@ public final class InverseTrigonometricMath {
      * </pre>
      * where {@code atan} denotes the inverse tangent function.
      *
-     * <h3>Branch / range</h3>
+     * <p><b>Branch / range</b></p>
      * <p>This implementation uses the identity {@code acot(x) = atan(1/x)} directly, so the result shares
      * {@code atan}'s range:
      * <ul>
@@ -200,19 +200,19 @@ public final class InverseTrigonometricMath {
      * </ul>
      * (This is the {@code atan(1/x)} convention rather than the alternative continuous {@code (0, π)} convention.)
      *
-     * <h3>Domain</h3>
+     * <p><b>Domain</b></p>
      * <ul>
      *     <li>All real numbers except {@code 0}, since {@code acot(0)} is undefined.</li>
      * </ul>
      *
-     * <h3>Special cases</h3>
+     * <p><b>Special cases</b></p>
      * <ul>
      *     <li>{@code acot(0)} → throws {@link ArithmeticException}, since {@code 1/0} is undefined.</li>
      *     <li>{@code acot(+∞)} → approaches {@code 0⁺}.</li>
      *     <li>{@code acot(-∞)} → approaches {@code 0⁻}.</li>
      * </ul>
      *
-     * <h3>Implementation notes</h3>
+     * <p><b>Implementation notes</b></p>
      * <p>The reciprocal {@code 1/x} and the arctangent are computed with {@link #ANGLE_GUARD_DIGITS} extra digits
      * via {@link BigDecimalMath#atan(BigDecimal, MathContext)}; the result is rounded once to the caller's
      * {@link MathContext}. (Replaces the previous apfloat-based path, which computed at exactly the requested
