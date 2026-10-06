@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.github.lembergmax.justmath.calculator.internal;
+package io.github.lembergmax.justmath.calculator;
 
 import java.util.Optional;
 
@@ -41,7 +41,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
-public class Token {
+class Token {
 
     private final Type type;
     private final String value;

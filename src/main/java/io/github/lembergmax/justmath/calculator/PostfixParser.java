@@ -34,7 +34,6 @@ import io.github.lembergmax.justmath.calculator.exceptions.SyntaxErrorException;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElements;
 import io.github.lembergmax.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import lombok.NoArgsConstructor;
 
 /**
@@ -42,7 +41,7 @@ import lombok.NoArgsConstructor;
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-public class PostfixParser {
+class PostfixParser {
 
     /**
      * Checks if the given expression element is a right-associative operator. Only

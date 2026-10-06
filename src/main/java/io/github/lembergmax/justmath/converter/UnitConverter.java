@@ -29,7 +29,7 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.DEFAULT_DIVISIO
 import java.math.MathContext;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.converter.exception.UnitConversionException;
 import lombok.Getter;
 import lombok.NonNull;
@@ -83,7 +83,7 @@ public final class UnitConverter {
      *
      * <p>
      * The precision is derived from {@link io.github.lembergmax.justmath.bignumber.BigNumbers#DEFAULT_DIVISION_PRECISION} via
-     * {@link CalculatorEngineUtils#getDefaultMathContext(int)}.
+     * {@link BigNumbers#getDefaultMathContext(int)}.
      * </p>
      */
     public UnitConverter() {
@@ -101,7 +101,7 @@ public final class UnitConverter {
      * @param divisionPrecision precision used to build the internal {@link MathContext}
      */
     public UnitConverter(final int divisionPrecision) {
-        this(CalculatorEngineUtils.getDefaultMathContext(divisionPrecision));
+        this(BigNumbers.getDefaultMathContext(divisionPrecision));
     }
 
     /**

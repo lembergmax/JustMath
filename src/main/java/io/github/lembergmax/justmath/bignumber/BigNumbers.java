@@ -27,13 +27,13 @@ package io.github.lembergmax.justmath.bignumber;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.internal.BoundedCache;
 import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
-import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
 import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
@@ -52,7 +52,7 @@ public class BigNumbers {
     /**
      * Default {@link MathContext} used for calculations, based on {@link #DEFAULT_DIVISION_PRECISION}.
      */
-    public static final MathContext DEFAULT_MATH_CONTEXT = CalculatorEngineUtils.getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
+    public static final MathContext DEFAULT_MATH_CONTEXT = getDefaultMathContext(DEFAULT_DIVISION_PRECISION);
 
     /**
      * Constant representing the value -1 as a {@link BigNumber}.
@@ -144,6 +144,21 @@ public class BigNumbers {
      * keyed by {@link MathContext}. Holds at most {@link #MAX_CACHED_PRECISIONS} entries.
      */
     private static final BoundedCache<MathContext, BigDecimal> E_BD_CACHE = new BoundedCache<>(MAX_CACHED_PRECISIONS);
+
+    /**
+     * Returns a {@link MathContext} with the given precision and {@link RoundingMode#HALF_UP}.
+     *
+     * @param divisionPrecision
+     * 	the number of significant digits; 0 means unlimited precision
+     *
+     * @return a new {@code MathContext}; never {@code null}
+     *
+     * @throws IllegalArgumentException
+     * 	if {@code divisionPrecision} is negative
+     */
+    public static MathContext getDefaultMathContext(final int divisionPrecision) {
+        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
+    }
 
     /**
      * Generates a uniformly distributed random integer {@link BigNumber} within the range [min, max).

@@ -30,7 +30,6 @@ import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.exceptions.ProcessingErrorException;
 import io.github.lembergmax.justmath.calculator.exceptions.SyntaxErrorException;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 

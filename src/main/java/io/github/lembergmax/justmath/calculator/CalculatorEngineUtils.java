@@ -24,8 +24,6 @@
 
 package io.github.lembergmax.justmath.calculator;
 
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +43,9 @@ import io.github.lembergmax.justmath.calculator.expression.elements.function.Unl
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.BinaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import lombok.NonNull;
 
-public class CalculatorEngineUtils {
+class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
@@ -619,16 +616,6 @@ public class CalculatorEngineUtils {
      */
     private static boolean isUnarySignSymbol(final String symbol) {
         return ExpressionElements.OP_PLUS.equals(symbol) || ExpressionElements.OP_MINUS.equals(symbol);
-    }
-
-    /**
-     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
-     *
-     * @param divisionPrecision the precision for division operations
-     * @return a MathContext instance with the given precision and HALF_UP rounding mode
-     */
-    public static MathContext getDefaultMathContext(int divisionPrecision) {
-        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
     }
 
 }
