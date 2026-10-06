@@ -32,7 +32,10 @@ import java.math.MathContext;
 import java.util.Locale;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -96,15 +99,15 @@ public final class CombinatoricsMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!n.isInteger() || !k.isInteger()) {
-            throw new IllegalArgumentException("Combination requires integer values for both n and k.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Combination requires integer values for both n and k.");
         }
 
         if (n.isNegative() || k.isNegative()) {
-            throw new IllegalArgumentException("Combination requires non-negative integer values for both n and k.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Combination requires non-negative integer values for both n and k.");
         }
 
         if (k.compareTo(n) > 0) {
-            throw new IllegalArgumentException("Cannot calculate combinations: k cannot be greater than n.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Cannot calculate combinations: k cannot be greater than n.");
         }
 
         if (k.isEqualTo(ZERO) || k.isEqualTo(n)) {
@@ -113,7 +116,7 @@ public final class CombinatoricsMath {
 
         final BigNumber effectiveK = k.min(n.subtract(k));
         if (effectiveK.isGreaterThan(BigNumber.valueOf(Integer.MAX_VALUE))) {
-            throw new IllegalArgumentException("combination is not supported for k > Integer.MAX_VALUE");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_OVERFLOW, "combination is not supported for k > Integer.MAX_VALUE");
         }
         final int iterationCount = effectiveK.intValue();
 
@@ -163,19 +166,19 @@ public final class CombinatoricsMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!n.isInteger() || !k.isInteger()) {
-            throw new IllegalArgumentException("Permutations requires integer values for both n and k.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Permutations requires integer values for both n and k.");
         }
 
         if (n.isNegative() || k.isNegative()) {
-            throw new IllegalArgumentException("Permutations requires non-negative integer values for both n and k.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Permutations requires non-negative integer values for both n and k.");
         }
 
         if (k.compareTo(n) > 0) {
-            throw new IllegalArgumentException("Cannot calculate permutations: k cannot be greater than n.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Cannot calculate permutations: k cannot be greater than n.");
         }
 
         if (k.isGreaterThan(BigNumber.valueOf(Integer.MAX_VALUE))) {
-            throw new IllegalArgumentException("permutation is not supported for k > Integer.MAX_VALUE");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_OVERFLOW, "permutation is not supported for k > Integer.MAX_VALUE");
         }
 
         final int iterationCount = k.intValue();
@@ -201,12 +204,12 @@ public final class CombinatoricsMath {
      */
     private static void rejectIfResultTooLarge(final BigInteger n, final int factorCount) {
         if (factorCount > MAX_COMBINATORIAL_FACTORS) {
-            throw new ArithmeticException("Combinatorial argument is too large (maximum " + MAX_COMBINATORIAL_FACTORS + " terms)");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Combinatorial argument is too large (maximum " + MAX_COMBINATORIAL_FACTORS + " terms)");
         }
 
         final long digitsOfN = Math.max(1L, n.abs().toString().length());
         if (factorCount > MAX_COMBINATORIAL_RESULT_DIGITS / digitsOfN) {
-            throw new ArithmeticException("Combinatorial result is too large (would exceed " + MAX_COMBINATORIAL_RESULT_DIGITS + " digits)");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Combinatorial result is too large (would exceed " + MAX_COMBINATORIAL_RESULT_DIGITS + " digits)");
         }
     }
 

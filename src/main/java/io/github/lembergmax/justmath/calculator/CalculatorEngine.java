@@ -620,7 +620,7 @@ public class CalculatorEngine {
             } catch (final CalculatorException calculatorException) {
                 throw calculatorException;
             } catch (final RuntimeException runtimeException) {
-                throw classifyRuntimeException(runtimeException);
+                throw RuntimeExceptionClassifier.classify(runtimeException);
             }
         } finally {
             if (previous.isEmpty()) {
@@ -675,7 +675,7 @@ public class CalculatorEngine {
         } catch (final CalculatorException calculatorException) {
             return formatExceptionMessage(calculatorException);
         } catch (final Exception exception) {
-            return formatExceptionMessage(classifyRuntimeException(exception));
+            return formatExceptionMessage(RuntimeExceptionClassifier.classify(exception));
         } catch (final StackOverflowError stackOverflowError) {
             return formatExceptionMessage(deeplyNestedException());
         }
@@ -716,7 +716,7 @@ public class CalculatorEngine {
         } catch (CalculatorException e) {
             return formatExceptionMessage(e);
         } catch (Exception e) {
-            return formatExceptionMessage(classifyRuntimeException(e));
+            return formatExceptionMessage(RuntimeExceptionClassifier.classify(e));
         } catch (final StackOverflowError stackOverflowError) {
             return formatExceptionMessage(deeplyNestedException());
         }
@@ -830,7 +830,7 @@ public class CalculatorEngine {
         if (exception instanceof CalculatorException calculatorException) {
             message = formatExceptionMessage(calculatorException);
         } else if (exception instanceof RuntimeException) {
-            message = formatExceptionMessage(classifyRuntimeException(exception));
+            message = formatExceptionMessage(RuntimeExceptionClassifier.classify(exception));
         } else {
             message = exception.getMessage();
         }
@@ -891,7 +891,7 @@ public class CalculatorEngine {
             }
             return CalculatorResult.failure(err);
         } catch (final Exception exception) {
-            CalculatorException classified = classifyRuntimeException(exception);
+            CalculatorException classified = RuntimeExceptionClassifier.classify(exception);
             CalculatorError err = classified.getCalculatorError();
             if (err == null) {
                 err = new CalculatorError(
@@ -1001,60 +1001,6 @@ public class CalculatorEngine {
             return calculatorError.format(locale, ErrorMode.USER_FRIENDLY);
         }
         return Objects.requireNonNullElse(calculatorException.getMessage(), "Syntax Error");
-    }
-
-    /**
-     * Maps an unchecked runtime exception that bubbled out of the lower-level math layer
-     * (typically {@link ArithmeticException} or {@link IllegalArgumentException} from
-     * {@code BigNumber} operations) to a typed {@link ProcessingErrorException} with a
-     * matching {@link CalculatorErrorCode} so that downstream formatting can resolve a
-     * localized template. Without this mapping such exceptions would surface verbatim in
-     * English and bypass the {@code i18n/calculator_errors_*.properties} bundles entirely.
-     *
-     * @param throwable the unchecked exception thrown during evaluation; must not be {@code null}
-     * @return a localized-friendly {@link ProcessingErrorException}; never {@code null}
-     */
-    private static ProcessingErrorException classifyRuntimeException(@NonNull final Throwable throwable) {
-        final String message = Objects.requireNonNullElse(throwable.getMessage(), "");
-        final String lower = message.toLowerCase(Locale.ROOT);
-        final CalculatorErrorCode code;
-        if (lower.contains("division by zero")
-                || lower.contains("divisor zero")
-                || lower.contains("undefined for value 0")
-                || lower.contains("undefined for x = 0")
-                || lower.contains("normalize list with sum 0")) {
-            code = CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO;
-        } else if (lower.contains("factorial") && lower.contains("non-negative")) {
-            code = CalculatorErrorCode.MATH_FACTORIAL_NEGATIVE;
-        } else if (lower.contains("factorial") && lower.contains("integer")) {
-            code = CalculatorErrorCode.MATH_FACTORIAL_NON_INTEGER;
-        } else if (lower.contains("ln(x) undefined")
-                || lower.contains("number must be positive")
-                || lower.contains("base must be positive")
-                || ((lower.contains("log") || lower.contains("logarith")) && lower.contains("positive"))) {
-            code = CalculatorErrorCode.MATH_LOG_NON_POSITIVE;
-        } else if (lower.contains("root of a negative")
-                || lower.contains("sqrt is only defined for non-negative")) {
-            code = CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE;
-        } else if (lower.contains("overflow") || lower.contains("too large")) {
-            code = CalculatorErrorCode.MATH_OVERFLOW;
-        } else if (throwable instanceof ArithmeticException
-                || lower.contains("undefined")
-                || lower.contains("only defined")
-                || lower.contains("must be")
-                || lower.contains("must satisfy")
-                || lower.contains("cannot be")
-                || lower.contains("non-negative")
-                || lower.contains("not a real number")
-                || lower.contains("must not be")
-                || lower.contains("only positive")
-                || lower.contains("greater than")
-                || lower.contains("less than")) {
-            code = CalculatorErrorCode.PROCESSING_DOMAIN_ERROR;
-        } else {
-            code = CalculatorErrorCode.PROCESSING_INTERNAL;
-        }
-        return new ProcessingErrorException(code, message.isEmpty() ? "Processing error" : message);
     }
 
     /**

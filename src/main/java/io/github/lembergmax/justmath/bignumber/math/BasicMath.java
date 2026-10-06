@@ -26,7 +26,10 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.internal.LocaleSeparators;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -214,7 +217,7 @@ public final class BasicMath {
         final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
-            throw new ArithmeticException("Division by zero");
+            throw divisionByZero();
         }
 
         final ParsedDecimalNumber quotientParts = normalize(divideParsed(dividendParts, divisorParts, mathContext));
@@ -245,7 +248,7 @@ public final class BasicMath {
         final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
-            throw new IllegalArgumentException("Cannot perform modulo operation with divisor zero.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Cannot perform modulo operation with divisor zero.");
         }
 
         final ParsedDecimalNumber remainderParts = computeModulo(dividendParts, divisorParts);
@@ -811,7 +814,7 @@ public final class BasicMath {
         final ParsedDecimalNumber divisorNormalized = normalize(divisor);
 
         if (isZero(divisorNormalized)) {
-            throw new ArithmeticException("Division by zero");
+            throw divisionByZero();
         }
         if (isZero(dividendNormalized)) {
             return zeroParts();
@@ -837,7 +840,7 @@ public final class BasicMath {
     private static int requirePositivePrecision(final MathContext mathContext) {
         final int precision = mathContext.getPrecision();
         if (precision <= 0) {
-            throw new IllegalArgumentException("MathContext precision must be > 0");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "MathContext precision must be > 0");
         }
         return precision;
     }
@@ -1079,7 +1082,7 @@ public final class BasicMath {
             case FLOOR -> resultSign < 0 && (roundingDigit != '0' || anyFurtherNonZeroDigits);
             case UNNECESSARY -> {
                 if (roundingDigit != '0' || anyFurtherNonZeroDigits) {
-                    throw new ArithmeticException("Rounding necessary (RoundingMode.UNNECESSARY)");
+                    throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Rounding necessary (RoundingMode.UNNECESSARY)");
                 }
                 yield false;
             }
@@ -1735,7 +1738,7 @@ public final class BasicMath {
         final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
 
         if (isZero(divisorParts)) {
-            throw new IllegalArgumentException("Cannot perform remainder operation with divisor zero.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Cannot perform remainder operation with divisor zero.");
         }
 
         if (isZero(dividendParts)) {
@@ -1988,7 +1991,7 @@ public final class BasicMath {
      */
     private static void validateNonZeroDivisor(final String canonicalDivisor) {
         if (isZeroString(canonicalDivisor)) {
-            throw new ArithmeticException("Division by zero");
+            throw divisionByZero();
         }
     }
 
@@ -2153,13 +2156,13 @@ public final class BasicMath {
         }
         if (isMinusOne(exponentParts)) {
             if (isZero(baseParts)) {
-                throw new ArithmeticException("Division by zero");
+                throw divisionByZero();
             }
             return divideParsed(oneParts(), baseParts, mathContext);
         }
 
         if (isZero(baseParts) && exponentParts.sign() < 0) {
-            throw new ArithmeticException("Cannot compute 0^negative (log undefined)");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Cannot compute 0^negative (log undefined)");
         }
         if (isZero(baseParts) && exponentParts.sign() > 0) {
             return zeroParts();
@@ -2212,7 +2215,7 @@ public final class BasicMath {
         }
 
         if (isZero(result)) {
-            throw new ArithmeticException("Division by zero");
+            throw divisionByZero();
         }
 
         return divideParsed(oneParts(), result, mathContext);
@@ -2244,7 +2247,7 @@ public final class BasicMath {
 
         final boolean exponentExceedsLong = strippedExponent.length() > 18;
         if (exponentExceedsLong || Long.parseLong(strippedExponent) > (long) (MAX_POWER_RESULT_DIGITS / digitsPerFactor)) {
-            throw new ArithmeticException("Power result is too large (would exceed " + MAX_POWER_RESULT_DIGITS + " digits)");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Power result is too large (would exceed " + MAX_POWER_RESULT_DIGITS + " digits)");
         }
     }
 
@@ -2350,14 +2353,14 @@ public final class BasicMath {
      */
     private static void validateFactorialInput(final ParsedDecimalNumber argumentParts) {
         if (!isInteger(argumentParts)) {
-            throw new IllegalArgumentException("Factorial is only defined for integers.");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_FACTORIAL_NON_INTEGER, "Factorial is only defined for integers.");
         }
         if (argumentParts.sign() < 0) {
-            throw new IllegalArgumentException("Factorial is only defined for non-negative integers.");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_FACTORIAL_NEGATIVE, "Factorial is only defined for non-negative integers.");
         }
         final Integer argumentAsInt = tryParseUnsignedInt(argumentParts.digits());
         if (argumentAsInt == null || argumentAsInt > MAX_FACTORIAL_ARGUMENT) {
-            throw new ArithmeticException("Factorial argument is too large (maximum " + MAX_FACTORIAL_ARGUMENT + ")");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Factorial argument is too large (maximum " + MAX_FACTORIAL_ARGUMENT + ")");
         }
     }
 
@@ -2683,7 +2686,7 @@ public final class BasicMath {
     private static ParsedDecimalNumber lnParsed(final ParsedDecimalNumber positiveParts, final MathContext mathContext) {
         final ParsedDecimalNumber x = normalize(positiveParts);
         if (x.sign() < 0 || isZero(x)) {
-            throw new ArithmeticException("ln(x) is only defined for x > 0");
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_LOG_NON_POSITIVE, "ln(x) is only defined for x > 0");
         }
         if (isOne(x)) {
             return zeroParts();
@@ -2930,6 +2933,10 @@ public final class BasicMath {
             return unsignedDigits;
         }
         return unsignedDigits + "0".repeat(zeroCount);
+    }
+
+    private static MathArithmeticException divisionByZero() {
+        return new MathArithmeticException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Division by zero");
     }
 
 }

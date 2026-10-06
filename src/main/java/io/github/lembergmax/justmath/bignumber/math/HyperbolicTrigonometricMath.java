@@ -26,7 +26,10 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 import java.math.MathContext;
@@ -198,7 +201,7 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            throw new IllegalArgumentException("argument cannot be zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument cannot be zero");
         }
 
         final MathContext internalMathContext = createInternalMathContext(mathContext);
@@ -289,7 +292,7 @@ public final class HyperbolicTrigonometricMath {
      */
     private static BigNumber computeReciprocal(final BigNumber value, final MathContext mathContext, final Locale locale) {
         if (value.isEqualTo(ZERO)) {
-            throw new ArithmeticException("Division by zero");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Division by zero");
         }
         return BasicMath.divide(BigNumbers.ONE, value, mathContext, locale);
     }

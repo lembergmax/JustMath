@@ -33,7 +33,9 @@ import java.util.Locale;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -231,7 +233,7 @@ public final class InverseTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(BigNumbers.ZERO)) {
-            throw new ArithmeticException("acot(x) is undefined for x = 0");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "acot(x) is undefined for x = 0");
         }
 
         final MathContext guardContext = withGuardDigits(mathContext);

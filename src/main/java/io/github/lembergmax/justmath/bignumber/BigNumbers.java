@@ -32,7 +32,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.internal.BoundedCache;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 public class BigNumbers {
@@ -167,14 +169,14 @@ public class BigNumbers {
      */
     public static BigNumber randomIntegerBigNumberInRange(@NonNull final BigNumber min, @NonNull final BigNumber max, @NonNull final Locale locale) {
         if (min.hasDecimals() || max.hasDecimals()) {
-            throw new IllegalArgumentException("min and max must be integers (no decimal part)");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "min and max must be integers (no decimal part)");
         }
 
         final BigInteger minInt = min.toBigDecimal().toBigIntegerExact();
         final BigInteger maxInt = max.toBigDecimal().toBigIntegerExact();
 
         if (minInt.compareTo(maxInt) >= 0) {
-            throw new IllegalArgumentException("min must be less than max");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "min must be less than max");
         }
 
         final BigInteger range = maxInt.subtract(minInt);

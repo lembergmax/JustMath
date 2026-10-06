@@ -32,7 +32,9 @@ import java.util.Locale;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 /**
@@ -134,7 +136,7 @@ public final class RadicalMath {
         MathUtils.checkMathContext(mathContext);
 
         if (index.isEqualTo(ZERO)) {
-            throw new IllegalArgumentException("Index must not be zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Index must not be zero");
         }
 
         if (index.isNegative()) {
@@ -147,11 +149,11 @@ public final class RadicalMath {
         boolean radicandIsNegative = radicand.isNegative();
 
         if (radicandIsNegative && !index.isInteger()) {
-            throw new IllegalArgumentException("Root of a negative radicand requires an integer index");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE, "Root of a negative radicand requires an integer index");
         }
 
         if (radicandIsNegative && isEvenRoot) {
-            throw new IllegalArgumentException("Even root of a negative number is not a real number");
+            throw new MathArgumentException(CalculatorErrorCode.MATH_ROOT_OF_NEGATIVE, "Even root of a negative number is not a real number");
         }
 
         if (radicandIsNegative) {

@@ -27,6 +27,9 @@ package io.github.lembergmax.justmath.bignumber.math.utils;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumberCoordinate;
 import io.github.lembergmax.justmath.bignumber.MultiValueResult;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
@@ -127,10 +130,10 @@ public class MathUtils {
      */
     public static void checkMathContext(@NonNull final MathContext mathContext) {
         if (mathContext.getPrecision() <= 0) {
-            throw new IllegalArgumentException("MathContext precision must be greater than zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "MathContext precision must be greater than zero");
         }
         if (mathContext.getPrecision() > MAX_MATH_CONTEXT_PRECISION) {
-            throw new ArithmeticException("MathContext precision " + mathContext.getPrecision()
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "MathContext precision " + mathContext.getPrecision()
                     + " is too large (maximum " + MAX_MATH_CONTEXT_PRECISION + ")");
         }
     }
