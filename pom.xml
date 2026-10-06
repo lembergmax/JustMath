@@ -55,6 +55,9 @@
         <lombok.version>1.18.48</lombok.version>
         <junit.version>6.1.3</junit.version>
         <pitest.version>1.30.0</pitest.version>
+        <!-- Release that the public API of this build is compared with. After a release, set it to that
+             release and remove the exclusions in the japicmp configuration below. -->
+        <japicmp.baseline.version>1.6.0</japicmp.baseline.version>
         <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
     </properties>
 
@@ -311,6 +314,68 @@
                         <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Compares the public API of the jar with the baseline release and fails on a binary or source
+                 incompatible change. A change that is meant to break compatibility is listed in the excludes
+                 with the release that may contain it. -->
+            <plugin>
+                <groupId>com.github.siom79.japicmp</groupId>
+                <artifactId>japicmp-maven-plugin</artifactId>
+                <version>0.26.3</version>
+                <configuration>
+                    <oldVersion>
+                        <dependency>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${japicmp.baseline.version}</version>
+                            <type>jar</type>
+                        </dependency>
+                    </oldVersion>
+                    <newVersion>
+                        <file>
+                            <path>${project.build.directory}/${project.build.finalName}.jar</path>
+                        </file>
+                    </newVersion>
+                    <parameter>
+                        <onlyModified>true</onlyModified>
+                        <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+                        <breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+                        <includeSynthetic>false</includeSynthetic>
+                        <excludes>
+                            <!-- Allowed in 1.7.0 (#168): the expression pipeline is no longer public API. -->
+                            <exclude>io.github.lembergmax.justmath.calculator.Tokenizer</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.PostfixParser</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngineUtils</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.internal.Token</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.internal.Token$Type</exclude>
+                            <!-- Allowed in 1.7.0: CalculatorEngine no longer hands out the pipeline components or
+                                 the expression cache. -->
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getEvaluator()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getPostfixParser()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getTokenizer()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getExpressionCache()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getInputDecimalSeparator()</exclude>
+                            <!-- Allowed in 1.7.0 (#165): the array became an unmodifiable list. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.internal.LocalesConfig#SUPPORTED_LOCALES</exclude>
+                            <!-- Allowed in 1.7.0 (3a8bd607): round(BigNumber, MathContext) is static. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.BigNumber#round(io.github.lembergmax.justmath.bignumber.BigNumber,java.math.MathContext)</exclude>
+                            <!-- Allowed in 1.7.0 (9518f2b7): these utility classes became final with a private
+                                 constructor. Their methods are unchanged, so excluding the whole class hides nothing
+                                 else. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.CoordinateConversionMath</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.NumberTheoryMath</exclude>
+                        </excludes>
+                    </parameter>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>japicmp-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>cmp</goal>
                         </goals>
                     </execution>
                 </executions>

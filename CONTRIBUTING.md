@@ -20,6 +20,7 @@ On Windows use `mvnw.cmd verify`. `verify` runs the whole quality gate:
 | Javadoc | any error or warning (it runs on the delomboked sources) |
 | SpotBugs with FindSecBugs | any finding that is not listed, with a reason, in `config/spotbugs-exclude.xml` |
 | Spotless | tabs, trailing whitespace, a missing final newline or an unused import in a Java file |
+| japicmp | a binary or source incompatible change compared with the previous release that is not listed in the `pom.xml` |
 
 Useful commands:
 
@@ -68,6 +69,10 @@ JustMath follows [Semantic Versioning](https://semver.org). The public API is ev
 - A new method or class is a minor change.
 - A change that can break a caller (a removed or renamed public member, a changed signature, changed behaviour that is documented) needs a new major version. If one is unavoidable in a minor release, it must be announced in the pull request, listed in the changelog and marked there as breaking.
 - To retire something, deprecate it first: `@Deprecated(since = "x.y.z")` plus a Javadoc `@deprecated` tag that names the replacement. Remove it no earlier than the next major version.
+
+The build enforces this. `japicmp` compares every build with the previous release from Maven Central (`japicmp.baseline.version` in `pom.xml`) and fails on a binary or source incompatible change, in `internal` packages as well. The first build downloads the baseline jar, so run `./mvnw -Djapicmp.skip=true verify` when you are offline.
+
+If a break is intended, add an `<exclude>` for exactly that class, method or field to the japicmp configuration in `pom.xml`. Put a comment above it that names the release that may contain the break and the issue or commit that decided it, and list the same break in the changelog. After a release, set the baseline to that release and delete the excludes: they only exist to carry a break through the release that introduces it.
 
 ## Extending the library
 
