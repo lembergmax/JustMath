@@ -1,0 +1,3 @@
+# Mechanical formatting commits. GitHub and `git blame --ignore-revs-file` skip them.
+# style: format all Java sources (four spaces, final newline, no unused imports)
+3b533ed3b697e636da6b87ee219ca1cf6aedcceb
