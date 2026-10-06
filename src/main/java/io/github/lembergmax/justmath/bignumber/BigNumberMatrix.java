@@ -99,8 +99,8 @@ public class BigNumberMatrix implements Cloneable {
 	 * 	if dimensions are negative, non-integer, or too large
 	 */
 	public BigNumberMatrix(@NonNull final BigNumber rows, @NonNull final BigNumber columns, @NonNull final Locale locale) {
-		this.rows = rows;
-		this.columns = columns;
+		this.rows = new BigNumber(rows);
+		this.columns = new BigNumber(columns);
 		this.locale = locale;
 		this.data = new ArrayList<>();
 
@@ -200,6 +200,26 @@ public class BigNumberMatrix implements Cloneable {
 		this.data = new ArrayList<>();
 
 		deepCopyData(bigNumberMatrix);
+	}
+
+	/**
+	 * Returns a copy of the number of rows. The matrix keeps its own instance, so mutating the returned value
+	 * (for example with {@code negateThis()}) does not change the matrix.
+	 *
+	 * @return the number of rows as an independent {@link BigNumber}; never {@code null}
+	 */
+	public BigNumber getRows() {
+		return new BigNumber(rows);
+	}
+
+	/**
+	 * Returns a copy of the number of columns. The matrix keeps its own instance, so mutating the returned value
+	 * (for example with {@code negateThis()}) does not change the matrix.
+	 *
+	 * @return the number of columns as an independent {@link BigNumber}; never {@code null}
+	 */
+	public BigNumber getColumns() {
+		return new BigNumber(columns);
 	}
 
 	/**
