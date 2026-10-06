@@ -1,36 +1,136 @@
-# Continuous integration: builds and runs the full test suite on every pull request and on pushes to
-# the long-lived branches. This catches breakage on `developer` / feature branches and in PRs BEFORE
-# code reaches `main` (where publish.yml would otherwise be the first place tests run).
+# Builds and tests every pull request and every push to the long-lived branches, before anything can
+# reach main (where publish.yml deploys to Maven Central).
+#
+# "CI result" is the only check that branch protection has to require: it fails when any job below fails.
 name: CI
 
 on:
   pull_request:
   push:
     branches: [main, developer]
+  workflow_dispatch:
 
-# Cancel an in-progress run when a newer commit is pushed to the same ref.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
-    name: Build & test (JDK ${{ matrix.java }})
-    runs-on: ubuntu-latest
+    name: Build & test (JDK ${{ matrix.java }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        java: ['21', '23']
+        os: [ubuntu-latest]
+        java: ['21', '23', '25']
+        include:
+          - os: windows-latest
+            java: '21'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-          cache: 'maven'
+          distribution: temurin
+          cache: maven
 
-      - name: Build and run tests
-        run: mvn -B --no-transfer-progress verify
+      - name: Verify (tests, coverage gate, Javadoc, SpotBugs, formatting)
+        run: ./mvnw -B --no-transfer-progress verify
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reports-jdk${{ matrix.java }}-${{ matrix.os }}
+          path: |
+            target/surefire-reports
+            target/site/jacoco
+            target/spotbugsXml.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  locales:
+    name: Tests with default locale ${{ matrix.language }}-${{ matrix.country }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: tr
+            country: TR
+          - language: de
+            country: DE
+          - language: ar
+            country: SA
+    env:
+      JAVA_TOOL_OPTIONS: -Duser.language=${{ matrix.language }} -Duser.country=${{ matrix.country }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Test
+        run: ./mvnw -B --no-transfer-progress test
+
+  reproducible:
+    name: Reproducible build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Build twice and compare the artifacts
+        run: |
+          ./mvnw -B -q --no-transfer-progress -DskipTests clean verify
+          sha256sum target/justmath-*.jar > "$RUNNER_TEMP/first.sha256"
+          ./mvnw -B -q --no-transfer-progress -DskipTests clean verify
+          sha256sum target/justmath-*.jar > "$RUNNER_TEMP/second.sha256"
+          cat "$RUNNER_TEMP/first.sha256"
+          diff "$RUNNER_TEMP/first.sha256" "$RUNNER_TEMP/second.sha256"
+
+  result:
+    name: CI result
+    if: always()
+    needs: [build, locales, reproducible]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail when a job failed or was cancelled
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "job results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac
