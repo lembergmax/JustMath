@@ -49,6 +49,9 @@ import org.openjdk.jmh.annotations.Warmup;
  * Both sides compute the same value: the operands are random decimals with half of their digits after the decimal
  * point, division uses a {@link MathContext} with as many digits as the operands, and the factorial of {@code digits}
  * is compared with a product of {@link BigInteger} values.
+ *
+ * <p>The benchmarks that end in {@code FromTextToText} include what a caller pays around the operation: reading both
+ * operands from text and writing the result as text.</p>
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -75,6 +78,10 @@ public class ArithmeticBenchmark {
 
     private BigDecimal rightDecimal;
 
+    private String leftText;
+
+    private String rightText;
+
     private MathContext mathContext;
 
     @Setup
@@ -83,7 +90,9 @@ public class ArithmeticBenchmark {
         leftDecimal = randomDecimal(random, digits);
         rightDecimal = randomDecimal(random, digits);
         leftNumber = new BigNumber(leftDecimal.toPlainString());
-        rightNumber = new BigNumber(rightDecimal.toPlainString());
+        leftText = leftDecimal.toPlainString();
+        rightText = rightDecimal.toPlainString();
+        rightNumber = new BigNumber(rightText);
         exponentNumber = BigNumber.valueOf(POWER_EXPONENT);
         mathContext = new MathContext(digits, RoundingMode.HALF_EVEN);
     }
@@ -125,6 +134,36 @@ public class ArithmeticBenchmark {
     @Benchmark
     public BigDecimal bigDecimalDivide() {
         return leftDecimal.divide(rightDecimal, mathContext);
+    }
+
+    @Benchmark
+    public String bigNumberAddFromTextToText() {
+        return new BigNumber(leftText).add(new BigNumber(rightText)).toString();
+    }
+
+    @Benchmark
+    public String bigDecimalAddFromTextToText() {
+        return new BigDecimal(leftText).add(new BigDecimal(rightText)).toPlainString();
+    }
+
+    @Benchmark
+    public String bigNumberMultiplyFromTextToText() {
+        return new BigNumber(leftText).multiply(new BigNumber(rightText)).toString();
+    }
+
+    @Benchmark
+    public String bigDecimalMultiplyFromTextToText() {
+        return new BigDecimal(leftText).multiply(new BigDecimal(rightText)).toPlainString();
+    }
+
+    @Benchmark
+    public String bigNumberDivideFromTextToText() {
+        return new BigNumber(leftText).divide(new BigNumber(rightText), mathContext).toString();
+    }
+
+    @Benchmark
+    public String bigDecimalDivideFromTextToText() {
+        return new BigDecimal(leftText).divide(new BigDecimal(rightText), mathContext).toPlainString();
     }
 
     @Benchmark

@@ -140,7 +140,9 @@ There are 25 codes in these groups: syntax, argument, math, range and internal. 
 
 `BigNumber` holds a decimal value, a `Locale` for formatting, a `MathContext` and a `TrigonometricMode`. Its operations return new instances and leave the receiver alone. The few mutators are named for it: `*This` methods, `trim` and the Lombok setters. The shared constants in `BigNumbers` (`ZERO`, `ONE`, ...) are never returned to a caller, always a fresh instance, because a caller may mutate the result.
 
-`BasicMath` implements addition, subtraction, multiplication, division, integer powers, `exp` and the fractional power on decimal digit strings. The rest of the math classes delegate the transcendental functions to [big-math](https://github.com/eobermuhlner/big-math).
+A value has two views: the `BigDecimal` (`toBigDecimal()`) and the digits as text (`getValueBeforeDecimalPoint()`, `getValueAfterDecimalPoint()`, `isNegative()`). A result of a calculation holds only the `BigDecimal` and writes its digits down when somebody asks for them, for example in `toString()`, so a chain of calculations never converts to text between the steps. A number that was read from text keeps its digits and parses its `BigDecimal` once, when a calculation needs it. Every method that changes the digits discards the `BigDecimal`. See [decision 0008](decisions/0008-bigdecimal-arithmetic-and-lazy-digits.md).
+
+`BasicMath` implements addition, subtraction, multiplication, division, remainder, modulo, integer powers and the factorial on `BigDecimal` and `BigInteger`, and `exp` and the fractional power on decimal digit strings with guard digits. The rest of the math classes delegate the transcendental functions to [big-math](https://github.com/eobermuhlner/big-math).
 
 How a result is rounded:
 

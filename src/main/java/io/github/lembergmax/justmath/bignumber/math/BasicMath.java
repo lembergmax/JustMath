@@ -32,31 +32,36 @@ import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Locale;
 
 /**
- * Provides core arithmetic and selected transcendental operations for {@link BigNumber} without using
- * {@code BigDecimal}, {@code BigInteger} or external math libraries.
+ * Provides core arithmetic and selected transcendental operations for {@link BigNumber}: addition, subtraction,
+ * multiplication, division, remainder, modulo, integer powers, factorial, {@code exp} and fractional powers.
  *
- * <h2>Internal number model</h2>
- * All calculations operate on a minimal tuple representation:
- * <pre>
- *     value = sign * digits * 10^{-scale}
- * </pre>
- * where:
- * <ul>
- *   <li>{@code sign} is {@code +1} or {@code -1}</li>
- *   <li>{@code digits} is an unsigned digit string with no leading zeros (except "0")</li>
- *   <li>{@code scale} is the number of fractional digits (>= 0)</li>
- * </ul>
+ * <h2>How the operations are computed</h2>
+ * Addition, subtraction, multiplication, division, remainder, modulo, integer powers and the factorial run on
+ * {@link BigDecimal} and {@link BigInteger}. A result keeps its value as a {@link BigDecimal} and writes its
+ * digits down only when somebody asks for them, so a chain of calculations does not convert to text between the
+ * steps. Division rounds once with the {@link MathContext} of the caller and gives the values of
+ * {@link BigDecimal#divide(BigDecimal, MathContext)}.
+ *
+ * <p>{@code exp} and the fractional power compute with the internal tuple representation
+ * {@code value = sign * digits * 10^{-scale}} on digit strings, with guard digits, and round once.</p>
  *
  * <h2>Locale handling</h2>
- * Parsing tolerates locale grouping separators and locale decimal separators.
- * Internally, plain strings use '.' as decimal separator. Output is adapted back to the provided locale.
+ * The operands are read through {@link BigNumber#toBigDecimal()}, which does not depend on a locale. The locale
+ * only decides how the result formats itself.
  *
- * <h2>Negative base with non-integer exponent</h2>
+ * <h2>Special semantics</h2>
+ * <ul>
+ *   <li>{@code power}: a non-negative integer exponent gives the exact result, a negative one the reciprocal rounded once.</li>
+ *   <li>A negative base with a non-integer exponent gives a real-only approximation, see below.</li>
+ * </ul>
+ *
  * Mathematically, {@code (-a)^b} for non-integer {@code b} is generally complex.
  * This implementation intentionally produces a real-only approximation to support expressions like
  * {@code -1.2^-2.99}:
@@ -81,11 +86,6 @@ public final class BasicMath {
      * promised by the {@link MathContext}. Above this threshold the exact (Taylor / exp·ln) path runs.
      */
     private static final int DOUBLE_FAST_PATH_MAX_PRECISION = 15;
-
-    /**
-     * Digit appended to a quotient that still has a remainder, so that rounding sees a non-zero tail.
-     */
-    private static final char STICKY_DIGIT = '1';
 
     /**
      * Upper bound on the argument of {@link #factorial}. {@code n!} has on the order of
@@ -138,6 +138,28 @@ public final class BasicMath {
     private static final double LOG10_OF_E = 0.4342944819032518;
 
     /**
+     * Number of powers of ten that {@link #powerOfTen(int)} keeps.
+     */
+    private static final int CACHED_POWERS_OF_TEN = 320;
+
+    /**
+     * The powers of ten below {@link #CACHED_POWERS_OF_TEN}. The array is filled when the class is initialized and
+     * never changed afterwards.
+     */
+    private static final BigInteger[] POWERS_OF_TEN = buildPowersOfTen();
+
+    /**
+     * {@code log10(2)}: the number of decimal digits that a bit has.
+     */
+    private static final double LOG10_OF_2 = 0.3010299956639812;
+
+    /**
+     * Digits that the integer quotient of {@link #divideRounded} has beyond the precision, so that the digits after
+     * the kept ones are known even when the digit counts of the operands are estimated.
+     */
+    private static final int QUOTIENT_GUARD_DIGITS = 4;
+
+    /**
      * {@code log2(10)}: the number of bits that a decimal digit has.
      */
     private static final double LOG2_OF_10 = 3.321928094887362;
@@ -148,149 +170,113 @@ public final class BasicMath {
     private static final String ZERO_AS_STRING = "0";
 
     /**
-     * The number zero as a char
-     */
-    private static final char ZERO_AS_CHAR = '0';
-
-    /**
      * Non-instantiable utility class.
      */
     private BasicMath() {
     }
 
     /**
-     * Adds two {@link BigNumber} values with decimal digit-string arithmetic. The result is exact.
-     *
-     * <p>Algorithm overview:
-     * <ol>
-     *   <li>Parse both inputs to (sign, digits, scale).</li>
-     *   <li>Align scales by appending zeros to the smaller scale operand.</li>
-     *   <li>Perform unsigned addition if signs match; otherwise perform unsigned subtraction on the larger magnitude.</li>
-     *   <li>Normalize (remove redundant zeros) and format the result.</li>
-     * </ol>
+     * Adds two {@link BigNumber} values. The result is exact.
      *
      * @param augend the first operand; must not be {@code null}
      * @param addend the second operand; must not be {@code null}
-     * @param locale the locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale the locale of the result; must not be {@code null}
      * @return {@code augend + addend} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber add(@NonNull final BigNumber augend, @NonNull final BigNumber addend, @NonNull final Locale locale) {
-        final ParsedDecimalNumber augendParts = normalize(parseFromBigNumber(augend));
-        final ParsedDecimalNumber addendParts = normalize(parseFromBigNumber(addend));
-
-        final ParsedDecimalNumber sumParts = normalize(addParsed(augendParts, addendParts));
-        return toBigNumber(sumParts, locale);
+        return toBigNumber(augend.toBigDecimal().add(addend.toBigDecimal()), locale);
     }
 
     /**
-     * Subtracts {@code subtrahend} from {@code minuend} using string-based arithmetic.
-     *
-     * <p>Implemented as:
-     * <pre>
-     *     minuend - subtrahend = minuend + (-subtrahend)
-     * </pre>
+     * Subtracts {@code subtrahend} from {@code minuend}. The result is exact.
      *
      * @param minuend    the value to subtract from; must not be {@code null}
      * @param subtrahend the value to subtract; must not be {@code null}
-     * @param locale     the locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale     the locale of the result; must not be {@code null}
      * @return {@code minuend - subtrahend} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber subtract(@NonNull final BigNumber minuend, @NonNull final BigNumber subtrahend, @NonNull final Locale locale) {
-        final ParsedDecimalNumber minuendParts = normalize(parseFromBigNumber(minuend));
-        final ParsedDecimalNumber subtrahendParts = normalize(parseFromBigNumber(subtrahend));
-
-        final ParsedDecimalNumber differenceParts = normalize(addParsed(minuendParts, negate(subtrahendParts)));
-        return toBigNumber(differenceParts, locale);
+        return toBigNumber(minuend.toBigDecimal().subtract(subtrahend.toBigDecimal()), locale);
     }
 
     /**
-     * Multiplies two {@link BigNumber} values using digit-array multiplication.
-     *
-     * <p>Algorithm overview:
-     * <ul>
-     *   <li>Multiply unscaled digit strings as integers (O(n*m)).</li>
-     *   <li>Result scale = sum of operand scales.</li>
-     *   <li>Result sign = product of operand signs.</li>
-     * </ul>
+     * Multiplies two {@link BigNumber} values. The result is exact.
      *
      * @param multiplicand the left operand; must not be {@code null}
      * @param multiplier   the right operand; must not be {@code null}
-     * @param locale       the locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale       the locale of the result; must not be {@code null}
      * @return {@code multiplicand * multiplier} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber multiply(@NonNull final BigNumber multiplicand, @NonNull final BigNumber multiplier, @NonNull final Locale locale) {
-        final ParsedDecimalNumber multiplicandParts = normalize(parseFromBigNumber(multiplicand));
-        final ParsedDecimalNumber multiplierParts = normalize(parseFromBigNumber(multiplier));
-
-        final ParsedDecimalNumber productParts = normalize(multiplyParsed(multiplicandParts, multiplierParts));
-        return toBigNumber(productParts, locale);
+        return toBigNumber(multiplicand.toBigDecimal().multiply(multiplier.toBigDecimal()), locale);
     }
 
     /**
-     * Divides {@code dividend} by {@code divisor} and rounds according to {@link MathContext}.
+     * Divides {@code dividend} by {@code divisor} and rounds once according to {@link MathContext}.
      *
-     * <p>This method produces a result rounded to {@code mathContext.getPrecision()} significant digits.
-     * It uses string long division. A quotient far below 1, such as {@code 1 / 10^200}, keeps its magnitude: the
-     * precision counts significant digits, not decimal places.</p>
+     * <p>The result is rounded to {@code mathContext.getPrecision()} significant digits with the rounding mode
+     * of {@code mathContext}. A quotient far below 1, such as {@code 1 / 10^200}, keeps its magnitude: the
+     * precision counts significant digits, not decimal places. With {@link RoundingMode#UNNECESSARY} a quotient
+     * that needs rounding is an error.</p>
      *
      * @param dividend    the dividend; must not be {@code null}
      * @param divisor     the divisor; must not be {@code null} and not zero
      * @param mathContext precision and rounding mode; must not be {@code null} and precision must be > 0
-     * @param locale      the locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
      * @return {@code dividend / divisor} rounded to {@code mathContext}
      * @throws NullPointerException     if any argument is {@code null}
-     * @throws ArithmeticException      if {@code divisor} is zero
+     * @throws MathArithmeticException  if {@code divisor} is zero, or the rounding mode is {@code UNNECESSARY} and the
+     *                                  quotient is not exact
+     * @throws MathArgumentException    if the precision of {@code mathContext} is not positive
      * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber divide(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
-        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
-
-        if (isZero(divisorParts)) {
+        final BigDecimal divisorValue = divisor.toBigDecimal();
+        if (divisorValue.signum() == 0) {
             throw divisionByZero();
         }
 
-        final ParsedDecimalNumber quotientParts = normalize(divideParsed(dividendParts, divisorParts, mathContext));
-        return toBigNumber(quotientParts, locale, mathContext);
+        final BigDecimal dividendValue = dividend.toBigDecimal();
+        if (dividendValue.signum() == 0) {
+            return toBigNumber(BigDecimal.ZERO, locale, mathContext);
+        }
+
+        return toBigNumber(divideRounded(dividendValue, divisorValue, mathContext), locale, mathContext);
     }
 
     /**
-     * Computes {@code dividend mod divisor} efficiently without repeated subtraction.
-     *
-     * <p>Algorithm overview:
-     * <ol>
-     *   <li>Parse both operands.</li>
-     *   <li>Scale both to a common integer scale by appending zeros to their unscaled digits.</li>
-     *   <li>Compute integer remainder using unsigned long division.</li>
-     *   <li>Apply sign behavior compatible with the earlier implementation:
-     *       if dividend is negative and remainder != 0, return {@code |divisor| - remainder}.</li>
-     * </ol>
+     * Computes {@code dividend mod divisor}. The result is never negative: for a negative dividend and a remainder
+     * that is not zero it is {@code |divisor| - remainder}.
      *
      * @param dividend the dividend; must not be {@code null}
      * @param divisor  the divisor; must not be {@code null} and not zero
-     * @param locale   the locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale   the locale of the result; must not be {@code null}
      * @return {@code dividend mod divisor} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
-     * @throws IllegalArgumentException if {@code divisor} is zero or an operand is invalid
+     * @throws MathArgumentException    if {@code divisor} is zero
+     * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber modulo(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
-        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
-        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
-
-        if (isZero(divisorParts)) {
+        final BigDecimal divisorValue = divisor.toBigDecimal();
+        if (divisorValue.signum() == 0) {
             throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Cannot perform modulo operation with divisor zero.");
         }
 
-        final ParsedDecimalNumber remainderParts = computeModulo(dividendParts, divisorParts);
-        return toBigNumber(remainderParts, locale);
+        final BigDecimal dividendValue = dividend.toBigDecimal();
+        final BigDecimal remainder = absoluteRemainder(dividendValue, divisorValue);
+        if (dividendValue.signum() < 0 && remainder.signum() != 0) {
+            return toBigNumber(divisorValue.abs().subtract(remainder), locale);
+        }
+
+        return toBigNumber(remainder, locale);
     }
 
     /**
@@ -298,7 +284,7 @@ public final class BasicMath {
      *
      * <p>Behavior:
      * <ul>
-     *   <li>Integer exponent {@code >= 0}: exponentiation by squaring. The result is exact and is <em>not</em>
+     *   <li>Integer exponent {@code >= 0}: {@link BigDecimal#pow(int)}, which squares repeatedly. The result is exact and is <em>not</em>
      *       rounded to {@code mathContext}; a result of more than {@code 1,000,000} digits is rejected with
      *       {@code MATH_OVERFLOW}.</li>
      *   <li>Integer exponent {@code < 0}: the reciprocal of the exact positive power, rounded once to
@@ -312,7 +298,7 @@ public final class BasicMath {
      * @param base        base value; must not be {@code null}
      * @param exponent    exponent value; must not be {@code null}
      * @param mathContext precision and rounding mode; must not be {@code null} and precision must be > 0
-     * @param locale      locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
      * @return {@code base ^ exponent} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
      * @throws ArithmeticException      if {@code base == 0} and {@code exponent < 0}
@@ -330,8 +316,7 @@ public final class BasicMath {
         }
 
         if (isInteger(exponentParts)) {
-            final ParsedDecimalNumber integerPowerResult = powerInteger(baseParts, exponentParts, mathContext);
-            return toBigNumber(integerPowerResult, locale, mathContext);
+            return toBigNumber(powerInteger(base.toBigDecimal(), baseParts, exponentParts, mathContext), locale, mathContext);
         }
 
         if (mathContext.getPrecision() <= DOUBLE_FAST_PATH_MAX_PRECISION) {
@@ -348,18 +333,17 @@ public final class BasicMath {
     /**
      * Computes the factorial {@code n!} for a non-negative integer {@code n}.
      *
-     * <p>Performance strategy:
-     * <ul>
-     *   <li>If {@code n} fits into {@code int}, uses a product-tree (divide-and-conquer) multiplication.</li>
-     *   <li>Otherwise, falls back to decrementing the full digit string and multiplying iteratively.</li>
-     * </ul>
+     * <p>The result is exact. It is computed with a product tree: the product of a range is the product of its two
+     * halves, so the large factors are multiplied with the fast {@link BigInteger} algorithms. The argument is limited
+     * to {@value #MAX_FACTORIAL_ARGUMENT}.</p>
      *
      * @param argument    input value; must not be {@code null}, must be an integer and must be >= 0
-     * @param mathContext validated context (factorial is exact but grows extremely large); must not be {@code null}
-     * @param locale      locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param mathContext the context of the result (the factorial itself is exact); must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
      * @return {@code argument!} as a new {@link BigNumber}
-     * @throws NullPointerException     if any argument is {@code null}
-     * @throws IllegalArgumentException if {@code argument} is negative or not an integer
+     * @throws NullPointerException    if any argument is {@code null}
+     * @throws MathArgumentException   if {@code argument} is negative or not an integer
+     * @throws MathArithmeticException if {@code argument} is above {@value #MAX_FACTORIAL_ARGUMENT}
      */
     public static BigNumber factorial(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
@@ -367,8 +351,7 @@ public final class BasicMath {
         final ParsedDecimalNumber argumentParts = normalize(parseFromBigNumber(argument));
         validateFactorialInput(argumentParts);
 
-        final String factorialDigits = computeFactorialDigits(argumentParts);
-        return new BigNumber(adaptPlainDecimalToLocale(factorialDigits, locale), locale, mathContext).trim();
+        return toBigNumber(new BigDecimal(factorialOf(Integer.parseInt(argumentParts.digits()))), locale, mathContext);
     }
 
     /**
@@ -380,7 +363,7 @@ public final class BasicMath {
      * (no exponent notation). This is the cheap path for a small argument at a low precision.</p>
      *
      * <p>Fallback path:
-     * uses a string-based exp implementation with:</p>
+     * uses an exp implementation on the internal digit representation with:</p>
      * <ul>
      *   <li>power-of-two reduction {@code e^x = (e^{x/2^k})^{2^k}}</li>
      *   <li>Taylor series for the reduced exponent</li>
@@ -389,7 +372,7 @@ public final class BasicMath {
      *
      * @param argument    exponent argument {@code x}; must not be {@code null}
      * @param mathContext precision and rounding mode; must not be {@code null} and precision must be > 0
-     * @param locale      locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
      * @return {@code e^x} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
      * @throws IllegalArgumentException if the input is not a plain decimal number
@@ -534,17 +517,6 @@ public final class BasicMath {
     }
 
     /**
-     * Converts an internal parsed number into a {@link BigNumber} using locale adaptation.
-     *
-     * @param parsedDecimalNumber internal number; must not be {@code null}
-     * @param locale              locale used to adapt the decimal separator; must not be {@code null}
-     * @return a new {@link BigNumber} instance
-     */
-    private static BigNumber toBigNumber(final ParsedDecimalNumber parsedDecimalNumber, final Locale locale) {
-        return new BigNumber(adaptPlainDecimalToLocale(formatPlain(parsedDecimalNumber), locale), locale).trim();
-    }
-
-    /**
      * Converts an internal parsed number into a {@link BigNumber} using locale adaptation and a {@link MathContext}.
      *
      * @param parsedDecimalNumber internal number; must not be {@code null}
@@ -617,19 +589,21 @@ public final class BasicMath {
      * @return parsed number (may not be normalized yet)
      */
     /**
-     * Parses a {@link BigNumber} into its internal {@link ParsedDecimalNumber} representation using its
-     * canonical (locale-independent) {@link BigNumber#toBigDecimal() BigDecimal} form.
-     *
-     * <p>This avoids the locale-mismatch bug that would otherwise occur when one operand was formatted
-     * with its own locale (e.g. {@code "1,5"} for {@code de_DE}) and then parsed under a different
-     * locale (e.g. {@code en_US}): the source locale's decimal separator would be misclassified as a
-     * grouping separator and silently stripped, producing a result that is off by a power of ten.</p>
+     * Reads the digits of a {@link BigNumber} into the internal representation. The digits are locale independent,
+     * so nothing is parsed.
      *
      * @param bigNumber the source number; must not be {@code null}
      * @return the parsed parts (not necessarily normalized yet); never {@code null}
      */
     private static ParsedDecimalNumber parseFromBigNumber(final BigNumber bigNumber) {
-        return parseToParts(bigNumber.toBigDecimal().toPlainString(), Locale.US);
+        final String integerDigits = bigNumber.getValueBeforeDecimalPoint();
+        final String fractionDigits = bigNumber.getValueAfterDecimalPoint().equals(ZERO_AS_STRING) ? "" : bigNumber.getValueAfterDecimalPoint();
+        final String combinedDigits = stripLeadingZeros((integerDigits.isEmpty() ? ZERO_AS_STRING : integerDigits) + fractionDigits);
+        if (combinedDigits.equals(ZERO_AS_STRING)) {
+            return zeroParts();
+        }
+
+        return new ParsedDecimalNumber(bigNumber.isNegative() ? -1 : 1, combinedDigits, fractionDigits.length());
     }
 
     private static ParsedDecimalNumber parseToParts(final String rawNumberString, final Locale locale) {
@@ -838,14 +812,7 @@ public final class BasicMath {
     }
 
     /**
-     * Divides two parsed numbers and rounds the result to the requested {@link MathContext}.
-     *
-     * <p>This method implements long division on integer digit strings. To support decimal division:
-     * the dividend and divisor are scaled to remove fractional parts before division.</p>
-     *
-     * <p><b>Termination fix:</b> If the quotient has no significant digit yet (still in leading fractional zeros)
-     * and the number of leading fractional zeros exceeds {@code precision + 2}, the rounded result is guaranteed
-     * to be zero. The method returns zero immediately to prevent pathological stalls in exp/ln computations.</p>
+     * Divides two parsed numbers and rounds the result once to the requested {@link MathContext}.
      *
      * @param dividend    dividend; must not be {@code null}
      * @param divisor     divisor; must not be {@code null} and not zero
@@ -863,15 +830,154 @@ public final class BasicMath {
             return zeroParts();
         }
 
-        final int precision = requirePositivePrecision(mathContext);
+        requirePositivePrecision(mathContext);
 
-        final DivisionSetup divisionSetup = prepareIntegerDivision(dividendNormalized, divisorNormalized);
-        final UnsignedDivisionResult integerDivision = divideUnsigned(divisionSetup.dividendDigits(), divisionSetup.divisorDigits());
+        return toParts(divideRounded(toDecimal(dividendNormalized), toDecimal(divisorNormalized), mathContext));
+    }
 
-        final QuotientDigits quotientDigits = generateQuotientDigits(integerDivision.quotient(), integerDivision.remainder(), divisionSetup.divisorDigits(), precision);
-        final ParsedDecimalNumber unrounded = new ParsedDecimalNumber(divisionSetup.quotientSign(), quotientDigits.digits(), quotientDigits.scale());
+    /**
+     * Divides two values and rounds once with the {@link MathContext}.
+     *
+     * <p>The unscaled value of the dividend is multiplied by a power of ten so that the integer quotient has at least
+     * two digits more than the precision. A remainder that is not zero is kept as one more, non-zero digit, so that
+     * {@link BigDecimal#round(MathContext)} sees whether the quotient is above a tie or above the kept digits. The
+     * result is the same as {@link BigDecimal#divide(BigDecimal, MathContext)} gives; that method strips the zeros of
+     * an exact quotient one division at a time, which is slow for two small numbers at a high precision.</p>
+     *
+     * @param dividend    the dividend
+     * @param divisor     the divisor, not zero
+     * @param mathContext the precision and the rounding mode
+     * @return the rounded quotient
+     * @throws MathArithmeticException if the rounding mode is {@code UNNECESSARY} and the quotient is not exact
+     */
+    private static BigDecimal divideRounded(final BigDecimal dividend, final BigDecimal divisor, final MathContext mathContext) {
+        final BigInteger dividendUnits = dividend.unscaledValue().abs();
+        final BigInteger divisorUnits = divisor.unscaledValue().abs();
 
-        return normalize(roundToMathContext(unrounded, mathContext));
+        final int digitDifference = approximateDigitCount(dividendUnits) - approximateDigitCount(divisorUnits);
+        final int shift = Math.max(0, mathContext.getPrecision() + QUOTIENT_GUARD_DIGITS - digitDifference);
+
+        final BigInteger[] quotientAndRemainder = dividendUnits.multiply(powerOfTen(shift)).divideAndRemainder(divisorUnits);
+        BigInteger quotient = quotientAndRemainder[0];
+        long scale = (long) dividend.scale() - divisor.scale() + shift;
+        if (quotientAndRemainder[1].signum() != 0) {
+            quotient = quotient.multiply(BigInteger.TEN).add(BigInteger.ONE);
+            scale++;
+        }
+
+        final BigInteger signedQuotient = dividend.signum() * divisor.signum() < 0 ? quotient.negate() : quotient;
+        try {
+            return new BigDecimal(signedQuotient, Math.toIntExact(scale)).round(mathContext);
+        } catch (final ArithmeticException roundingNecessary) {
+            if (mathContext.getRoundingMode() != RoundingMode.UNNECESSARY) {
+                throw roundingNecessary;
+            }
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Rounding necessary (RoundingMode.UNNECESSARY)");
+        }
+    }
+
+    /**
+     * Returns {@code 10^exponent}. The powers below {@value #CACHED_POWERS_OF_TEN} are computed once, because every
+     * division needs one and computing it costs about as much as the division of two small numbers.
+     *
+     * @param exponent the exponent, not negative
+     * @return {@code 10^exponent}
+     */
+    private static BigInteger powerOfTen(final int exponent) {
+        return exponent < CACHED_POWERS_OF_TEN ? POWERS_OF_TEN[exponent] : BigInteger.TEN.pow(exponent);
+    }
+
+    /**
+     * Computes the powers of ten for {@link #POWERS_OF_TEN}.
+     *
+     * @return the powers {@code 10^0} to {@code 10^(CACHED_POWERS_OF_TEN - 1)}
+     */
+    private static BigInteger[] buildPowersOfTen() {
+        final BigInteger[] powers = new BigInteger[CACHED_POWERS_OF_TEN];
+        powers[0] = BigInteger.ONE;
+        for (int exponent = 1; exponent < CACHED_POWERS_OF_TEN; exponent++) {
+            powers[exponent] = powers[exponent - 1].multiply(BigInteger.TEN);
+        }
+        return powers;
+    }
+
+    /**
+     * Estimates the number of decimal digits of a positive integer from its bit length. The estimate is exact or one
+     * too small or too large.
+     *
+     * @param units the integer; must be positive
+     * @return the estimated digit count
+     */
+    private static int approximateDigitCount(final BigInteger units) {
+        return (int) ((units.bitLength() - 1) * LOG10_OF_2) + 1;
+    }
+
+    /**
+     * Computes {@code |dividend| mod |divisor|} exactly: both values are scaled to a common scale and their
+     * unscaled digits are divided as integers.
+     *
+     * @param dividend the dividend
+     * @param divisor  the divisor, not zero
+     * @return the remainder, never negative
+     */
+    private static BigDecimal absoluteRemainder(final BigDecimal dividend, final BigDecimal divisor) {
+        final int commonScale = Math.max(dividend.scale(), divisor.scale());
+        final BigInteger dividendUnits = dividend.abs().setScale(commonScale).unscaledValue();
+        final BigInteger divisorUnits = divisor.abs().setScale(commonScale).unscaledValue();
+        return new BigDecimal(dividendUnits.remainder(divisorUnits), commonScale);
+    }
+
+    /**
+     * Converts a parsed number into a value.
+     *
+     * @param parts the number; must not be {@code null}
+     * @return the value
+     */
+    private static BigDecimal toDecimal(final ParsedDecimalNumber parts) {
+        final BigDecimal magnitude = new BigDecimal(new BigInteger(parts.digits()), parts.scale());
+        return parts.sign() < 0 ? magnitude.negate() : magnitude;
+    }
+
+    /**
+     * Converts a value into a normalized parsed number: no trailing zeros after the decimal point, scale at least 0.
+     *
+     * @param value the value; must not be {@code null}
+     * @return the normalized number
+     */
+    private static ParsedDecimalNumber toParts(final BigDecimal value) {
+        if (value.signum() == 0) {
+            return zeroParts();
+        }
+
+        final BigDecimal stripped = value.stripTrailingZeros();
+        final BigDecimal withNonNegativeScale = stripped.scale() < 0 ? stripped.setScale(0) : stripped;
+        return new ParsedDecimalNumber(withNonNegativeScale.signum(), withNonNegativeScale.unscaledValue().abs().toString(), withNonNegativeScale.scale());
+    }
+
+    /**
+     * Converts a value into a {@link BigNumber} without trailing zeros after the decimal point.
+     *
+     * @param value  the value; must not be {@code null}
+     * @param locale the locale of the result; must not be {@code null}
+     * @return a new {@link BigNumber}
+     */
+    private static BigNumber toBigNumber(final BigDecimal value, final Locale locale) {
+        return new BigNumber(value, locale).trim();
+    }
+
+    /**
+     * Converts a value into a {@link BigNumber} without trailing zeros after the decimal point and with a
+     * {@link MathContext}.
+     *
+     * @param value       the value; must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
+     * @param mathContext the math context of the result; already validated
+     * @return a new {@link BigNumber}
+     */
+    private static BigNumber toBigNumber(final BigDecimal value, final Locale locale, final MathContext mathContext) {
+        final BigNumber result = toBigNumber(value, locale);
+        result.setMathContext(mathContext);
+        return result;
     }
 
     /**
@@ -886,145 +992,6 @@ public final class BasicMath {
             throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "MathContext precision must be > 0");
         }
         return precision;
-    }
-
-    /**
-     * Holds prepared integer-division inputs: scaled digit strings and sign/scale metadata.
-     *
-     * @param quotientSign   resulting sign of the quotient
-     * @param dividendDigits scaled dividend digits (unsigned integer string)
-     * @param divisorDigits  scaled divisor digits (unsigned integer string)
-     */
-    private record DivisionSetup(int quotientSign, String dividendDigits, String divisorDigits) {
-    }
-
-    /**
-     * Converts decimal division into integer division by scaling dividend or divisor digits to cancel fractional scales.
-     *
-     * @param dividendNormalized normalized dividend
-     * @param divisorNormalized  normalized divisor
-     * @return prepared division setup
-     */
-    private static DivisionSetup prepareIntegerDivision(final ParsedDecimalNumber dividendNormalized, final ParsedDecimalNumber divisorNormalized) {
-        final int quotientSign = dividendNormalized.sign() * divisorNormalized.sign();
-        final ParsedDecimalNumber dividendAbsolute = absoluteValue(dividendNormalized);
-        final ParsedDecimalNumber divisorAbsolute = absoluteValue(divisorNormalized);
-
-        String dividendDigits = dividendAbsolute.digits();
-        String divisorDigits = divisorAbsolute.digits();
-
-        final int scaleShift = divisorAbsolute.scale() - dividendAbsolute.scale();
-        if (scaleShift > 0) {
-            dividendDigits = appendZerosRight(dividendDigits, scaleShift);
-        } else if (scaleShift < 0) {
-            divisorDigits = appendZerosRight(divisorDigits, -scaleShift);
-        }
-
-        return new DivisionSetup(quotientSign, dividendDigits, divisorDigits);
-    }
-
-    /**
-     * Holds a quotient digit string and its decimal scale.
-     *
-     * @param digits quotient digits (unsigned)
-     * @param scale  number of fractional digits
-     */
-    private record QuotientDigits(String digits, int scale) {
-    }
-
-    /**
-     * Generates quotient digits with enough significant digits for rounding.
-     *
-     * <p>The method:
-     * <ul>
-     *   <li>Starts with the integer quotient digits</li>
-     *   <li>Skips the leading zeros of a quotient below 1 in one step, see
-     *       {@link #leadingZeroFractionDigitCount(String, String)}</li>
-     *   <li>Appends fractional digits by repeatedly dividing (remainder * 10) by divisor</li>
-     *   <li>Stops when (precision + 1) significant digits are reached or remainder becomes 0</li>
-     *   <li>Appends one non-zero sticky digit if a remainder is left, so that the rounding decision can tell a
-     *       value above a tie from an exact tie, and a value above the kept digits from an exact one</li>
-     * </ul>
-     *
-     * <p>The magnitude of the quotient is never cut off: a quotient such as {@code 10^-200} keeps its first
-     * significant digit 200 places after the decimal point.</p>
-     *
-     * @param integerQuotientDigits  initial integer quotient digits
-     * @param initialRemainderDigits initial remainder digits
-     * @param divisorDigits          divisor digits used for remainder steps
-     * @param precision              target significant digits (precision + 1 will be generated when possible)
-     * @return quotient digits and resulting scale
-     */
-    private static QuotientDigits generateQuotientDigits(final String integerQuotientDigits, final String initialRemainderDigits, final String divisorDigits, final int precision) {
-        StringBuilder remainderDigits = new StringBuilder(stripLeadingZeros(initialRemainderDigits));
-
-        final StringBuilder digitsBuilder = new StringBuilder(integerQuotientDigits);
-        int scale = 0;
-
-        boolean significantStarted = !integerQuotientDigits.equals("0");
-        int significantCount = significantStarted ? digitsBuilder.length() : 0;
-
-        if (!significantStarted && !isZeroString(remainderDigits.toString())) {
-            final int skippedZeroCount = leadingZeroFractionDigitCount(remainderDigits.toString(), divisorDigits);
-            digitsBuilder.append("0".repeat(skippedZeroCount));
-            remainderDigits.append("0".repeat(skippedZeroCount));
-            scale += skippedZeroCount;
-        }
-
-        final int targetSignificantDigits = precision + 1;
-        final int iterationLimit = Math.max(10_000, precision * 50);
-        int iterationCount = 0;
-
-        while (significantCount < targetSignificantDigits && !isZeroString(remainderDigits.toString())) {
-            iterationCount++;
-            if (iterationCount > iterationLimit) {
-                break;
-            }
-
-            remainderDigits.append("0");
-            final UnsignedDivisionResult fractionalStep = divideUnsigned(remainderDigits.toString(), divisorDigits);
-
-            final char nextDigit = fractionalStep.quotient().charAt(0);
-            remainderDigits = new StringBuilder(fractionalStep.remainder());
-
-            digitsBuilder.append(nextDigit);
-            scale++;
-
-            if (significantStarted) {
-                significantCount++;
-            } else if (nextDigit != '0') {
-                significantStarted = true;
-                significantCount = 1;
-            }
-        }
-
-        if (!isZeroString(remainderDigits.toString())) {
-            digitsBuilder.append(STICKY_DIGIT);
-            scale++;
-        }
-
-        final String digits = stripLeadingZeros(digitsBuilder.toString());
-        return new QuotientDigits(digits, scale);
-    }
-
-    /**
-     * Counts the zeros that follow the decimal point of a quotient below 1 before its first significant digit,
-     * not counting the zero produced by the division step that follows.
-     *
-     * <p>The first significant digit appears after the smallest {@code k >= 1} for which
-     * {@code remainder * 10^k >= divisor}. Comparing the lengths of the two numbers finds {@code k} without
-     * generating the zeros one at a time, which would take as many division steps as the quotient has leading
-     * zeros.</p>
-     *
-     * @param remainderDigits remainder digits; not zero and smaller than the divisor
-     * @param divisorDigits   divisor digits; no leading zeros
-     * @return the number of fractional zeros that can be skipped, at least 0
-     */
-    private static int leadingZeroFractionDigitCount(final String remainderDigits, final String divisorDigits) {
-        final int lengthDifference = Math.max(0, divisorDigits.length() - remainderDigits.length());
-        final String remainderShiftedToDivisorLength = remainderDigits + "0".repeat(lengthDifference);
-        final boolean firstDigitIsNotAfterTheShift = compareUnsigned(remainderShiftedToDivisorLength, divisorDigits) >= 0;
-        return firstDigitIsNotAfterTheShift ? Math.max(0, lengthDifference - 1) : lengthDifference;
     }
 
     /**
@@ -1421,409 +1388,14 @@ public final class BasicMath {
     }
 
     /**
-     * Multiplies two unsigned digit strings using an accumulator array.
+     * Multiplies two unsigned digit strings with {@link BigInteger}.
      *
      * @param leftUnsignedDigits  left digits
      * @param rightUnsignedDigits right digits
-     * @return unsigned product digits
+     * @return unsigned product digits, without leading zeros
      */
     private static String multiplyUnsigned(final String leftUnsignedDigits, final String rightUnsignedDigits) {
-        final String leftNormalized = stripLeadingZeros(leftUnsignedDigits);
-        final String rightNormalized = stripLeadingZeros(rightUnsignedDigits);
-
-        if (leftNormalized.equals("0") || rightNormalized.equals("0")) {
-            return "0";
-        }
-
-        final int leftTrailingZeroCount = countTrailingZeros(leftNormalized);
-        final int rightTrailingZeroCount = countTrailingZeros(rightNormalized);
-        if (leftTrailingZeroCount + rightTrailingZeroCount > 0) {
-            final String leftWithoutTrailingZeros = leftNormalized.substring(0, leftNormalized.length() - leftTrailingZeroCount);
-            final String rightWithoutTrailingZeros = rightNormalized.substring(0, rightNormalized.length() - rightTrailingZeroCount);
-            return multiplyUnsigned(leftWithoutTrailingZeros, rightWithoutTrailingZeros) + "0".repeat(leftTrailingZeroCount + rightTrailingZeroCount);
-        }
-
-        final int leftLength = leftNormalized.length();
-        final int rightLength = rightNormalized.length();
-        final int[] accumulator = new int[leftLength + rightLength];
-
-        for (int i = leftLength - 1; i >= 0; i--) {
-            final int leftDigit = leftNormalized.charAt(i) - '0';
-            int carry = 0;
-
-            for (int j = rightLength - 1; j >= 0; j--) {
-                final int rightDigit = rightNormalized.charAt(j) - '0';
-                final int index = i + j + 1;
-
-                final int sum = accumulator[index] + leftDigit * rightDigit + carry;
-                accumulator[index] = sum % 10;
-                carry = sum / 10;
-            }
-
-            accumulator[i] += carry;
-        }
-
-        final StringBuilder product = new StringBuilder(accumulator.length);
-        int start = 0;
-        while (start < accumulator.length - 1 && accumulator[start] == 0) {
-            start++;
-        }
-        for (int k = start; k < accumulator.length; k++) {
-            product.append((char) ('0' + accumulator[k]));
-        }
-
-        return product.toString();
-    }
-
-    /**
-     * Counts the zeros at the end of a digit string. A product of two numbers with trailing zeros is computed
-     * from the digits in front of the zeros, so that a value with a huge magnitude and few significant digits,
-     * such as {@code exp(1000000)} rounded to 20 digits, multiplies as fast as its significant digits allow.
-     *
-     * @param unsignedDigits canonical digit string
-     * @return the number of trailing zeros; 0 for the string "0"
-     */
-    private static int countTrailingZeros(final String unsignedDigits) {
-        int zeroCount = 0;
-        while (zeroCount < unsignedDigits.length() - 1 && unsignedDigits.charAt(unsignedDigits.length() - 1 - zeroCount) == '0') {
-            zeroCount++;
-        }
-        return zeroCount;
-    }
-
-    /**
-     * Holds quotient and remainder for unsigned division.
-     *
-     * @param quotient  quotient digits
-     * @param remainder remainder digits
-     */
-    private record UnsignedDivisionResult(String quotient, String remainder) {
-    }
-
-    /**
-     * Performs an unsigned long division {@code dividend / divisor} in base 10 and returns both quotient and remainder.
-     *
-     * <p>This implementation operates on digit-only strings (ASCII {@code '0'..'9'}) and uses the classic
-     * grade-school long division algorithm. It is optimized for performance by avoiding intermediate
-     * {@link String} allocations inside the main loop:
-     *
-     * <ul>
-     *   <li>The current remainder is maintained as a <em>view</em> ({@code offset + length}) into a reusable {@code char[]}.</li>
-     *   <li>Single-digit products {@code divisor * d} are computed into a reusable product buffer.</li>
-     *   <li>Subtraction is performed in-place on the remainder buffer.</li>
-     * </ul>
-     *
-     * <h2>Canonical form</h2>
-     * <p>Both inputs are normalized with {@link #stripLeadingZeros(String)}. After normalization, the algorithm assumes
-     * the canonical representation:
-     * <ul>
-     *   <li>Zero is represented only as {@code "0"}.</li>
-     *   <li>Non-zero numbers have no leading zeros.</li>
-     * </ul>
-     *
-     * <h2>Result contract</h2>
-     * <p>The returned {@link UnsignedDivisionResult} satisfies:
-     * <ul>
-     *   <li>{@code dividend = quotient * divisor + remainder}</li>
-     *   <li>{@code 0 <= remainder < divisor}</li>
-     *   <li>{@code quotient} and {@code remainder} are canonical (no leading zeros unless the value is zero)</li>
-     * </ul>
-     *
-     * <h2>Complexity</h2>
-     * <p>Let {@code n} be the number of digits in the normalized dividend and {@code m} the number of digits in the
-     * normalized divisor. The running time is {@code O(n*m)} and the additional memory usage is {@code O(m)}.</p>
-     *
-     * @param dividendUnsignedDigits the unsigned dividend as a digit-only string
-     * @param divisorUnsignedDigits  the unsigned divisor as a digit-only string (must not represent zero)
-     * @return an {@link UnsignedDivisionResult} containing canonical quotient and remainder
-     * @throws ArithmeticException if {@code divisorUnsignedDigits} represents zero
-     */
-    private static UnsignedDivisionResult divideUnsigned(final String dividendUnsignedDigits, final String divisorUnsignedDigits) {
-        final String dividend = stripLeadingZeros(dividendUnsignedDigits);
-        final String divisor = stripLeadingZeros(divisorUnsignedDigits);
-
-        validateNonZeroDivisor(divisor);
-
-        if (isZeroString(dividend)) {
-            return new UnsignedDivisionResult(ZERO_AS_STRING, ZERO_AS_STRING);
-        }
-
-        final int dividendToDivisorComparison = compareUnsigned(dividend, divisor);
-        if (dividendToDivisorComparison < 0) {
-            return new UnsignedDivisionResult(ZERO_AS_STRING, dividend);
-        }
-
-        if (divisor.equals("1")) {
-            return new UnsignedDivisionResult(dividend, ZERO_AS_STRING);
-        }
-
-        final int dividendLength = dividend.length();
-        final int divisorLength = divisor.length();
-
-        final char[] quotientDigits = new char[dividendLength];
-        final char[] remainderBuffer = new char[divisorLength + 1];
-        final char[] productBuffer = new char[divisorLength + 1];
-
-        final MutableDigitView remainderView = initializeZeroRemainder(remainderBuffer);
-
-        for (int dividendIndex = 0; dividendIndex < dividendLength; dividendIndex++) {
-            appendDigitToRemainder(remainderBuffer, remainderView, dividend.charAt(dividendIndex));
-            trimLeadingZeros(remainderBuffer, remainderView);
-
-            final int quotientDigit = estimateQuotientDigit(remainderBuffer, remainderView.offset(), remainderView.length(), divisor, productBuffer);
-
-            quotientDigits[dividendIndex] = (char) (ZERO_AS_CHAR + quotientDigit);
-
-            if (quotientDigit != 0) {
-                final int productStartIndex = multiplyBySingleDigitToBuffer(divisor, quotientDigit, productBuffer);
-                subtractProductFromRemainder(remainderBuffer, remainderView, productBuffer, productStartIndex);
-                trimLeadingZeros(remainderBuffer, remainderView);
-            }
-        }
-
-        final String quotient = toCanonicalQuotientString(quotientDigits);
-        final String remainder = new String(remainderBuffer, remainderView.offset(), remainderView.length());
-
-        return new UnsignedDivisionResult(quotient, remainder);
-    }
-
-    /**
-     * Estimates a single quotient digit in the range {@code 0..9} for base-10 long division.
-     *
-     * <p>The method returns the maximum digit {@code d} such that {@code divisor * d <= remainder}.
-     * A remainder with fewer digits than the divisor is smaller than the divisor, so the digit is 0 without any
-     * product being computed. Otherwise it performs a binary search over the digit range {@code 0..9}. During the search, products
-     * are not materialized as strings; instead, {@code divisor * d} is computed into {@code productBuffer}
-     * and compared directly against the remainder view.</p>
-     *
-     * <h2>Remainder representation</h2>
-     * <p>The remainder is provided as a view into {@code remainderDigits}:</p>
-     * <ul>
-     *   <li>Start index: {@code remainderOffset}</li>
-     *   <li>Length: {@code remainderLength}</li>
-     *   <li>Digits: {@code remainderDigits[remainderOffset .. remainderOffset+remainderLength)}</li>
-     * </ul>
-     *
-     * <h2>Preconditions</h2>
-     * <ul>
-     *   <li>{@code divisorUnsignedDigits} is canonical and not {@code "0"}.</li>
-     *   <li>The remainder view is canonical (no leading zeros unless the value is exactly zero).</li>
-     *   <li>{@code productBuffer.length >= divisorUnsignedDigits.length() + 1}.</li>
-     * </ul>
-     *
-     * @param remainderDigits       digit buffer containing the remainder
-     * @param remainderOffset       start offset of the remainder view
-     * @param remainderLength       length of the remainder view
-     * @param divisorUnsignedDigits canonical divisor digits (not {@code "0"})
-     * @param productBuffer         reusable buffer for {@code divisor * digit} (right-aligned)
-     * @return the largest digit {@code d} in {@code 0..9} with {@code divisor * d <= remainder}
-     */
-    private static int estimateQuotientDigit(final char[] remainderDigits, final int remainderOffset, final int remainderLength, final String divisorUnsignedDigits, final char[] productBuffer) {
-        if (remainderLength < divisorUnsignedDigits.length()) {
-            return 0;
-        }
-
-        int lowDigit = 0;
-        int highDigit = 9;
-        int bestDigit = 0;
-
-        while (lowDigit <= highDigit) {
-            final int midDigit = (lowDigit + highDigit) >>> 1;
-
-            final int comparison = compareDivisorTimesDigitToRemainder(divisorUnsignedDigits, midDigit, remainderDigits, remainderOffset, remainderLength, productBuffer);
-
-            if (comparison <= 0) {
-                bestDigit = midDigit;
-                lowDigit = midDigit + 1;
-            } else {
-                highDigit = midDigit - 1;
-            }
-        }
-
-        return bestDigit;
-    }
-
-    /**
-     * Compares {@code divisorUnsignedDigits * digitValue} with the provided remainder view.
-     *
-     * <p>This method avoids allocating an intermediate product string. The product is computed into
-     * {@code productBuffer} (right-aligned), and the comparison is performed using:</p>
-     * <ol>
-     *   <li>Digit count (length comparison)</li>
-     *   <li>Lexicographical digit comparison (most-significant digit first)</li>
-     * </ol>
-     *
-     * <h2>Return value</h2>
-     * <ul>
-     *   <li>Negative if {@code divisor * digitValue < remainder}</li>
-     *   <li>Zero if {@code divisor * digitValue == remainder}</li>
-     *   <li>Positive if {@code divisor * digitValue > remainder}</li>
-     * </ul>
-     *
-     * <h2>Special cases</h2>
-     * <ul>
-     *   <li>{@code digitValue == 0}: the product is zero and can be compared without computing a product.</li>
-     *   <li>{@code digitValue == 1}: the divisor is compared directly to the remainder view.</li>
-     * </ul>
-     *
-     * <h2>Preconditions</h2>
-     * <ul>
-     *   <li>{@code digitValue} is in {@code 0..9}.</li>
-     *   <li>{@code divisorUnsignedDigits} is canonical and not {@code "0"}.</li>
-     *   <li>The remainder view is canonical (no leading zeros unless exactly zero).</li>
-     *   <li>{@code productBuffer.length >= divisorUnsignedDigits.length() + 1}.</li>
-     * </ul>
-     *
-     * @param divisorUnsignedDigits canonical divisor digits
-     * @param digitValue            single decimal digit multiplier in {@code 0..9}
-     * @param remainderDigits       digit buffer containing the remainder
-     * @param remainderOffset       start offset of the remainder view
-     * @param remainderLength       length of the remainder view
-     * @param productBuffer         reusable buffer for the computed product (right-aligned)
-     * @return negative if product &lt; remainder, zero if equal, positive if product &gt; remainder
-     * @throws IllegalArgumentException if {@code digitValue} is outside {@code 0..9}
-     */
-    private static int compareDivisorTimesDigitToRemainder(final String divisorUnsignedDigits, final int digitValue, final char[] remainderDigits, final int remainderOffset, final int remainderLength, final char[] productBuffer) {
-        validateDigitMultiplier(digitValue);
-
-        if (digitValue == 0) {
-            return isZeroView(remainderDigits, remainderOffset, remainderLength) ? 0 : -1;
-        }
-
-        if (digitValue == 1) {
-            return compareDivisorToRemainderView(divisorUnsignedDigits, remainderDigits, remainderOffset, remainderLength);
-        }
-
-        final int productStartIndex = multiplyBySingleDigitToBuffer(divisorUnsignedDigits, digitValue, productBuffer);
-        final int productLength = productBuffer.length - productStartIndex;
-
-        if (productLength != remainderLength) {
-            return Integer.compare(productLength, remainderLength);
-        }
-
-        for (int i = 0; i < productLength; i++) {
-            final char productDigit = productBuffer[productStartIndex + i];
-            final char remainderDigit = remainderDigits[remainderOffset + i];
-
-            if (productDigit != remainderDigit) {
-                return productDigit < remainderDigit ? -1 : 1;
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Lookup table for single-digit decimal multiplication.
-     *
-     * <p>Index: {@code digitValue * 10 + digit}. Both are in {@code 0..9}.</p>
-     * <p>Value: {@code digitValue * digit}.</p>
-     */
-    private static final int[] SINGLE_DIGIT_MUL_TABLE = buildSingleDigitMulTable();
-
-    /**
-     * Builds a lookup table for single-digit decimal multiplication.
-     *
-     * <p>The table uses a compact indexing scheme: index = multiplier * 10 + digit,
-     * where both multiplier and digit are in the range 0..9. The value stored at
-     * each index is simply (multiplier * digit). This allows fast O(1) retrieval
-     * of single-digit products in performance-critical code (avoids repeated
-     * small multiplications).</p>
-     *
-     * @return an int[100] table mapping (multiplier*10 + digit) -> product
-     */
-    private static int[] buildSingleDigitMulTable() {
-        final int[] table = new int[100];
-        for (int multiplier = 0; multiplier <= 9; multiplier++) {
-            final int baseIndex = multiplier * 10;
-            for (int digit = 0; digit <= 9; digit++) {
-                table[baseIndex + digit] = multiplier * digit;
-            }
-        }
-
-        return table;
-    }
-
-    /**
-     * Multiplies an unsigned decimal digit string by a single digit {@code 0..9} and writes the product into {@code buffer}.
-     *
-     * <p>This is the <b>checked</b> variant. It validates inputs and then delegates to the
-     * {@link #multiplyBySingleDigitToBufferUnchecked(String, int, char[])} fast-path.</p>
-     *
-     * <p>For performance-critical loops where the preconditions are guaranteed (e.g. long division),
-     * call the unchecked variant directly to avoid repeated validation overhead.</p>
-     *
-     * <h2>Buffer contract</h2>
-     * <ul>
-     *   <li>The product is written right-aligned into {@code buffer}.</li>
-     *   <li>The return value is the start index of the product view.</li>
-     *   <li>The product length is {@code buffer.length - startIndex}.</li>
-     * </ul>
-     *
-     * @param unsignedDigits canonical unsigned digits (digit-only, no leading zeros unless "0")
-     * @param digitValue     single digit multiplier in {@code 0..9}
-     * @param buffer         destination buffer (must be at least {@code unsignedDigits.length() + 1})
-     * @return start index of the product within {@code buffer}
-     * @throws IllegalArgumentException if {@code digitValue} is outside {@code 0..9} or the buffer is too small
-     */
-    private static int multiplyBySingleDigitToBuffer(final String unsignedDigits, final int digitValue, final char[] buffer) {
-        validateDigitMultiplier(digitValue);
-        validateProductBufferCapacity(unsignedDigits, buffer);
-        return multiplyBySingleDigitToBufferUnchecked(unsignedDigits, digitValue, buffer);
-    }
-
-    /**
-     * Multiplies {@code unsignedDigits} by {@code digitValue} and writes the product right-aligned into {@code buffer}.
-     *
-     * <p><b>Fast-path:</b> This method performs no validation and is intended for hot loops where
-     * the preconditions are already guaranteed by the caller.</p>
-     *
-     * <h2>Preconditions</h2>
-     * <ul>
-     *   <li>{@code digitValue} is in {@code 0..9}.</li>
-     *   <li>{@code buffer.length >= unsignedDigits.length() + 1}.</li>
-     *   <li>{@code unsignedDigits} contains only {@code '0'..'9'} (canonical form recommended).</li>
-     * </ul>
-     *
-     * @param unsignedDigits digit-only string (unsigned)
-     * @param digitValue     multiplier digit (0..9)
-     * @param buffer         destination buffer (right-aligned)
-     * @return start index of the product within {@code buffer}
-     */
-    private static int multiplyBySingleDigitToBufferUnchecked(final String unsignedDigits, final int digitValue, final char[] buffer) {
-        if (digitValue == 0) {
-            buffer[buffer.length - 1] = ZERO_AS_CHAR;
-            return buffer.length - 1;
-        }
-
-        final int digitsLength = unsignedDigits.length();
-
-        if (digitValue == 1) {
-            final int startIndex = buffer.length - digitsLength;
-            unsignedDigits.getChars(0, digitsLength, buffer, startIndex);
-            return startIndex;
-        }
-
-        final int baseIndex = digitValue * 10;
-
-        int carry = 0;
-        int writeIndex = buffer.length - 1;
-
-        for (int readIndex = digitsLength - 1; readIndex >= 0; readIndex--, writeIndex--) {
-            final int digit = unsignedDigits.charAt(readIndex) - ZERO_AS_CHAR;
-
-            final int value = SINGLE_DIGIT_MUL_TABLE[baseIndex + digit] + carry;
-            final int quotient = value / 10;
-            buffer[writeIndex] = (char) (ZERO_AS_CHAR + (value - quotient * 10));
-            carry = quotient;
-        }
-
-        if (carry != 0) {
-            buffer[writeIndex] = (char) (ZERO_AS_CHAR + carry);
-            return writeIndex;
-        }
-
-        return writeIndex + 1;
+        return new BigInteger(leftUnsignedDigits).multiply(new BigInteger(rightUnsignedDigits)).toString();
     }
 
     /**
@@ -1832,428 +1404,32 @@ public final class BasicMath {
      * <p><b>Important:</b> This is intentionally different from {@link #modulo(BigNumber, BigNumber, Locale)}.</p>
      * <ul>
      *   <li>{@code remainder}: sign follows the dividend (like Java {@code %}).</li>
-     *   <li>{@code modulo}: returns a non-negative result for negative dividends (your existing behavior).</li>
+     *   <li>{@code modulo}: returns a non-negative result for negative dividends.</li>
      * </ul>
      *
-     * <p><b>Algorithm overview</b></p>
-     * <ol>
-     *   <li>Parse both operands into (sign, digits, scale) and normalize.</li>
-     *   <li>Scale both operands to a common integer scale by appending zeros.</li>
-     *   <li>Compute the integer remainder using an optimized long-division remainder-only routine.</li>
-     *   <li>Apply the sign of the dividend (if remainder != 0).</li>
-     * </ol>
+     * <p>The remainder is exact: both operands are scaled to a common scale and divided as integers.</p>
      *
      * @param dividend the dividend; must not be {@code null}
      * @param divisor  the divisor; must not be {@code null} and not zero
-     * @param locale   locale used for tolerant parsing and output adaptation; must not be {@code null}
+     * @param locale   the locale of the result; must not be {@code null}
      * @return {@code dividend % divisor} as a new {@link BigNumber}
      * @throws NullPointerException     if any argument is {@code null}
-     * @throws IllegalArgumentException if {@code divisor} is zero or an operand is invalid
+     * @throws MathArgumentException    if {@code divisor} is zero
+     * @throws IllegalArgumentException if an operand is not a plain decimal number
      */
     public static BigNumber remainder(@NonNull final BigNumber dividend, @NonNull final BigNumber divisor, @NonNull final Locale locale) {
-        final ParsedDecimalNumber dividendParts = normalize(parseFromBigNumber(dividend));
-        final ParsedDecimalNumber divisorParts = normalize(parseFromBigNumber(divisor));
-
-        if (isZero(divisorParts)) {
+        final BigDecimal divisorValue = divisor.toBigDecimal();
+        if (divisorValue.signum() == 0) {
             throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Cannot perform remainder operation with divisor zero.");
         }
 
-        if (isZero(dividendParts)) {
-            return toBigNumber(zeroParts(), locale);
+        final BigDecimal dividendValue = dividend.toBigDecimal();
+        final BigDecimal remainder = absoluteRemainder(dividendValue, divisorValue);
+        if (dividendValue.signum() < 0 && remainder.signum() != 0) {
+            return toBigNumber(remainder.negate(), locale);
         }
 
-        final ParsedDecimalNumber remainderParts = computeRemainder(dividendParts, divisorParts);
-        return toBigNumber(remainderParts, locale);
-    }
-
-    /**
-     * Computes the truncating remainder (Java {@code %}) using scale-to-integer and unsigned remainder.
-     *
-     * <p>The returned remainder has the sign of the dividend (unless the remainder is zero).</p>
-     *
-     * @param dividendParts parsed dividend
-     * @param divisorParts  parsed divisor (must not be zero)
-     * @return remainder parts (normalized)
-     */
-    private static ParsedDecimalNumber computeRemainder(final ParsedDecimalNumber dividendParts, final ParsedDecimalNumber divisorParts) {
-        final ParsedDecimalNumber dividendAbsolute = absoluteValue(dividendParts);
-        final ParsedDecimalNumber divisorAbsolute = absoluteValue(divisorParts);
-
-        final int commonScale = Math.max(dividendAbsolute.scale(), divisorAbsolute.scale());
-        final String dividendScaledDigits = appendZerosRight(dividendAbsolute.digits(), commonScale - dividendAbsolute.scale());
-        final String divisorScaledDigits = appendZerosRight(divisorAbsolute.digits(), commonScale - divisorAbsolute.scale());
-
-        final String remainderDigits = remainderUnsigned(dividendScaledDigits, divisorScaledDigits);
-
-        ParsedDecimalNumber remainder = normalize(new ParsedDecimalNumber(+1, remainderDigits, commonScale));
-
-        if (dividendParts.sign() < 0 && !isZero(remainder)) {
-            remainder = normalize(negate(remainder));
-        }
-
-        return remainder;
-    }
-
-    /**
-     * Computes the unsigned remainder of {@code dividend / divisor} without materializing the quotient.
-     *
-     * <p>This is a specialized, performance-oriented variant of {@link #divideUnsigned(String, String)}.
-     * It performs the same long-division steps but does not store quotient digits, significantly reducing
-     * memory allocations for large inputs.</p>
-     *
-     * <p>Both inputs are normalized with {@link #stripLeadingZeros(String)} and must be digit-only strings.</p>
-     *
-     * @param dividendUnsignedDigits unsigned dividend digits
-     * @param divisorUnsignedDigits  unsigned divisor digits (must not represent zero)
-     * @return canonical remainder digits (no leading zeros unless the value is zero)
-     * @throws ArithmeticException if {@code divisorUnsignedDigits} represents zero
-     */
-    private static String remainderUnsigned(final String dividendUnsignedDigits, final String divisorUnsignedDigits) {
-        final String dividend = stripLeadingZeros(dividendUnsignedDigits);
-        final String divisor = stripLeadingZeros(divisorUnsignedDigits);
-
-        validateNonZeroDivisor(divisor);
-
-        if (isZeroString(dividend)) {
-            return ZERO_AS_STRING;
-        }
-
-        final int dividendToDivisorComparison = compareUnsigned(dividend, divisor);
-        if (dividendToDivisorComparison < 0) {
-            return dividend;
-        }
-
-        if (divisor.equals("1")) {
-            return ZERO_AS_STRING;
-        }
-
-        final int dividendLength = dividend.length();
-        final int divisorLength = divisor.length();
-
-        final char[] remainderBuffer = new char[divisorLength + 1];
-        final char[] productBuffer = new char[divisorLength + 1];
-
-        final MutableDigitView remainderView = initializeZeroRemainder(remainderBuffer);
-
-        for (int dividendIndex = 0; dividendIndex < dividendLength; dividendIndex++) {
-            appendDigitToRemainder(remainderBuffer, remainderView, dividend.charAt(dividendIndex));
-            trimLeadingZeros(remainderBuffer, remainderView);
-
-            final int quotientDigit = estimateQuotientDigit(
-                    remainderBuffer,
-                    remainderView.offset(),
-                    remainderView.length(),
-                    divisor,
-                    productBuffer
-            );
-
-            if (quotientDigit != 0) {
-                final int productStartIndex = multiplyBySingleDigitToBufferUnchecked(divisor, quotientDigit, productBuffer);
-                subtractProductFromRemainder(remainderBuffer, remainderView, productBuffer, productStartIndex);
-                trimLeadingZeros(remainderBuffer, remainderView);
-            }
-        }
-
-        return new String(remainderBuffer, remainderView.offset(), remainderView.length());
-    }
-
-    /**
-     * Appends one decimal digit to the remainder represented as a view into {@code remainderBuffer}.
-     *
-     * <p>This operation is equivalent to {@code remainder = remainder * 10 + nextDigit}. The remainder
-     * is stored in-place and the view (offset/length) is updated accordingly.</p>
-     *
-     * <h2>Behavior</h2>
-     * <ul>
-     *   <li>If the remainder is exactly zero, it becomes the single digit {@code nextDigit}.</li>
-     *   <li>Otherwise, {@code nextDigit} is appended at the end of the remainder view.</li>
-     *   <li>If the current view is not at the beginning of the buffer and no more space is available at the end,
-     *       the digits are shifted to index {@code 0} to make room.</li>
-     * </ul>
-     *
-     * @param remainderBuffer digit buffer that stores the remainder
-     * @param remainderView   view (offset/length) into {@code remainderBuffer}
-     * @param nextDigit       digit to append ({@code '0'..'9'})
-     */
-    private static void appendDigitToRemainder(final char[] remainderBuffer, final MutableDigitView remainderView, final char nextDigit) {
-        if (remainderView.length() == 1 && remainderBuffer[remainderView.offset()] == ZERO_AS_CHAR) {
-            remainderBuffer[remainderView.offset()] = nextDigit;
-            return;
-        }
-
-        if (needsShiftToFront(remainderBuffer, remainderView)) {
-            System.arraycopy(remainderBuffer, remainderView.offset(), remainderBuffer, 0, remainderView.length());
-            remainderView.set(0, remainderView.length());
-        }
-
-        remainderBuffer[remainderView.offset() + remainderView.length()] = nextDigit;
-        remainderView.set(remainderView.offset(), remainderView.length() + 1);
-    }
-
-    /**
-     * Removes leading zeros from a digit view in-place by advancing the view offset and reducing the length.
-     *
-     * <p>This method never changes the underlying buffer contents. It only updates the view boundaries.
-     * If the value is zero, the canonical representation is preserved as a single digit {@code '0'}.</p>
-     *
-     * @param digits digit buffer containing the view
-     * @param view   mutable view to be normalized (canonicalized)
-     */
-    private static void trimLeadingZeros(final char[] digits, final MutableDigitView view) {
-        int offset = view.offset();
-        int length = view.length();
-
-        while (length > 1 && digits[offset] == ZERO_AS_CHAR) {
-            offset++;
-            length--;
-        }
-
-        view.set(offset, length);
-    }
-
-    /**
-     * Subtracts a right-aligned product view from the remainder view in-place.
-     *
-     * <p>This method assumes {@code remainder >= product}. The subtraction is performed from
-     * least significant digit to most significant digit with borrow propagation, writing the result
-     * back into {@code remainderDigits} within the remainder view.</p>
-     *
-     * <h2>Preconditions</h2>
-     * <ul>
-     *   <li>The product view is {@code productBuffer[productStartIndex .. productBuffer.length)}.</li>
-     *   <li>The product is less than or equal to the remainder value.</li>
-     * </ul>
-     *
-     * @param remainderDigits   digit buffer holding the remainder
-     * @param remainderView     view into {@code remainderDigits} representing the current remainder
-     * @param productBuffer     buffer containing the product digits (right-aligned)
-     * @param productStartIndex start index of the product within {@code productBuffer}
-     */
-    private static void subtractProductFromRemainder(final char[] remainderDigits, final MutableDigitView remainderView, final char[] productBuffer, final int productStartIndex) {
-        int borrow = 0;
-
-        int remainderIndex = remainderView.offset() + remainderView.length() - 1;
-        int productIndex = productBuffer.length - 1;
-
-        while (remainderIndex >= remainderView.offset()) {
-            final int remainderValue = remainderDigits[remainderIndex] - ZERO_AS_CHAR;
-            final int productValue = productIndex >= productStartIndex ? (productBuffer[productIndex] - ZERO_AS_CHAR) : 0;
-
-            int difference = remainderValue - productValue - borrow;
-            if (difference < 0) {
-                difference += 10;
-                borrow = 1;
-            } else {
-                borrow = 0;
-            }
-
-            remainderDigits[remainderIndex] = (char) (ZERO_AS_CHAR + difference);
-
-            remainderIndex--;
-            productIndex--;
-        }
-    }
-
-    /**
-     * Converts a quotient digit buffer to a canonical quotient {@link String} by removing leading zeros.
-     *
-     * <p>The resulting string is canonical: it contains no leading zeros unless the quotient is exactly zero.</p>
-     *
-     * @param quotientDigits the raw quotient digits produced by long division
-     * @return canonical quotient string
-     */
-    private static String toCanonicalQuotientString(final char[] quotientDigits) {
-        int startIndex = 0;
-        while (startIndex < quotientDigits.length - 1 && quotientDigits[startIndex] == ZERO_AS_CHAR) {
-            startIndex++;
-        }
-        return new String(quotientDigits, startIndex, quotientDigits.length - startIndex);
-    }
-
-    /**
-     * Compares a canonical divisor string to a remainder view without allocating intermediate strings.
-     *
-     * <p>The comparison is performed by length first and then lexicographically.</p>
-     *
-     * @param divisorUnsignedDigits canonical divisor digits
-     * @param remainderDigits       digit buffer containing the remainder
-     * @param remainderOffset       start offset of the remainder view
-     * @param remainderLength       length of the remainder view
-     * @return negative if divisor &lt; remainder, zero if equal, positive if divisor &gt; remainder
-     */
-    private static int compareDivisorToRemainderView(final String divisorUnsignedDigits, final char[] remainderDigits, final int remainderOffset, final int remainderLength) {
-        final int divisorLength = divisorUnsignedDigits.length();
-
-        if (divisorLength != remainderLength) {
-            return Integer.compare(divisorLength, remainderLength);
-        }
-
-        for (int i = 0; i < divisorLength; i++) {
-            final char divisorDigit = divisorUnsignedDigits.charAt(i);
-            final char remainderDigit = remainderDigits[remainderOffset + i];
-
-            if (divisorDigit != remainderDigit) {
-                return divisorDigit < remainderDigit ? -1 : 1;
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Validates that the divisor does not represent zero.
-     *
-     * @param canonicalDivisor canonical divisor digits (after leading-zero stripping)
-     * @throws ArithmeticException if the divisor is {@code "0"}
-     */
-    private static void validateNonZeroDivisor(final String canonicalDivisor) {
-        if (isZeroString(canonicalDivisor)) {
-            throw divisionByZero();
-        }
-    }
-
-    /**
-     * Validates that a digit multiplier is within the allowed range {@code 0..9}.
-     *
-     * @param digitValue digit multiplier
-     * @throws IllegalArgumentException if the multiplier is outside {@code 0..9}
-     */
-    private static void validateDigitMultiplier(final int digitValue) {
-        if (digitValue < 0 || digitValue > 9) {
-            throw new IllegalArgumentException("digitValue must be in range 0..9");
-        }
-    }
-
-    /**
-     * Validates that the product buffer is large enough to store {@code unsignedDigits * digitValue}.
-     *
-     * <p>For base-10 multiplication by a single digit, the result length is at most {@code unsignedDigits.length() + 1}.</p>
-     *
-     * @param unsignedDigits multiplicand digits (canonical)
-     * @param buffer         destination buffer
-     * @throws IllegalArgumentException if the buffer is too small
-     */
-    private static void validateProductBufferCapacity(final String unsignedDigits, final char[] buffer) {
-        final int requiredLength = unsignedDigits.length() + 1;
-        if (buffer.length < requiredLength) {
-            throw new IllegalArgumentException("buffer is too small: required at least " + requiredLength);
-        }
-    }
-
-    /**
-     * Determines whether the current remainder view must be shifted to the front of the buffer to append one more digit.
-     *
-     * @param buffer digit buffer storing the remainder
-     * @param view   current remainder view
-     * @return {@code true} if shifting to the front is required to make room
-     */
-    private static boolean needsShiftToFront(final char[] buffer, final MutableDigitView view) {
-        return view.offset() != 0 && view.offset() + view.length() == buffer.length;
-    }
-
-    /**
-     * Checks whether a string is the canonical zero representation.
-     *
-     * @param digits canonical digit string
-     * @return {@code true} if the string equals {@code "0"}, otherwise {@code false}
-     */
-    private static boolean isZeroString(final String digits) {
-        return ZERO_AS_STRING.equals(digits);
-    }
-
-    /**
-     * Checks whether a digit view represents the numeric value zero.
-     *
-     * @param digits digit buffer
-     * @param offset start offset of the view
-     * @param length length of the view
-     * @return {@code true} if the view is exactly one digit equal to {@code '0'}
-     */
-    private static boolean isZeroView(final char[] digits, final int offset, final int length) {
-        return length == 1 && digits[offset] == ZERO_AS_CHAR;
-    }
-
-    /**
-     * Initializes a remainder buffer to represent the canonical zero value {@code "0"}.
-     *
-     * @param remainderBuffer buffer that will hold the remainder digits
-     * @return a mutable view representing the initialized remainder (offset=0, length=1)
-     */
-    private static MutableDigitView initializeZeroRemainder(final char[] remainderBuffer) {
-        remainderBuffer[0] = ZERO_AS_CHAR;
-        return new MutableDigitView(0, 1);
-    }
-
-    /**
-     * Mutable view into a digit buffer defined by {@code offset} and {@code length}.
-     *
-     * <p>This small helper avoids repeatedly creating temporary strings or objects to represent
-     * the remainder slice during long division. The underlying digit buffer is owned by the
-     * caller and may be mutated independently of the view.</p>
-     */
-    private static final class MutableDigitView {
-
-        private int offset;
-        private int length;
-
-        private MutableDigitView(final int offset, final int length) {
-            this.offset = offset;
-            this.length = length;
-        }
-
-        /**
-         * Returns the start offset of the view.
-         *
-         * @return the offset into the digit buffer
-         */
-        private int offset() {
-            return offset;
-        }
-
-        /**
-         * Returns the length of the view.
-         *
-         * @return the number of digits in the view
-         */
-        private int length() {
-            return length;
-        }
-
-        /**
-         * Updates the view boundaries.
-         *
-         * @param offset the new start offset
-         * @param length the new length
-         */
-        private void set(final int offset, final int length) {
-            this.offset = offset;
-            this.length = length;
-        }
-    }
-
-    /**
-     * Computes the modulo using scale-to-integer and unsigned remainder.
-     *
-     * @param dividendParts parsed dividend
-     * @param divisorParts  parsed divisor
-     * @return remainder parts (normalized)
-     */
-    private static ParsedDecimalNumber computeModulo(final ParsedDecimalNumber dividendParts, final ParsedDecimalNumber divisorParts) {
-        final ParsedDecimalNumber dividendAbsolute = absoluteValue(dividendParts);
-        final ParsedDecimalNumber divisorAbsolute = absoluteValue(divisorParts);
-
-        final int commonScale = Math.max(dividendAbsolute.scale(), divisorAbsolute.scale());
-        final String dividendScaledDigits = appendZerosRight(dividendAbsolute.digits(), commonScale - dividendAbsolute.scale());
-        final String divisorScaledDigits = appendZerosRight(divisorAbsolute.digits(), commonScale - divisorAbsolute.scale());
-
-        final UnsignedDivisionResult result = divideUnsigned(dividendScaledDigits, divisorScaledDigits);
-
-        ParsedDecimalNumber remainder = normalize(new ParsedDecimalNumber(+1, result.remainder(), commonScale));
-        if (dividendParts.sign() < 0 && !isZero(remainder)) {
-            remainder = normalize(addParsed(divisorAbsolute, negate(remainder)));
-        }
-
-        return remainder;
+        return toBigNumber(remainder, locale);
     }
 
     /**
@@ -2289,53 +1465,30 @@ public final class BasicMath {
     }
 
     /**
-     * Computes integer powers using exponentiation by squaring.
+     * Computes an integer power: the exact power for a non-negative exponent, the reciprocal of the exact power
+     * rounded once for a negative one.
      *
-     * @param baseParts     base value
-     * @param exponentParts integer exponent (scale must be 0)
+     * @param base          the base as a value
+     * @param baseParts     the base, normalized and not zero
+     * @param exponentParts integer exponent (scale must be 0), not zero
      * @param mathContext   rounding context (used for negative exponents)
      * @return {@code base^exponent}
+     * @throws MathArithmeticException if the result would have more than {@link #MAX_POWER_RESULT_DIGITS} digits
      */
-    private static ParsedDecimalNumber powerInteger(final ParsedDecimalNumber baseParts, final ParsedDecimalNumber exponentParts, final MathContext mathContext) {
-        final ParsedDecimalNumber baseNormalized = normalize(baseParts);
-        final ParsedDecimalNumber exponentNormalized = normalize(exponentParts);
-
-        if (!isInteger(exponentNormalized)) {
-            throw new IllegalArgumentException("Exponent must be an integer for integer power.");
-        }
-
-        final boolean exponentIsNegative = exponentNormalized.sign() < 0;
-        final String exponentAbsoluteDigits = exponentNormalized.digits();
-
-        final ParsedDecimalNumber baseAbsolute = absoluteValue(baseNormalized);
-        final boolean baseIsNegative = baseNormalized.sign() < 0;
-        final boolean exponentIsOdd = isOddUnsigned(exponentAbsoluteDigits);
-        final int resultSign = (baseIsNegative && exponentIsOdd) ? -1 : +1;
+    private static BigDecimal powerInteger(final BigDecimal base, final ParsedDecimalNumber baseParts, final ParsedDecimalNumber exponentParts, final MathContext mathContext) {
+        final ParsedDecimalNumber baseAbsolute = absoluteValue(baseParts);
+        final String exponentAbsoluteDigits = exponentParts.digits();
 
         rejectPowerIfResultTooLarge(baseAbsolute, exponentAbsoluteDigits);
 
-        ParsedDecimalNumber result = oneParts();
-        ParsedDecimalNumber basePower = baseAbsolute;
-
-        String remainingExponent = stripLeadingZeros(exponentAbsoluteDigits);
-        while (!remainingExponent.equals("0")) {
-            if (isOddUnsigned(remainingExponent)) {
-                result = normalize(multiplyParsed(result, basePower));
-            }
-            basePower = normalize(multiplyParsed(basePower, basePower));
-            remainingExponent = divideUnsignedByTwo(remainingExponent);
+        final BigDecimal magnitude = isOne(baseAbsolute) ? BigDecimal.ONE : base.abs().pow(Integer.parseInt(exponentAbsoluteDigits));
+        final boolean resultIsNegative = baseParts.sign() < 0 && isOddUnsigned(exponentAbsoluteDigits);
+        final BigDecimal power = resultIsNegative ? magnitude.negate() : magnitude;
+        if (exponentParts.sign() > 0) {
+            return power;
         }
 
-        result = normalize(new ParsedDecimalNumber(resultSign, result.digits(), result.scale()));
-        if (!exponentIsNegative) {
-            return result;
-        }
-
-        if (isZero(result)) {
-            throw divisionByZero();
-        }
-
-        return divideParsed(oneParts(), result, mathContext);
+        return divideRounded(BigDecimal.ONE, power, mathContext);
     }
 
     /**
@@ -2471,30 +1624,6 @@ public final class BasicMath {
     }
 
     /**
-     * Divides an unsigned integer digit string by two.
-     *
-     * @param unsignedDigits unsigned digits
-     * @return quotient digits
-     */
-    private static String divideUnsignedByTwo(final String unsignedDigits) {
-        final String normalized = stripLeadingZeros(unsignedDigits);
-        if (normalized.equals("0")) {
-            return "0";
-        }
-
-        final StringBuilder quotient = new StringBuilder(normalized.length());
-        int carry = 0;
-
-        for (int i = 0; i < normalized.length(); i++) {
-            final int value = carry * 10 + (normalized.charAt(i) - '0');
-            quotient.append((char) ('0' + (value / 2)));
-            carry = value % 2;
-        }
-
-        return stripLeadingZeros(quotient.toString());
-    }
-
-    /**
      * Validates that the factorial input is a non-negative integer.
      *
      * @param argumentParts parsed argument
@@ -2513,101 +1642,33 @@ public final class BasicMath {
     }
 
     /**
-     * Computes factorial digits for a validated non-negative integer input.
+     * Computes {@code n!} for a validated argument with a product tree: the product of the range is the product
+     * of its two halves, so the large factors are multiplied with the fast {@link BigInteger} algorithms.
      *
-     * @param argumentParts integer input (parsed)
-     * @return factorial digits as unsigned string
+     * @param n integer {@code 0 <= n <= MAX_FACTORIAL_ARGUMENT}
+     * @return {@code n!}
      */
-    private static String computeFactorialDigits(final ParsedDecimalNumber argumentParts) {
-        if (isZero(argumentParts)) {
-            return "1";
-        }
-
-        final Integer asInt = tryParseUnsignedInt(argumentParts.digits());
-        if (asInt != null) {
-            return factorialUnsignedInt(asInt);
-        }
-
-        return factorialUnsignedString(argumentParts.digits());
+    private static BigInteger factorialOf(final int n) {
+        return n < 2 ? BigInteger.ONE : productOfRange(2, n);
     }
 
     /**
-     * Computes factorial for an int using a product-tree strategy.
-     *
-     * @param n integer n >= 0
-     * @return n! as unsigned digits
-     */
-    private static String factorialUnsignedInt(final int n) {
-        if (n < 2) {
-            return "1";
-        }
-        return multiplyRangeUnsigned(2, n);
-    }
-
-    /**
-     * Multiplies the integer range [start, end] using divide-and-conquer (product tree).
+     * Multiplies the integers of the range {@code [startInclusive, endInclusive]} by splitting it in halves.
      *
      * @param startInclusive range start
-     * @param endInclusive   range end
-     * @return product as unsigned digits
+     * @param endInclusive   range end, not below {@code startInclusive}
+     * @return the product
      */
-    private static String multiplyRangeUnsigned(final int startInclusive, final int endInclusive) {
-        if (startInclusive > endInclusive) {
-            return "1";
-        }
+    private static BigInteger productOfRange(final int startInclusive, final int endInclusive) {
         if (startInclusive == endInclusive) {
-            return Integer.toString(startInclusive);
+            return BigInteger.valueOf(startInclusive);
         }
         if (endInclusive - startInclusive == 1) {
-            return multiplyUnsigned(Integer.toString(startInclusive), Integer.toString(endInclusive));
+            return BigInteger.valueOf((long) startInclusive * endInclusive);
         }
 
-        final int mid = (startInclusive + endInclusive) >>> 1;
-        final String left = multiplyRangeUnsigned(startInclusive, mid);
-        final String right = multiplyRangeUnsigned(mid + 1, endInclusive);
-        return multiplyUnsigned(left, right);
-    }
-
-    /**
-     * Computes factorial for an arbitrarily large integer digit string by decrementing and multiplying.
-     *
-     * @param unsignedIntegerDigits unsigned digits of n
-     * @return n! as unsigned digits
-     */
-    private static String factorialUnsignedString(final String unsignedIntegerDigits) {
-        String counter = stripLeadingZeros(unsignedIntegerDigits);
-        if (counter.equals("0") || counter.equals("1")) {
-            return "1";
-        }
-
-        String result = "1";
-        while (!counter.equals("1")) {
-            result = multiplyUnsigned(result, counter);
-            counter = decrementUnsigned(counter);
-        }
-
-        return result;
-    }
-
-    /**
-     * Decrements an unsigned digit string by one (assuming value >= 1).
-     *
-     * @param unsignedDigits unsigned digits
-     * @return decremented digits
-     */
-    private static String decrementUnsigned(final String unsignedDigits) {
-        final char[] digits = stripLeadingZeros(unsignedDigits).toCharArray();
-        int index = digits.length - 1;
-
-        while (index >= 0 && digits[index] == '0') {
-            digits[index] = '9';
-            index--;
-        }
-        if (index >= 0) {
-            digits[index] = (char) (digits[index] - 1);
-        }
-
-        return stripLeadingZeros(new String(digits));
+        final int middle = (startInclusive + endInclusive) >>> 1;
+        return productOfRange(startInclusive, middle).multiply(productOfRange(middle + 1, endInclusive));
     }
 
     /**

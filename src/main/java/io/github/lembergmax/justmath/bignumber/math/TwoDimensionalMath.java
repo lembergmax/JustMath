@@ -93,7 +93,7 @@ public final class TwoDimensionalMath {
         final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ATAN2_GUARD_DIGITS,
                 workingContext -> InverseTrigonometricMath.arcTangent2(y.toBigDecimal(), x.toBigDecimal(), workingContext));
 
-        return new BigNumber(angle.toPlainString(), locale).trim();
+        return new BigNumber(angle, locale).trim();
     }
 
 }

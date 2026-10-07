@@ -1,6 +1,6 @@
 # 0007: Arithmetic on digit strings
 
-Status: accepted for 1.7, to be revisited in [#220](https://github.com/lembergmax/JustMath/issues/220)
+Status: superseded by [0008](0008-bigdecimal-arithmetic-and-lazy-digits.md), which carried out the replacement that this record planned for later. The text below is the record as it was written.
 
 ## Situation
 
@@ -14,7 +14,7 @@ The benchmarks answer the first question: `BigNumber` is 90 to 2400 times slower
 
 Keep the digit-string implementation in 1.7.0. It is correct as far as the differential tests can tell, it keeps the rounding contract of the library, and replacing it is a change of the core that does not belong into a release that is about correctness and process. The release says in the open how slow it is.
 
-Replace the hot paths with `BigDecimal` and `BigInteger` in a later minor release ([#220](https://github.com/lembergmax/JustMath/issues/220)). The tests above are the safety net: the replacement must keep every one of them green without changing an expected value. A profile shows where to start: the operand intake of `BasicMath` converts every operand through `BigDecimal` and back to text, which costs most of an addition, and the multiplication and the division work on one decimal digit per step ([performance.md](../performance.md#where-the-time-goes)).
+Replace the hot paths with `BigDecimal` and `BigInteger` in a later minor release ([#220](https://github.com/lembergmax/JustMath/issues/220)). The tests above are the safety net: the replacement must keep every one of them green without changing an expected value. A profile shows where to start: the operand intake of `BasicMath` converts every operand through `BigDecimal` and back to text, which costs most of an addition, and the multiplication and the division work on one decimal digit per step ([performance.md](../performance.md#where-the-time-went)).
 
 ## Consequences
 

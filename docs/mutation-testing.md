@@ -33,37 +33,37 @@ The properties are set in `pom.xml`, so a run can change them on the command lin
 
 ## Baseline
 
-Measured on 2026-10-07 on `developer` after the merge of the benchmarks, with 3044 mutants:
+Measured on 2026-10-07 on `developer` after the arithmetic moved to `BigDecimal` ([decision 0008](decisions/0008-bigdecimal-arithmetic-and-lazy-digits.md)), with 2870 mutants:
 
 | Result | Mutants |
 | --- | ---: |
-| Killed by a failing test | 2467 |
-| Timed out or ran out of memory (detected) | 69 |
-| Survived | 346 |
-| Not covered by any test | 162 |
+| Killed by a failing test | 2336 |
+| Timed out or ran out of memory (detected) | 59 |
+| Survived | 322 |
+| Not covered by any test | 153 |
 
-The mutation score is **83 %**, the test strength (detected mutants among the covered ones) is 88 %, and the line coverage of the mutated classes is 92 %.
+The mutation score is **83 %**, the test strength (detected mutants among the covered ones) is 88 %, and the line coverage of the mutated classes is 92 %. The run took 44 minutes.
 
 | Package (below `io.github.lembergmax.justmath`) | Mutants | Detected | Score |
 | --- | ---: | ---: | ---: |
-| `bignumber` | 735 | 674 | 91.7 % |
-| `bignumber.algorithms` | 269 | 220 | 81.8 % |
-| `bignumber.internal` | 85 | 60 | 70.6 % |
-| `bignumber.math` | 1255 | 971 | 77.4 % |
-| `bignumber.math.utils` | 34 | 17 | 50.0 % |
-| `calculator` | 591 | 539 | 91.2 % |
-| `calculator.errors` | 32 | 24 | 75.0 % |
+| `bignumber` | 789 | 712 | 90.2 % |
+| `bignumber.algorithms` | 269 | 222 | 82.5 % |
+| `bignumber.internal` | 85 | 61 | 71.8 % |
+| `bignumber.math` | 1027 | 769 | 74.9 % |
+| `bignumber.math.utils` | 34 | 34 | 100.0 % |
+| `calculator` | 591 | 543 | 91.9 % |
+| `calculator.errors` | 32 | 23 | 71.9 % |
 | the other packages | 43 | 31 | 72.1 % |
 
-`bignumber.math` holds `BasicMath`, which does its arithmetic on digit strings and has 826 of the 3044 mutants (72 % detected). Its property tests are excluded from the run, so the score understates how well it is protected. [Decision 0007](decisions/0007-string-based-arithmetic.md) plans to replace the digit strings, and the score of `BasicMath` should be measured again after that.
+`bignumber.math` holds `BasicMath`, which has 598 of the 2870 mutants (66 % detected). Most of them are in `exp`, `ln` and the fractional power, which still compute on digit strings, and in the rounding of the double fast paths. The addition, multiplication, division, remainder, power and factorial run on `BigDecimal` and `BigInteger` and are protected mostly by the property tests, which are excluded from the run, so the score understates how well `BasicMath` is protected. The first run, before the arithmetic moved, found 83 % as well, with 3044 mutants.
 
 ## What survives and why
 
-Most of the 508 survivors are of three kinds:
+Most of the 475 survivors are of three kinds:
 
 - **Mutants that change speed and not the result.** The pivot choice of `QuickSort` and the capacity of the LRU cache in `CalculatorEngine` do not change what a caller sees. No test can fail, so these mutants stay.
 - **Boundary mutants in code that the tests reach only with typical values.** A `<` that becomes `<=` matters only for the value exactly on the boundary. These are worth killing when the boundary is part of a contract (the maximum length of an expression, the largest `MathContext` precision), and they are not worth it otherwise.
-- **Lines without a test.** The 162 mutants without coverage point at methods and branches that no test executes. These are the best place to start.
+- **Lines without a test.** The 153 mutants without coverage point at methods and branches that no test executes. These are the best place to start.
 
 A mutant is never "wrong" on its own. Read the changed line, decide what a caller could observe, and write the test that observes it. If nothing could be observed, leave the mutant and move on.
 

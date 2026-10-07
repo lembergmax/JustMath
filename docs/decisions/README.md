@@ -10,6 +10,7 @@ These pages record the decisions that surprise a reader of the code. Each one sa
 | [0004](0004-big-math-for-transcendental-functions.md) | Transcendental functions use big-math with adaptive guard digits, they are not reimplemented. |
 | [0005](0005-limits-on-expensive-inputs.md) | Inputs that ask for an enormous result are rejected with a typed error. |
 | [0006](0006-closed-registries.md) | The function registry and the unit registry are closed after static initialization. |
-| [0007](0007-string-based-arithmetic.md) | The arithmetic runs on digit strings and is slower than `BigDecimal`; replacing the hot paths is planned. |
+| [0007](0007-string-based-arithmetic.md) | The arithmetic ran on digit strings and was slower than `BigDecimal`. Superseded by 0008. |
+| [0008](0008-bigdecimal-arithmetic-and-lazy-digits.md) | The arithmetic runs on `BigDecimal` and `BigInteger`, and a `BigNumber` writes its digits down only when they are asked for. |
 
 To add a record, copy the layout of an existing one, number it and add it to this table.

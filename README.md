@@ -71,7 +71,7 @@ How precise a result is:
 
 - A division, a negative power, `exp`, a fractional power, a root, a logarithm and a trigonometric or hyperbolic function return a result that is correct to within one unit in the last place of your `MathContext`, rounded once with its rounding mode. A function that loses digits near one of its zeros (`sin` near a multiple of π, `ln` near 1, `sinh` near 0) is evaluated with as many guard digits as it needs. Where the exact result is zero, such as `sin(180°)`, it is zero.
 - `BigNumberList` and `BigNumberMatrix` use the default context of 100 digits and `HALF_UP` for their divisions and their means.
-- Speed is not the strength of `BigNumber`: its arithmetic is 90 to 2400 times slower than `BigDecimal`. If you only need exact decimal arithmetic in a hot loop, use `BigDecimal`. See [docs/performance.md](docs/performance.md).
+- Speed: `BigNumber` computes with `BigDecimal` and `BigInteger`. For numbers of 100 digits and more one operation takes 1.0 to 4.3 times as long as with `BigDecimal`, and 1.2 to 1.6 times when reading the operands from text and writing the result as text is counted. Numbers of 10 digits take 3 to 9 times as long, because of the fixed cost of the object. See [docs/performance.md](docs/performance.md).
 
 Mutation:
 
@@ -196,7 +196,7 @@ An input that is small but asks for an enormous result is rejected with a typed 
 
 ## Thread safety
 
-`BigNumber`, the lists and the matrices are not synchronized. `CalculatorEngine` keeps mutable settings (`setLocale`, `setInputLocale`, `setErrorMode`, the expression cache). The settings are visible to other threads, but changing them while another thread evaluates gives that evaluation a mix of old and new settings. Use one engine per thread, or configure the engine before you share it. The static math classes and `UnitConverter` keep no state.
+`BigNumber`, the lists and the matrices are not synchronized. Several threads may read the same `BigNumber`, also when it is the result of a calculation and its digits are written down for the first time; none may change it (`trim()`, `negateThis()`, the setters) while others use it. `CalculatorEngine` keeps mutable settings (`setLocale`, `setInputLocale`, `setErrorMode`, the expression cache). The settings are visible to other threads, but changing them while another thread evaluates gives that evaluation a mix of old and new settings. Use one engine per thread, or configure the engine before you share it. The static math classes and `UnitConverter` keep no state.
 
 ## Documentation
 

@@ -98,7 +98,7 @@ public final class TrigonometricMath {
         final BigDecimal sine = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
                 workingContext -> BigDecimalMath.sin(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(sine.toPlainString(), locale).trim();
+        return new BigNumber(sine, locale).trim();
     }
 
     /**
@@ -131,7 +131,7 @@ public final class TrigonometricMath {
         final BigDecimal cosine = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
                 workingContext -> BigDecimalMath.cos(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(cosine.toPlainString(), locale).trim();
+        return new BigNumber(cosine, locale).trim();
     }
 
     /**
@@ -168,7 +168,7 @@ public final class TrigonometricMath {
         final BigDecimal tangent = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
                 workingContext -> BigDecimalMath.tan(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(tangent.toPlainString(), locale).trim();
+        return new BigNumber(tangent, locale).trim();
     }
 
     /**
@@ -303,7 +303,7 @@ public final class TrigonometricMath {
         final BigDecimal cotangent = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
                 workingContext -> BigDecimalMath.cot(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(cotangent.toPlainString(), locale).trim();
+        return new BigNumber(cotangent, locale).trim();
     }
 
     /**

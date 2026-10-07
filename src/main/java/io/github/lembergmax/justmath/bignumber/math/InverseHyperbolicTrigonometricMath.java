@@ -199,7 +199,7 @@ public final class InverseHyperbolicTrigonometricMath {
         final BigDecimal value = argument.toBigDecimal();
         final BigDecimal result = MathUtils.computeWithGuardDigits(mathContext, GUARD_DIGITS, workingContext -> function.apply(value, workingContext));
 
-        return new BigNumber(result.toPlainString(), locale).trim();
+        return new BigNumber(result, locale).trim();
     }
 
     /**

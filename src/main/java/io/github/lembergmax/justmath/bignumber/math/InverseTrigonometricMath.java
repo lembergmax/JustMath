@@ -86,7 +86,7 @@ public final class InverseTrigonometricMath {
         final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ANGLE_GUARD_DIGITS,
                 workingContext -> inMode(BigDecimalMath.asin(argument.toBigDecimal(), workingContext), workingContext, trigonometricMode, locale));
 
-        return new BigNumber(angle.toPlainString(), locale, mathContext).trim();
+        return new BigNumber(new BigNumber(angle, locale), locale, mathContext).trim();
     }
 
     /**
@@ -119,7 +119,7 @@ public final class InverseTrigonometricMath {
         final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ANGLE_GUARD_DIGITS,
                 workingContext -> inMode(BigDecimalMath.acos(argument.toBigDecimal(), workingContext), workingContext, trigonometricMode, locale));
 
-        return new BigNumber(angle.toPlainString(), locale, mathContext).trim();
+        return new BigNumber(new BigNumber(angle, locale), locale, mathContext).trim();
     }
 
     /**
