@@ -887,7 +887,8 @@ class UnitRegistry {
      * Map from unit identifier to its immutable {@link UnitDefinition}.
      *
      * <p>
-     * This is the canonical lookup structure used by the public facade.
+     * This is the canonical lookup structure used by the public facade. It is unmodifiable and keeps the order of
+     * {@link #BUILT_IN}; {@code Map.copyOf} would randomize the iteration order per JVM.
      * </p>
      */
     private static final Map<Unit, UnitDefinition> BY_UNIT;
@@ -969,7 +970,7 @@ class UnitRegistry {
             }
         }
 
-        BY_UNIT = Map.copyOf(byUnit);
+        BY_UNIT = Collections.unmodifiableMap(byUnit);
         validateAliases(byUnit);
         BY_SYMBOL = Map.copyOf(bySymbol);
 
@@ -977,7 +978,7 @@ class UnitRegistry {
         for (final Map.Entry<Class<? extends Unit>, List<Unit>> entry : byGroup.entrySet()) {
             immutableGroupMap.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
-        BY_GROUP = Map.copyOf(immutableGroupMap);
+        BY_GROUP = Collections.unmodifiableMap(immutableGroupMap);
         BY_GROUP_BASE = Map.copyOf(byGroupBase);
     }
 
