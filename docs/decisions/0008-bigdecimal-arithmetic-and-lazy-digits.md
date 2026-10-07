@@ -22,7 +22,7 @@ The differential property tests that compare `BasicMath` with `BigDecimal` and `
 
 ## Consequences
 
-- The public API is unchanged. The digits, the scale of `toBigDecimal()`, the sign flag, the string representations, the exceptions and their messages are the same as before for every input that was compared: 300000 random operations against the previous implementation, and `BigNumberDigitsRepresentationTest` pins the cases at the edges.
+- The public API is unchanged. The digits, the scale of `toBigDecimal()`, the sign flag, the string representations, the exceptions and their messages are the same as before for every input that was compared: 400000 random operations on the final code against the previous implementation (more than a million during the work, which found one difference in the scale of `1.0` and fixed it), and `BigNumberDigitsRepresentationTest` pins the cases at the edges.
 - Reading a `BigNumber` from several threads is safe, also while its digits are written down for the first time: `valueBeforeDecimalPoint` is volatile and written last. Changing a shared number (`trim()`, `negateThis()`, the setters) is still not.
 - A number can hold the digits and the `BigDecimal`, which costs memory for large values.
 - `toBigDecimal()` returns the same instance on repeated calls. `BigDecimal` is immutable, so this is not visible except by identity.
