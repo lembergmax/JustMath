@@ -30,7 +30,9 @@ import java.util.Locale;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
+import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
@@ -91,8 +93,14 @@ public final class SpecialFunctionMath {
      * 	If {@code x} is a non-positive integer, where Γ(x) is undefined. Domain enforcement is delegated
      * 	to {@link BigDecimalMath#gamma}, whose Lanczos approximation raises {@link ArithmeticException} at
      * 	those poles, rather than maintaining a parallel pre-check.
+     * @throws MathArgumentException
+     * 	If the precision of {@code mathContext} is not positive.
+     * @throws MathArithmeticException
+     * 	If the precision of {@code mathContext} is above the supported limit.
      */
     public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
+
         return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
     }
 
