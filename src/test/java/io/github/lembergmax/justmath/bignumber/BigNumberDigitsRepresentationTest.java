@@ -82,6 +82,10 @@ class BigNumberDigitsRepresentationTest {
                 Arguments.of("-0.25", "0", "25", true, 2, "-0.25"),
                 Arguments.of("0.000", "0", "000", false, 3, "0"),
                 Arguments.of("-7.250", "7", "250", true, 3, "-7.25"),
+                Arguments.of("1.0", "1", "0", false, 0, "1"),
+                Arguments.of("-5.0", "5", "0", true, 0, "-5"),
+                Arguments.of("0.0", "0", "0", false, 0, "0"),
+                Arguments.of("1.00", "1", "00", false, 2, "1"),
                 Arguments.of("12345678901234567890.0001", "12345678901234567890", "0001", false, 4, "12345678901234567890.0001"));
     }
 

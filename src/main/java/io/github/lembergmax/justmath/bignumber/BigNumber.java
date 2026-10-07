@@ -3680,14 +3680,20 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
-     * Returns the value with a scale of at least zero, so that its plain string and its digits are the same as
-     * those of a number parsed from that string.
+     * Returns the value with the scale that a number parsed from its plain string has: at least zero, and zero for a
+     * value whose only fraction digit is {@code 0}, because the digits {@code "1.0"} are read back as {@code 1}.
      *
      * @param value the value; must not be {@code null}
-     * @return {@code value}, or {@code value} with scale 0 if its scale is negative
+     * @return {@code value}, or {@code value} with scale 0
      */
     private static BigDecimal withNonNegativeScale(final BigDecimal value) {
-        return value.scale() < 0 ? value.setScale(0) : value;
+        if (value.scale() < 0) {
+            return value.setScale(0);
+        }
+        if (value.scale() == 1 && value.unscaledValue().mod(BigInteger.TEN).signum() == 0) {
+            return value.setScale(0);
+        }
+        return value;
     }
 
     /**
