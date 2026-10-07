@@ -1,0 +1,90 @@
+# constant	reason why the value is not checked against a definition
+Area.ARPENT	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Area.CUERDA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Area.PLAZA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+DataStorage.BLOCK	convention; no standard defines this value (the size depends on the architecture)
+DataStorage.CD_74_MIN	nominal capacity of a storage medium, not defined by a standard
+DataStorage.CD_80_MIN	nominal capacity of a storage medium, not defined by a standard
+DataStorage.DVD_1L_1S	nominal capacity of a storage medium, not defined by a standard
+DataStorage.DVD_1L_2S	nominal capacity of a storage medium, not defined by a standard
+DataStorage.DVD_2L_1S	nominal capacity of a storage medium, not defined by a standard
+DataStorage.DVD_2L_2S	nominal capacity of a storage medium, not defined by a standard
+DataStorage.FLOPPY_35_DD	nominal capacity of a storage medium, not defined by a standard
+DataStorage.FLOPPY_35_ED	nominal capacity of a storage medium, not defined by a standard
+DataStorage.FLOPPY_35_HD	nominal capacity of a storage medium, not defined by a standard
+DataStorage.FLOPPY_525_DD	nominal capacity of a storage medium, not defined by a standard
+DataStorage.FLOPPY_525_HD	nominal capacity of a storage medium, not defined by a standard
+DataStorage.JAZ_1GB	nominal capacity of a storage medium, not defined by a standard
+DataStorage.JAZ_2GB	nominal capacity of a storage medium, not defined by a standard
+DataStorage.MAPM_WORD	convention; no standard defines this value (the size depends on the architecture)
+DataStorage.QUADRUPLE_WORD	convention; no standard defines this value (the size depends on the architecture)
+DataStorage.WORD	convention; no standard defines this value (the size depends on the architecture)
+DataStorage.ZIP_100	nominal capacity of a storage medium, not defined by a standard
+DataStorage.ZIP_250	nominal capacity of a storage medium, not defined by a standard
+Energy.CALORIE_NUTRITIONAL	the nutritional Calorie is a kilocalorie, but regions use the IT (4186.8 J) or the thermochemical (4184 J) one; the registry uses the IT kilocalorie
+Energy.FUEL_OIL_EQUIVALENT_KILOLITER	energy content of a fuel varies; the two registry values are 0.12 % inconsistent with the volume of a US barrel and no source defines either
+Energy.FUEL_OIL_EQUIVALENT_US_BARREL	energy content of a fuel varies; the two registry values are 0.12 % inconsistent with the volume of a US barrel and no source defines either
+Energy.THERM	the UK gas industry value of 105.5056 MJ; 100000 Btu (IT) would be 105505585.262 J, 1.4E-7 lower
+Energy.THERM_EC	the UK gas industry value of 105.5056 MJ; 100000 Btu (IT) would be 105505585.262 J, 1.4E-7 lower
+Length.ALN	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source (Swedish measures)
+Length.EARTH_DISTANCE_FROM_SUN	rounded astronomical unit of 1.496E11 m; ASTRONOMICAL_UNIT holds the exact IAU 2012 value
+Length.FAMN	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source (Swedish measures)
+Length.MILE_ROMAN	estimates of the Roman mile range from 1479 to 1482 m; the registry holds one published estimate
+Mass.BIBLICAL_GREEK_DIDRACHMA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_GREEK_DRACHMA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_GREEK_MINA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_GREEK_TALENT	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_GREEK_TETRADRACHMA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_HEBREW_BEKAN	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_HEBREW_GERAH	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_HEBREW_MINA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_HEBREW_SHEKEL	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_HEBREW_TALENT	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_ROMAN_ASSARION	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_ROMAN_DENARIUS	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_ROMAN_LEPTON	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.BIBLICAL_ROMAN_QUADRANS	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Mass.STONE_UNITED_STATES	half of the US quarter of 25 lb, 12.5 lb; the common stone of 14 lb is STONE_UNITED_KINGDOM
+Power.HORSEPOWER_BOILER	value published by NIST SP 811 Appendix B.8 (power) with six significant digits
+Power.HORSEPOWER_WATER	value published by NIST SP 811 Appendix B.8 (power) with six significant digits
+Pressure.CENTIMETER_OF_MERCURY_0C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.CENTIMETER_OF_WATER_4C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.FOOT_OF_WATER_4C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.FOOT_OF_WATER_60F	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.INCH_OF_MERCURY_32F	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.INCH_OF_MERCURY_60F	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.INCH_OF_WATER_4C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.INCH_OF_WATER_60F	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.MILLIMETER_OF_MERCURY_0C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Pressure.MILLIMETER_OF_WATER_4C	value published by NIST SP 811 Appendix B.8 with six significant digits; the exact value depends on the assumed fluid density
+Speed.COSMIC_VELOCITY_FIRST	rounded textbook value
+Speed.COSMIC_VELOCITY_SECOND	rounded textbook value
+Speed.COSMIC_VELOCITY_THIRD	rounded textbook value
+Speed.EARTHS_VELOCITY	rounded textbook value
+Speed.MACH_20C_1ATM	depends on temperature, pressure and composition; the registry holds one published value
+Speed.MACH_SI_STANDARD	depends on temperature, pressure and composition; the registry holds one published value
+Speed.SPEED_OF_SOUND_PURE_WATER	depends on temperature, pressure and composition; the registry holds one published value
+Speed.SPEED_OF_SOUND_SEA_WATER_20C_10M	depends on temperature, pressure and composition; the registry holds one published value
+Temperature.CELSIUS	affine conversion; the fixed points are tested in FahrenheitExactnessTest and UnitConversionRegressionTest
+Temperature.FAHRENHEIT	affine conversion; the fixed points are tested in FahrenheitExactnessTest and UnitConversionRegressionTest
+Temperature.KELVIN	affine conversion; the fixed points are tested in FahrenheitExactnessTest and UnitConversionRegressionTest
+Time.DAY_SIDEREAL	astronomical mean value rounded to the digits that the source gives
+Time.HOUR_SIDEREAL	astronomical mean value rounded to the digits that the source gives
+Time.MINUTE_SIDEREAL	astronomical mean value rounded to the digits that the source gives
+Time.MONTH	a twelfth of a 365 day year (2628000 s); the registry YEAR is the Julian year of 365.25 days
+Time.MONTH_SYNODIC	the mean synodic month is 29.530588 days (2551442.8 s); the registry holds the value rounded to 29.53059 days
+Time.NOVENNIAL	multiples of a 365 day year; the registry YEAR is the Julian year of 365.25 days
+Time.OCTENNIAL	multiples of a 365 day year; the registry YEAR is the Julian year of 365.25 days
+Time.QUINDECENNIAL	multiples of a 365 day year; the registry YEAR is the Julian year of 365.25 days
+Time.QUINQUENNIAL	multiples of a 365 day year; the registry YEAR is the Julian year of 365.25 days
+Time.SECOND_SIDEREAL	astronomical mean value rounded to the digits that the source gives
+Time.SEPTENNIAL	multiples of a 365 day year; the registry YEAR is the Julian year of 365.25 days
+Time.YEAR_SIDEREAL	astronomical mean value rounded to the digits that the source gives
+Time.YEAR_TROPICAL	NIST SP 811 value with seven significant digits; the mean tropical year is 31556925.2 s
+Volume.BIBLICAL_BATH	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.BIBLICAL_CAB	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.BIBLICAL_COR	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.BIBLICAL_HIN	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.BIBLICAL_HOMER	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.BIBLICAL_LOG	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
+Volume.SPANISH_TAZA	historic or regional unit; the value is kept as published by the original source of the registry (unitconverters.net) and was not checked against a primary source
