@@ -27,7 +27,8 @@ jobs:
           persist-credentials: false
 
       - name: Check the links
+        # The compare link of an unreleased version does not exist before its tag does.
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          args: --no-progress --max-retries 3 --retry-wait-time 5 --timeout 20 --accept 200,206,429 --exclude-path docs/units.md './**/*.md'
+          args: --no-progress --max-retries 3 --retry-wait-time 5 --timeout 20 --accept 200,206,429 --exclude-path docs/units.md --exclude 'compare/1.6.0...1.7.0$' './**/*.md'
           fail: true
