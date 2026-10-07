@@ -244,9 +244,9 @@ public class ExpressionElements {
                 new TwoArgumentFunction(FUNC_COMB, 6, BigNumber::combination),
                 //
                 new TwoArgumentFunction(FUNC_LCM, 6, BigNumber::lcm),
-                new TwoArgumentFunction(FUNC_LCM.toLowerCase(), 6, BigNumber::lcm),
+                new TwoArgumentFunction(FUNC_LCM.toLowerCase(Locale.ROOT), 6, BigNumber::lcm),
                 new SimpleTwoArgumentFunction(FUNC_GCD, 6, BigNumber::gcd),
-                new SimpleTwoArgumentFunction(FUNC_GCD.toLowerCase(), 6, BigNumber::gcd),
+                new SimpleTwoArgumentFunction(FUNC_GCD.toLowerCase(Locale.ROOT), 6, BigNumber::gcd),
                 //
                 new CoordinateFunction(FUNC_REC, 6, BigNumber::polarToCartesianCoordinates),
                 new SimpleCoordinateFunction(FUNC_POL, 6, BigNumber::cartesianToPolarCoordinates),

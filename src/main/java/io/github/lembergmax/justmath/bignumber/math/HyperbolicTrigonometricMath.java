@@ -61,9 +61,10 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
  * This reduces the number of exponential evaluations from 2 to 1 per hyperbolic call.
  *
  * <h2>Precision strategy</h2>
- * Intermediate operations may lose a few digits due to cancellation (especially around x≈0). Therefore a small
- * number of guard digits is added to the provided {@link MathContext} for internal computation, while the final
- * result is returned with the caller-provided {@link MathContext}.
+ * Intermediate operations may lose digits due to cancellation (especially around x≈0, where
+ * {@code e^x - e^{-x}} is about {@code 2x}). Therefore guard digits are added to the provided {@link MathContext}
+ * for internal computation, and for {@code |x| < 1} their number grows with the leading zeros of {@code x}. The
+ * final result is rounded once with the caller-provided {@link MathContext}.
  */
 public final class HyperbolicTrigonometricMath {
 
@@ -74,6 +75,12 @@ public final class HyperbolicTrigonometricMath {
      * {@code e^x - e^{-x}}.
      */
     private static final int INTERNAL_GUARD_DIGITS = 8;
+
+    /**
+     * Non-instantiable utility class.
+     */
+    private HyperbolicTrigonometricMath() {
+    }
 
     /**
      * Computes the hyperbolic sine {@code sinh(x)} with the given precision.

@@ -379,6 +379,8 @@
                             <!-- Allowed in 1.7.0: the class got the private constructor that the other
                                  inverse function classes already have. -->
                             <exclude>io.github.lembergmax.justmath.bignumber.math.InverseHyperbolicTrigonometricMath#InverseHyperbolicTrigonometricMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.BasicMath#BasicMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.HyperbolicTrigonometricMath#HyperbolicTrigonometricMath()</exclude>
                         </excludes>
                     </parameter>
                 </configuration>

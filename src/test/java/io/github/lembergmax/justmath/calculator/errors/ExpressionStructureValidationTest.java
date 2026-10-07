@@ -124,28 +124,31 @@ class ExpressionStructureValidationTest {
             };
             for (Object[] c : cases) {
                 String expr = (String) c[0];
-                long start = System.nanoTime();
                 var result = engine.evaluateSafe(expr);
-                long elapsedMs = (System.nanoTime() - start) / 1_000_000;
 
                 assertTrue(result.isFailure(), "expected failure: " + expr);
                 assertEquals(c[1], result.error().orElseThrow().code(), "wrong code: " + expr);
-                assertTrue(elapsedMs < 2_000, "slow fail (" + elapsedMs + " ms): " + expr);
             }
         }
 
         @Test
-        @DisplayName("expensive left operand never computed before the structural error")
-        void expensiveLeftOperandFailsFast() {
+        @DisplayName("a structural error is reported before the expensive left operand is evaluated")
+        void structuralErrorIsReportedBeforeTheLeftOperandIsEvaluated() {
             CalculatorEngine engine = raw();
-            for (String expr : new String[]{
-                    "50000!/", "50000!*", "50000!^", "50000!nPr", "50000!sqrt()"}) {
-                long start = System.nanoTime();
+            Object[][] cases = {
+                    {"1000000!/", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                    {"1000000!*", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                    {"1000000!^", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                    {"1000000!nPr", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                    {"1000000!sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
+            };
+            for (Object[] c : cases) {
+                String expr = (String) c[0];
                 var result = engine.evaluateSafe(expr);
-                long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
                 assertTrue(result.isFailure(), expr);
-                assertTrue(elapsedMs < 2_000,
-                        "factorial was computed before failing (" + elapsedMs + " ms): " + expr);
+                assertEquals(c[1], result.error().orElseThrow().code(),
+                        "the factorial limit was reached before the structure was checked: " + expr);
             }
         }
     }

@@ -40,7 +40,7 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.calculator.exceptions.CyclicVariableReferenceException;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
-public class CalculatorEngineTest {
+class CalculatorEngineTest {
 
     private final CalculatorEngine calculatorEngineRad = new CalculatorEngine(TrigonometricMode.RAD);
     private final CalculatorEngine calculatorEngineDeg = new CalculatorEngine(TrigonometricMode.DEG);

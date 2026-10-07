@@ -41,7 +41,7 @@ import java.util.Map;
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
-public class BigNumberTest {
+class BigNumberTest {
 
     @Nested
     public class BasicMath {
