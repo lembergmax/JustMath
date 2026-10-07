@@ -389,6 +389,8 @@
                             <!-- Allowed in 1.7.0: the class got the private constructor that the other
                                  inverse function classes already have. -->
                             <exclude>io.github.lembergmax.justmath.bignumber.math.InverseHyperbolicTrigonometricMath#InverseHyperbolicTrigonometricMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.BasicMath#BasicMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.HyperbolicTrigonometricMath#HyperbolicTrigonometricMath()</exclude>
                         </excludes>
                     </parameter>
                 </configuration>
@@ -426,6 +428,31 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.5.0</version>
+            </plugin>
+
+            <!-- Writes the CycloneDX software bill of materials to target/. It is attached to the GitHub release by
+                 the publish workflow and not to the Maven deployment, so Maven Central never sees it. -->
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.3</version>
+                <configuration>
+                    <projectType>library</projectType>
+                    <schemaVersion>1.6</schemaVersion>
+                    <outputFormat>json</outputFormat>
+                    <outputName>${project.artifactId}-${project.version}-cyclonedx</outputName>
+                    <includeTestScope>false</includeTestScope>
+                    <skipAttach>true</skipAttach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-bom</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- PIT Mutation Testing -->

@@ -344,32 +344,6 @@ public class BigNumberMatrix implements Cloneable {
     }
 
     /**
-     * Parses the nested string list into {@link BigNumber} values using the configured locale.
-     * All rows must have the same number of columns as defined in {@code this.columns}.
-     *
-     * @param values
-     * 	the 2D list of string entries to parse and fill into the matrix
-     *
-     * @throws IllegalArgumentException
-     * 	if any row has a different number of columns
-     */
-    private void fillFromStringList(@NonNull final List<List<String>> values) {
-        for (List<String> row : values) {
-            if (row.size() != columns.intValue()) {
-                throw new IllegalArgumentException("Inconsistent column count in row.");
-            }
-
-            List<BigNumber> parsedRow = new ArrayList<>();
-
-            for (String val : row) {
-                parsedRow.add(new BigNumber(val, locale));
-            }
-
-            data.add(parsedRow);
-        }
-    }
-
-    /**
      * Sets the matrix entry at the given (row, column) index.
      *
      * @param row

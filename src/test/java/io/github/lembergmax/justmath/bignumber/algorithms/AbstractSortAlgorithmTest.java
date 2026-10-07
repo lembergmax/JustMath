@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public abstract class AbstractSortAlgorithmTest {
+abstract class AbstractSortAlgorithmTest {
 
     @FunctionalInterface
     public interface BigNumberSortAlgorithm {

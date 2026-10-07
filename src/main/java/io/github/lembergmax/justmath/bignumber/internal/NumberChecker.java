@@ -27,7 +27,7 @@ package io.github.lembergmax.justmath.bignumber.internal;
 import java.util.Locale;
 
 /**
- * High-performance numeric string validator for locale-aware expressions.
+ * Numeric string validator for locale-aware expressions.
  * <p>
  * This utility is optimized for hot paths (e.g. tokenizers/parsers). It avoids the overhead of
  * {@link java.text.NumberFormat} parsing and instead validates the input in a single linear scan.

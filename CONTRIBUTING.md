@@ -14,7 +14,7 @@ On Windows use `mvnw.cmd verify`. `verify` runs the whole quality gate:
 
 | Check | What fails the build |
 |-------|----------------------|
-| Tests (JUnit 5, about 1650) | any failing test |
+| Tests (JUnit 5 and jqwik, about 2900) | any failing test |
 | Enforcer | JDK older than 21, Maven older than 3.9, an unpinned plugin, diverging dependency versions |
 | JaCoCo | line coverage below 88 % or branch coverage below 62 % |
 | Javadoc | any error or warning (it runs on the delomboked sources) |
@@ -40,7 +40,7 @@ The jars are reproducible: two clean builds of the same commit are byte-identica
 4. Write the test first. A bug fix needs a regression test that fails before the fix and passes after it.
 5. Make sure `./mvnw verify` passes. The `CI result` check has to be green before a pull request is merged.
 
-Commit messages start with an area and a short summary, for example `bignumber: return copies from BigNumberList.min()`. The areas in use are `bignumber`, `calculator`, `converter`, `build`, `ci`, `docs`, `test`, `style` and `chore`. Use the body to say why the change is needed, and finish with `Closes #123` when it fixes an issue. Formatting-only commits are listed in `.git-blame-ignore-revs`; run `git config blame.ignoreRevsFile .git-blame-ignore-revs` to skip them in `git blame`.
+Commit messages start with a type and a short summary, for example `fix: keep the digits of atan close to pi/2 (#215)`. The types in use are `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `ci`, `style` and `chore`; a `!` after the type marks a breaking change. Use the body to say why the change is needed and what the test proves, and refer to the issue. Formatting-only commits are listed in `.git-blame-ignore-revs`; run `git config blame.ignoreRevsFile .git-blame-ignore-revs` to skip them in `git blame`.
 
 ## Code rules
 
@@ -76,9 +76,11 @@ If a break is intended, add an `<exclude>` for exactly that class, method or fie
 
 ## Extending the library
 
+[docs/extending.md](docs/extending.md) is the step-by-step guide. In short:
+
 **A new function or operator.** Add or reuse an element class in `calculator.expression.elements`, register it in the static block of `ExpressionElements` (the registry is closed after class initialization on purpose), and add an operation interface if it has a new argument shape. Add tests for valid and invalid use, an error code and its translations in `i18n/calculator_errors_*.properties` if needed, and a row in the README table.
 
-**A new unit.** Add the constant to the right enum in `Unit` and exactly one `define(...)` line in `UnitRegistry.BUILT_IN`. Use an exact value or a rational formula, name the source of the constant in the pull request, and add a test with an exact expected value. Symbols must be unique and are case-sensitive.
+**A new unit.** Add the constant to the right enum in `Unit` and exactly one `define(...)` line in `UnitRegistry.BUILT_IN`. Use an exact value or a rational formula. Add the unit to `src/test/resources/unit-audit/unit-definitions.tsv` with its source, or to `unit-exceptions.tsv` with the reason why it has no definition, and run `./mvnw test -Dtest=ReferenceDocumentsTest -Dupdate.docs=true` to update `docs/units.md`. Symbols must be unique and are case-sensitive.
 
 **A new sorting algorithm.** Extend `SortingAlgorithm`, call `abortIfInterrupted()` inside the passes, and add a test class that extends `AbstractSortAlgorithmTest`.
 

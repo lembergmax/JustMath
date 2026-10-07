@@ -153,7 +153,13 @@ public final class BasicMath {
     private static final char ZERO_AS_CHAR = '0';
 
     /**
-     * Adds two {@link BigNumber} values using fast string-based decimal arithmetic.
+     * Non-instantiable utility class.
+     */
+    private BasicMath() {
+    }
+
+    /**
+     * Adds two {@link BigNumber} values with decimal digit-string arithmetic. The result is exact.
      *
      * <p>Algorithm overview:
      * <ol>
@@ -371,7 +377,7 @@ public final class BasicMath {
      * <p>Fast path:
      * if {@code x} can be safely represented as a finite {@code double} and {@code |x| <= 50},
      * this method uses {@link Math#exp(double)} and converts the result to a plain decimal string
-     * (no exponent notation). This makes small exp calls extremely fast (your test suite).</p>
+     * (no exponent notation). This is the cheap path for a small argument at a low precision.</p>
      *
      * <p>Fallback path:
      * uses a string-based exp implementation with:</p>

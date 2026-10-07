@@ -1,941 +1,23 @@
-# 📐 JustMath
+# JustMath
 
-**JustMath** is a high-precision, extensible **Java math library** featuring its own `BigNumber` class and a modern
-**string-based calculation engine**. It is designed to evaluate **complex mathematical expressions with virtually
-unlimited precision**, avoiding the limitations of primitive types like `double` or `float`.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.lembergmax/justmath)](https://central.sonatype.com/artifact/io.github.lembergmax/justmath)
+[![CI](https://github.com/lembergmax/JustMath/actions/workflows/ci.yml/badge.svg?branch=developer)](https://github.com/lembergmax/JustMath/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/lembergmax/JustMath/actions/workflows/codeql.yml/badge.svg?branch=developer)](https://github.com/lembergmax/JustMath/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/lembergmax/JustMath/badge)](https://scorecard.dev/viewer/?uri=github.com/lembergmax/JustMath)
+[![Javadoc](https://javadoc.io/badge2/io.github.lembergmax/justmath/javadoc.svg)](https://javadoc.io/doc/io.github.lembergmax/justmath)
+[![License: MIT](https://img.shields.io/github/license/lembergmax/JustMath)](LICENSE)
+![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)
 
-## 🧮 Features
+JustMath is a Java library for calculations with as many digits as you ask for. It has a number type (`BigNumber`), an engine that evaluates text such as `2*sin(30)+sqrt(2)`, lists and matrices of such numbers, and a converter for 601 units. The only runtime dependency is [big-math](https://github.com/eobermuhlner/big-math).
 
-- ✅ **Virtually unlimited precision** via `BigNumber`
-- ✅ **String-based expression evaluation**
-- ✅ **Supports trigonometry, logarithms, combinatorics, summations, coordinates, factorials, and many more**
-- ✅ **Locale-aware formatting & messages in 13 languages / 20 locales** — `setLocale(Locale)` drives error messages and the decimal/grouping separators of evaluation results (incl. `MultiValueResult` components such as `Pol`/`Rec`); `setInputLocale(Locale)` opts into comma-decimal input parsing; query the catalog via `CalculatorEngine.getSupportedLanguages()`
+- Addition, subtraction, multiplication and integer powers are exact. Every other result is rounded once, with the precision and the rounding mode that you pass, and is correct to within one unit in the last place.
+- The expression engine reports a failure with a typed error code that you can branch on, and with a message in 13 languages (20 locales).
+- A small input that asks for a huge result, such as `1000000!` or `9^9999999999`, is rejected with an error instead of being computed.
+- The results are tested against `BigDecimal`, `BigInteger` and `BigDecimalMath` on generated hard arguments in every build. See [docs/testing.md](docs/testing.md).
 
-## 🔢 BigNumber
+## Install
 
-The `BigNumber` class supports a wide range of mathematical operations:
-
-| Category                         | Methods                                                                |
-|----------------------------------|------------------------------------------------------------------------|
-| **Basic Arithmetic**             | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`             |
-| **Roots & Powers**               | `squareRoot`, `cubicRoot`, `nthRoot`, `exp`, `factorial`               |
-| **Logarithms**                   | `log2`, `log10`, `ln`, `logBase`                                       |
-| **Trigonometry**                 | `sin`, `cos`, `tan`, `cot`, `atan`, `acot`, `atan2`                    |
-| **Hyperbolic Functions**         | `sinh`, `cosh`, `tanh`, `coth`                                         |
-| **Inverse Hyperbolic Functions** | `asinh`, `acosh`, `atanh`, `acoth`                                     |
-| **Combinatorics**                | `combination`, `permutation`                                           |
-| **Series**                       | `summation`, `product`                                                 |
-| **Coordinate Transformations**   | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`           |
-| **Miscellaneous**                | `randomIntegerForRange`, `nPercentFromM`, `xIsNPercentOfN`, `gcd`, `lcm` |
-| **Special Functions**            | `gamma`, `beta`, `abs`                                                 |
-| **Statistics**                   | `sum`, `average`, `median`                                             |
-
-All methods support customizable **`MathContext`** and **`Locale` settings** to meet international precision and
-formatting requirements.
-
-## 📃 BigNumberList – High-Precision Collections
-
-BigNumberList is a domain-specific, list-like container for BigNumber instances.
-It implements java.util.List<BigNumber> and adds high-level statistical, transformation, and sorting utilities on top.
-
-### ✅ Core Capabilities
-| Category                 | Methods                                                                                                                                    | Description                                                 |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
-| **Construction**         | `BigNumberList()`, `BigNumberList(List<BigNumber>)`, `of(...)`, `fromStrings(...)`, `copy`, `clone`                                        | Create lists from existing values or string representations |
-| **Conversion**           | `toUnmodifiableList`, `toBigNumberArray`, `toStringList`, `toDoubleArray`                                                                  | Convert to arrays, immutable views, or string/double lists  |
-| **Sorting**              | `sort`, `sort(Class<? extends SortingAlgorithm>)`, `sortAscending`, `sortDescending`                                                       | Sort using custom algorithms or natural order               |
-| **Statistics**           | `sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`               | High-precision statistical operations                       |
-| **Transformations**      | `absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `reverse`, `shuffle`, `rotate`, `map`                | In-place or copy-based transformations on all elements      |
-| **Structure & Sets**     | `distinct`, `append`, `subListCopy`                                                                                                        | Remove duplicates, concatenate lists, copy subranges        |
-| **Predicates & Queries** | `anyMatch`, `allMatch`, `findFirst`, `filter`, `isSortedAscending`, `isSortedDescending`, `isMonotonicIncreasing`, `isMonotonicDecreasing` | Query list properties in a numerically robust way           |
-
-All higher-level operations are implemented in terms of BigNumber’s arbitrary precision arithmetic and comparison,
-avoiding issues with primitive types.
-
-### 🧮 Example: Working with BigNumberList
-```java
-// Create a high-precision list
-BigNumberList numbers = BigNumberList.of(
-new BigNumber("3"),
-new BigNumber("1"),
-new BigNumber("2"),
-new BigNumber("2")
-);
-
-// Sort ascending using the built-in natural order
-numbers.sortAscending();
-System.out.println(numbers);
-// [1, 2, 2, 3]
-
-// Compute statistics
-BigNumber sum     = numbers.sum();       // 8
-BigNumber avg     = numbers.average();   // 2
-BigNumber median  = numbers.median();    // 2
-Set<BigNumber> modes = numbers.modes();  // {2}
-
-// Transform values in-place
-numbers.negateAll();                     // [-1, -2, -2, -3]
-numbers.absAll();                        // [1, 2, 2, 3]
-
-// Use a custom sorting algorithm
-numbers.sort(QuickSort.class);           // Uses your SortingAlgorithm implementation
-```
-
-## 🧩 BigNumberMatrix – High-Precision Matrices
-
-The `BigNumberMatrix` class extends the power of `BigNumber` into **linear algebra**.
-It supports creation from **dimensions, strings, or nested lists** and provides a wide range of matrix operations with arbitrary precision.
-
-### ✅ Supported Matrix Operations
-
-| Category             | Methods                                                                 |
-| -------------------- | ----------------------------------------------------------------------- |
-| **Basic Arithmetic** | `add`, `subtract`, `multiply`, `divide` (element-wise)                  |
-| **Matrix Algebra**   | `multiply` (matrix product), `power`, `inverse`, `determinant`, `trace` |
-| **Transformations**  | `transpose`, `scalarMultiply`, `negate`                                 |
-| **Properties**       | `isSquare`, `isSymmetric`, `isZeroMatrix`, `isIdentityMatrix`           |
-| **Aggregates**       | `sumElements`, `max`, `flatten`                                         |
-| **Utilities**        | `equalsMatrix`, `clone`, `forEachElement`, `forEachIndex`               |
-
-All operations are **locale-aware** and preserve the formatting/parsing rules of `BigNumber`.
-
-### 🧮 Example: Creating and Using Matrices
-
-```java
-// Create a 2x2 matrix from a string
-BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
-
-// Compute the determinant
-BigNumber det = a.determinant();
-System.out.println(det);
-// -2
-
-// Compute the inverse
-BigNumberMatrix inv = a.inverse();
-System.out.println(inv.toPlainDataString());
-// [[-2.0, 1.0], [1.5, -0.5]]
-
-// Multiply matrices
-BigNumberMatrix b = new BigNumberMatrix("5,6;7,8", Locale.US);
-BigNumberMatrix c = a.multiply(b);
-System.out.println(c.toPlainDataString());
-// [[19, 22], [43, 50]]
-
-// Check identity matrix
-BigNumberMatrix i = new BigNumberMatrix("1,0;0,1", Locale.US);
-System.out.println(i.isIdentityMatrix());
-// true
-```
-
-
-## 🔧 CalculatorEngine – Evaluate Math Strings
-
-The built-in **CalculatorEngine** directly evaluates mathematical strings and supports all operators and functions listed in the following table:
-
-### ✅ Supported Operators & Functions
-
-| Category                         | Operator / Function                              | Description                        |
-|----------------------------------|--------------------------------------------------|------------------------------------|
-| **Arithmetic**                   | `+`, `-`, `*`, `/`                               | Basic operations                   |
-|                                  | `%`, `^`, `!`                                    | Modulo, exponentiation, factorial  |
-| **Roots**                        | `√(x)`, `sqrt(x)`                                | Square root                        |
-|                                  | `³√(x)`, `cbrt(x)`                               | Cube root                          |
-|                                  | `rootn(a, n)`                                    | n-th root                          |
-| **Logarithms**                   | `log2(x)`                                        | Base-2 logarithm                   |
-|                                  | `log(x)`                                         | Base-10 logarithm                  |
-|                                  | `ln(x)`                                          | Natural logarithm                  |
-|                                  | `logbase(x, b)`                                  | Logarithm with arbitrary base      |
-| **Trigonometry**                 | `sin(x)`, `cos(x)`                               | Sine, cosine                       |
-|                                  | `tan(x)`, `cot(x)`                               | Tangent, cotangent                 |
-|                                  | `atan(x)`, `tan⁻¹(x)`                            | Arctangent                         |
-|                                  | `acot(x)`, `cot⁻¹(x)`                            | Arccotangent                       |
-|                                  | `atan2(y, x)`                                    | Two-argument arctangent            |
-| **Hyperbolic Functions**         | `sinh(x)`, `cosh(x)`                             | Hyperbolic sine, cosine            |
-|                                  | `tanh(x)`, `coth(x)`                             | Hyperbolic tangent, cotangent      |
-| **Inverse Hyperbolic Functions** | `asinh(x)`, `sinh⁻¹(x)`                          | Inverse hyperbolic sine            |
-|                                  | `acosh(x)`, `cosh⁻¹(x)`                          | Inverse hyperbolic cosine          |
-|                                  | `atanh(x)`, `tanh⁻¹(x)`                          | Inverse hyperbolic tangent         |
-|                                  | `acoth(x)`, `coth⁻¹(x)`                          | Inverse hyperbolic cotangent       |
-| **Combinatorics**                | `nCr(n, r)`, `comb(n, r)`                        | Combinations                       |
-|                                  | `nPr(n, r)`, `perm(n, r)`                        | Permutations                       |
-| **Series**                       | `∑(start; end; expr)`                            | Sigma notation (e.g., ∑(0;10;2^k)) |
-|                                  | `sum(start; end; expr)`                          | Named summation function           |
-|                                  | `∏(start; end; expr)`                            | Product notation (e.g., ∏(1;4;k))  |
-|                                  | `prod(start; end; expr)`                         | Named product function             |
-| **Number Theory**                | `GCD(a, b)`                                      | Greatest common divisor            |
-|                                  | `LCM(a, b)`                                      | Least common multiple              |
-| **Random Generator**             | `RandInt(min, max)`                              | Random integer in a given range    |
-| **Coordinates**                  | `Pol(x, y)`                                      | Cartesian → Polar                  |
-|                                  | `Rec(r, θ)`                                      | Polar → Cartesian                  |
-| **Special Functions**            | `Γ(x, y)`, `gamma(x)`                            | Gamma                              |
-|                                  | `B(x, y)`, `beta(x, y)`                          | Beta                               |
-|                                  | `\|x\|`, `abs(x)`                                | Absolute value                     |
-| **Statistics**                   | `avg(n1, n2, n3, ...)`, `average(n1, n2, n3...)` | Average of n elements              |
-|                                  | `sum(n1, n2, n3, ...)`                           | Sum of n elements                  |
-|                                  | `median(n1, n2, n3, ...)`                        | Median of n elements               |
-
-## 🔤 Variables
-
-JustMath allows you to **define and substitute variables** directly in expressions.  
-Variables are passed as a `Map<String, String>` when calling `evaluate`.
-
-- Variables can be reused across nested evaluations.
-- An **exception** is thrown if an undefined variable is encountered.
-
-### ✅ Example: Using Variables
-
-```java
-CalculatorEngine calculator = new CalculatorEngine();
-
-// Define variables
-Map<String, String> variables = new HashMap<>();
-variables.put("a", "5+3");
-variables.put("b", "3");
-
-// Evaluate expression with variables
-BigNumber result = calculator.evaluate("2*a + b^2", variables);
-
-System.out.println(result);
-// 25
-
-// Call other variables in a variable
-variables = new HashMap<>();
-variables.put("a", "root(b)");
-variables.put("b", "3");
-
-result = calculator.evaluate("2*a + b^2", variables);
-
-System.out.println(result);
-// 12.464101615...
-```
-
-## 🛡️ Safe Evaluation & Localized Errors
-
-`CalculatorEngine` exposes four families of `evaluate` methods. Pick one based on whether you
-want a raw `BigNumber` or a `String`, and whether failures should be signalled via an
-exception, an embedded error message or a typed `CalculatorResult`.
-
-| # | API family | Methods | Return type | Failure handling |
-|---|------------|---------|-------------|------------------|
-| 1 | **Core Evaluation** | `evaluate(...)` | `BigNumber` | Throws `CalculatorException` |
-| 2 | **Text Output** | `evaluateToString(...)`, `evaluateToPrettyString(...)` | `String` | Caught, folded into return string (no throw) |
-| 3 | **Safe UI String** | `evaluateSafeToString(...)`, `evaluateSafeToPrettyString(...)` | `String` | Null-tolerant, never throws, never null. Failure → `"Error: ..."` / `"Fehler: ..."` prefix |
-| 4 | **Typed Result** | `evaluateSafe(...)`, `evaluateToStringResult(...)`, `evaluateToPrettyStringResult(...)` | `CalculatorResult<BigNumber>` / `CalculatorResult<String>` | `isSuccess()` / `isFailure()`; structured `CalculatorError` on the failure branch |
-
-Pick by intent:
-
-- **Internal pipeline that handles exceptions** → family 1 (`evaluate`).
-- **Simple text output where success/failure are not branched on** → family 2 (`evaluateToString` / `Pretty`). Inputs are `@NonNull`.
-- **UI labels, log lines, fire-and-forget rendering** → family 3 (`evaluateSafeToString` / `Pretty`). Tolerates `null`, never throws, never returns `null`.
-- **Application logic, tests, robust error handling** → family 4 (`evaluateSafe`, `evaluateToStringResult`, `evaluateToPrettyStringResult`). Branch on `isSuccess()` / `isFailure()` without string-prefix parsing.
-
-Each failure is described by a **`CalculatorErrorCode`** (for example
-`SYNTAX_INVALID_CHARACTER`, `SYNTAX_UNKNOWN_VARIABLE`, `PROCESSING_DIVISION_BY_ZERO`,
-`PROCESSING_DOMAIN_ERROR`), so callers can branch on a structural value instead of parsing
-English text fragments.
-
-> **Note on "Safe":** the word appears in two unrelated places. `evaluateSafeToString` /
-> `evaluateSafeToPrettyString` are "safe" in the sense of *null-tolerant and never throws*
-> (family 3). `evaluateSafe` is "safe" in the sense of *returns a typed Result* (family 4).
-> The typed string variants drop the `Safe` prefix and use the `Result` suffix to make this
-> distinction explicit at the call site.
-
-### 🌍 Localized Messages
-
-Error messages can be rendered in two modes via **`ErrorMode`**:
-
-| Mode            | Description                                                                                              |
-|-----------------|----------------------------------------------------------------------------------------------------------|
-| `RAW`           | Technical English detail including internal context (tokens, positions, stack sizes). This is the default. |
-| `USER_FRIENDLY` | Localized, end-user oriented message taken from `i18n/calculator_errors_*.properties` (13 languages / 20 locales). |
-
-The active locale is configured on the engine via `setLocale(Locale)`, the error mode via
-`setErrorMode(ErrorMode)`. Both setters are fluent and return the engine instance.
-
-### 🧱 Error Categories & Three-Tier Fallback
-
-Every `CalculatorErrorCode` belongs to a **Casio-style category**. In `USER_FRIENDLY`
-mode the message is resolved in three tiers, so a missing translation never leaks an
-internal/English detail string:
-
-1. the **specific** message for the code (e.g. *“Factorial is undefined for negative numbers.”*);
-2. otherwise the **category** message — `Syntax Error`, `Math Error`, `Argument Error`,
-   `Stack Error`, `Range Error`, `Dimension Error`;
-3. otherwise a top-level **generic** message.
-
-In `RAW` mode `Throwable.getMessage()` returns the stable category label.
-
-> ⚠️ **Behaviour change (1.5.0):** division-by-zero and domain errors moved from the
-> `Processing Error` category to **`Math Error`**. In `RAW` mode their
-> `Throwable.getMessage()` is now `"Math Error"` (was `"Processing Error"`). The typed
-> `CalculatorErrorCode` values (`PROCESSING_DIVISION_BY_ZERO`, `PROCESSING_DOMAIN_ERROR`,
-> …) are unchanged — prefer branching on the code, not on the message string.
-
-### 🧪 Expression Syntax & Structural Validation
-
-Malformed input is rejected by a structural pre-pass **before** any (potentially
-expensive) evaluation — e.g. `50000!/` fails instantly instead of computing the
-factorial first. Each defect maps to a specific code:
-
-| Input | Result |
-|-------|--------|
-| `*5`, `/3` | `SYNTAX_LEADING_OPERATOR` |
-| `5+`, `50000!/` | `SYNTAX_TRAILING_OPERATOR` |
-| `()` | `SYNTAX_EMPTY_PARENTHESES` |
-| `sqrt()` | `SYNTAX_EMPTY_FUNCTION_ARGUMENT` |
-| `3 4` (whitespace), `5!sqrt(4)` | `SYNTAX_MISSING_OPERATOR` |
-| `sqrt(1;2)`, `atan2(1)`, `logbase(8)` | `SYNTAX_WRONG_ARGUMENT_COUNT` |
-| `!5`, `5!!` | `SYNTAX_INVALID_FACTORIAL` |
-
-Syntax rules to be aware of:
-
-- **Unary `+` / `-`** is supported before a group, function, constant or variable:
-  `-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`. It is right-associative and binds looser than
-  `^`, so `-3^2` follows the leading-signed-number rule while `-(3)^2 == -(3^2)`.
-- **Whitespace is a separator, not a no-op.** `1 + 2` is fine, but `3 4` is *not* `34`
-  — two operands with no operator is `SYNTAX_MISSING_OPERATOR`.
-- **No implicit multiplication after `!`.** `5!sqrt(4)` is an error, not `5! · sqrt(4)`
-  (write `5!*sqrt(4)`).
-- **Variable names are ASCII letters only.** Any other non-registered character
-  (e.g. `ß`, `±`) is reported as `SYNTAX_INVALID_CHARACTER` with its position.
-- **Coordinate functions** (`Pol`, `Rec`) intentionally return a `MultiValueResult`
-  rendered as `"r=…; θ=…"` / `"x=…; y=…"`.
-
-### 🔣 Localized Result Formatting
-
-`setLocale(Locale)` controls error message language **and** the decimal/grouping separators
-used by all string-returning evaluation methods. The two formatting variants are mirrored
-across all three string-returning families (Text Output, Safe UI String, Typed Result):
-
-| Method                              | Format                                                                                |
-|-------------------------------------|---------------------------------------------------------------------------------------|
-| `evaluateToString(...)`             | Locale decimal separator, **no** grouping                                             |
-| `evaluateToPrettyString(...)`       | Locale decimal **and** grouping separators                                            |
-| `evaluateSafeToString(...)`         | Same format as `evaluateToString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
-| `evaluateSafeToPrettyString(...)`   | Same format as `evaluateToPrettyString`; error path returns `"Error: ..."` / `"Fehler: ..."` |
-| `evaluateToStringResult(...)`       | Same format as `evaluateToString`, wrapped in `CalculatorResult<String>`              |
-| `evaluateToPrettyStringResult(...)` | Same format as `evaluateToPrettyString`, wrapped in `CalculatorResult<String>`        |
-
-Input parsing is **not** affected by the engine locale. Expressions are always parsed with
-`.` as the decimal separator and `,` reserved as an argument separator (e.g.
-`summation(1;5;k)` uses `;` for argument lists, `,` is *not* a decimal separator in input):
-
-```java
-engine.setLocale(Locale.GERMANY);
-engine.evaluateToString("1.5+1.5"); // "3"  — '.' is always the input decimal separator
-engine.evaluateToString("1,5+1,5"); // syntax error — folded into the return string
-```
-
-Default locale is `Locale.ENGLISH`, which preserves the legacy `.` / `,` output of earlier
-releases.
-
-```java
-CalculatorEngine engine = new CalculatorEngine();
-
-engine.setLocale(Locale.US);
-engine.evaluateToString("1/2");           // "0.5"
-engine.evaluateToPrettyString("1234.56"); // "1,234.56"
-
-engine.setLocale(Locale.GERMANY);
-engine.evaluateToString("1/2");           // "0,5"
-engine.evaluateToPrettyString("1234.56"); // "1.234,56"
-engine.evaluateToString("-1234.56");      // "-1234,56"
-engine.evaluateToPrettyString("1234567890.123456"); // "1.234.567.890,123456"
-
-engine.setLocale(Locale.FRANCE);
-engine.evaluateToString("1/2");           // "0,5"
-```
-
-The same formatting is honored by `BigNumber.toString(Locale)` and
-`BigNumber.toPrettyString(Locale)`, so library callers can render values in any locale without
-going through the engine.
-
-### 🎯 MultiValueResult Formatting
-
-Functions that return more than one scalar component (e.g. `Pol(...)` → `(r, θ)`,
-`Rec(...)` → `(x, y)`) are exposed as `MultiValueResult` implementations such as
-`BigNumberCoordinate`. When such a result is rendered via the engine, **both components** are
-formatted with the configured locale and both are returned in the output string:
-
-```java
-CalculatorEngine engine = new CalculatorEngine(TrigonometricMode.DEG)
-        .setLocale(Locale.GERMANY);
-
-engine.evaluateToString("Pol(1;2)");
-// r=2,2360...; θ=63,4349...
-
-engine.evaluateToPrettyString("Rec(2;1)");
-// x=1,9996...; y=0,0349...
-```
-
-When the same coordinate participates in a larger scalar expression, it transparently
-collapses to its `firstValue()` (e.g. `r` for polar, `x` for cartesian) before formatting.
-
-### ✅ Example: Result-based Evaluation
-
-```java
-CalculatorEngine engine = new CalculatorEngine()
-        .setLocale(Locale.GERMAN)
-        .setErrorMode(ErrorMode.USER_FRIENDLY);
-
-CalculatorResult<BigNumber> result = engine.evaluateSafe("5/0");
-
-if (result.isFailure()) {
-    CalculatorError err = result.error().orElseThrow();
-    System.out.println(err.code());
-    // PROCESSING_DIVISION_BY_ZERO
-
-    System.out.println(err.format(Locale.GERMAN, ErrorMode.USER_FRIENDLY));
-    // Division durch Null ist nicht erlaubt.
-} else {
-    BigNumber value = result.value().orElseThrow();
-    System.out.println(value);
-}
-```
-
-`CalculatorResult` also supports `map(...)` for chaining and `valueOrThrow()` if you prefer
-to fall back to the classical `SyntaxErrorException` / `ProcessingErrorException` contract.
-
-### ✅ Example: Typed Result-string Evaluation
-
-When the caller wants to branch on success/failure **and** receive a locale-formatted
-string in one call, use `evaluateToStringResult(...)` or `evaluateToPrettyStringResult(...)`.
-They are typed counterparts to `evaluateSafeToString` / `evaluateSafeToPrettyString` —
-no need to parse a `"Error: "` / `"Fehler: "` prefix:
-
-```java
-CalculatorEngine engine = new CalculatorEngine()
-        .setLocale(Locale.GERMANY);
-
-CalculatorResult<String> ok = engine.evaluateToPrettyStringResult("1234.56");
-ok.value().ifPresent(System.out::println);
-// 1.234,56
-
-CalculatorResult<String> bad = engine.evaluateToStringResult("1+");
-if (bad.isFailure()) {
-    CalculatorError err = bad.error().orElseThrow();
-    System.out.println(err.code());
-    // SYNTAX_INCOMPLETE_EXPRESSION
-}
-```
-
-### ⚡ Caching
-
-`BigNumber.valueOf(...)`, the constants exposed on `BigNumbers`, and the `CalculatorEngine`
-expression pipeline use internal caches to avoid redundant work for repeated values and
-re-evaluations of the same expression — `engine.evaluate("∑(0;100;k)")` invoked twice in a
-row reuses the parsed/postfix representation on the second call.
-
-### 🧬 Cloneable BigNumber
-
-`BigNumber` implements `Cloneable` and exposes a safe `clone()` method that returns a value-
-equal copy without mutating any shared internal state — convenient when caching or passing
-`BigNumber` instances into APIs that mutate their inputs.
-
-```java
-BigNumber a = new BigNumber("3.14159");
-BigNumber b = a.clone();
-// a.equals(b) == true, but a != b
-```
-
-## 📚 Static Utility Methods
-
-JustMath provides a suite of **static utility methods** grouped in dedicated classes. These can be used independently of
-`BigNumber` or `CalculatorEngine` for direct access to high-precision calculations.
-
-| Class                                | Method(s)                                                                                                                                  | Description                                              |
-|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| `BasicMath`                          | `add`, `subtract`, `multiply`, `divide`, `modulo`, `power`                                                                                 | Basic arithmetic operations                              |
-|                                      | `factorial`, `exp`                                                                                                                         | Factorial and exponential function                       |
-| `CombinatoricsMath`                  | `combination`, `permutation`                                                                                                               | Calculate combinations (nCr) and permutations (nPr)      |
-| `CoordinateConversionMath`           | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates`                                                                               | Convert between polar and cartesian coordinates          |
-| `HyperbolicTrigonometricMath`        | `sinh`, `cosh`, `tanh`, `coth`                                                                                                             | Hyperbolic sine, cosine, tangent, and cotangent          |
-| `InverseHyperbolicTrigonometricMath` | `asinh`, `acosh`, `atanh`, `acoth`                                                                                                         | Inverse hyperbolic functions                             |
-| `InverseTrigonometricMath`           | `asin`, `acos`, `atan`, `acot`                                                                                                             | Inverse trigonometric functions                          |
-| `LogarithmicMath`                    | `log2`, `log10`, `ln`, `logBase`                                                                                                           | Binary, decimal, natural, and arbitrary base logarithms  |
-| `MatrixMath`                         | `add`, `subtract`, `multiply`, `divide`, `scalarMultiply`, `transpose`, `determinant`, `inverse`, `power`, `minor`, `identity`, `adjugate` | Matrix operations                                        |
-| `NumberTheoryMath`                   | `gcd`, `lcm`                                                                                                                               | Greatest common divisor and least common multiple        |
-| `PercentageMath`                     | `nPercentFromM`, `xIsNPercentOfN`                                                                                                          | Percent calculations                                     |
-| `RadicalMath`                        | `squareRoot`, `cubicRoot`, `nthRoot`                                                                                                       | Compute square, cube, and n-th roots                     |
-| `TrigonometricMath`                  | `sin`, `cos`, `tan`, `coth`                                                                                                                | Trigonometric functions (coth also here for convenience) |
-| `TwoDimensionalMath`                 | `atan2`                                                                                                                                    | Two-argument arctangent                                  |
-| `MathUtils`                          | `convertAngle`, `bigDecimalRadiansToDegrees`, `bigDecimalNumberToRadians`                                                                  | Angle conversions                                        |
-|                                      | `randomIntegerBigNumberInRange`                                                                                                            | Random integer generation using `BigNumber`              |
-|                                      | `e`, `pi`                                                                                                                                  | Mathematical constants as `BigNumber`                    |
-| `SeriesMath`                         | `summation`                                                                                                                                | Summation logic                                          |
-|                                      | `product`                                                                                                                                  | Product logic                                            |
-| `SpecialFunctionMath`                | `gamma`, `beta`                                                                                                                            | Gamma and Beta special functions                         | 
-| `StatisticsMath`                     | `sum`, `average`, `median`                                                                                                                 | Sum and average of provided elements                     | 
- 
-## 📐 Constants
-
-The `BigNumbers` class provides reusable **high-precision constants** and default configuration values that are
-used throughout JustMath. These can be accessed statically and are ideal for custom calculations or configurations.
-
-| Constant                     | Description                                     |
-|------------------------------|-------------------------------------------------|
-| `CALCULATION_LOCALE`         | Default `Locale` used for parsing/formatting    |
-| `DEFAULT_DIVISION_PRECISION` | Default precision for division operations       |
-| `DEFAULT_MATH_CONTEXT`       | Default `MathContext` with precision & rounding |
-| `NEGATIVE_ONE`               | BigNumber value of -1                           |
-| `ZERO`                       | BigNumber value of 0                            |
-| `ONE`                        | BigNumber value of 1                            |
-| `TWO`                        | BigNumber value of 2                            |
-| `THREE`                      | BigNumber value of 3                            |
-| `FOUR`                       | BigNumber value of 4                            |
-| `FIVE`                       | BigNumber value of 5                            |
-| `SIX`                        | BigNumber value of 6                            |
-| `SEVEN`                      | BigNumber value of 7                            |
-| `EIGHT`                      | BigNumber value of 8                            |
-| `NINE`                       | BigNumber value of 9                            |
-| `TEN`                        | BigNumber value of 10                           |
-| `ONE_HUNDRED`                | BigNumber value of 100                          |
-| `ONE_HUNDRED_EIGHTY`         | BigNumber value of 180                          |
-
-## 🧭 Algorithms
-
-You can also sort a `List<BigNumber>` using any of the following algorithms.
-
-| Algorithm       |
-|-----------------|
-| `BubbleSort`    |
-| `GnomeSort`     |
-| `InsertionSort` |
-| `MergeSort`     |
-| `QuickSort`     |
-| `RadixSort`     |
-| `SelectionSort` |
-| `TimSort`       |
-
-### ✅ Example: Using Algorithms
-
-```java
-List<BigNumber> numbers = Arrays.asList(
-        new BigNumber("3.14"),
-        new BigNumber("2.71"),
-        new BigNumber("1.41"),
-        new BigNumber("1.73")
-);
-
-numbers = new QuickSort().sort(numbers); // [1.41, 1.73, 2.71, 3.14]
-```
-
-## 🧑‍💻 Practical Examples
-
-### ➕ Add Very Large Numbers
-
-```java
-BigNumber num1 = new BigNumber("8736519650165165946166562572365809265462671456");
-BigNumber num2 = new BigNumber("143153651451954101155145145169254155145");
-BigNumber sum = num1.add(num2);
-
-System.out.println(sum);
-// 8736519793318817398120663727510954434716826601
-```
-
-### ➖ Subtract Small Decimals
-
-```java
-BigNumber a = new BigNumber("0.0000000001");
-BigNumber b = new BigNumber("0.00000000009");
-BigNumber diff = a.subtract(b);
-
-System.out.println(diff);
-// 0.00000000001
-```
-
-### ➗ High-Precision Fractions
-
-```java
-BigNumber e = new BigNumber("1");
-BigNumber f = new BigNumber("3");
-BigNumber quotient = e.divide(f, new MathContext(50, RoundingMode.HALF_UP));
-
-System.out.println(quotient);
-// 0.33333333333333333333333333333333333333333333333333
-```
-
-### ⚡ Power with Negative Exponents
-
-```java
-BigNumber base = new BigNumber("-1.2");
-BigNumber exponent = new BigNumber("-2.99");
-BigNumber result = base.power(exponent);
-
-System.out.println(result);
-// -0.5797597677291667131944984780245747754620911770325891258918945726243986428499938555808865049096166498
-```
-
-### ∑ Sigma Summation (Custom Expression)
-
-```java
-CalculatorEngine calculator = new CalculatorEngine(50, TrigonometricMode.DEG);
-BigNumber result = calculator.evaluate("∑(0;5;k^2+1)");
-// Equivalent: sum(0;5;k^2+1)
-
-System.out.println(result);
-// 61
-```
-
-## 📏 Unit Converter (High-Precision)
-
-JustMath includes a **high-precision unit converter** built on top of `BigNumber`.
-It is designed to be:
-
-- **Type-safe**: units are represented by enums (identifiers only), not by mutable data objects.
-- **Extensible**: adding a new unit is a single, deterministic change in the internal registry.
-- **Precise & deterministic**: all conversions use `BigNumber` arithmetic and an explicit `MathContext`.
-
-### ✅ Supported Unit Groups (so far)
-
-- **Length** (base: meter) → `Unit.Length`
-- **Mass** (base: kilogram) → `Unit.Mass`
-- **Temperature** (base: kelvin) → `Unit.Temperature`
-- **Area** (base: square meter) → `Unit.Area`
-
-> Cross-group conversions are **rejected** by design (e.g. length → mass).
-
-### 🧠 Design Overview
-
-The converter module separates **unit identifiers** from **unit metadata**:
-
-- `Unit` (and nested enums like `Unit.Length`, `Unit.Mass`) are **pure identifiers**.
-- The internal `UnitRegistry` is the **single source of truth** for:
-  - `displayName` (human-readable label)
-  - `symbol` (parse/format token, e.g. `"km"`)
-  - conversion formula (scale/offset mapping to the base unit)
-
-This keeps the public API stable and makes the unit catalog deterministic and easy to maintain.
-
-### 🔁 Converting Values
-
-Use `UnitConverter` to convert between units **within the same group**.
-
-```java
-UnitConverter converter = new UnitConverter();
-
-// 1 km -> m
-UnitValue meters = converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER);
-System.out.println(meters.toDisplayString()); // 1000 m
-
-// 2.5 lb -> kg
-UnitValue kg = converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM);
-System.out.println(kg.toDisplayString()); // 1.13398... kg
-```
-
-#### Precision / Rounding
-
-Conversions use a `MathContext` internally (especially for divisions).
-You can control this via:
-
-```java
-// uses a MathContext derived from the given division precision
-UnitConverter converter = new UnitConverter(50);
-
-// or provide your own MathContext
-UnitConverter converter2 = new UnitConverter(new MathContext(80, RoundingMode.HALF_UP));
-```
-
-### 🧾 Parsing Inputs like `"12.5 km"`
-
-Use `UnitValue` to parse a combined text input into a `(BigNumber + Unit)` pair.
-
-Supported formats:
-
-* Preferred: `"<number> <symbol>"` → `"12.5 km"`
-* Also supported: suffix without whitespace → `"12.5km"`
-
-Locale handling:
-
-* `new UnitValue(String)` detects decimal separators using lightweight heuristics
-* You can also pass an explicit `Locale`
-
-```java
-import io.github.lembergmax.justmath.converter.UnitConverter;
-import io.github.lembergmax.justmath.converter.UnitValue;
-
-UnitValue value = new UnitValue("12,5 km"); // auto-detects comma decimal (e.g. de_DE)
-UnitConverter converter = new UnitConverter();
-
-UnitValue result = converter.convert(value.getValue(), value.getUnit(), Unit.Length.METER);
-System.out.println(result.toDisplayString()); // 12500 m
-```
-
-### 🔎 Looking up Units by Symbol / Getting Metadata
-
-The public facade `UnitElements` provides:
-
-* strict symbol parsing
-* metadata access (display name, symbol)
-* listing all built-in units
-
-```java
-import io.github.lembergmax.justmath.converter.Unit;
-import io.github.lembergmax.justmath.converter.UnitElements;
-
-// parse symbol -> unit
-Unit km = UnitElements.parseUnit("km");
-
-// metadata
-System.out.println(UnitElements.getDisplayName(km)); // "Kilometer"
-System.out.println(UnitElements.getSymbol(km));      // "km"
-
-// list all units (deterministic registry order)
-for (Unit unit : UnitElements.all()) {
-    System.out.println(UnitElements.getSymbol(unit) + " -> " + UnitElements.getDisplayName(unit));
-}
-```
-
-### 📚 Supported Units (most common)
-
-> The table lists **Symbol → Name → Enum constant**.
-> All symbols are **case-sensitive**.
-
-#### 📏 Length (Unit.Length) — base: meter
-
-**Metric / SI & small units**
-
-| Name       | Symbol | Enum                     |
-| ---------- | ------ | ------------------------ |
-| Exameter   | Em     | `Unit.Length.EXAMETER`   |
-| Petameter  | Pm     | `Unit.Length.PETAMETER`  |
-| Terameter  | Tm     | `Unit.Length.TERAMETER`  |
-| Gigameter  | Gm     | `Unit.Length.GIGAMETER`  |
-| Megameter  | Mm     | `Unit.Length.MEGAMETER`  |
-| Kilometer  | km     | `Unit.Length.KILOMETER`  |
-| Hectometer | hm     | `Unit.Length.HECTOMETER` |
-| Dekameter  | dam    | `Unit.Length.DEKAMETER`  |
-| Meter      | m      | `Unit.Length.METER`      |
-| Decimeter  | dm     | `Unit.Length.DECIMETER`  |
-| Centimeter | cm     | `Unit.Length.CENTIMETER` |
-| Millimeter | mm     | `Unit.Length.MILLIMETER` |
-| Micrometer | um     | `Unit.Length.MICROMETER` |
-| Micron     | µm     | `Unit.Length.MICRON`     |
-| Nanometer  | nm     | `Unit.Length.NANOMETER`  |
-| Angstrom   | Å      | `Unit.Length.ANGSTROM`   |
-| Picometer  | pm     | `Unit.Length.PICOMETER`  |
-| Femtometer | fm     | `Unit.Length.FEMTOMETER` |
-| Attometer  | am     | `Unit.Length.ATTOMETER`  |
-
-**Physics / constants**
-
-| Name            | Symbol | Enum                          |
-| --------------- | ------ | ----------------------------- |
-| Planck Length   | lP     | `Unit.Length.PLANCK_LENGTH`   |
-| Electron Radius | re     | `Unit.Length.ELECTRON_RADIUS` |
-| Bohr Radius     | a0     | `Unit.Length.BOHR_RADIUS`     |
-| X Unit          | xu     | `Unit.Length.X_UNIT`          |
-| Fermi           | frm    | `Unit.Length.FERMI`           |
-
-**Astronomy**
-
-| Name                    | Symbol     | Enum                                  |
-| ----------------------- | ---------- | ------------------------------------- |
-| Sun Radius              | Rsun       | `Unit.Length.SUN_RADIUS`              |
-| Earth Equatorial Radius | R_earth_eq | `Unit.Length.EARTH_EQUATORIAL_RADIUS` |
-| Earth Polar Radius      | R_earth_p  | `Unit.Length.EARTH_POLAR_RADIUS`      |
-| Astronomical Unit       | au         | `Unit.Length.ASTRONOMICAL_UNIT`       |
-| Earth Distance from Sun | AU         | `Unit.Length.EARTH_DISTANCE_FROM_SUN` |
-| Parsec                  | pc         | `Unit.Length.PARSEC`                  |
-| Kiloparsec              | kpc        | `Unit.Length.KILOPARSEC`              |
-| Megaparsec              | Mpc        | `Unit.Length.MEGAPARSEC`              |
-| Light Year              | ly         | `Unit.Length.LIGHT_YEAR`              |
-
-**Nautical / maritime**
-
-| Name                 | Symbol   | Enum                                        |
-| -------------------- | -------- | ------------------------------------------- |
-| League               | lea      | `Unit.Length.LEAGUE`                        |
-| Nautical League      | NL       | `Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL` |
-| Nautical League (UK) | NL (UK)  | `Unit.Length.NAUTICAL_LEAGUE_UK`            |
-| Nautical Mile        | nmi      | `Unit.Length.NAUTICAL_MILE`                 |
-| Nautical Mile (UK)   | nmi (UK) | `Unit.Length.NAUTICAL_MILE_UK`              |
-
-**Imperial / historical / misc.**
-
-| Name           | Symbol     | Enum                        |
-| -------------- | ---------- | --------------------------- |
-| Mile           | mi         | `Unit.Length.MILE`          |
-| Roman Mile     | m.p.       | `Unit.Length.MILE_ROMAN`    |
-| Kiloyard       | kyd        | `Unit.Length.KILOYARD`      |
-| Furlong        | fur        | `Unit.Length.FURLONG`       |
-| Chain          | ch         | `Unit.Length.CHAIN`         |
-| Rope           | rope       | `Unit.Length.ROPE`          |
-| Rod            | rod        | `Unit.Length.ROD`           |
-| Fathom         | ftm        | `Unit.Length.FATHOM`        |
-| Famn           | famn       | `Unit.Length.FAMN`          |
-| Ell            | ell        | `Unit.Length.ELL`           |
-| Aln            | aln        | `Unit.Length.ALN`           |
-| Cubit (UK)     | cubit      | `Unit.Length.CUBIT_UK`      |
-| Span (cloth)   | span       | `Unit.Length.SPAN_CLOTH`    |
-| Link           | li         | `Unit.Length.LINK`          |
-| Finger (cloth) | finger     | `Unit.Length.FINGER_CLOTH`  |
-| Hand           | hand       | `Unit.Length.HAND`          |
-| Handbreadth    | hb         | `Unit.Length.HANDBREADTH`   |
-| Nail (cloth)   | nail       | `Unit.Length.NAIL_CLOTH`    |
-| Fingerbreadth  | fb         | `Unit.Length.FINGERBREADTH` |
-| Barleycorn     | barleycorn | `Unit.Length.BARLEYCORN`    |
-| Yard           | yd         | `Unit.Length.YARD`          |
-| Foot           | ft         | `Unit.Length.FEET`          |
-| Inch           | in         | `Unit.Length.INCH`          |
-| Centiinch      | cin        | `Unit.Length.CENTIINCH`     |
-| Caliber        | cl         | `Unit.Length.CALIBER`       |
-| Mil            | mil        | `Unit.Length.MIL`           |
-| Microinch      | µin        | `Unit.Length.MICROINCH`     |
-| Arpent         | arp        | `Unit.Length.ARPENT`        |
-| Ken            | ken        | `Unit.Length.KEN`           |
-
-**Typography / CSS**
-
-| Name  | Symbol | Enum                |
-| ----- | ------ | ------------------- |
-| Pixel | px     | `Unit.Length.PIXEL` |
-| Point | pt     | `Unit.Length.POINT` |
-| Pica  | pica   | `Unit.Length.PICA`  |
-| Em    | em     | `Unit.Length.EM`    |
-| Twip  | twip   | `Unit.Length.TWIP`  |
-
-#### ⚖️ Mass (Unit.Mass) — base: kilogram
-
-| Name             | Symbol | Enum                         |
-| ---------------- | ------ | ---------------------------- |
-| Tonne            | t      | `Unit.Mass.TON`              |
-| Kilogram         | kg     | `Unit.Mass.KILOGRAM`         |
-| Gram             | g      | `Unit.Mass.GRAM`             |
-| Milligram        | mg     | `Unit.Mass.MILLIGRAM`        |
-| Long Ton         | lt     | `Unit.Mass.LONG_TON`         |
-| Short Ton        | st     | `Unit.Mass.SHORT_TON`        |
-| Pound            | lb     | `Unit.Mass.POUND`            |
-| Ounce            | oz     | `Unit.Mass.OUNCE`            |
-| Carat            | ct     | `Unit.Mass.CARAT`            |
-| Atomic Mass Unit | u      | `Unit.Mass.ATOMIC_MASS_UNIT` |
-
-#### 🌡️ Temperature (Unit.Temperature) — base: kelvin
-
-| Name       | Symbol | Enum                          |
-| ---------- | ------ | ----------------------------- |
-| Kelvin     | K      | `Unit.Temperature.KELVIN`     |
-| Celsius    | °C     | `Unit.Temperature.CELSIUS`    |
-| Fahrenheit | °F     | `Unit.Temperature.FAHRENHEIT` |
-
-#### 🧱 Area (Unit.Area) — base: square meter
-
-| Name                  | Symbol   | Enum                               |
-| --------------------- | -------- | ---------------------------------- |
-| Square Kilometer      | km^2     | `Unit.Area.SQUARE_KILOMETER`       |
-| Square Hectometer     | hm^2     | `Unit.Area.SQUARE_HECTOMETER`      |
-| Square Dekameter      | dam^2    | `Unit.Area.SQUARE_DEKAMETER`       |
-| Square Meter          | m^2      | `Unit.Area.SQUARE_METER`           |
-| Square Decimeter      | dm^2     | `Unit.Area.SQUARE_DECIMETER`       |
-| Square Centimeter     | cm^2     | `Unit.Area.SQUARE_CENTIMETER`      |
-| Square Millimeter     | mm^2     | `Unit.Area.SQUARE_MILLIMETER`      |
-| Square Micrometer     | µm^2     | `Unit.Area.SQUARE_MICROMETER`      |
-| Square Nanometer      | nm^2     | `Unit.Area.SQUARE_NANOMETER`       |
-| Hectare               | ha       | `Unit.Area.HECTARE`                |
-| Are                   | a        | `Unit.Area.ARE`                    |
-| Barn                  | b        | `Unit.Area.BARN`                   |
-| Thomson Cross Section | σT       | `Unit.Area.ELECTRON_CROSS_SECTION` |
-| Township              | twp      | `Unit.Area.TOWNSHIP`               |
-| Section               | sec      | `Unit.Area.SECTION`                |
-| Homestead             | hstd     | `Unit.Area.HOMESTEAD`              |
-| Square Mile           | mi^2     | `Unit.Area.SQUARE_MILE`            |
-| Acre                  | ac       | `Unit.Area.ACRE`                   |
-| Rood                  | rood     | `Unit.Area.ROOD`                   |
-| Square Chain          | ch^2     | `Unit.Area.SQUARE_CHAIN`           |
-| Square Rod            | rd^2     | `Unit.Area.SQUARE_ROD`             |
-| Square Pole           | pole^2   | `Unit.Area.SQUARE_POLE`            |
-| Square Rope           | rope^2   | `Unit.Area.SQUARE_ROPE`            |
-| Square Yard           | yd^2     | `Unit.Area.SQUARE_YARD`            |
-| Square Foot           | ft^2     | `Unit.Area.SQUARE_FOOT`            |
-| Square Inch           | in^2     | `Unit.Area.SQUARE_INCH`            |
-| Arpent                | arp_area | `Unit.Area.ARPENT`                 |
-| Cuerda                | cda      | `Unit.Area.CUERDA`                 |
-| Plaza                 | plz      | `Unit.Area.PLAZA`                  |
-
-### 🚫 Error Handling
-
-The converter module uses conversion-specific runtime exceptions:
-
-* `ConversionException`
-  Thrown for invalid numeric input / parse issues.
-
-* `UnitConversionException`
-  Thrown when:
-
-  * symbols are unknown or missing
-  * units are incompatible (cross-group conversion)
-  * the input format is malformed
-
-Example:
-
-```java
-try {
-    UnitValue v = new UnitValue("abc km");
-} catch (ConversionException ex) {
-    // invalid number
-}
-```
-
-### ➕ Adding a New Unit (Internal Registry)
-
-To add a new built-in unit, you typically do **only two things**:
-
-1. Add the enum constant to the correct group (e.g. `Unit.Length`)
-2. Add exactly one `define(...)` entry to the internal `UnitRegistry.BUILT_IN`
-
-Conversion mapping is defined using an affine formula into the base unit:
-
-```text
-base = value * scaleToBase + offsetToBase
-```
-
-For purely linear conversions (most units), `offsetToBase = "0"`.
-
-Example (linear):
-
-```java
-define(Unit.Length.MEGAMETER, "Megameter", "Mm", "1000000")
-```
-
-The registry validates at startup:
-
-* every unit is defined exactly once
-* every symbol is unique
-* groups are consistent and deterministic
-
-## ⚠️ Known Limitations
-
-JustMath is a single-JAR library. The following constraints are deliberate and
-must be observed by callers:
-
-* **`CalculatorEngine` is not thread-safe.** Locale, error mode and the expression cache are
-  mutable per-instance state. Share an engine across threads only behind external
-  synchronization, or give each thread its own engine. The token cache itself uses the
-  a private lock plus `volatile` visibility on the enable-flag and cache
-  reference, so concurrent `setExpressionCacheEnabled(false)` + ongoing `evaluate(...)` is
-  safe. The other configuration fields (`locale`, `inputLocale`, `errorMode`, `expressionCacheSize`)
-  are `volatile`, so a change made on one thread becomes visible to the others. The setters are not
-  atomic as a group: an evaluation that runs between two setter calls sees a mix of old and new settings.
-* **Input parsing defaults to US-locale; comma-decimal input is opt-in via `setInputLocale`.**
-  By default `.` is the decimal point and `,` is the argument separator, so `"1.5+1.5"` is valid
-  and `"1,5+1,5"` is a syntax error. Call `setInputLocale(Locale)` to opt into a comma-decimal
-  input locale (input is then parsed strictly with that locale's decimal separator).
-  `setLocale(Locale)` independently controls output formatting and the language of
-  `USER_FRIENDLY` error messages — not how the engine parses input.
-
-## 🌐 Links
-
-Maven Repository:
-```
-https://mvnrepository.com/artifact/io.github.lembergmax/justmath
-```
-
-Maven Central Repository:
-```
-https://central.sonatype.com/artifact/io.github.lembergmax/justmath
-```
-
-## ⚙️ Installation
+Java 21 or newer.
 
 ```xml
 <dependency>
@@ -949,200 +31,195 @@ https://central.sonatype.com/artifact/io.github.lembergmax/justmath
 implementation 'io.github.lembergmax:justmath:1.7.0'
 ```
 
-**Available now — direct download.** Pick a release JAR below:
+The jars are on [Maven Central](https://central.sonatype.com/artifact/io.github.lembergmax/justmath) and, with checksums, a software bill of materials and a build provenance attestation, on the [GitHub releases](https://github.com/lembergmax/JustMath/releases). [SECURITY.md](SECURITY.md#verifying-a-release) shows how to verify a release. The newest, possibly unstable code is on the [developer](https://github.com/lembergmax/JustMath/tree/developer) branch.
 
-<table style="width:100%">
-  <tr>
-    <th>Version</th>
-    <th>Download</th>
-    <th>Release Type</th>
-  </tr>
-  <tr>
-      <td>v1.6.0</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.6.0.jar">JustMath v1.6.0</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-      <td>v1.5.0</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.5.0.jar">JustMath v1.5.0</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-      <td>v1.4.4</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.4.4.jar">JustMath v1.4.4</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-      <td>v1.4.3</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.4.3.jar">JustMath v1.4.3</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-      <td>v1.4.2</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.4.2.jar">JustMath v1.4.2</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-      <td>v1.4.1</td>
-      <td><a href="out/artifacts/justmath_jar/justmath-1.4.1.jar">JustMath v1.4.1</a></td>
-      <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.4.0</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.4.0.jar">JustMath v1.4.0</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.3.0</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.3.0.jar">JustMath v1.3.0</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.2.5</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.5.jar">JustMath v1.2.5</a></td>
-    <td>Preview</td>
-  </tr>
-  <tr>
-    <td>v1.2.2</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.2.jar">JustMath v1.2.2</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.2.1</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.1.jar">JustMath v1.2.1</a></td>
-    <td>Preview</td>
-  </tr>
- <tr>
-    <td>v1.2.0</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.2.0.jar">JustMath v1.2.0</a></td>
-    <td>Release</td>
-  </tr>
- <tr>
-    <td>v1.1.5</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.1.5.jar">JustMath v1.1.5</a></td>
-    <td>Release</td>
-  </tr>
- <tr>
-    <td>v1.1.4</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.1.4.jar">JustMath v1.1.4</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.0.3</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.3.jar">JustMath v1.0.3</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.0.2</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.2.jar">JustMath v1.0.2</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.0.1</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.1.jar">JustMath v1.0.1</a></td>
-    <td>Release</td>
-  </tr>
-  <tr>
-    <td>v1.0.0</td>
-    <td><a href="out/artifacts/justmath_jar/justmath-1.0.0.jar">JustMath v1.0.0</a></td>
-    <td>Release</td>
-  </tr>
-</table>
+## Quick start
 
-Need something newer than the latest release? You can find the newest (possibly unstable) builds on the <a href="https://github.com/lembergmax/JustMath/tree/developer">developer</a> branch.
+```java
+BigNumber a = new BigNumber("0.1");
+BigNumber b = new BigNumber("0.2");
+System.out.println(a.add(b));                       // 0.3, not 0.30000000000000004
 
-## 🆕 Changelog
+BigNumber third = new BigNumber("1").divide(new BigNumber("3"), new MathContext(50, RoundingMode.HALF_UP));
+System.out.println(third);                          // 0.33333333333333333333333333333333333333333333333333
 
-### 1.7.0
+CalculatorEngine engine = new CalculatorEngine();   // angles in degrees
+System.out.println(engine.evaluate("sqrt(16)*2^10 + sin(30)")); // 4096.5
 
-- **Abuse-resistance limits**: crafted inputs that would previously hang or exhaust memory now fail
-  fast with a typed *Math / Range* error instead of being computed — huge factorials (`1000000!`),
-  huge integer powers (`9^9999999999`), huge `nPr` / `nCr`, huge `summation` / `product` ranges,
-  multi-megabyte expression strings, and absurd `MathContext` precisions. Small, legitimate results
-  such as `1^n`, `2^2000000`, `10!` or `summation(1;100;k)` are unaffected.
-- **Combinations & permutations are now exact** — computed with `BigInteger` arithmetic (no rounding
-  to the 100-digit division precision) and without materializing the full `n!`.
-- **`atan` / `acot` reimplemented** on `BigDecimalMath` with guard digits: accurate across the whole
-  real line (including the previously weak neighbourhood of `|x| = 1`) and correctly rounded once to
-  the caller's `MathContext`. `acot(x)` follows the `atan(1/x)` branch (range `(-π/2, π/2) \ {0}`).
-- **Exact Fahrenheit conversion**: `°F` now uses an exact-rational affine formula (`5/9`, `-160/9`),
-  so canonical points such as `32 °F → 0 °C` come out exact.
-- ⚠️ **`BigNumberList.clone()`** now returns a **structurally independent** copy (consistent with
-  `copy()` and every other `clone()` in the library), no longer a view that shares backing storage.
-  Construct `new BigNumberList(list.getValues())` explicitly if a shared view is wanted.
-- ⚠️ **`BigNumber.toDegrees(MathContext)` / `toRadians(MathContext)`** now throw
-  `IllegalArgumentException` for a non-positive precision (e.g. `MathContext.UNLIMITED`) instead of
-  silently capping the result to the guard-digit precision.
-- **`BigNumber.roundAfterDecimals`** now formats its result in the receiver's locale, so the operation
-  is deterministic across machines (no fallback to the JVM-default locale).
-- **`BigNumberMatrix`** now implements value-based `equals` / `hashCode` (equal dimensions and
-  numerically equal elements; locale is not part of equality).
-- ⚠️ **`CalculatorEngine`**: the internal pipeline components (`Evaluator`, `PostfixParser`,
-  `Tokenizer`) and the live expression cache are no longer reachable through public getters — they
-  are internal implementation detail, not API.
-- ⚠️ **Public API surface of the `calculator` package**: `Tokenizer`, `PostfixParser`,
-  `CalculatorEngineUtils` and `calculator.internal.Token` are now package-private. Only
-  `CalculatorEngine` and `SupportedLanguages` are public in `calculator`; `TrigonometricMode` and
-  `CoordinateType` stay public in `calculator.internal` because public methods take them as
-  parameters. `CalculatorEngineUtils.getDefaultMathContext(int)` moved to
-  `BigNumbers.getDefaultMathContext(int)`.
-- **Build**: removed the unused `apfloat` and `mockito` dependencies; the compiler is now pinned via
-  `maven.compiler.release` (enforces the Java 21 API surface, reproducible across JDKs).
+UnitConverter converter = new UnitConverter();
+System.out.println(converter.convert("212", Unit.Temperature.FAHRENHEIT, Unit.Temperature.CELSIUS).toDisplayString()); // 100 °C
+```
 
-### 1.6.0
+## BigNumber
 
-- **Added 13 supported languages / 20 locales** for error messages and locale-aware number
-  formatting: English, German (incl. `de-AT`, `de-CH`), Spanish, French (incl. `fr-BE`), Italian,
-  Portuguese (`pt`, `pt-PT`, `pt-BR`), Dutch (incl. `nl-BE`), Czech, Danish, Swedish, Norwegian
-  (`no`, `nb`), Finnish and Polish.
-- **Added the `SupportedLanguages` registry plus `CalculatorEngine.getSupportedLanguages()` /
-  `isLanguageSupported(Locale)`** so consuming applications can query exactly which languages
-  JustMath offers.
-- **Added opt-in, locale-aware input parsing via `CalculatorEngine.setInputLocale(Locale)`**
-  (additive; default `Locale.US`, so existing behaviour is unchanged). With a comma-decimal input
-  locale, expressions such as `1,5+2,5` are parsed strictly with `,` as the decimal separator,
-  while `;` stays the argument separator. Output formatting remains controlled separately by
-  `setLocale`.
+`BigNumber` holds a decimal value of any size, a `Locale` for formatting, a `MathContext` and a `TrigonometricMode` (degrees or radians, degrees by default). Every operation has an overload with an explicit `MathContext` and one with a `Locale`.
 
-### 1.5.0
+| Area | Methods |
+| --- | --- |
+| Arithmetic | `add`, `subtract`, `multiply`, `divide`, `modulo`, `remainder`, `power`, `abs`, `negate` |
+| Rounding | `round`, `roundAfterDecimals`, `floor`, `ceil`, `truncate` |
+| Roots, exponential | `squareRoot`, `cubicRoot`, `nthRoot`, `exp`, `factorial` |
+| Logarithms | `log2`, `log10`, `ln`, `logBase` |
+| Trigonometry | `sin`, `cos`, `tan`, `cot`, `asin`, `acos`, `atan`, `acot`, `atan2` |
+| Hyperbolic | `sinh`, `cosh`, `tanh`, `coth`, `asinh`, `acosh`, `atanh`, `acoth` |
+| Number theory and counting | `gcd`, `lcm`, `combination`, `permutation` |
+| Series, special functions | `summation`, `product`, `gamma`, `beta` |
+| Coordinates | `polarToCartesianCoordinates`, `cartesianToPolarCoordinates` |
+| Percentages | `isXPercentOfN` |
 
-- **Structural validation** runs before evaluation: malformed input fails fast with a
-  specific `CalculatorErrorCode` instead of computing an expensive sub-expression or
-  returning a misclassified *Processing Error* (`50000!/`, `5000!sqrt()`, `!5`, `*5`,
-  `()`, `3 4`, `sqrt(1;2)`, …).
-- **Prefix unary `+` / `-`** before groups, functions, constants and variables
-  (`-(3+4)`, `-sin(0)`, `-x`, `2*-(1+1)`).
-- **Casio-style error categories** (`Syntax`, `Math`, `Argument`, `Stack`, `Range`,
-  `Dimension`) with a specific → category → generic three-tier localized fallback.
-- **Whitespace is now a separator** (`3 4` is an error, not `34`); variable names are
-  restricted to ASCII letters; no implicit multiplication after `!`.
-- ⚠️ Division-by-zero / domain errors recategorized to **`Math Error`** — `RAW`
-  `getMessage()` changed for these (typed codes unchanged).
+How precise a result is:
 
-## 📜 License
+- A division, a negative power, `exp`, a fractional power, a root, a logarithm and a trigonometric or hyperbolic function return a result that is correct to within one unit in the last place of your `MathContext`, rounded once with its rounding mode. A function that loses digits near one of its zeros (`sin` near a multiple of π, `ln` near 1, `sinh` near 0) is evaluated with as many guard digits as it needs. Where the exact result is zero, such as `sin(180°)`, it is zero.
+- `BigNumberList` and `BigNumberMatrix` use the default context of 100 digits and `HALF_UP` for their divisions and their means.
+- Speed is not the strength of `BigNumber`: its arithmetic is 90 to 2400 times slower than `BigDecimal`. If you only need exact decimal arithmetic in a hot loop, use `BigDecimal`. See [docs/performance.md](docs/performance.md).
 
-**MIT License**
+Mutation:
 
-You are free to:
+- An operation returns a new instance and leaves the receiver alone. A method that changes the receiver says so: `negateThis()`, `trim()` and the setters. A shared constant such as `BigNumbers.ZERO` is never returned to you, so mutating a result is safe. See [decision 0001](docs/decisions/0001-mixed-mutability-of-bignumber.md).
+- `equals` and `hashCode` compare the numeric value: `1.0` equals `1.00`.
 
-* use
-* copy
-* modify
-* merge
-* publish
-* distribute
-* sublicense
-* and/or sell copies of JustMath
+The locale only changes how a number is read and written (`toString(Locale)`, `toPrettyString(Locale)`). It never changes a value.
 
-for both private and commercial purposes, **as long as the original license and copyright
-notice are included** in all copies or substantial portions of the software.
+## Expressions
 
-👉 [MIT License – Full Text](https://opensource.org/licenses/MIT)
+`CalculatorEngine.evaluate(String)` evaluates an expression with the precision and the angle mode of the engine. The argument separator is `;` and the decimal separator is `.`.
 
-## 👤 Author
+| Group | Syntax |
+| --- | --- |
+| Operators | `+` `-` `*` `×` `/` `÷` `%` `^` `!`, `nPr` and `nCr` (`10 nCr 3`) |
+| Constants | `pi` `π` `e` |
+| Roots | `sqrt(x)` `√(x)`, `cbrt(x)` `³√(x)`, `rootn(x;n)` |
+| Logarithms | `log2(x)`, `log10(x)`, `ln(x)`, `logbase(x;b)` |
+| Trigonometry | `sin(x)` `cos(x)` `tan(x)` `cot(x)`, `asin(x)` `acos(x)` `atan(x)` `acot(x)`, `atan2(y;x)`; the inverse functions also as `sin⁻¹(x)` and so on |
+| Hyperbolic | `sinh(x)` `cosh(x)` `tanh(x)` `coth(x)`, `asinh(x)` `acosh(x)` `atanh(x)` `acoth(x)`; also `sinh⁻¹(x)` and so on |
+| Series | `summation(start;end;expression)` `∑(...)`, `product(start;end;expression)` `∏(...)`; the index is `k` |
+| Statistics | `sum(a;b;...)`, `avg(a;b;...)` `average(a;b;...)`, `median(a;b;...)` |
+| Counting | `comb(n;r)`, `perm(n;r)` |
+| Number theory | `gcd(a;b)` `GCD(a;b)`, `lcm(a;b)` `LCM(a;b)`, `RandInt(min;max)` |
+| Special functions | `gamma(x)` `Γ(x)`, `beta(x;y)` `B(x;y)`, `abs(x)` `\|x\|` |
+| Coordinates | `Pol(x;y)` returns `r` and `θ`, `Rec(r;θ)` returns `x` and `y` |
 
-**Max Lemberg**
-🔗 [GitHub Profile](https://github.com/lembergmax)
+Variables are passed as a map. A variable may refer to another one. A reference cycle is an error.
 
-© 2024-2026 Max Lemberg. All rights reserved.
-Licensed under the MIT License.
+```java
+Map<String, String> variables = new HashMap<>();
+variables.put("a", "sqrt(b)");
+variables.put("b", "3");
+
+System.out.println(engine.evaluate("2*a + b^2", variables)); // 12.4641016151377545870548926830117447...
+```
+
+Syntax rules that surprise people:
+
+- `1,5+1,5` is an error: `,` is not a decimal separator. `setInputLocale(Locale.GERMANY)` opts into comma-decimal input. See [decision 0003](docs/decisions/0003-input-locale-is-opt-in.md).
+- Whitespace separates tokens: `3 4` is an error, not `34`.
+- There is no implicit multiplication after `!`: write `5!*sqrt(4)`.
+- A sign before a group, function, constant or variable works: `-(3+4)`, `-sin(0)`, `2*-(1+1)`.
+- A variable name has ASCII letters only.
+- The structure of the expression is checked before anything is computed, so `50000!/` fails at once.
+
+## Errors and results
+
+`CalculatorEngine` offers four families of methods. Choose by what you want to happen on a failure.
+
+| Family | Methods | On failure |
+| --- | --- | --- |
+| Core | `evaluate(...)` returns `BigNumber` | throws a `CalculatorException` |
+| Text | `evaluateToString(...)`, `evaluateToPrettyString(...)` | the error text is the return value |
+| Safe text | `evaluateSafeToString(...)`, `evaluateSafeToPrettyString(...)` | never throws, never returns `null`, `"Error: ..."` prefix |
+| Typed result | `evaluateSafe(...)`, `evaluateToStringResult(...)`, `evaluateToPrettyStringResult(...)` | a `CalculatorResult` with a `CalculatorError` |
+
+```java
+CalculatorEngine german = new CalculatorEngine()
+        .setLocale(Locale.GERMAN)
+        .setErrorMode(ErrorMode.USER_FRIENDLY);
+
+CalculatorResult<BigNumber> result = german.evaluateSafe("5/0");
+if (result.isFailure()) {
+    CalculatorError error = result.error().orElseThrow();
+    System.out.println(error.code());                                           // PROCESSING_DIVISION_BY_ZERO
+    System.out.println(error.format(Locale.GERMAN, ErrorMode.USER_FRIENDLY));  // Division durch Null ist nicht erlaubt.
+}
+```
+
+Branch on the `CalculatorErrorCode`, not on the text. There are 25 codes:
+
+| Category | Codes |
+| --- | --- |
+| Syntax | `SYNTAX_INVALID_CHARACTER`, `SYNTAX_MISSING_RIGHT_PAREN`, `SYNTAX_UNMATCHED_PAREN`, `SYNTAX_UNKNOWN_FUNCTION`, `SYNTAX_UNKNOWN_VARIABLE`, `SYNTAX_INCOMPLETE_EXPRESSION`, `SYNTAX_TRAILING_OPERATOR`, `SYNTAX_LEADING_OPERATOR`, `SYNTAX_MISSING_OPERAND`, `SYNTAX_MISSING_OPERATOR`, `SYNTAX_EMPTY_PARENTHESES`, `SYNTAX_EMPTY_FUNCTION_ARGUMENT`, `SYNTAX_UNEXPECTED_END`, `SYNTAX_MISPLACED_SEPARATOR`, `SYNTAX_INVALID_FACTORIAL` |
+| Argument | `SYNTAX_WRONG_ARGUMENT_COUNT`, `ARGUMENT_COUNT_MISMATCH` |
+| Math | `PROCESSING_DIVISION_BY_ZERO`, `PROCESSING_DOMAIN_ERROR`, `MATH_FACTORIAL_NEGATIVE`, `MATH_FACTORIAL_NON_INTEGER`, `MATH_LOG_NON_POSITIVE`, `MATH_ROOT_OF_NEGATIVE` |
+| Range | `MATH_OVERFLOW` |
+| Internal | `PROCESSING_INTERNAL` |
+
+`ErrorMode.RAW` (the default) returns a technical English message. `ErrorMode.USER_FRIENDLY` returns a localized one with three tiers: the text of the code, then the text of its category (`Syntax Error`, `Math Error`, ...), then a generic text. `CalculatorEngine.getSupportedLanguages()` lists the 20 locales of 13 languages.
+
+`setLocale(Locale)` sets the language of the errors and the separators of the text output: `evaluateToString("1/2")` gives `0,5` for `Locale.GERMANY`, and `evaluateToPrettyString("1234567890.123456")` gives `1.234.567.890,123456`. It does not change how input is read.
+
+## Lists and matrices
+
+`BigNumberList` implements `List<BigNumber>`. It adds statistics (`sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`), transformations (`absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `map`), sorting with eight algorithms and queries. The `...All` methods and `sortAscending`, `sortDescending` and `reverse` change the list in place; `copy()` and `clone()` return independent copies.
+
+```java
+BigNumberList numbers = BigNumberList.of(new BigNumber("3"), new BigNumber("1"), new BigNumber("2"), new BigNumber("2"));
+numbers.sortAscending();                      // [1, 2, 2, 3]
+numbers.sum();                                // 8
+numbers.median();                             // 2
+numbers.sort(QuickSort.class);                // a specific algorithm
+```
+
+`BigNumberMatrix` is created from dimensions, a string or nested lists. It supports `add`, `subtract`, `multiply`, `scalarMultiply`, `transpose`, `determinant` (exact for integers), `inverse`, `power`, `trace` and property checks such as `isSquare` and `isIdentityMatrix`.
+
+```java
+BigNumberMatrix a = new BigNumberMatrix("1,2;3,4", Locale.US);
+a.determinant();                              // -2
+a.multiply(new BigNumberMatrix("5,6;7,8", Locale.US)).toPlainDataString();   // [[19, 22], [43, 50]]
+```
+
+## Units
+
+`UnitConverter` converts between 601 units in 13 groups: length, area, volume, mass, temperature, pressure, energy, power, time, force, speed, fuel consumption and data storage. A conversion goes through the base unit of the group. Units of different groups are rejected with a `UnitConversionException`.
+
+```java
+UnitConverter converter = new UnitConverter(50);                // 50 digits
+converter.convert(new BigNumber("1"), Unit.Length.KILOMETER, Unit.Length.METER).toDisplayString();   // 1000 m
+converter.convert("2.5", Unit.Mass.POUND, Unit.Mass.KILOGRAM).toDisplayString();                     // 1.133980925 kg
+new UnitValue("12.5 km");                                       // number and unit from text
+UnitElements.parseUnit("km");                                   // Unit.Length.KILOMETER
+```
+
+Every value was checked against its definition (SI, the international yard and pound, CODATA 2022, IAU, WGS 84). The list of the units with their constants, symbols, values and the basis of each value is in [docs/units.md](docs/units.md), and the method and the sources in [docs/unit-audit.md](docs/unit-audit.md). Symbols are case-sensitive.
+
+## Limits and security
+
+An input that is small but asks for an enormous result is rejected with a typed error: expressions longer than 100000 characters, a factorial above 100000, an integer power with more than a million digits, `exp` of a huge argument, a series of more than a million terms. The limits are listed in [decision 0005](docs/decisions/0005-limits-on-expensive-inputs.md). A way around a limit is a vulnerability: report it as described in [SECURITY.md](SECURITY.md).
+
+## Thread safety
+
+`BigNumber`, the lists and the matrices are not synchronized. `CalculatorEngine` keeps mutable settings (`setLocale`, `setInputLocale`, `setErrorMode`, the expression cache). The settings are visible to other threads, but changing them while another thread evaluates gives that evaluation a mix of old and new settings. Use one engine per thread, or configure the engine before you share it. The static math classes and `UnitConverter` keep no state.
+
+## Documentation
+
+| Page | Content |
+| --- | --- |
+| [Changelog](CHANGELOG.md) | What changed in each release, with the breaking changes marked |
+| [Architecture](docs/architecture.md) | Packages, the expression pipeline, the error model, precision, limits |
+| [Decisions](docs/decisions/README.md) | Why the library is built the way it is |
+| [Units](docs/units.md) and [unit audit](docs/unit-audit.md) | All 601 units and where their values come from |
+| [Testing](docs/testing.md) | The kinds of tests and the accuracy contract |
+| [Performance](docs/performance.md) | Benchmarks of `BigNumber` against `BigDecimal`, and what they mean |
+| [Extending](docs/extending.md) | How to add a function, an operator, a unit or a sorting algorithm |
+| [Releasing](docs/releasing.md) | How a release is built, approved and published |
+| [Javadoc](https://javadoc.io/doc/io.github.lembergmax/justmath) | The API |
+
+## Build from source
+
+```bash
+./mvnw verify
+```
+
+`verify` runs the tests, the coverage gate, SpotBugs with FindSecBugs, the Javadoc build, the formatting check and an API compatibility check against the previous release. [CONTRIBUTING.md](CONTRIBUTING.md) describes the workflow and the rules for a pull request. Questions go to [SUPPORT.md](SUPPORT.md).
+
+## License
+
+JustMath is released under the [MIT License](LICENSE). Copyright (c) 2025-2026 Max Lemberg.

@@ -37,7 +37,7 @@ import java.util.Set;
 
 import io.github.lembergmax.justmath.calculator.internal.CoordinateType;
 
-public class BigNumberCoordinateTest {
+class BigNumberCoordinateTest {
 
     @ParameterizedTest(name = "toString (CARTESIAN, grouping={2}): {0}, {1}")
     @CsvSource(value = {

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 
-public class RadixSortTest extends AbstractSortAlgorithmTest {
+class RadixSortTest extends AbstractSortAlgorithmTest {
 
     @Override
     protected BigNumberSortAlgorithm createAlgorithm() {

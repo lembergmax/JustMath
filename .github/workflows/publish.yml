@@ -1,111 +1,264 @@
-# Publishes JustMath to Sonatype Central Portal (Maven Central) on every push to main.
+# Publishes JustMath to Maven Central after the maintainer approves it, then creates the tag and the GitHub release.
 #
-# Branch policy: triggers ONLY on push to main. Pushes to developer / feature branches
-# never deploy. A version that is already on Maven Central is detected and skipped, so
-# repeated pushes to main without bumping <version> in pom.xml are no-ops.
+# A release on Maven Central cannot be removed, so nothing is published by a merge alone. The job "publish" belongs
+# to the GitHub environment "maven-central", which lists the maintainer as required reviewer (Settings ->
+# Environments). The run stops at that job until the reviewer approves it. docs/releasing.md describes the whole
+# procedure.
 #
-# Required repository secrets (Settings -> Secrets and variables -> Actions):
+# Triggers: a push to main (the merge of the release pull request) and a manual run. A version that is already on
+# Maven Central is detected and skipped, so a push to main without a new <version> in pom.xml does nothing.
+#
+# Required secrets (Settings -> Secrets and variables -> Actions):
 #   CENTRAL_USERNAME   Sonatype Central Portal user-token name code
 #   CENTRAL_PASSWORD   Sonatype Central Portal user-token secret
-#   GPG_PRIVATE_KEY    ASCII-armored secret key (the full contents of
-#                      justmath-gpg-secret-BACKUP.asc, including the BEGIN/END lines)
-#   GPG_PASSPHRASE     Passphrase that unlocks GPG_PRIVATE_KEY
+#   GPG_PRIVATE_KEY    ASCII-armored secret key, including the BEGIN and END lines
+#   GPG_PASSPHRASE     passphrase of GPG_PRIVATE_KEY
 
 name: Publish to Maven Central
 
 on:
   push:
     branches: [main]
-  # Manual trigger lets you re-run a publish for the current main HEAD without a new commit.
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build the release files and read the release notes, but publish nothing'
+        type: boolean
+        default: false
 
-# Single in-flight publish at a time. A second push while one is running queues, does not abort.
 concurrency:
   group: maven-central-publish
   cancel-in-progress: false
 
-jobs:
-  publish:
-    name: Build, sign, deploy to Central
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+permissions:
+  contents: read
 
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan:
+    name: Check the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.pom.outputs.version }}
+      publish: ${{ steps.gate.outputs.publish }}
     steps:
-      - name: Checkout
+      - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Set up JDK 21 + import GPG key + generate settings.xml
+      - name: Set up JDK 21
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-          # Maps to <server id="central"> in the auto-generated ~/.m2/settings.xml.
-          # username/password are the env-var NAMES the action reads at deploy time.
+          distribution: temurin
+          cache: maven
+
+      - name: Read the project version
+        id: pom
+        run: |
+          version=$(./mvnw -q -B --no-transfer-progress -DforceStdout help:evaluate -Dexpression=project.version)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Project version: $version"
+
+      - name: Reject SNAPSHOT versions
+        run: |
+          version="${{ steps.pom.outputs.version }}"
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            echo "::error::SNAPSHOT versions are not deployable with this workflow ($version)."
+            exit 1
+          fi
+
+      - name: Skip a version that is already on Maven Central
+        id: gate
+        run: |
+          version="${{ steps.pom.outputs.version }}"
+          url="https://repo1.maven.org/maven2/io/github/lembergmax/justmath/$version/justmath-$version.pom"
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          echo "GET $url -> HTTP $status"
+          if [[ "$status" == "200" ]]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::io.github.lembergmax:justmath:$version is already on Maven Central, nothing to publish."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    name: Build, sign and deploy to Central
+    needs: plan
+    if: needs.plan.outputs.publish == 'true' && !inputs.dry_run
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: maven-central
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21, import the GPG key and write settings.xml
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
           server-id: central
           server-username: CENTRAL_USERNAME
           server-password: CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          # Env-var NAME (not value) the action passes to mvn for the gpg passphrase.
           gpg-passphrase: GPG_PASSPHRASE
 
-      - name: Read project version
-        id: pom
-        run: |
-          v=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-          echo "Project version: $v"
-
-      - name: Reject SNAPSHOT versions
-        run: |
-          v="${{ steps.pom.outputs.version }}"
-          if [[ "$v" == *-SNAPSHOT ]]; then
-            echo "::error::SNAPSHOT versions are not deployable via this workflow ($v)."
-            exit 1
-          fi
-
-      - name: Skip if version already on Maven Central
-        id: gate
-        run: |
-          v="${{ steps.pom.outputs.version }}"
-          url="https://repo1.maven.org/maven2/io/github/lembergmax/justmath/$v/justmath-$v.pom"
-          status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-          echo "GET $url -> HTTP $status"
-          if [[ "$status" == "200" ]]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::io.github.lembergmax:justmath:$v already on Maven Central — skipping deploy."
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Deploy to Maven Central (test + sign + upload + auto-release)
-        if: steps.gate.outputs.skip != 'true'
-        # A single build runs the full test suite (via the verify phase reached by deploy) AND signs +
-        # uploads from the same artifacts, so the released bits are exactly what was tested. The previous
-        # split (separate `test`, then `clean deploy -DskipTests`) could publish an unvalidated release build.
-        run: mvn -P release -B --no-transfer-progress clean deploy
+      - name: Test, sign and deploy
+        run: ./mvnw -P release -B --no-transfer-progress clean deploy
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-          # maven-gpg-plugin reads the passphrase from this env var (wired into settings.xml by
-          # actions/setup-java). Not passed on the command line, to avoid exposing it in process args.
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Report deployment summary
-        if: steps.gate.outputs.skip != 'true'
+      - name: Collect the release files and compute the checksums
         run: |
-          v="${{ steps.pom.outputs.version }}"
+          version="${{ needs.plan.outputs.version }}"
+          mkdir release-assets
+          cp "target/justmath-$version.jar" "target/justmath-$version-sources.jar" "target/justmath-$version-javadoc.jar" release-assets/
+          cp target/justmath-"$version"*.jar.asc release-assets/
+          cp "target/justmath-$version-cyclonedx.json" release-assets/
+          (cd release-assets && sha256sum -- * > SHA256SUMS && cat SHA256SUMS)
+
+      - name: Attest the build provenance of the jars
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            release-assets/justmath-*.jar
+
+      - name: Upload the release files
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-assets
+          path: release-assets
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Report the deployment
+        run: |
           {
             echo "### Deployment submitted"
             echo ""
             echo "- groupId: \`io.github.lembergmax\`"
             echo "- artifactId: \`justmath\`"
-            echo "- version: \`$v\`"
+            echo "- version: \`${{ needs.plan.outputs.version }}\`"
             echo ""
-            echo "Central Portal validated the bundle and \`autoPublish=true\` will release"
-            echo "it server-side. Index propagation to https://repo1.maven.org/maven2 takes"
-            echo "up to ~30 min after this job ends."
+            echo "Central validated the bundle and releases it on its own. The index at repo1.maven.org"
+            echo "needs up to 30 minutes. The next job waits for it and then creates the GitHub release."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  rehearsal:
+    name: Rehearse the release without publishing
+    needs: plan
+    if: inputs.dry_run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw -B --no-transfer-progress verify
+
+      - name: Collect the release files and compute the checksums
+        run: |
+          version="${{ needs.plan.outputs.version }}"
+          mkdir release-assets
+          cp "target/justmath-$version.jar" "target/justmath-$version-sources.jar" "target/justmath-$version-javadoc.jar" release-assets/
+          cp "target/justmath-$version-cyclonedx.json" release-assets/
+          (cd release-assets && sha256sum -- * > SHA256SUMS && cat SHA256SUMS)
+
+      - name: Read the release notes from CHANGELOG.md
+        run: |
+          version="${{ needs.plan.outputs.version }}"
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no section for $version."
+            exit 1
+          fi
+          cat release-notes.md
+
+  release:
+    name: Create the tag and the GitHub release
+    needs: [plan, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the release files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: release-assets
+
+      - name: Wait until the version is on Maven Central
+        run: |
+          version="${{ needs.plan.outputs.version }}"
+          url="https://repo1.maven.org/maven2/io/github/lembergmax/justmath/$version/justmath-$version.jar"
+          for attempt in $(seq 1 90); do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "Attempt $attempt: HTTP $status"
+            if [[ "$status" == "200" ]]; then
+              exit 0
+            fi
+            sleep 60
+          done
+          echo "::error::$url did not appear within 90 minutes."
+          exit 1
+
+      - name: Take the release notes from CHANGELOG.md
+        run: |
+          version="${{ needs.plan.outputs.version }}"
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no section for $version."
+            exit 1
+          fi
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ needs.plan.outputs.version }}"
+          if gh release view "$version" > /dev/null 2>&1; then
+            gh release upload "$version" release-assets/* --clobber
+          else
+            gh release create "$version" release-assets/* \
+              --target "$GITHUB_SHA" \
+              --title "JustMath $version" \
+              --notes-file release-notes.md
+          fi
