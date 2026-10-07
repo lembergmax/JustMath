@@ -30,7 +30,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
@@ -92,7 +91,7 @@ public final class TwoDimensionalMath {
         }
 
         final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ATAN2_GUARD_DIGITS,
-                workingContext -> BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), workingContext));
+                workingContext -> InverseTrigonometricMath.arcTangent2(y.toBigDecimal(), x.toBigDecimal(), workingContext));
 
         return new BigNumber(angle.toPlainString(), locale).trim();
     }

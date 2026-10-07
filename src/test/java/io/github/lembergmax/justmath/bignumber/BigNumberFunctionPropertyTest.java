@@ -32,6 +32,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -75,6 +76,8 @@ class BigNumberFunctionPropertyTest {
 
     private static final int MAX_TINY_EXPONENT = 60;
 
+    private static final int MIN_HUGE_EXPONENT = 10;
+
     private static final int MAX_MULTIPLE_OF_PI = 300;
 
     private static final int MIN_DECIMALS_OF_PI_MULTIPLE = 3;
@@ -95,6 +98,31 @@ class BigNumberFunctionPropertyTest {
                 Tuple.of(4, decimalsBetween(-1.5, 1.5, 12)),
                 Tuple.of(1, tinyValues()),
                 Tuple.of(1, nearMultiplesOfPi()));
+    }
+
+    @Provide
+    Arbitrary<BigDecimal> cotangentArguments() {
+        return tangentArguments().filter(value -> value.signum() != 0);
+    }
+
+    @Provide
+    Arbitrary<BigDecimal> arcTangentArguments() {
+        return Arbitraries.frequencyOf(
+                Tuple.of(3, realValues()),
+                Tuple.of(2, withRandomSign(Arbitraries.integers().between(MIN_HUGE_EXPONENT, MAX_TINY_EXPONENT)
+                        .flatMap(exponent -> Arbitraries.integers().between(1, 9_999).map(mantissa -> BigDecimal.valueOf(mantissa).scaleByPowerOfTen(exponent))))));
+    }
+
+    @Provide
+    Arbitrary<BigDecimal> nonZeroRealValues() {
+        return realValues().filter(value -> value.signum() != 0);
+    }
+
+    @Provide
+    Arbitrary<List<BigDecimal>> coordinates() {
+        return Combinators.combine(realValues(), realValues())
+                .as(List::of)
+                .filter(pair -> pair.get(0).signum() != 0 || pair.get(1).signum() != 0);
     }
 
     @Provide
@@ -262,6 +290,30 @@ class BigNumberFunctionPropertyTest {
     }
 
     @Property(tries = TRIES, seed = SEED)
+    void cotInRadians(@ForAll("cotangentArguments") final BigDecimal angle, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(angle, precision, (value, mathContext) -> value.cot(mathContext, TrigonometricMode.RAD),
+                argument -> BigDecimalMath.cot(argument, referenceContext(precision)), "cot");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void acotInRadiansFollowsTheArcTangentOfTheReciprocal(@ForAll("nonZeroRealValues") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(value, precision, (number, mathContext) -> number.acot(mathContext, TrigonometricMode.RAD),
+                argument -> BigDecimalMath.atan(BigDecimal.ONE.divide(argument, referenceContext(precision)), referenceContext(precision)), "acot");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void atan2MatchesTheLibraryInEveryQuadrant(@ForAll("coordinates") final List<BigDecimal> coordinates, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        final BigDecimal y = coordinates.get(0);
+        final BigDecimal x = coordinates.get(1);
+
+        final BigNumber actual = assertTimeoutPreemptively(CALL_TIMEOUT, () -> number(y).atan2(number(x), context(precision)),
+                () -> "atan2(" + y.toPlainString() + ", " + x.toPlainString() + ") took longer than " + CALL_TIMEOUT);
+
+        AccuracyAssertions.assertWithinUlps(BigDecimalMath.atan2(y, x, referenceContext(precision)).round(context(precision)), actual.toBigDecimal(), precision, MAX_ULPS,
+                "atan2(" + y.toPlainString() + ", " + x.toPlainString() + ") with " + precision + " digits");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
     void sinInDegrees(@ForAll("angles") final BigDecimal angle, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
         check(angle, precision, (value, mathContext) -> value.sin(mathContext, TrigonometricMode.DEG),
                 argument -> BigDecimalMath.sin(degreesToRadians(argument, precision), referenceContext(precision)), "sin degrees",
@@ -289,7 +341,7 @@ class BigNumberFunctionPropertyTest {
     }
 
     @Property(tries = TRIES, seed = SEED)
-    void atanInRadians(@ForAll("realValues") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+    void atanInRadians(@ForAll("arcTangentArguments") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
         check(value, precision, (number, mathContext) -> number.atan(mathContext, TrigonometricMode.RAD),
                 argument -> BigDecimalMath.atan(argument, referenceContext(precision)), "atan");
     }

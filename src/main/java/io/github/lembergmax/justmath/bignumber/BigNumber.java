@@ -1652,8 +1652,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the inverse tangent (arctan) of this number with specified units and locale.
      *
-     * <p>Delegates to {@link BigDecimalMath#atan} to get radians. If {@code DEG} mode is selected,
-     * converts the result: degrees = radians × 180 / π.</p>
+     * <p>Uses {@link BigDecimalMath#atan} for {@code |x| <= 1} and {@code sign(x) × π/2 - atan(1/x)} for a larger
+     * argument, so the result keeps every digit close to ±π/2. If {@code DEG} mode is selected, converts the
+     * result: degrees = radians × 180 / π.</p>
      *
      * @param mathContext       the precision and rounding settings for the calculation
      * @param trigonometricMode whether to return result in degrees ({@code DEG}) or radians ({@code RAD})
@@ -1707,7 +1708,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the inverse cotangent (arccot) of this number with the given precision and locale.
      *
-     * <p>Delegates to {@link BigDecimalMath#acot} and wraps the result.</p>
+     * <p>Computes {@code atan(1/x)}, using {@code sign(x) × π/2 - atan(x)} for {@code |x| < 1} so that the result
+     * keeps every digit close to ±π/2. The result has the range of {@code atan}, not {@code (0, π)}.</p>
      *
      * @param mathContext the precision and rounding settings for the calculation
      * @param locale      the locale used for any locale-specific formatting
@@ -1900,8 +1902,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the two-argument arctangent of this number and the specified x number.
      *
-     * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for a quadrant-aware result,
-     * then wraps the result in a new {@code BigNumber} with the specified {@code locale}.</p>
+     * <p>The result is quadrant-aware and lies in {@code (-π, π]}. It is computed from {@link BigDecimalMath#atan}
+     * of a ratio of at most 1 in absolute value, so the result keeps every digit close to ±π/2 and ±π. It is wrapped
+     * in a new {@code BigNumber} with the specified {@code locale}.</p>
      *
      * @param x           the x-coordinate; this number is the y-coordinate
      * @param mathContext the precision and rounding settings for the calculation
@@ -2546,8 +2549,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * </p>
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other) {
         return lcm(other, mathContext);
@@ -2558,13 +2561,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * </pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has.
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext) {
         return lcm(other, mathContext, locale);
@@ -2576,15 +2579,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>{@code
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * }</pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has, and
+     * {@code mathContext} is only validated.
      *
      * @param other       the other BigNumber to compute the LCM with
      * @param mathContext the context specifying precision and rounding mode
      * @param locale      the locale used for any locale-specific formatting
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return NumberTheoryMath.lcm(this, other, mathContext, locale);
