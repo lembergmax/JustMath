@@ -32,6 +32,7 @@ import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -99,7 +100,7 @@ public final class HyperbolicTrigonometricMath {
             return freshZero(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.subtract(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -133,7 +134,7 @@ public final class HyperbolicTrigonometricMath {
             return freshOne(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.add(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -167,7 +168,7 @@ public final class HyperbolicTrigonometricMath {
             return freshZero(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.subtract(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -204,7 +205,7 @@ public final class HyperbolicTrigonometricMath {
             throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument cannot be zero");
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.add(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -226,16 +227,30 @@ public final class HyperbolicTrigonometricMath {
     /**
      * Creates an internal {@link MathContext} that adds guard digits on top of the requested precision.
      *
-     * <p>This reduces the impact of intermediate rounding when subtracting nearly equal numbers
-     * such as {@code e^x - e^{-x}} for small |x|.</p>
+     * <p>This reduces the impact of intermediate rounding when subtracting nearly equal numbers such as
+     * {@code e^x - e^{-x}} for small |x|. For {@code |x| < 1} that difference is about {@code 2x}, so it loses as
+     * many digits as {@code x} has leading zeros. The guard grows by that number, which keeps
+     * {@code sinh(1E-10)} correct in every requested digit.</p>
      *
      * @param requestedMathContext the caller-provided context; must not be {@code null}
+     * @param argument             the argument of the hyperbolic function; must not be {@code null}
      * @return internal context with increased precision
      */
-    private static MathContext createInternalMathContext(final MathContext requestedMathContext) {
+    private static MathContext createInternalMathContext(final MathContext requestedMathContext, final BigNumber argument) {
         final int requestedPrecision = requestedMathContext.getPrecision();
-        final int internalPrecision = Math.max(10, requestedPrecision + INTERNAL_GUARD_DIGITS);
+        final int internalPrecision = Math.max(10, requestedPrecision + INTERNAL_GUARD_DIGITS + digitsLostToCancellation(argument));
         return new MathContext(internalPrecision, requestedMathContext.getRoundingMode());
+    }
+
+    /**
+     * Counts the digits that {@code e^x - e^{-x}} loses to cancellation for a small argument.
+     *
+     * @param argument the argument; must not be {@code null}
+     * @return the number of leading zeros of {@code |x|} behind the decimal point plus one for {@code |x| < 1}; 0 otherwise
+     */
+    private static int digitsLostToCancellation(final BigNumber argument) {
+        final BigDecimal value = argument.toBigDecimal();
+        return Math.max(0, -(value.precision() - value.scale() - 1));
     }
 
     /**

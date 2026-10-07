@@ -26,6 +26,7 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -40,6 +41,12 @@ import lombok.NonNull;
  * Provides two-dimensional mathematical functions.
  */
 public final class TwoDimensionalMath {
+
+    /**
+     * Guard digits for the rounding noise of the library function and for an angle that is tiny because the
+     * point lies near the x-axis.
+     */
+    private static final int ATAN2_GUARD_DIGITS = 10;
 
     /** Non-instantiable utility class. */
     private TwoDimensionalMath() {
@@ -80,7 +87,14 @@ public final class TwoDimensionalMath {
             throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "atan2 is undefined at the origin (0, 0)");
         }
 
-        return new BigNumber(BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+        if (y.isEqualTo(ZERO) && x.isGreaterThan(ZERO)) {
+            return new BigNumber("0", locale);
+        }
+
+        final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ATAN2_GUARD_DIGITS,
+                workingContext -> BigDecimalMath.atan2(y.toBigDecimal(), x.toBigDecimal(), workingContext));
+
+        return new BigNumber(angle.toPlainString(), locale).trim();
     }
 
 }
