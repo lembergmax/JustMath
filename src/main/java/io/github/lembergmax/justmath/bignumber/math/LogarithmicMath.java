@@ -35,6 +35,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.function.BiFunction;
 
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
 
@@ -48,6 +49,18 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
  * and a {@link Locale} for formatting the resulting {@link BigNumber}.
  */
 public final class LogarithmicMath {
+
+    /**
+     * Guard digits for the rounding noise of the library logarithm. The adaptive computation adds more digits for
+     * an argument near 1, whose logarithm is tiny.
+     */
+    private static final int LOGARITHM_GUARD_DIGITS = 10;
+
+    /**
+     * Guard digits that the two logarithms of {@code logBase} carry, so that their quotient is correct in the
+     * requested digits.
+     */
+    private static final int LOG_BASE_QUOTIENT_GUARD_DIGITS = 15;
 
     /** Non-instantiable utility class. */
     private LogarithmicMath() {
@@ -85,7 +98,11 @@ public final class LogarithmicMath {
             throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "log2(x) undefined for x <= 0");
         }
 
-        return new BigNumber(BigDecimalMath.log2(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+        if (argument.isEqualTo(BigNumbers.ONE)) {
+            return new BigNumber("0", locale);
+        }
+
+        return logarithm(argument, mathContext, locale, BigDecimalMath::log2);
     }
 
     /**
@@ -116,7 +133,11 @@ public final class LogarithmicMath {
             throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "log10(x) undefined for x <= 0");
         }
 
-        return new BigNumber(BigDecimalMath.log10(argument.toBigDecimal(), mathContext).toPlainString(), locale).trim();
+        if (argument.isEqualTo(BigNumbers.ONE)) {
+            return new BigNumber("0", locale);
+        }
+
+        return logarithm(argument, mathContext, locale, BigDecimalMath::log10);
     }
 
     /**
@@ -147,8 +168,11 @@ public final class LogarithmicMath {
             throw new MathArithmeticException(CalculatorErrorCode.MATH_LOG_NON_POSITIVE, "ln(x) undefined for x <= 0");
         }
 
-        BigDecimal result = BigDecimalMath.log(argument.toBigDecimal(), mathContext);
-        return new BigNumber(result.toPlainString(), locale).trim();
+        if (argument.isEqualTo(BigNumbers.ONE)) {
+            return new BigNumber("0", locale);
+        }
+
+        return logarithm(argument, mathContext, locale, BigDecimalMath::log);
     }
 
     /**
@@ -185,11 +209,35 @@ public final class LogarithmicMath {
             throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "logBase(x, b) undefined for b <= 0 or b == 1");
         }
 
-        BigDecimal lnNumber = BigDecimalMath.log(number.toBigDecimal(), mathContext);
-        BigDecimal lnBase = BigDecimalMath.log(base.toBigDecimal(), mathContext);
-        BigDecimal result = lnNumber.divide(lnBase, mathContext);
+        if (number.isEqualTo(BigNumbers.ONE)) {
+            return new BigNumber("0", locale);
+        }
+
+        final MathContext quotientContext = MathUtils.withGuardDigits(mathContext, LOG_BASE_QUOTIENT_GUARD_DIGITS);
+        final BigDecimal lnNumber = MathUtils.computeWithGuardDigits(quotientContext, LOGARITHM_GUARD_DIGITS,
+                workingContext -> BigDecimalMath.log(number.toBigDecimal(), workingContext));
+        final BigDecimal lnBase = MathUtils.computeWithGuardDigits(quotientContext, LOGARITHM_GUARD_DIGITS,
+                workingContext -> BigDecimalMath.log(base.toBigDecimal(), workingContext));
+
+        final BigDecimal result = lnNumber.divide(lnBase, quotientContext).round(mathContext);
 
         return new BigNumber(result.toPlainString(), locale).trim();
     }
 
+
+    /**
+     * Evaluates a library logarithm with guard digits and rounds the result once to the requested precision.
+     *
+     * @param argument    the positive argument; must not be {@code null}
+     * @param mathContext the requested precision and rounding; must not be {@code null}
+     * @param locale      the locale of the result; must not be {@code null}
+     * @param logarithm   the library function; must not be {@code null}
+     * @return the logarithm; never {@code null}
+     */
+    private static BigNumber logarithm(final BigNumber argument, final MathContext mathContext, final Locale locale, final BiFunction<BigDecimal, MathContext, BigDecimal> logarithm) {
+        final BigDecimal value = argument.toBigDecimal();
+        final BigDecimal result = MathUtils.computeWithGuardDigits(mathContext, LOGARITHM_GUARD_DIGITS, workingContext -> logarithm.apply(value, workingContext));
+
+        return new BigNumber(result.toPlainString(), locale).trim();
+    }
 }

@@ -24,7 +24,7 @@
 
 package io.github.lembergmax.justmath.bignumber.math;
 
-import static io.github.lembergmax.justmath.bignumber.math.utils.MathUtils.convertAngle;
+import static io.github.lembergmax.justmath.bignumber.math.utils.MathUtils.bigDecimalNumberToRadians;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -43,6 +43,25 @@ import lombok.NonNull;
  * Supports angle inputs in degrees or radians, controlled by {@link TrigonometricMode}.
  */
 public final class TrigonometricMath {
+
+    /**
+     * Guard digits for the conversion of the angle and for the rounding noise of the library function, on top of the
+     * integer digits of the angle. The adaptive computation adds more digits for an angle near a multiple of pi.
+     */
+    private static final int ANGLE_GUARD_DIGITS = 10;
+
+    /**
+     * Integer digits of an angle in degrees after the reduction to a full turn, which is below 360.
+     */
+    private static final int REDUCED_DEGREE_INTEGER_DIGITS = 3;
+
+    private static final BigDecimal QUARTER_TURN_DEGREES = BigDecimal.valueOf(90);
+
+    private static final BigDecimal HALF_TURN_DEGREES = BigDecimal.valueOf(180);
+
+    private static final BigDecimal THREE_QUARTER_TURN_DEGREES = BigDecimal.valueOf(270);
+
+    private static final BigDecimal FULL_TURN_DEGREES = BigDecimal.valueOf(360);
 
     /** Non-instantiable utility class. */
     private TrigonometricMath() {
@@ -72,9 +91,14 @@ public final class TrigonometricMath {
     public static BigNumber sin(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+        if (isSineZero(angle, trigonometricMode)) {
+            return new BigNumber("0", locale);
+        }
 
-        return new BigNumber(BigDecimalMath.sin(radians, mathContext).toPlainString(), locale).trim();
+        final BigDecimal sine = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
+                workingContext -> BigDecimalMath.sin(radians(angle, workingContext, trigonometricMode, locale), workingContext));
+
+        return new BigNumber(sine.toPlainString(), locale).trim();
     }
 
     /**
@@ -100,9 +124,14 @@ public final class TrigonometricMath {
     public static BigNumber cos(@NonNull final BigNumber angle, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+        if (isCosineZero(angle, trigonometricMode)) {
+            return new BigNumber("0", locale);
+        }
 
-        return new BigNumber(BigDecimalMath.cos(radians, mathContext).toPlainString(), locale).trim();
+        final BigDecimal cosine = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
+                workingContext -> BigDecimalMath.cos(radians(angle, workingContext, trigonometricMode, locale), workingContext));
+
+        return new BigNumber(cosine.toPlainString(), locale).trim();
     }
 
     /**
@@ -132,10 +161,89 @@ public final class TrigonometricMath {
         if (isTangentSingularity(angle, trigonometricMode)) {
             throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "tan is undefined at " + angle.toString() + " (cosine is zero at this point)");
         }
+        if (isSineZero(angle, trigonometricMode)) {
+            return new BigNumber("0", locale);
+        }
 
-        BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+        final BigDecimal tangent = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
+                workingContext -> BigDecimalMath.tan(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(BigDecimalMath.tan(radians, mathContext).toPlainString(), locale).trim();
+        return new BigNumber(tangent.toPlainString(), locale).trim();
+    }
+
+    /**
+     * Returns the guard digits for an angle: a constant for the rounding noise, plus one digit per integer digit of
+     * the angle, because the relative error of the conversion to radians is multiplied by the size of the angle. An
+     * angle in degrees is first reduced to a full turn, so it never has more than three integer digits.
+     *
+     * @param angle             the angle; must not be {@code null}
+     * @param trigonometricMode the angle measurement mode; must not be {@code null}
+     * @return the number of guard digits
+     */
+    private static int angleGuardDigits(final BigNumber angle, final TrigonometricMode trigonometricMode) {
+        final int angleIntegerDigits = trigonometricMode == TrigonometricMode.DEG
+                ? REDUCED_DEGREE_INTEGER_DIGITS
+                : MathUtils.integerDigitCount(angle.toBigDecimal());
+        return ANGLE_GUARD_DIGITS + angleIntegerDigits;
+    }
+
+    /**
+     * Converts an angle to radians at the working precision. An angle in degrees is reduced to a full turn exactly
+     * first, so that a large angle keeps its accuracy and an exact multiple of a quarter turn stays exact.
+     *
+     * @param angle             the angle; must not be {@code null}
+     * @param workingContext    the working precision; must not be {@code null}
+     * @param trigonometricMode the angle measurement mode; must not be {@code null}
+     * @param locale            the locale of the intermediate value; must not be {@code null}
+     * @return the angle in radians
+     */
+    private static BigDecimal radians(final BigNumber angle, final MathContext workingContext, final TrigonometricMode trigonometricMode, final Locale locale) {
+        return trigonometricMode == TrigonometricMode.DEG
+                ? bigDecimalNumberToRadians(reducedDegrees(angle), workingContext, locale)
+                : angle.toBigDecimal();
+    }
+
+    /**
+     * Reduces an angle in degrees to the interval {@code [0, 360)}. The reduction is exact.
+     *
+     * @param angle the angle in degrees; must not be {@code null}
+     * @return the angle in {@code [0, 360)}
+     */
+    private static BigDecimal reducedDegrees(final BigNumber angle) {
+        final BigDecimal remainder = angle.toBigDecimal().remainder(FULL_TURN_DEGREES);
+        return remainder.signum() < 0 ? remainder.add(FULL_TURN_DEGREES) : remainder;
+    }
+
+    /**
+     * Tells whether the sine of an angle is exactly zero: {@code 0} in radian mode, a multiple of 180 degrees in
+     * degree mode. The sine of any other radian value is not zero, because pi is irrational.
+     *
+     * @param angle             the angle; must not be {@code null}
+     * @param trigonometricMode the angle measurement mode; must not be {@code null}
+     * @return {@code true} if {@code sin(angle) == 0}
+     */
+    private static boolean isSineZero(final BigNumber angle, final TrigonometricMode trigonometricMode) {
+        if (trigonometricMode == TrigonometricMode.DEG) {
+            final BigDecimal reduced = reducedDegrees(angle);
+            return reduced.signum() == 0 || reduced.compareTo(HALF_TURN_DEGREES) == 0;
+        }
+        return angle.toBigDecimal().signum() == 0;
+    }
+
+    /**
+     * Tells whether the cosine of an angle is exactly zero: an odd multiple of 90 degrees in degree mode, never in
+     * radian mode.
+     *
+     * @param angle             the angle; must not be {@code null}
+     * @param trigonometricMode the angle measurement mode; must not be {@code null}
+     * @return {@code true} if {@code cos(angle) == 0}
+     */
+    private static boolean isCosineZero(final BigNumber angle, final TrigonometricMode trigonometricMode) {
+        if (trigonometricMode != TrigonometricMode.DEG) {
+            return false;
+        }
+        final BigDecimal reduced = reducedDegrees(angle);
+        return reduced.compareTo(QUARTER_TURN_DEGREES) == 0 || reduced.compareTo(THREE_QUARTER_TURN_DEGREES) == 0;
     }
 
     /**
@@ -188,10 +296,14 @@ public final class TrigonometricMath {
         if (isCotangentSingularity(angle, trigonometricMode)) {
             throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "cot is undefined at " + angle.toString() + " (sine is zero at this point)");
         }
+        if (isCosineZero(angle, trigonometricMode)) {
+            return new BigNumber("0", locale);
+        }
 
-        BigDecimal radians = convertAngle(angle, mathContext, trigonometricMode, locale);
+        final BigDecimal cotangent = MathUtils.computeWithGuardDigits(mathContext, angleGuardDigits(angle, trigonometricMode),
+                workingContext -> BigDecimalMath.cot(radians(angle, workingContext, trigonometricMode, locale), workingContext));
 
-        return new BigNumber(BigDecimalMath.cot(radians, mathContext).toPlainString(), locale).trim();
+        return new BigNumber(cotangent.toPlainString(), locale).trim();
     }
 
     /**

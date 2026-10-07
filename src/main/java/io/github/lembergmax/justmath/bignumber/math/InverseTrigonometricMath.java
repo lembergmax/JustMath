@@ -79,12 +79,14 @@ public final class InverseTrigonometricMath {
     public static BigNumber asin(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        BigDecimal result = BigDecimalMath.asin(argument.toBigDecimal(), mathContext);
-        if (trigonometricMode == TrigonometricMode.DEG) {
-            result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+        if (argument.isEqualTo(BigNumbers.ZERO)) {
+            return new BigNumber("0", locale, mathContext);
         }
 
-        return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+        final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ANGLE_GUARD_DIGITS,
+                workingContext -> inMode(BigDecimalMath.asin(argument.toBigDecimal(), workingContext), workingContext, trigonometricMode, locale));
+
+        return new BigNumber(angle.toPlainString(), locale, mathContext).trim();
     }
 
     /**
@@ -110,12 +112,30 @@ public final class InverseTrigonometricMath {
     public static BigNumber acos(@NonNull final BigNumber argument, @NonNull final MathContext mathContext, @NonNull final TrigonometricMode trigonometricMode, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        BigDecimal result = BigDecimalMath.acos(argument.toBigDecimal(), mathContext);
-        if (trigonometricMode == TrigonometricMode.DEG) {
-            result = bigDecimalRadiansToDegrees(result, mathContext, locale);
+        if (argument.isEqualTo(BigNumbers.ONE)) {
+            return new BigNumber("0", locale, mathContext);
         }
 
-        return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+        final BigDecimal angle = MathUtils.computeWithGuardDigits(mathContext, ANGLE_GUARD_DIGITS,
+                workingContext -> inMode(BigDecimalMath.acos(argument.toBigDecimal(), workingContext), workingContext, trigonometricMode, locale));
+
+        return new BigNumber(angle.toPlainString(), locale, mathContext).trim();
+    }
+
+    /**
+     * Converts a radian value computed at the working precision to the requested trigonometric mode, without rounding
+     * to the caller's precision.
+     *
+     * @param radians           the angle in radians at the working precision; must not be {@code null}
+     * @param workingContext    the working precision; must not be {@code null}
+     * @param trigonometricMode RAD or DEG; must not be {@code null}
+     * @param locale            the locale for the intermediate {@link BigNumber}; must not be {@code null}
+     * @return the angle in the requested mode at the working precision; never {@code null}
+     */
+    private static BigDecimal inMode(final BigDecimal radians, final MathContext workingContext, final TrigonometricMode trigonometricMode, final Locale locale) {
+        return trigonometricMode == TrigonometricMode.DEG
+                ? bigDecimalRadiansToDegrees(radians, workingContext, locale)
+                : radians;
     }
 
     /**
