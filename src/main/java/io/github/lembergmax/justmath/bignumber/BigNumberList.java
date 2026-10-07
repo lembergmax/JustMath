@@ -180,7 +180,8 @@ public class BigNumberList implements List<BigNumber>, Cloneable {
      * <ul>
      *   <li><b>0..32</b> elements: {@link BubbleSort} (minimal overhead)</li>
      *   <li><b>33..999</b> elements: {@link QuickSort} (fast average case)</li>
-     *   <li><b>1000+</b> elements: {@link MergeSort} (predictable O(n log n))</li>
+     *   <li><b>1000+</b> elements that are all integers: {@link RadixSort}</li>
+     *   <li><b>1000+</b> elements otherwise: {@link MergeSort} (predictable O(n log n))</li>
      * </ul>
      *
      * <p>
