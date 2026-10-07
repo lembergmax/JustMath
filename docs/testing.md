@@ -1,6 +1,6 @@
 # Testing
 
-About 2900 tests run in `./mvnw verify`, in about a minute. This page says what kinds of tests there are, what each kind is good for, and how to add one.
+About 3300 tests run in `./mvnw verify`, in about a minute. This page says what kinds of tests there are, what each kind is good for, and how to add one.
 
 ## Kinds of tests
 

@@ -14,9 +14,9 @@ On Windows use `mvnw.cmd verify`. `verify` runs the whole quality gate:
 
 | Check | What fails the build |
 |-------|----------------------|
-| Tests (JUnit 5 and jqwik, about 2900) | any failing test |
+| Tests (JUnit 5 and jqwik, about 3300) | any failing test |
 | Enforcer | JDK older than 21, Maven older than 3.9, an unpinned plugin, diverging dependency versions |
-| JaCoCo | line coverage below 88 % or branch coverage below 62 % |
+| JaCoCo | line coverage below 93 % or branch coverage below 69 % |
 | Javadoc | any error or warning (it runs on the delomboked sources) |
 | SpotBugs with FindSecBugs | any finding that is not listed, with a reason, in `config/spotbugs-exclude.xml` |
 | Spotless | tabs, trailing whitespace, a missing final newline or an unused import in a Java file |

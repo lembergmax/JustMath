@@ -80,7 +80,7 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 - Maven Wrapper (Maven 3.9.16 with a pinned checksum), Maven Enforcer, reproducible jars, a pinned compiler release 21 and Lombok through `annotationProcessorPaths`. (#171)
 - Updated JUnit (6.1.3), Lombok (1.18.48), the Maven plugins and the Central publishing plugin. (#172)
 - JaCoCo with a coverage gate, SpotBugs with FindSecBugs, Javadoc as an error, Spotless with `.editorconfig` and `.gitattributes`, and japicmp against the previous release. (#170, #173, #174, #175, #178)
-- jqwik property tests and differential tests against `BigDecimal`, `BigInteger` and `BigDecimalMath`, tests for the unit definitions, the Markdown links and the README, and an architecture test for the package dependencies. About 2900 tests, up from about 1600. (#176)
+- jqwik property tests and differential tests against `BigDecimal`, `BigInteger` and `BigDecimalMath`, tests for the unit definitions, the Markdown links and the README, and an architecture test for the package dependencies. About 3300 tests, up from about 1600. (#176)
 - CI on JDK 21, 23 and 25, on Windows, under three default locales, with a reproducibility check. (#180)
 - PIT mutation tests once a week, with a threshold for the mutation score. See [docs/mutation-testing.md](docs/mutation-testing.md). (#177)
 
