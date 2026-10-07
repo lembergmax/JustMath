@@ -27,7 +27,11 @@ package io.github.lembergmax.justmath.bignumber;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -206,18 +210,33 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     private final Locale locale;
     /**
      * The numeric value before the decimal separator.
+     *
+     * <p>A number that is the result of a calculation holds its value as a {@link BigDecimal} and writes
+     * the digits down only when somebody asks for them. While that has not happened this field is
+     * {@code null}. It is {@code volatile} and written last by {@link #ensureText()}, so a thread that
+     * reads a value other than {@code null} also sees {@link #valueAfterDecimalPoint} and
+     * {@link #isNegative}. Use {@link #getValueBeforeDecimalPoint()}, which creates the text first.</p>
      */
-    @NonNull
-    private String valueBeforeDecimalPoint;
+    private volatile String valueBeforeDecimalPoint;
     /**
      * The numeric value after the decimal separator. Defaults to "0" if absent.
      */
-    @NonNull
     private String valueAfterDecimalPoint;
     /**
      * Indicates whether the number is negative.
      */
     private boolean isNegative;
+    /**
+     * The numeric value as a {@link BigDecimal}, or {@code null} if it has not been needed yet. It is derived
+     * from the digits and is always reset when the digits change. For a number whose digits have not been written
+     * down yet ({@link #valueBeforeDecimalPoint} is {@code null}) it is the only holder of the value.
+     */
+    private transient BigDecimal decimalValue;
+    /**
+     * {@code true} if {@link #trim()} was called while the digits had not been written down yet, so that
+     * {@link #ensureText()} applies the trimming when it creates them.
+     */
+    private transient boolean trimPending;
     /**
      * Per-instance {@link CalculatorEngine}, created lazily on first {@link #getCalculatorEngine()}
      * access. It is intentionally <em>not</em> built eagerly in the constructors: a
@@ -322,9 +341,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimalPoint = parsedAndFormatted.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = parsedAndFormatted.valueAfterDecimalPoint;
-        this.isNegative = parsedAndFormatted.isNegative;
+        copyDigitsFrom(parsedAndFormatted);
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
     }
@@ -387,9 +404,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         final BigNumber parsed = bigNumberParser.parse(number);
 
         this.locale = parsed.locale;
-        this.valueBeforeDecimalPoint = parsed.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = parsed.valueAfterDecimalPoint;
-        this.isNegative = parsed.isNegative;
+        copyDigitsFrom(parsed);
 
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
@@ -407,14 +422,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Constructs a BigNumber from a BigDecimal and locale.
      *
+     * <p>The digits are written down when they are first needed, not here, so a calculation that works on
+     * {@link BigDecimal} values and passes the result on to the next calculation never pays for the conversion
+     * to text. The value, the digits and the string representations are the same as for
+     * {@code new BigNumber(bigDecimal.toPlainString(), targetLocale)}.</p>
+     *
      * @param bigDecimal   the BigDecimal value to convert
-     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
-     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
-     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
-     *                     that locale.
+     * @param targetLocale the locale used to <em>format</em> the result
      */
     public BigNumber(@NonNull final BigDecimal bigDecimal, @NonNull final Locale targetLocale) {
-        this(bigDecimal.toPlainString(), targetLocale);
+        this.locale = targetLocale;
+        this.decimalValue = withNonNegativeScale(bigDecimal);
+        this.mathContext = DEFAULT_MATH_CONTEXT;
+        this.trigonometricMode = TrigonometricMode.DEG;
     }
 
     /**
@@ -451,9 +471,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         MathUtils.checkMathContext(mathContext);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimalPoint = bigNumber.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = bigNumber.valueAfterDecimalPoint;
-        this.isNegative = bigNumber.isNegative;
+        copyDigitsFrom(bigNumber);
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
     }
@@ -472,9 +490,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         MathUtils.checkMathContext(other.mathContext);
 
         this.locale = other.locale;
-        this.valueBeforeDecimalPoint = other.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = other.valueAfterDecimalPoint;
-        this.isNegative = other.isNegative;
+        copyDigitsFrom(other);
         this.mathContext = other.mathContext;
         this.trigonometricMode = other.trigonometricMode;
     }
@@ -2873,7 +2889,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     private BigNumber integerPart(@NonNull final RoundingMode roundingMode) {
         final BigDecimal integerValue = toBigDecimal().setScale(0, roundingMode);
-        return new BigNumber(integerValue.toPlainString(), locale);
+        return new BigNumber(integerValue, locale);
     }
 
     /**
@@ -2989,7 +3005,12 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     public BigNumber abs() {
         final BigNumber result = clone();
+        if (result.valueBeforeDecimalPoint == null) {
+            result.decimalValue = result.decimalValue.abs();
+            return result;
+        }
         result.isNegative = false;
+        result.decimalValue = null;
         return result;
     }
 
@@ -3065,7 +3086,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} instance with the sign toggled
      */
     public BigNumber negateThis() {
+        if (valueBeforeDecimalPoint == null && decimalValue.signum() != 0) {
+            decimalValue = decimalValue.negate();
+            return this;
+        }
+        ensureText();
         isNegative = !isNegative;
+        decimalValue = null;
         return this;
     }
 
@@ -3100,7 +3127,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
         final BigDecimal value = toBigDecimal();
         final int scale = Math.max(0, mathContext.getPrecision());
-        return new BigNumber(value.setScale(scale, mathContext.getRoundingMode()).toPlainString(), locale).trim();
+        return new BigNumber(value.setScale(scale, mathContext.getRoundingMode()), locale).trim();
     }
 
     /**
@@ -3129,7 +3156,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     public static BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
         BigDecimal rounded = number.toBigDecimal().round(mathContext);
-        return new BigNumber(rounded.toPlainString(), number.getLocale());
+        return new BigNumber(rounded, number.getLocale());
     }
 
     /**
@@ -3139,8 +3166,14 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
+        if (valueBeforeDecimalPoint == null) {
+            decimalValue = withoutTrailingZeros(decimalValue);
+            trimPending = true;
+            return this;
+        }
         valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
         valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        decimalValue = null;
         return this;
     }
 
@@ -3153,7 +3186,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with the integer part's leading zeros removed
      */
     public BigNumber trimLeadingZerosBeforeDecimalPoint() {
+        ensureText();
         this.valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3167,7 +3202,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with the fractional part's leading zeros removed
      */
     public BigNumber trimLeadingZerosAfterDecimalPoint() {
+        ensureText();
         this.valueAfterDecimalPoint = trimLeadingZeros(valueAfterDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3201,7 +3238,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with trailing zeros removed before the decimal point
      */
     public BigNumber trimTrailingZerosBeforeDecimalPoint() {
+        ensureText();
         this.valueBeforeDecimalPoint = trimTrailingZeros(valueBeforeDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3212,7 +3251,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with trailing zeros removed after the decimal point
      */
     public BigNumber trimTrailingZerosAfterDecimalPoint() {
+        ensureText();
         this.valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3244,14 +3285,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * is negative, zero, or positive.
      */
     public int signum() {
-        if (isLessThan(BigNumbers.ZERO)) {
-            return -1;
-        }
-        if (isGreaterThan(BigNumbers.ZERO)) {
-            return 1;
-        }
-
-        return 0;
+        return toBigDecimal().signum();
     }
 
     /**
@@ -3361,7 +3395,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return true if the number is positive (not negative), false otherwise
      */
     public boolean isPositive() {
-        return !isNegative;
+        return !isNegative();
     }
 
     /**
@@ -3431,8 +3465,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
         String decimalSeparator = String.valueOf(localeSeparators.decimalSeparator());
 
-        final String trimmedBefore = trimLeadingZeros(valueBeforeDecimalPoint);
-        final String trimmedAfter = trimTrailingZeros(valueAfterDecimalPoint);
+        final String trimmedBefore = trimLeadingZeros(getValueBeforeDecimalPoint());
+        final String trimmedAfter = trimTrailingZeros(getValueAfterDecimalPoint());
 
         String newValueAfterDecimal = trimmedAfter.isBlank() || trimmedAfter.equals("0") ? "" : trimmedAfter;
 
@@ -3443,7 +3477,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(trimmedBefore, localeSeparators.groupingSeparator()).toString() : trimmedBefore;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
-        return isNegative ? "-" + localized : localized;
+        return isNegative() ? "-" + localized : localized;
     }
 
     /**
@@ -3453,20 +3487,32 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * no rounding to {@link #mathContext} is performed at conversion time; rounding happens only
      * in operations that explicitly accept a {@link MathContext}.
      *
+     * <p>The value is kept after the first call, so comparing, hashing and calculating with the same number
+     * does not read its digits again. Every method that changes the digits discards it.</p>
+     *
      * @return a BigDecimal representation of this BigNumber
      */
     public BigDecimal toBigDecimal() {
-        StringBuilder stringBuilder = new StringBuilder();
+        final BigDecimal cached = decimalValue;
+        if (cached != null) {
+            return cached;
+        }
+
+        final String integerDigits = valueBeforeDecimalPoint;
+        final String fractionDigits = valueAfterDecimalPoint;
+        final StringBuilder stringBuilder = new StringBuilder();
         if (isNegative) {
             stringBuilder.append('-');
         }
 
-        stringBuilder.append(valueBeforeDecimalPoint);
+        stringBuilder.append(integerDigits);
 
-        if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
-            stringBuilder.append('.').append(valueAfterDecimalPoint);
+        if (!fractionDigits.equals("0") && !fractionDigits.isEmpty()) {
+            stringBuilder.append('.').append(fractionDigits);
         }
-        return new BigDecimal(stringBuilder.toString());
+        final BigDecimal parsed = new BigDecimal(stringBuilder.toString());
+        decimalValue = parsed;
+        return parsed;
     }
 
     /**
@@ -3531,6 +3577,157 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
             return 0;
         }
         return value.stripTrailingZeros().hashCode();
+    }
+
+    /**
+     * Returns the digits before the decimal point, writing the digits down first if this number was built from
+     * a {@link BigDecimal}.
+     *
+     * @return the integer digits; never {@code null}
+     */
+    public String getValueBeforeDecimalPoint() {
+        ensureText();
+        return valueBeforeDecimalPoint;
+    }
+
+    /**
+     * Returns the digits after the decimal point, {@code "0"} if there are none, writing the digits down first
+     * if this number was built from a {@link BigDecimal}.
+     *
+     * @return the fraction digits; never {@code null}
+     */
+    public String getValueAfterDecimalPoint() {
+        ensureText();
+        return valueAfterDecimalPoint;
+    }
+
+    /**
+     * Reports whether the number is marked negative, writing the digits down first if this number was built from
+     * a {@link BigDecimal}.
+     *
+     * @return {@code true} if the sign is minus
+     */
+    public boolean isNegative() {
+        ensureText();
+        return isNegative;
+    }
+
+    /**
+     * Copies the digits and the cached value of another number. The other number is not changed.
+     *
+     * @param source the number to copy from; must not be {@code null}
+     */
+    private void copyDigitsFrom(final BigNumber source) {
+        final String integerDigits = source.valueBeforeDecimalPoint;
+        if (integerDigits == null) {
+            this.decimalValue = source.decimalValue;
+            this.trimPending = source.trimPending;
+            return;
+        }
+        this.valueAfterDecimalPoint = source.valueAfterDecimalPoint;
+        this.isNegative = source.isNegative;
+        this.decimalValue = source.decimalValue;
+        this.valueBeforeDecimalPoint = integerDigits;
+    }
+
+    /**
+     * Writes the digits down if this number holds only a {@link BigDecimal}. The digits are the ones that
+     * {@code new BigNumber(decimal.toPlainString())} has, trimmed if {@link #trim()} was called before. The
+     * method may run on several threads at once for a shared instance; every thread computes the same values, and
+     * the volatile write of {@link #valueBeforeDecimalPoint} publishes the other two fields.
+     */
+    private void ensureText() {
+        if (valueBeforeDecimalPoint != null) {
+            return;
+        }
+
+        final String plain = decimalValue.toPlainString();
+        final boolean negative = plain.charAt(0) == '-';
+        final int start = negative ? 1 : 0;
+        final int point = plain.indexOf('.');
+        String integerDigits = point < 0 ? plain.substring(start) : plain.substring(start, point);
+        String fractionDigits = point < 0 ? "0" : plain.substring(point + 1);
+        if (trimPending) {
+            integerDigits = trimLeadingZeros(integerDigits);
+            fractionDigits = trimTrailingZeros(fractionDigits);
+        }
+
+        valueAfterDecimalPoint = fractionDigits;
+        isNegative = negative;
+        valueBeforeDecimalPoint = integerDigits;
+    }
+
+    /**
+     * Returns the value with a scale of at least zero, so that its plain string and its digits are the same as
+     * those of a number parsed from that string.
+     *
+     * @param value the value; must not be {@code null}
+     * @return {@code value}, or {@code value} with scale 0 if its scale is negative
+     */
+    private static BigDecimal withNonNegativeScale(final BigDecimal value) {
+        return value.scale() < 0 ? value.setScale(0) : value;
+    }
+
+    /**
+     * Returns the value without trailing zeros after the decimal point, with a scale of at least zero, which is
+     * the value of the digits that {@link #trim()} leaves.
+     *
+     * @param value the value; must not be {@code null}
+     * @return the canonical value; zero is {@link BigDecimal#ZERO}
+     */
+    private static BigDecimal withoutTrailingZeros(final BigDecimal value) {
+        if (value.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+        if (value.scale() <= 0) {
+            return withNonNegativeScale(value);
+        }
+        if (value.unscaledValue().bitLength() < Long.SIZE) {
+            return withNonNegativeScale(value.stripTrailingZeros());
+        }
+        return withNonNegativeScale(stripLargeUnscaledValue(value));
+    }
+
+    /**
+     * Strips the trailing zeros of a value with a positive scale and an unscaled value too large for a {@code long}.
+     * {@link BigDecimal#stripTrailingZeros()} divides such a value by ten once per zero, which is slow for the
+     * exact quotient of two small numbers at a high precision. This method counts the zeros in the digits and
+     * divides once.
+     *
+     * @param value the value; must not be {@code null}, not zero and have a positive scale
+     * @return the value without trailing zeros after the decimal point
+     */
+    private static BigDecimal stripLargeUnscaledValue(final BigDecimal value) {
+        final BigInteger unscaled = value.unscaledValue();
+        if (unscaled.testBit(0)) {
+            return value;
+        }
+
+        final String digits = unscaled.abs().toString();
+        int zeros = 0;
+        while (zeros < digits.length() - 1 && digits.charAt(digits.length() - 1 - zeros) == '0') {
+            zeros++;
+        }
+        final int removable = Math.min(zeros, value.scale());
+        if (removable == 0) {
+            return value;
+        }
+
+        final BigInteger reduced = new BigInteger(digits.substring(0, digits.length() - removable));
+        return new BigDecimal(value.signum() < 0 ? reduced.negate() : reduced, value.scale() - removable);
+    }
+
+    /**
+     * Writes the digits down before the serialized form is written, because the form holds the digits and not
+     * the cached value.
+     *
+     * @param stream the stream to write to
+     * @throws IOException if the stream fails
+     */
+    @Serial
+    private void writeObject(final ObjectOutputStream stream) throws IOException {
+        ensureText();
+        stream.defaultWriteObject();
     }
 
     /**
