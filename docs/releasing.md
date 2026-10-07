@@ -31,6 +31,8 @@ gh workflow run publish.yml --ref developer -f dry_run=true
    - `justmath-x.y.z-cyclonedx.json`, the CycloneDX software bill of materials,
    - `SHA256SUMS`.
 
+The Javadoc is part of every release. The jar `justmath-x.y.z-javadoc.jar` is deployed to Maven Central with the other jars, which is where [javadoc.io](https://javadoc.io/doc/io.github.lembergmax/justmath) reads it (it builds the page of a new version when someone first opens it, after Central serves the jar), and the same jar is attached to the GitHub release. It is built from the delomboked sources, so the methods that Lombok generates are in it, and the build fails on any Javadoc error or warning.
+
 Tags have no `v` prefix (`1.6.0`, `1.7.0`).
 
 ## After the release

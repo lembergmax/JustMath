@@ -158,7 +158,7 @@ Branch on the `CalculatorErrorCode`, not on the text. There are 25 codes:
 
 ## Lists and matrices
 
-`BigNumberList` implements `List<BigNumber>`. It adds statistics (`sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `geometricMean`, `harmonicMean`), transformations (`absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `map`), sorting with eight algorithms and queries. The `...All` methods and `sortAscending`, `sortDescending` and `reverse` change the list in place; `copy()` and `clone()` return independent copies.
+`BigNumberList` implements `List<BigNumber>`. It adds statistics (`sum`, `average`, `median`, `modes`, `min`, `max`, `range`, `variance`, `standardDeviation`, `sampleVariance`, `sampleStandardDeviation`, `geometricMean`, `harmonicMean`), transformations (`absAll`, `negateAll`, `scale`, `translate`, `powEach`, `clampAll`, `normalizeToSum`, `map`), sorting with eight algorithms and queries. The `...All` methods and `sortAscending`, `sortDescending` and `reverse` change the list in place; `copy()` and `clone()` return independent copies.
 
 ```java
 BigNumberList numbers = BigNumberList.of(new BigNumber("3"), new BigNumber("1"), new BigNumber("2"), new BigNumber("2"));

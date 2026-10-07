@@ -36,6 +36,7 @@ flowchart TD
 | --- | --- |
 | `bignumber` | The value types `BigNumber`, `BigNumberCoordinate`, `BigNumberList`, `BigNumberMatrix` and `MultiValueResult`, the constants in `BigNumbers` and the parser of numeric strings. |
 | `bignumber.math` | Static, stateless math classes. `BigNumber` delegates its operations to them. |
+| `bignumber.math.utils` | `MathUtils`: the limit of a `MathContext`, `computeWithGuardDigits` and the angle conversion that the math classes share. |
 | `bignumber.math.exceptions` | `MathArgumentException` and `MathArithmeticException`, both carry a `CalculatorErrorCode`. |
 | `bignumber.algorithms` | The eight sorting algorithms behind `BigNumberList.sort`. |
 | `bignumber.matrix` | The element callback and the localized messages of `BigNumberMatrix`. |
