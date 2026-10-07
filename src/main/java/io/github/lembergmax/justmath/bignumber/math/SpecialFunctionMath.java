@@ -101,7 +101,7 @@ public final class SpecialFunctionMath {
     public static BigNumber gamma(@NonNull final BigNumber x, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         MathUtils.checkMathContext(mathContext);
 
-        return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext).toPlainString(), locale);
+        return new BigNumber(BigDecimalMath.gamma(x.toBigDecimal(), mathContext), locale);
     }
 
     /**

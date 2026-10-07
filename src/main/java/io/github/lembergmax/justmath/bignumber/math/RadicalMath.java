@@ -159,11 +159,11 @@ public final class RadicalMath {
         if (radicandIsNegative) {
             BigDecimal magnitude = radicand.toBigDecimal().negate();
             BigDecimal root = BigDecimalMath.root(magnitude, index.toBigDecimal(), mathContext);
-            return new BigNumber(root.negate().toPlainString(), locale, mathContext).trim();
+            return new BigNumber(new BigNumber(root.negate(), locale), locale, mathContext).trim();
         }
 
         BigDecimal result = BigDecimalMath.root(radicand.toBigDecimal(), index.toBigDecimal(), mathContext);
-        return new BigNumber(result.toPlainString(), locale, mathContext).trim();
+        return new BigNumber(new BigNumber(result, locale), locale, mathContext).trim();
     }
 
 }

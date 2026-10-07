@@ -221,7 +221,7 @@ public final class LogarithmicMath {
 
         final BigDecimal result = lnNumber.divide(lnBase, quotientContext).round(mathContext);
 
-        return new BigNumber(result.toPlainString(), locale).trim();
+        return new BigNumber(result, locale).trim();
     }
 
 
@@ -238,6 +238,6 @@ public final class LogarithmicMath {
         final BigDecimal value = argument.toBigDecimal();
         final BigDecimal result = MathUtils.computeWithGuardDigits(mathContext, LOGARITHM_GUARD_DIGITS, workingContext -> logarithm.apply(value, workingContext));
 
-        return new BigNumber(result.toPlainString(), locale).trim();
+        return new BigNumber(result, locale).trim();
     }
 }

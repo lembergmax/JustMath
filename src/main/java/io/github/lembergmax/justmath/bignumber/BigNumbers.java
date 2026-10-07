@@ -235,7 +235,7 @@ public class BigNumbers {
      */
     public static BigNumber e(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
         final BigDecimal value = E_BD_CACHE.computeIfAbsent(mathContext, BigDecimalMath::e);
-        return new BigNumber(value.toPlainString(), locale, mathContext);
+        return new BigNumber(new BigNumber(value, locale), locale, mathContext);
     }
 
     /**
@@ -267,7 +267,7 @@ public class BigNumbers {
      */
     public static BigNumber pi(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
         final BigDecimal value = PI_BD_CACHE.computeIfAbsent(mathContext, BigDecimalMath::pi);
-        return new BigNumber(value.toPlainString(), locale, mathContext);
+        return new BigNumber(new BigNumber(value, locale), locale, mathContext);
     }
 
 }
