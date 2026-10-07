@@ -153,6 +153,12 @@ public final class BasicMath {
     private static final char ZERO_AS_CHAR = '0';
 
     /**
+     * Non-instantiable utility class.
+     */
+    private BasicMath() {
+    }
+
+    /**
      * Adds two {@link BigNumber} values using fast string-based decimal arithmetic.
      *
      * <p>Algorithm overview:

@@ -77,6 +77,12 @@ public final class HyperbolicTrigonometricMath {
     private static final int INTERNAL_GUARD_DIGITS = 8;
 
     /**
+     * Non-instantiable utility class.
+     */
+    private HyperbolicTrigonometricMath() {
+    }
+
+    /**
      * Computes the hyperbolic sine {@code sinh(x)} with the given precision.
      *
      * <p>The implementation uses:
