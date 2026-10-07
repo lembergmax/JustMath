@@ -56,6 +56,7 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 ### Fixed
 
 - Defects found by the new property tests: the magnitude of a rounded result (#202), tiny quotients (#203), rounding of ties and directed modes in `divide` (#204), the accuracy of `exp` and fractional powers (#205), digits of results near zero (#207), a slow `acosh` (#208), `lcm` (#214), `atan` near π/2 (#215) and the order of `UnitElements.all()` (#217).
+- `gamma` and `beta` accepted `MathContext.UNLIMITED` and a precision above the supported limit. Every operation now rejects them with a typed error. (#221)
 - The unit constants of the nautical league (it was wrong by a factor of 10000), the light year, the astronomical unit, the parsec family and the Thomson cross section, and the conversion constants listed in [docs/unit-audit.md](docs/unit-audit.md). (#161, #162)
 - `RadixSort` keeps equal negative values stable.
 - Numeric input with malformed grouping separators is rejected, and a `BigNumber` can be serialized after its calculator engine was created.
@@ -81,7 +82,7 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 - JaCoCo with a coverage gate, SpotBugs with FindSecBugs, Javadoc as an error, Spotless with `.editorconfig` and `.gitattributes`, and japicmp against the previous release. (#170, #173, #174, #175, #178)
 - jqwik property tests and differential tests against `BigDecimal`, `BigInteger` and `BigDecimalMath`, tests for the unit definitions, the Markdown links and the README, and an architecture test for the package dependencies. About 2900 tests, up from about 1600. (#176)
 - CI on JDK 21, 23 and 25, on Windows, under three default locales, with a reproducibility check. (#180)
-- PIT mutation tests once a week. (#177)
+- PIT mutation tests once a week, with a threshold for the mutation score. See [docs/mutation-testing.md](docs/mutation-testing.md). (#177)
 
 ## [1.6.0] - 2026-05-30
 

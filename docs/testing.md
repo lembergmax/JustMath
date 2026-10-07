@@ -14,6 +14,7 @@ About 2900 tests run in `./mvnw verify`, in about a minute. This page says what 
 | Unit definitions | `UnitDefinitionAuditTest` | Every unit has a definition with a source or a reason, and the value matches the definition. See [unit-audit.md](unit-audit.md). |
 | Generated documents | `ReferenceDocumentsTest` | `docs/units.md` matches the registry. |
 | Architecture | `PackageDependencyTest` | The packages depend on each other only in the allowed directions. See [architecture.md](architecture.md). |
+| Contract tests | `BigNumberListJdkListContractTest`, `BigNumberOverloadConsistencyTest`, `BigNumberMathContextValidationTest` | A `BigNumberList` behaves like an `ArrayList`, every overload of a `BigNumber` method gives the same result, and every operation rejects an unsupported `MathContext`. |
 
 ## Accuracy tests
 
@@ -26,6 +27,10 @@ The generators of the hard arguments (near a multiple of π, near 1, tiny, huge)
 Each property runs with a fixed seed (`DecimalArbitraries.SEED`), so a build is deterministic. A failing property prints the shrunk sample and the seed. To search for new failures, change the seed temporarily, run the properties, and put the seed back. A failure that you find becomes a named regression test with at least two rounding modes, and an issue.
 
 Keep a property fast: 150 to 300 tries, operands that are as long as the property needs and no longer. A property that calls a function with a wall-clock limit uses `assertTimeoutPreemptively` to turn a hang into a failure, never to measure speed.
+
+## Mutation testing
+
+Coverage shows that a line ran, mutation testing shows that a test would notice if the line were wrong. PIT runs once a week and fails below a threshold for the mutation score. See [mutation-testing.md](mutation-testing.md) for the baseline, what survives and how to kill a mutant.
 
 ## Rules for every test
 

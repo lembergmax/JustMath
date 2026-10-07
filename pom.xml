@@ -62,7 +62,7 @@
         <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
         <!-- Mutation testing (mvn test-compile org.pitest:pitest-maven:mutationCoverage). The threshold is the
              lowest accepted mutation score in percent, see docs/mutation-testing.md. -->
-        <pit.mutation.threshold>0</pit.mutation.threshold>
+        <pit.mutation.threshold>81</pit.mutation.threshold>
         <!-- Standard parameter names of the PIT plugin, set here so that a run can narrow them on the command line,
              for example -DtargetClasses=io.github.lembergmax.justmath.bignumber.math.BasicMath. The property tests
              and the tests of concurrency are not run by PIT: they take too long per mutant. -->
