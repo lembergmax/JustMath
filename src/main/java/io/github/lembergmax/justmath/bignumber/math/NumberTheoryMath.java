@@ -26,11 +26,14 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
 
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Locale;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
 /**
@@ -38,77 +41,88 @@ import lombok.NonNull;
  * <p>
  * Implements the calculation of the greatest common divisor (GCD) and least common multiple (LCM).
  */
-public class NumberTheoryMath {
+public final class NumberTheoryMath {
 
-	/**
-	 * Computes the greatest common divisor (GCD) of two integers a and b using the Euclidean algorithm.
-	 * <p>
-	 * The GCD of two integers is the largest positive integer that divides both without leaving a remainder.
-	 * Formally:
-	 * <pre>
-	 * gcd(a, b) = max { d ∈ ℕ | d divides a and d divides b }
-	 * </pre>
-	 * This method requires that both inputs be integers (no decimal part).
-	 *
-	 * @param a
-	 * 	first integer operand
-	 * @param b
-	 * 	second integer operand
-	 *
-	 * @return the greatest common divisor of |a| and |b|
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if a or b is not an integer
-	 */
-	public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final Locale locale) {
-		if (a.hasDecimals() || b.hasDecimals()) {
-			throw new IllegalArgumentException("GCD requires integer values.");
-		}
+    /** Non-instantiable utility class. */
+    private NumberTheoryMath() {
+    }
 
-		BigNumber aClone = a.clone().abs();
-		BigNumber bClone = b.clone().abs();
+    /**
+     * Computes the greatest common divisor (GCD) of two integers a and b using the Euclidean algorithm.
+     * <p>
+     * The GCD of two integers is the largest positive integer that divides both without leaving a remainder.
+     * Formally:
+     * <pre>
+     * gcd(a, b) = max { d ∈ ℕ | d divides a and d divides b }
+     * </pre>
+     * This method requires that both inputs be integers (no decimal part).
+     *
+     * @param a
+     * 	first integer operand
+     * @param b
+     * 	second integer operand
+     *
+     * @return the greatest common divisor of |a| and |b|
+     *
+     * @throws IllegalArgumentException
+     * 	if a or b is not an integer
+     */
+    public static BigNumber gcd(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final Locale locale) {
+        if (a.hasDecimals() || b.hasDecimals()) {
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "GCD requires integer values.");
+        }
 
-		while (bClone.isGreaterThan(ZERO)) {
-			BigNumber temp = bClone;
-			bClone = aClone.modulo(bClone, locale);
-			aClone = temp;
-		}
-		return new BigNumber(aClone.trim());
-	}
+        BigNumber aClone = a.clone().abs();
+        BigNumber bClone = b.clone().abs();
 
-	/**
-	 * Computes the least common multiple (LCM) of two integers a and b.
-	 * <p>
-	 * The LCM is the smallest positive integer that is a multiple of both a and b.
-	 * It can be computed via the formula:
-	 * <pre>
-	 * lcm(a, b) = |a * b| / gcd(a, b)
-	 * </pre>
-	 * This method requires that both inputs be integers (no decimal part).
-	 *
-	 * @param a
-	 * 	first integer operand
-	 * @param b
-	 * 	second integer operand
-	 * @param mathContext
-	 * 	the {@link MathContext} specifying precision and rounding mode for division
-	 *
-	 * @return the least common multiple of |a| and |b|
-	 *
-	 * @throws IllegalArgumentException
-	 * 	if a or b is not an integer
-	 */
-	public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
-		MathUtils.checkMathContext(mathContext);
+        while (bClone.isGreaterThan(ZERO)) {
+            BigNumber temp = bClone;
+            bClone = aClone.modulo(bClone, locale);
+            aClone = temp;
+        }
+        return new BigNumber(aClone.trim());
+    }
 
-		if (a.hasDecimals() || b.hasDecimals()) {
-			throw new IllegalArgumentException("LCM requires integer values.");
-		}
+    /**
+     * Computes the least common multiple (LCM) of two integers a and b.
+     * <p>
+     * The LCM is the smallest positive integer that is a multiple of both a and b.
+     * It can be computed via the formula:
+     * <pre>
+     * lcm(a, b) = |a * b| / gcd(a, b)
+     * </pre>
+     * This method requires that both inputs be integers (no decimal part). If either operand is
+     * zero the result is {@code 0} (by the convention {@code lcm(a, 0) = 0}). The result is the exact
+     * integer, however many digits it has: it is not rounded to the precision of {@code mathContext}.
+     *
+     * @param a
+     * 	first integer operand
+     * @param b
+     * 	second integer operand
+     * @param mathContext
+     * 	validated for a positive precision, otherwise unused because the result is exact
+     *
+     * @return the least common multiple of |a| and |b|; {@code 0} by convention if either {@code a} or
+     * 	{@code b} is zero
+     *
+     * @throws IllegalArgumentException
+     * 	if a or b is not an integer
+     */
+    public static BigNumber lcm(@NonNull final BigNumber a, @NonNull final BigNumber b, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
+        MathUtils.checkMathContext(mathContext);
 
-		BigNumber product = a.multiply(b, locale).abs();
-		BigNumber divisor = gcd(a, b, locale);
+        if (a.hasDecimals() || b.hasDecimals()) {
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "LCM requires integer values.");
+        }
 
-		return new BigNumber(product.divide(divisor, mathContext, locale).trim());
-	}
+        if (a.isEqualTo(ZERO) || b.isEqualTo(ZERO)) {
+            return new BigNumber("0", locale);
+        }
+
+        final BigInteger first = a.toBigDecimal().toBigIntegerExact().abs();
+        final BigInteger second = b.toBigDecimal().toBigIntegerExact().abs();
+
+        return new BigNumber(first.divide(first.gcd(second)).multiply(second).toString(), locale);
+    }
 
 }

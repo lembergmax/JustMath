@@ -37,7 +37,7 @@
     -->
     <groupId>io.github.lembergmax</groupId>
     <artifactId>justmath</artifactId>
-    <version>1.6.0</version>
+    <version>1.7.0</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -45,12 +45,31 @@
     <url>https://github.com/lembergmax/JustMath</url>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <!-- Use release (not source/target) so the compiler enforces the Java 21 API surface and the
+             build is reproducible across JDKs. -->
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>5.10.2</junit.version>
-        <pitest.version>1.15.2</pitest.version>
-        <pitest.junit5.plugin.version>1.2.2</pitest.junit5.plugin.version>
+        <!-- Fixed timestamp for the entries of every jar, so that two builds of the same commit are
+             byte-identical. Set it to the commit date of the release when the version is bumped. -->
+        <project.build.outputTimestamp>2026-10-07T00:00:00Z</project.build.outputTimestamp>
+        <lombok.version>1.18.48</lombok.version>
+        <junit.version>6.1.3</junit.version>
+        <jqwik.version>1.10.1</jqwik.version>
+        <pitest.version>1.30.0</pitest.version>
+        <!-- Release that the public API of this build is compared with. After a release, set it to that
+             release and remove the exclusions in the japicmp configuration below. -->
+        <japicmp.baseline.version>1.6.0</japicmp.baseline.version>
+        <pitest.junit5.plugin.version>1.2.3</pitest.junit5.plugin.version>
+        <!-- Mutation testing (mvn test-compile org.pitest:pitest-maven:mutationCoverage). The threshold is the
+             lowest accepted mutation score in percent, see docs/mutation-testing.md. -->
+        <pit.mutation.threshold>81</pit.mutation.threshold>
+        <!-- Standard parameter names of the PIT plugin, set here so that a run can narrow them on the command line,
+             for example -DtargetClasses=io.github.lembergmax.justmath.bignumber.math.BasicMath. The property tests
+             and the tests of concurrency are not run by PIT: they take too long per mutant. -->
+        <targetClasses>io.github.lembergmax.justmath.bignumber.*,io.github.lembergmax.justmath.calculator.*</targetClasses>
+        <excludedTestClasses>*PropertyTest,*IllConditionedArgumentsTest,*RaceTest,*ConcurrencyTest</excludedTestClasses>
+        <pit.threads>8</pit.threads>
+        <pit.timeout.constant.ms>10000</pit.timeout.constant.ms>
     </properties>
 
     <licenses>
@@ -85,7 +104,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -97,43 +116,106 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito -->
+        <!-- jqwik: property-based tests that run on the JUnit Platform next to the Jupiter tests. -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.12.0</version>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>${jqwik.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>5.2.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Big-Math -->
+        <!-- Big-Math: arbitrary-precision transcendental functions (log/exp/trig/root). -->
         <dependency>
             <groupId>ch.obermuhlner</groupId>
             <artifactId>big-math</artifactId>
             <version>2.3.2</version>
         </dependency>
 
-        <!-- Apfloat -->
-        <dependency>
-            <groupId>org.apfloat</groupId>
-            <artifactId>apfloat</artifactId>
-            <version>1.8.3</version>
-        </dependency>
-
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Plugins that Maven binds by default but this project does not configure. They are
+                     pinned so that the enforcer rule requirePluginVersions holds for the whole lifecycle. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.22.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-environment</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[21,)</version>
+                                    <message>JustMath needs JDK 21 or newer to build.</message>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.9.0,)</version>
+                                    <message>JustMath needs Maven 3.9.0 or newer. Use the wrapper: ./mvnw</message>
+                                </requireMavenVersion>
+                                <requirePluginVersions>
+                                    <banLatest>true</banLatest>
+                                    <banRelease>true</banRelease>
+                                    <banSnapshots>true</banSnapshots>
+                                </requirePluginVersions>
+                                <dependencyConvergence/>
+                                <banDuplicatePomDependencyVersions/>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.16.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <!-- JDK 23+ no longer runs annotation processors found on the classpath implicitly, so
+                         Lombok has to be named here or the generated getters and constructors are missing. -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.0</version>
                 <configuration>
                     <!-- Reuse the forked JVM across test classes for faster runs and fewer
                          forks to shut down (each shutdown is the source of the dumpstream
@@ -142,11 +224,200 @@
                     <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
+            <!-- Coverage of the hand-written code. Lombok-generated members carry @Generated (see
+                 lombok.config) and are skipped by JaCoCo. The Main demo class is not part of the library. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.15</version>
+                <configuration>
+                    <excludes>
+                        <exclude>io/github/lembergmax/justmath/Main.class</exclude>
+                        <exclude>io/github/lembergmax/justmath/Main$*.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check-coverage</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.93</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.69</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Static analysis of the production code with the FindSecBugs rules. Every exclusion is
+                 listed and explained in config/spotbugs-exclude.xml. -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.10.4.1</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <failOnError>true</failOnError>
+                    <excludeFilterFile>config/spotbugs-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.14.0</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Whitespace formatting of the Java sources: four spaces, no trailing whitespace, final newline,
+                 no unused imports. Run ./mvnw spotless:apply to fix findings. -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.10.3</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/**/*.java</include>
+                        </includes>
+                        <removeUnusedImports/>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                        <indent>
+                            <spaces>true</spaces>
+                            <spacesPerTab>4</spacesPerTab>
+                        </indent>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-format</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Compares the public API of the jar with the baseline release and fails on a binary or source
+                 incompatible change. A change that is meant to break compatibility is listed in the excludes
+                 with the release that may contain it. -->
+            <plugin>
+                <groupId>com.github.siom79.japicmp</groupId>
+                <artifactId>japicmp-maven-plugin</artifactId>
+                <version>0.26.3</version>
+                <configuration>
+                    <oldVersion>
+                        <dependency>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${japicmp.baseline.version}</version>
+                            <type>jar</type>
+                        </dependency>
+                    </oldVersion>
+                    <newVersion>
+                        <file>
+                            <path>${project.build.directory}/${project.build.finalName}.jar</path>
+                        </file>
+                    </newVersion>
+                    <parameter>
+                        <onlyModified>true</onlyModified>
+                        <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+                        <breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+                        <includeSynthetic>false</includeSynthetic>
+                        <excludes>
+                            <!-- Allowed in 1.7.0 (#168): the expression pipeline is no longer public API. -->
+                            <exclude>io.github.lembergmax.justmath.calculator.Tokenizer</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.PostfixParser</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngineUtils</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.internal.Token</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.internal.Token$Type</exclude>
+                            <!-- Allowed in 1.7.0: CalculatorEngine no longer hands out the pipeline components or
+                                 the expression cache. -->
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getEvaluator()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getPostfixParser()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getTokenizer()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getExpressionCache()</exclude>
+                            <exclude>io.github.lembergmax.justmath.calculator.CalculatorEngine#getInputDecimalSeparator()</exclude>
+                            <!-- Allowed in 1.7.0 (#165): the array became an unmodifiable list. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.internal.LocalesConfig#SUPPORTED_LOCALES</exclude>
+                            <!-- Allowed in 1.7.0 (3a8bd607): round(BigNumber, MathContext) is static. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.BigNumber#round(io.github.lembergmax.justmath.bignumber.BigNumber,java.math.MathContext)</exclude>
+                            <!-- Allowed in 1.7.0 (9518f2b7): these utility classes became final with a private
+                                 constructor. Their methods are unchanged, so excluding the whole class hides nothing
+                                 else. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.CoordinateConversionMath</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.NumberTheoryMath</exclude>
+                            <!-- Allowed in 1.7.0: the class got the private constructor that the other
+                                 inverse function classes already have. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.InverseHyperbolicTrigonometricMath#InverseHyperbolicTrigonometricMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.BasicMath#BasicMath()</exclude>
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.HyperbolicTrigonometricMath#HyperbolicTrigonometricMath()</exclude>
+                        </excludes>
+                    </parameter>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>japicmp-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>cmp</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.1</version>
                 <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Automatic-Module-Name>io.github.lembergmax.justmath</Automatic-Module-Name>
+                            <Built-By>JustMath</Built-By>
+                        </manifestEntries>
+                    </archive>
                     <excludes>
                         <exclude>io/github/lembergmax/justmath/Main.class</exclude>
                         <exclude>io/github/lembergmax/justmath/Main$*.class</exclude>
@@ -156,7 +427,32 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.5.0</version>
+            </plugin>
+
+            <!-- Writes the CycloneDX software bill of materials to target/. It is attached to the GitHub release by
+                 the publish workflow and not to the Maven deployment, so Maven Central never sees it. -->
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.3</version>
+                <configuration>
+                    <projectType>library</projectType>
+                    <schemaVersion>1.6</schemaVersion>
+                    <outputFormat>json</outputFormat>
+                    <outputName>${project.artifactId}-${project.version}-cyclonedx</outputName>
+                    <includeTestScope>false</includeTestScope>
+                    <skipAttach>true</skipAttach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-bom</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- PIT Mutation Testing -->
@@ -172,13 +468,12 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <targetClasses>
-                        <param>io.github.lembergmax.justmath*</param>
-                    </targetClasses>
                     <targetTests>
-                        <param>io.github.lembergmax.justmath*</param>
+                        <param>io.github.lembergmax.justmath.*</param>
                     </targetTests>
-                    <threads>4</threads>
+                    <threads>${pit.threads}</threads>
+                    <timeoutConstant>${pit.timeout.constant.ms}</timeoutConstant>
+                    <mutationThreshold>${pit.mutation.threshold}</mutationThreshold>
                     <outputFormats>
                         <param>HTML</param>
                         <param>XML</param>
@@ -191,7 +486,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -208,10 +503,39 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Expands the Lombok annotations into plain sources for the Javadoc run only. It is bound to
+                 prepare-package so that compiling and testing are not slowed down. -->
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.20.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>delombok-for-javadoc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+                            <addOutputDirectory>false</addOutputDirectory>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
+                <version>3.12.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -222,14 +546,18 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Fehler beim Generieren ignorieren -->
-                    <failOnError>false</failOnError>
-                    <!-- Optionale Extras -->
+                    <!-- Javadoc runs on the delomboked sources so that links to Lombok-generated getters
+                         resolve and the getters appear in the published API documentation. Any doclint
+                         finding (broken @link, malformed HTML) fails the build; missing tags are tolerated. -->
+                    <sourcepath>${project.build.directory}/delombok</sourcepath>
+                    <excludePackageNames>io.github.lembergmax.justmath</excludePackageNames>
+                    <failOnError>true</failOnError>
+                    <failOnWarnings>true</failOnWarnings>
                     <encoding>UTF-8</encoding>
                     <docencoding>UTF-8</docencoding>
                     <charset>UTF-8</charset>
                     <show>protected</show>
-                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                    <additionalJOption>-Xdoclint:all,-missing</additionalJOption>
                 </configuration>
             </plugin>
 
@@ -244,7 +572,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -265,7 +593,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.8.0</version>
+                        <version>0.11.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>

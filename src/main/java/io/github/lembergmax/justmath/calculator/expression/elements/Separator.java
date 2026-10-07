@@ -28,8 +28,8 @@ import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
 
 public class Separator extends ExpressionElement {
 
-	public Separator(String separator) {
-		super(separator, false, 0);
-	}
+    public Separator(String separator) {
+        super(separator, false, 0);
+    }
 
 }

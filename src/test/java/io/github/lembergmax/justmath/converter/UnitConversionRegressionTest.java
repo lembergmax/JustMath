@@ -283,21 +283,21 @@ final class UnitConversionRegressionTest {
 
     @Test
     void oneKibibyteEqualsExact8192Bit() {
-        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.KILOBYTE, Unit.DataStorage.BIT);
+        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.KIBIBYTE, Unit.DataStorage.BIT);
         assertCloseTo("8192", bits, "1 KiB = 8192 bit");
     }
 
     @Test
     void onePebibyteEqualsExact2to53Bit() {
         // 2^53 = 9007199254740992
-        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.PETABYTE, Unit.DataStorage.BIT);
+        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.PEBIBYTE, Unit.DataStorage.BIT);
         assertCloseTo("9007199254740992", bits, "1 PiB = 2^53 bit exakt");
     }
 
     @Test
     void oneExbibyteEqualsExact2to63Bit() {
         // 2^63 = 9223372036854775808
-        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.EXABYTE, Unit.DataStorage.BIT);
+        final BigNumber bits = converter.convertToBigNumber("1", Unit.DataStorage.EXBIBYTE, Unit.DataStorage.BIT);
         assertCloseTo("9223372036854775808", bits, "1 EiB = 2^63 bit exakt");
     }
 

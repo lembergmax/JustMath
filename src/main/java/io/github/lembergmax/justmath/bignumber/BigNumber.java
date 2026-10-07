@@ -27,7 +27,12 @@ package io.github.lembergmax.justmath.bignumber;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.DEFAULT_MATH_CONTEXT;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -53,15 +58,56 @@ import lombok.Setter;
  * and flexible angle measurement via {@link TrigonometricMode}. Input strings can be automatically
  * parsed according to locale or explicitly specified.</p>
  *
- * <p>{@code BigNumber} is immutable in behavior and uses {@link CalculatorEngine} for computational logic.
- * Internally, most computations are delegated to utility classes like {@code BasicMath}, {@code RadicalMath},
- * or {@code LogarithmicMath}, ensuring modularity and clean separation of concerns.</p>
+ * <p>Arithmetic and other <em>operation</em> methods ({@code add}, {@code multiply}, {@code abs},
+ * {@code round}, the trigonometric/logarithmic methods, …) never mutate the receiver — they return a
+ * new instance. {@code BigNumber} is <strong>not</strong> fully immutable, however: it exposes a few
+ * mutators that change the receiver in place, namely the Lombok {@code @Setter}s and the
+ * {@code *This}/{@code trim} family (for example {@link #negateThis()}, {@link #trim()}). Treat an
+ * instance as immutable unless you deliberately call one of those. Computations are delegated to
+ * utility classes such as {@code BasicMath}, {@code RadicalMath} or {@code LogarithmicMath} (and
+ * {@link CalculatorEngine} for sub-expression evaluation), keeping a clean separation of concerns.</p>
+ *
+ * <p><strong>Accuracy.</strong> Addition, subtraction, multiplication and non-negative integer powers are
+ * exact. Division, negative integer powers, {@code exp}, fractional powers, the roots, the logarithms and
+ * the trigonometric, hyperbolic and inverse functions are rounded <em>once</em> to the precision and the
+ * rounding mode of the {@link MathContext} that the caller passes, and the result is correct to within one
+ * unit in the last place. The functions that lose digits close to one of their zeros ({@code sin} near a
+ * multiple of π, {@code ln} near 1, {@code sinh} near 0, and so on) are evaluated with as many guard digits
+ * as the result needs, so the result keeps all requested digits. Where the exact value is zero (for example
+ * {@code sin(180°)}) the result is exactly zero.</p>
+ *
+ * <p><strong>Value and digits.</strong> A number has two views of one value: the {@link BigDecimal}
+ * ({@link #toBigDecimal()}) and the digits ({@link #getValueBeforeDecimalPoint()},
+ * {@link #getValueAfterDecimalPoint()}, {@link #isNegative()}). A number that is read from text keeps its digits and
+ * parses its {@code BigDecimal} the first time a calculation needs it. A number that is built from a
+ * {@code BigDecimal}, which is every result of a calculation, holds only the {@code BigDecimal} and writes its
+ * digits down when somebody asks for them, so a chain of calculations does not convert to text between the steps.
+ * The digits, the scale and the sign are the same whichever way a number was built.</p>
+ *
+ * <p><strong>Threads.</strong> Several threads may read one instance, also while its digits are written down for the
+ * first time. None may change it ({@code trim}, {@code negateThis}, the setters) while others use it.</p>
  *
  * <p>Instances of this class are ideal for applications requiring precise decimal arithmetic,
  * such as financial systems, scientific calculations, or custom calculators.</p>
  */
 @Getter
 public class BigNumber extends Number implements Comparable<BigNumber>, Cloneable {
+
+    /**
+     * Version of the serialized form. The lazily created {@link CalculatorEngine} is derived state and is
+     * not part of it.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Number of trailing zeros from which {@link #stripLargeUnscaledValue(BigDecimal)} strips them in one step.
+     */
+    private static final int BULK_STRIP_ZEROS = 8;
+
+    /**
+     * {@code 10^}{@link #BULK_STRIP_ZEROS}, which a value with that many trailing zeros is a multiple of.
+     */
+    private static final BigInteger BULK_STRIP_DIVISOR = BigInteger.TEN.pow(BULK_STRIP_ZEROS);
 
     /**
      * Shared instance of the parser used to convert input strings into BigNumber objects.
@@ -134,14 +180,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * The returned instance uses {@link Locale#US} and {@link BigNumbers#DEFAULT_MATH_CONTEXT}.
      * </p>
      *
+     * <p>
+     * Cached values are returned as a defensive {@link #clone()} so that callers using the public
+     * setters or {@link #negateThis()} cannot corrupt the shared cache entry (audit fixes K2/H10).
+     * </p>
+     *
      * @param value the integer value
      * @return a {@link BigNumber} representing {@code value}; never {@code null}
      */
     public static BigNumber valueOf(final long value) {
         if (value >= SMALL_INT_CACHE_MIN && value <= SMALL_INT_CACHE_MAX) {
-            // Return a defensive clone of the cached template so that callers using the
-            // (public) {@code @Setter}s or {@link #negateThis()} cannot corrupt the shared
-            // cache entry. Cloning is cheap compared to re-parsing the integer literal.
             return SMALL_INT_CACHE[(int) (value - SMALL_INT_CACHE_MIN)].clone();
         }
         return new BigNumber(Long.toString(value), Locale.US, DEFAULT_MATH_CONTEXT);
@@ -184,18 +232,33 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     private final Locale locale;
     /**
      * The numeric value before the decimal separator.
+     *
+     * <p>A number that is the result of a calculation holds its value as a {@link BigDecimal} and writes
+     * the digits down only when somebody asks for them. While that has not happened this field is
+     * {@code null}. It is {@code volatile} and written last by {@link #ensureText()}, so a thread that
+     * reads a value other than {@code null} also sees {@link #valueAfterDecimalPoint} and
+     * {@link #isNegative}. Use {@link #getValueBeforeDecimalPoint()}, which creates the text first.</p>
      */
-    @NonNull
-    private String valueBeforeDecimalPoint;
+    private volatile String valueBeforeDecimalPoint;
     /**
      * The numeric value after the decimal separator. Defaults to "0" if absent.
      */
-    @NonNull
     private String valueAfterDecimalPoint;
     /**
-     * Indicates whether the number is negative.
+     * Indicates whether the number is negative. Volatile for the same reason as {@link #valueBeforeDecimalPoint}.
      */
-    private boolean isNegative;
+    private volatile boolean isNegative;
+    /**
+     * The numeric value as a {@link BigDecimal}, or {@code null} if it has not been needed yet. It is derived
+     * from the digits and is always reset when the digits change. For a number whose digits have not been written
+     * down yet ({@link #valueBeforeDecimalPoint} is {@code null}) it is the only holder of the value.
+     */
+    private transient BigDecimal decimalValue;
+    /**
+     * {@code true} if {@link #trim()} was called while the digits had not been written down yet, so that
+     * {@link #ensureText()} applies the trimming when it creates them.
+     */
+    private transient volatile boolean trimPending;
     /**
      * Per-instance {@link CalculatorEngine}, created lazily on first {@link #getCalculatorEngine()}
      * access. It is intentionally <em>not</em> built eagerly in the constructors: a
@@ -206,9 +269,12 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>Because the engine is created per instance and never shared across clones (see
      * {@link #clone()}), one holder's mutable engine configuration (locale, error mode, expression
      * cache) cannot leak into another holder.</p>
+     *
+     * <p>The field is {@code transient}: the engine is not serializable and is created again on demand after
+     * deserialization.</p>
      */
     @Setter
-    private CalculatorEngine calculatorEngine;
+    private transient CalculatorEngine calculatorEngine;
 
     /**
      * Returns this instance's {@link CalculatorEngine}, creating it lazily on first access. The
@@ -244,7 +310,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Constructs a BigNumber from a string and locale using the default math context.
      *
      * @param number       the string representation of the number
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
+     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
+     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
+     *                     that locale.
      */
     public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale) {
         this(number, targetLocale, DEFAULT_MATH_CONTEXT);
@@ -265,7 +334,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Constructs a BigNumber from a string, locale, and math context using the default trigonometric mode (DEG).
      *
      * @param number       the string representation of the number
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result; the input string's locale is
+     *                     auto-detected (a single-separator value such as {@code "1,234"} is read as the
+     *                     decimal {@code 1.234}). This parameter does not force the input to be parsed in
+     *                     that locale.
      * @param mathContext  the math context to use for precision and rounding
      */
     public BigNumber(@NonNull final String number, @NonNull final Locale targetLocale, @NonNull final MathContext mathContext) {
@@ -274,7 +346,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
 
     /**
      * Constructs a BigNumber from a string, locale, math context, and trigonometric mode.
-     * Parses and formats the input string according to the specified locale.
+     *
+     * <p>The input string's locale is auto-detected and the result is <em>formatted</em> in
+     * {@code targetLocale}; {@code targetLocale} is not used to disambiguate the input. To parse a
+     * grouped/locale-specific input string deterministically (e.g. read German {@code "1.234"} as
+     * {@code 1234}), normalize it to a {@code .}-decimal string first.</p>
      *
      * @param number            the string representation of the number
      * @param targetLocale      the locale to use for parsing and formatting
@@ -287,12 +363,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         BigNumber parsedAndFormatted = bigNumberParser.parseAndFormat(number, targetLocale);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimalPoint = parsedAndFormatted.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = parsedAndFormatted.valueAfterDecimalPoint;
-        this.isNegative = parsedAndFormatted.isNegative;
+        copyDigitsFrom(parsedAndFormatted);
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -353,13 +426,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         final BigNumber parsed = bigNumberParser.parse(number);
 
         this.locale = parsed.locale;
-        this.valueBeforeDecimalPoint = parsed.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = parsed.valueAfterDecimalPoint;
-        this.isNegative = parsed.isNegative;
+        copyDigitsFrom(parsed);
 
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -374,11 +444,19 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Constructs a BigNumber from a BigDecimal and locale.
      *
+     * <p>The digits are written down when they are first needed, not here, so a calculation that works on
+     * {@link BigDecimal} values and passes the result on to the next calculation never pays for the conversion
+     * to text. The value, the digits and the string representations are the same as for
+     * {@code new BigNumber(bigDecimal.toPlainString(), targetLocale)}.</p>
+     *
      * @param bigDecimal   the BigDecimal value to convert
-     * @param targetLocale the locale to use for parsing and formatting
+     * @param targetLocale the locale used to <em>format</em> the result
      */
     public BigNumber(@NonNull final BigDecimal bigDecimal, @NonNull final Locale targetLocale) {
-        this(bigDecimal.toPlainString(), targetLocale);
+        this.locale = targetLocale;
+        this.decimalValue = withNonNegativeScale(bigDecimal);
+        this.mathContext = DEFAULT_MATH_CONTEXT;
+        this.trigonometricMode = TrigonometricMode.DEG;
     }
 
     /**
@@ -415,16 +493,18 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         MathUtils.checkMathContext(mathContext);
 
         this.locale = targetLocale;
-        this.valueBeforeDecimalPoint = bigNumber.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = bigNumber.valueAfterDecimalPoint;
-        this.isNegative = bigNumber.isNegative;
+        copyDigitsFrom(bigNumber);
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
      * Copy constructor. Constructs a BigNumber from another BigNumber, copying all properties.
+     *
+     * <p>
+     * The calculator engine is not shared with {@code other}: each instance lazily builds its own, so
+     * one holder's engine configuration cannot leak into another (audit fix K8).
+     * </p>
      *
      * @param other the BigNumber to copy
      */
@@ -432,13 +512,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         MathUtils.checkMathContext(other.mathContext);
 
         this.locale = other.locale;
-        this.valueBeforeDecimalPoint = other.valueBeforeDecimalPoint;
-        this.valueAfterDecimalPoint = other.valueAfterDecimalPoint;
-        this.isNegative = other.isNegative;
+        copyDigitsFrom(other);
         this.mathContext = other.mathContext;
         this.trigonometricMode = other.trigonometricMode;
-        // Do not share the source engine: each instance lazily builds its own so that one
-        // holder's engine configuration cannot leak into another (audit fix K8).
     }
 
     /**
@@ -461,7 +537,6 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         this.isNegative = isNegative;
         this.mathContext = mathContext;
         this.trigonometricMode = trigonometricMode;
-        // calculatorEngine is created lazily on first getCalculatorEngine() access.
     }
 
     /**
@@ -724,8 +799,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Raises this number to the power of the specified {@link BigNumber} exponent using the given {@link MathContext}.
      *
-     * <p>This method delegates the computation to {@link BigDecimalMath#pow(BigDecimal, BigDecimal, MathContext)}
-     * for high-precision exponentiation, and returns the result as a localized {@code BigNumber}.</p>
+     * <p>This method delegates the computation to {@link BasicMath#power(BigNumber, BigNumber, MathContext, Locale)}
+     * and returns the result as a localized {@code BigNumber}. A power with a non-negative integer exponent is exact
+     * and ignores the precision of {@code mathContext}. A power with a negative integer exponent or a fractional
+     * exponent is rounded to {@code mathContext}.</p>
      *
      * @param exponent    the exponent
      * @param mathContext the context specifying precision and rounding mode
@@ -765,12 +842,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the factorial of this number using the specified {@link MathContext}.
      *
-     * <p>This method uses {@link BigDecimalMath#factorial(BigDecimal, MathContext)} to compute the factorial
-     * with arbitrary precision and returns the result as a localized {@code BigNumber}.</p>
+     * <p>The factorial is computed exactly with integer arithmetic (a product tree) and returned as a
+     * localized {@code BigNumber}. The argument must be a non-negative integer of at most 100000.</p>
      *
      * @param mathContext the context specifying precision and rounding mode
      * @param locale      the locale to apply for formatting or localization
      * @return a new {@code BigNumber} representing the factorial
+     * @throws io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException if this number is
+     *                                                                                       negative or not an integer
+     * @throws io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException if this number is
+     *                                                                                         larger than the limit
      */
     public BigNumber factorial(@NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return BasicMath.factorial(this, mathContext, locale);
@@ -891,9 +972,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      *
      * <p>This method delegates to {@link #nthRoot(BigNumber, MathContext, Locale)}.</p>
      *
-     * @param n the degree of the root (must be non-negative)
+     * @param n the degree of the root (a negative degree gives the reciprocal root, zero is rejected)
      * @return a new {@code BigNumber} representing the <i>n</i>th root
-     * @throws IllegalArgumentException if {@code n} is negative
+     * @throws IllegalArgumentException if {@code n} is zero, or if this number is negative and {@code n} is an even
+     *                                  or a non-integer degree
      */
     public BigNumber nthRoot(@NonNull final BigNumber n) {
         return nthRoot(n, mathContext);
@@ -905,10 +987,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * This is a convenience method that delegates to {@link #nthRoot(BigNumber, MathContext, Locale)}
      * using the current locale.
      *
-     * @param n           the degree of the root (must be non-negative)
+     * @param n           the degree of the root (a negative degree gives the reciprocal root, zero is rejected)
      * @param mathContext the context specifying precision and rounding mode
      * @return a new {@code BigNumber} representing the <i>n</i>th root
-     * @throws IllegalArgumentException if {@code n} is negative
+     * @throws IllegalArgumentException if {@code n} is zero, or if this number is negative and {@code n} is an even
+     *                                  or a non-integer degree
      */
     public BigNumber nthRoot(@NonNull final BigNumber n, @NonNull final MathContext mathContext) {
         return nthRoot(n, mathContext, locale);
@@ -917,14 +1000,15 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the <i>n</i>th root of this number using the specified {@link MathContext}.
      *
-     * <p>If {@code n} is negative, an {@link IllegalArgumentException} is thrown.
-     * Otherwise, the root is calculated via {@link BigDecimalMath#root(BigDecimal, BigDecimal, MathContext)}.</p>
+     * <p>If {@code n} is negative, the result is the reciprocal of the root of degree {@code -n}. A zero degree
+     * is rejected. The root is calculated via {@link BigDecimalMath#root(BigDecimal, BigDecimal, MathContext)}.</p>
      *
-     * @param n           the degree of the root (must be non-negative)
+     * @param n           the degree of the root (a negative degree gives the reciprocal root, zero is rejected)
      * @param mathContext the context specifying precision and rounding mode
      * @param locale      the locale to apply for formatting or localization
      * @return a new {@code BigNumber} representing the <i>n</i>th root
-     * @throws IllegalArgumentException if {@code n} is negative
+     * @throws IllegalArgumentException if {@code n} is zero, or if this number is negative and {@code n} is an even
+     *                                  or a non-integer degree
      */
     public BigNumber nthRoot(@NonNull final BigNumber n, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return RadicalMath.nthRoot(this, n, mathContext, locale);
@@ -1606,8 +1690,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the inverse tangent (arctan) of this number with specified units and locale.
      *
-     * <p>Delegates to {@link BigDecimalMath#atan} to get radians. If {@code DEG} mode is selected,
-     * converts the result: degrees = radians × 180 / π.</p>
+     * <p>Uses {@link BigDecimalMath#atan} for {@code |x| <= 1} and {@code sign(x) × π/2 - atan(1/x)} for a larger
+     * argument, so the result keeps every digit close to ±π/2. If {@code DEG} mode is selected, converts the
+     * result: degrees = radians × 180 / π.</p>
      *
      * @param mathContext       the precision and rounding settings for the calculation
      * @param trigonometricMode whether to return result in degrees ({@code DEG}) or radians ({@code RAD})
@@ -1626,7 +1711,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return a new {@code BigNumber} representing acot(this)
      */
     public BigNumber acot() {
-        return acot(TrigonometricMode.DEG);
+        return acot(trigonometricMode);
     }
 
     /**
@@ -1661,7 +1746,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the inverse cotangent (arccot) of this number with the given precision and locale.
      *
-     * <p>Delegates to {@link BigDecimalMath#acot} and wraps the result.</p>
+     * <p>Computes {@code atan(1/x)}, using {@code sign(x) × π/2 - atan(x)} for {@code |x| < 1} so that the result
+     * keeps every digit close to ±π/2. The result has the range of {@code atan}, not {@code (0, π)}.</p>
      *
      * @param mathContext the precision and rounding settings for the calculation
      * @param locale      the locale used for any locale-specific formatting
@@ -1854,10 +1940,11 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Computes the two-argument arctangent of this number and the specified x number.
      *
-     * <p>Delegates to {@link BigDecimalMath#atan2(BigDecimal, BigDecimal, MathContext)} for a quadrant-aware result,
-     * then wraps the result in a new {@code BigNumber} with the specified {@code locale}.</p>
+     * <p>The result is quadrant-aware and lies in {@code (-π, π]}. It is computed from {@link BigDecimalMath#atan}
+     * of a ratio of at most 1 in absolute value, so the result keeps every digit close to ±π/2 and ±π. It is wrapped
+     * in a new {@code BigNumber} with the specified {@code locale}.</p>
      *
-     * @param x           the y-coordinate component for atan2(this, x)
+     * @param x           the x-coordinate; this number is the y-coordinate
      * @param mathContext the precision and rounding settings for the calculation
      * @param locale      the locale used for any locale-specific formatting
      * @return a new {@code BigNumber} representing atan2(this, x)
@@ -2500,8 +2587,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * </p>
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other) {
         return lcm(other, mathContext);
@@ -2512,13 +2599,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * </pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has.
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext) {
         return lcm(other, mathContext, locale);
@@ -2530,15 +2617,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>{@code
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * }</pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has, and
+     * {@code mathContext} is only validated.
      *
      * @param other       the other BigNumber to compute the LCM with
      * @param mathContext the context specifying precision and rounding mode
      * @param locale      the locale used for any locale-specific formatting
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return NumberTheoryMath.lcm(this, other, mathContext, locale);
@@ -2823,7 +2911,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     private BigNumber integerPart(@NonNull final RoundingMode roundingMode) {
         final BigDecimal integerValue = toBigDecimal().setScale(0, roundingMode);
-        return new BigNumber(integerValue.toPlainString(), locale);
+        return new BigNumber(integerValue, locale);
     }
 
     /**
@@ -2901,10 +2989,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
      * to avoid double-rounding artifacts at tie boundaries.</p>
      *
-     * @param mathContext precision and rounding for the result; must not be {@code null}
+     * @param mathContext precision and rounding for the result; must not be {@code null} and must have positive precision
      * @return a new BigNumber representing the value in degrees
+     * @throws IllegalArgumentException if {@code mathContext} has non-positive precision (e.g. {@link MathContext#UNLIMITED}),
+     *                                  which would otherwise silently cap the result to the guard-digit precision
      */
     public BigNumber toDegrees(@NonNull final MathContext mathContext) {
+        MathUtils.checkMathContext(mathContext);
         final MathContext guard = withAngleConversionGuardDigits(mathContext);
         return multiply(ONE_HUNDRED_EIGHTY, locale).divide(BigNumbers.pi(guard), guard, locale).round(mathContext);
     }
@@ -2915,10 +3006,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>The quotient is computed with guard digits and rounded once to {@code mathContext}
      * to avoid double-rounding artifacts at tie boundaries.</p>
      *
-     * @param mathContext precision and rounding for the result; must not be {@code null}
+     * @param mathContext precision and rounding for the result; must not be {@code null} and must have positive precision
      * @return a new BigNumber representing the value in radians
+     * @throws IllegalArgumentException if {@code mathContext} has non-positive precision (e.g. {@link MathContext#UNLIMITED}),
+     *                                  which would otherwise silently cap the result to the guard-digit precision
      */
     public BigNumber toRadians(@NonNull final MathContext mathContext) {
+        MathUtils.checkMathContext(mathContext);
         final MathContext guard = withAngleConversionGuardDigits(mathContext);
         return multiply(BigNumbers.pi(guard)).divide(ONE_HUNDRED_EIGHTY, guard).round(mathContext);
     }
@@ -2933,7 +3027,12 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     public BigNumber abs() {
         final BigNumber result = clone();
+        if (result.valueBeforeDecimalPoint == null) {
+            result.decimalValue = result.decimalValue.abs();
+            return result;
+        }
         result.isNegative = false;
+        result.decimalValue = null;
         return result;
     }
 
@@ -3009,36 +3108,48 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} instance with the sign toggled
      */
     public BigNumber negateThis() {
+        if (valueBeforeDecimalPoint == null && decimalValue.signum() != 0) {
+            decimalValue = decimalValue.negate();
+            return this;
+        }
+        ensureText();
         isNegative = !isNegative;
+        decimalValue = null;
         return this;
     }
 
     /**
-     * Rounds the value after the decimal point to the specified precision.
+     * Rounds the value after the decimal point to the specified number of decimal places, using this
+     * instance's configured {@link RoundingMode} (from {@link #getMathContext()}).
+     *
+     * <p>The rounding mode is taken from the instance rather than hard-coded so that, for example, a
+     * {@code HALF_EVEN}-configured number rounds with banker's rounding here too instead of silently
+     * falling back to {@code HALF_UP}. To round with an explicit mode, use
+     * {@link #roundAfterDecimals(MathContext)}.</p>
      *
      * @param precision the number of decimal places to round to
      * @return a new {@code BigNumber} rounded to the given precision
      */
     public BigNumber roundAfterDecimals(final int precision) {
-        return roundAfterDecimals(new MathContext(precision, RoundingMode.HALF_UP));
+        return roundAfterDecimals(new MathContext(precision, mathContext.getRoundingMode()));
     }
 
     /**
      * Rounds the value after the decimal point using the provided {@link MathContext}.
      *
-     * @param mathContext the context specifying precision and rounding mode
-     * @return this {@code BigNumber} with the value after the decimal rounded and trimmed
+     * <p>The receiver is not modified; a new instance is returned. The result keeps the receiver's
+     * {@link #getLocale() locale} (it is threaded into the constructed result), so the rounded value
+     * formats with the same separators as the receiver and the operation is deterministic across machines
+     * (it does not fall back to the JVM-default locale).</p>
+     *
+     * @param mathContext the context specifying the number of decimal places and the rounding mode
+     * @return a new {@code BigNumber} rounded to the given number of decimal places and trimmed; the receiver
+     * is not modified
      */
     public BigNumber roundAfterDecimals(@NonNull final MathContext mathContext) {
-        BigDecimal value = toBigDecimal();
-        int precisionAfterDecimal = mathContext.getPrecision();
-
-        // scale = digits after the decimal point
-        if (precisionAfterDecimal <= 0) {
-            return new BigNumber(value.setScale(0, mathContext.getRoundingMode()).toPlainString()).trim();
-        }
-
-        return new BigNumber(value.setScale(precisionAfterDecimal, mathContext.getRoundingMode()).toPlainString()).trim();
+        final BigDecimal value = toBigDecimal();
+        final int scale = Math.max(0, mathContext.getPrecision());
+        return new BigNumber(value.setScale(scale, mathContext.getRoundingMode()), locale).trim();
     }
 
     /**
@@ -3054,16 +3165,20 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     /**
      * Rounds the given {@code BigNumber} to the precision specified by the given {@link MathContext}.
      *
+     * <p>This method does not depend on any receiver — it is {@code static} and formats the result
+     * with the rounded {@code number}'s own locale, not some unrelated instance's locale.</p>
+     *
+     * <p>The value is read via {@link #toBigDecimal()} rather than {@link #toString()}: {@code toString()}
+     * is locale-aware and would feed a non-US decimal separator (e.g. {@code ','}) into the
+     * {@link BigDecimal} constructor, throwing {@link NumberFormatException} for non-US locales.</p>
+     *
      * @param number      the {@code BigNumber} to round
      * @param mathContext the context specifying precision and rounding mode
      * @return a new {@code BigNumber} rounded according to the given {@link MathContext}
      */
-    public BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
-        // Use toBigDecimal() — toString() is locale-aware and would feed non-US
-        // decimal separators (e.g. ',') into the BigDecimal constructor, causing a
-        // NumberFormatException for non-US locales.
+    public static BigNumber round(@NonNull final BigNumber number, @NonNull final MathContext mathContext) {
         BigDecimal rounded = number.toBigDecimal().round(mathContext);
-        return new BigNumber(rounded.toPlainString(), locale);
+        return new BigNumber(rounded, number.getLocale());
     }
 
     /**
@@ -3073,8 +3188,14 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} instance with trimmed parts
      */
     public BigNumber trim() {
+        if (valueBeforeDecimalPoint == null) {
+            decimalValue = withoutTrailingZeros(decimalValue);
+            trimPending = true;
+            return this;
+        }
         valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
         valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        decimalValue = null;
         return this;
     }
 
@@ -3087,7 +3208,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with the integer part's leading zeros removed
      */
     public BigNumber trimLeadingZerosBeforeDecimalPoint() {
+        ensureText();
         this.valueBeforeDecimalPoint = trimLeadingZeros(valueBeforeDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3101,7 +3224,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with the fractional part's leading zeros removed
      */
     public BigNumber trimLeadingZerosAfterDecimalPoint() {
+        ensureText();
         this.valueAfterDecimalPoint = trimLeadingZeros(valueAfterDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3135,7 +3260,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with trailing zeros removed before the decimal point
      */
     public BigNumber trimTrailingZerosBeforeDecimalPoint() {
+        ensureText();
         this.valueBeforeDecimalPoint = trimTrailingZeros(valueBeforeDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3146,7 +3273,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return this {@code BigNumber} with trailing zeros removed after the decimal point
      */
     public BigNumber trimTrailingZerosAfterDecimalPoint() {
+        ensureText();
         this.valueAfterDecimalPoint = trimTrailingZeros(valueAfterDecimalPoint);
+        this.decimalValue = null;
         return this;
     }
 
@@ -3178,14 +3307,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * is negative, zero, or positive.
      */
     public int signum() {
-        if (isLessThan(BigNumbers.ZERO)) {
-            return -1;
-        }
-        if (isGreaterThan(BigNumbers.ZERO)) {
-            return 1;
-        }
-
-        return 0;
+        return toBigDecimal().signum();
     }
 
     /**
@@ -3239,33 +3361,44 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     }
 
     /**
-     * Returns the minimum of this BigNumber and the specified other BigNumber.
+     * Returns the minimum of this {@code BigNumber} and {@code other} as a new instance.
      *
-     * @param other the BigNumber to compare with
-     * @return the smaller of this and other; if other is null, returns this
+     * <p>The result is a {@link #clone()} of the smaller operand, never the receiver, the argument, or a
+     * shared {@link BigNumbers} constant by reference — so a caller mutating the result (via a setter,
+     * {@link #negateThis()} or {@link #trim()}) cannot corrupt a constant or an operand.</p>
+     *
+     * @param other the {@code BigNumber} to compare with; must not be {@code null}
+     * @return a fresh copy of the smaller of {@code this} and {@code other}; never {@code null}
      */
     public BigNumber min(@NonNull final BigNumber other) {
-        return isLessThan(other) ? this : other;
+        return (isLessThan(other) ? this : other).clone();
     }
 
     /**
-     * Returns the maximum of this BigNumber and the specified other BigNumber.
+     * Returns the maximum of this {@code BigNumber} and {@code other} as a new instance.
      *
-     * @param other the BigNumber to compare with
-     * @return the greater of this and other; if other is null, returns this
+     * <p>The result is a {@link #clone()} of the greater operand, never the receiver, the argument, or a
+     * shared {@link BigNumbers} constant by reference — so a caller mutating the result (via a setter,
+     * {@link #negateThis()} or {@link #trim()}) cannot corrupt a constant or an operand.</p>
+     *
+     * @param other the {@code BigNumber} to compare with; must not be {@code null}
+     * @return a fresh copy of the greater of {@code this} and {@code other}; never {@code null}
      */
     public BigNumber max(@NonNull final BigNumber other) {
-        return isGreaterThan(other) ? this : other;
+        return (isGreaterThan(other) ? this : other).clone();
     }
 
     /**
      * Checks if this BigNumber has a non-zero and non-empty decimal part.
      *
+     * <p>The check is numeric: a value has a fractional part iff the scale of its
+     * {@link BigDecimal#stripTrailingZeros() stripped} {@link #toBigDecimal()} form is positive
+     * (e.g. {@code 5.0 -> 0}, {@code 5.1 -> 1}, {@code 100 -> -2}, {@code 0}/{@code 0.00 -> 0}).</p>
+     *
      * @return true if there are decimals, false otherwise
      */
     public boolean hasDecimals() {
-        BigNumber temp = clone().trim();
-        return !temp.isEqualTo(BigNumbers.ZERO) && !temp.getValueAfterDecimalPoint().isEmpty();
+        return toBigDecimal().stripTrailingZeros().scale() > 0;
     }
 
     /**
@@ -3284,7 +3417,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * @return true if the number is positive (not negative), false otherwise
      */
     public boolean isPositive() {
-        return !isNegative;
+        return !isNegative();
     }
 
     /**
@@ -3342,6 +3475,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * The method uses the locale's decimal and grouping separators. If {@code useGrouping} is true,
      * grouping separators are applied to the integer part. If the decimal part is blank or zero,
      * it is omitted from the result.
+     * <p>
+     * This method does not mutate the receiver: it works on local read-only snapshots so it stays safe
+     * to call on cached or shared {@link BigNumbers} constants.
      *
      * @param locale      the {@link Locale} to use for formatting
      * @param useGrouping whether to use grouping separators in the integer part
@@ -3351,9 +3487,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(locale);
         String decimalSeparator = String.valueOf(localeSeparators.decimalSeparator());
 
-        // Read-only snapshot: do NOT mutate this instance — toString must be safe on cached/shared BigNumbers.
-        final String trimmedBefore = trimLeadingZeros(valueBeforeDecimalPoint);
-        final String trimmedAfter = trimTrailingZeros(valueAfterDecimalPoint);
+        final String trimmedBefore = trimLeadingZeros(getValueBeforeDecimalPoint());
+        final String trimmedAfter = trimTrailingZeros(getValueAfterDecimalPoint());
 
         String newValueAfterDecimal = trimmedAfter.isBlank() || trimmedAfter.equals("0") ? "" : trimmedAfter;
 
@@ -3364,7 +3499,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         String integerPart = useGrouping ? bigNumberParser.getGroupedBeforeDecimal(trimmedBefore, localeSeparators.groupingSeparator()).toString() : trimmedBefore;
 
         String localized = integerPart + decimalSeparator + newValueAfterDecimal;
-        return isNegative ? "-" + localized : localized;
+        return isNegative() ? "-" + localized : localized;
     }
 
     /**
@@ -3374,24 +3509,41 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * no rounding to {@link #mathContext} is performed at conversion time; rounding happens only
      * in operations that explicitly accept a {@link MathContext}.
      *
+     * <p>The value is kept after the first call, so comparing, hashing and calculating with the same number
+     * does not read its digits again. Every method that changes the digits discards it.</p>
+     *
      * @return a BigDecimal representation of this BigNumber
      */
     public BigDecimal toBigDecimal() {
-        StringBuilder stringBuilder = new StringBuilder();
+        final BigDecimal cached = decimalValue;
+        if (cached != null) {
+            return cached;
+        }
+
+        final String integerDigits = valueBeforeDecimalPoint;
+        final String fractionDigits = valueAfterDecimalPoint;
+        final StringBuilder stringBuilder = new StringBuilder();
         if (isNegative) {
             stringBuilder.append('-');
         }
 
-        stringBuilder.append(valueBeforeDecimalPoint);
+        stringBuilder.append(integerDigits);
 
-        if (!valueAfterDecimalPoint.equals("0") && !valueAfterDecimalPoint.isEmpty()) {
-            stringBuilder.append('.').append(valueAfterDecimalPoint);
+        if (!fractionDigits.equals("0") && !fractionDigits.isEmpty()) {
+            stringBuilder.append('.').append(fractionDigits);
         }
-        return new BigDecimal(stringBuilder.toString());
+        final BigDecimal parsed = new BigDecimal(stringBuilder.toString());
+        decimalValue = parsed;
+        return parsed;
     }
 
     /**
      * Compares this {@code BigNumber} with the specified {@code BigNumber} for order.
+     *
+     * <p>A multi-value {@link BigNumberCoordinate} is never a plain scalar: all plain numbers are
+     * ordered before any coordinate, so {@code compareTo} stays consistent with {@link #equals(Object)}
+     * (which is never {@code true} across the two types) and antisymmetric with
+     * {@code BigNumberCoordinate.compareTo} (audit K1).</p>
      *
      * @param other the {@code BigNumber} to be compared.
      * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the
@@ -3399,6 +3551,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     @Override
     public int compareTo(@NonNull final BigNumber other) {
+        if (other instanceof BigNumberCoordinate) {
+            return -1;
+        }
         return toBigDecimal().compareTo(other.toBigDecimal());
     }
 
@@ -3410,6 +3565,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * {@code "1.00"}), negative zero, or differing locales/math contexts. This makes
      * {@code equals} consistent with {@link Comparable#compareTo(Object)} and therefore safe
      * to use in hash-based and sorted collections.
+     * <p>
+     * A plain scalar is never equal to a multi-value {@link BigNumberCoordinate}; this stays symmetric
+     * with {@code BigNumberCoordinate.equals}, which likewise rejects a plain {@code BigNumber} (audit K1).
      *
      * @param other the object to compare with
      * @return {@code true} if {@code other} is a {@code BigNumber} with the same numeric value
@@ -3418,6 +3576,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     public boolean equals(final Object other) {
         if (this == other) {
             return true;
+        }
+        if (other instanceof BigNumberCoordinate) {
+            return false;
         }
         if (!(other instanceof BigNumber otherBigNumber)) {
             return false;
@@ -3429,20 +3590,193 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * Hash code consistent with {@link #equals(Object)}: derived from the numeric value rather
      * than the raw string representation, so {@code "1.0"} and {@code "1.00"} produce the same
      * hash. Uses {@link BigDecimal#stripTrailingZeros()} to obtain a representation-independent
-     * canonical form.
+     * canonical form. Both {@code +0} and {@code -0} (at any scale) map to a single zero bucket.
      */
     @Override
     public int hashCode() {
         final BigDecimal value = toBigDecimal();
         if (value.signum() == 0) {
-            // Normalise both +0 and -0 (any scale) to a single hash bucket.
             return 0;
         }
         return value.stripTrailingZeros().hashCode();
     }
 
     /**
+     * Returns the digits before the decimal point, writing the digits down first if this number was built from
+     * a {@link BigDecimal}.
+     *
+     * @return the integer digits; never {@code null}
+     */
+    public String getValueBeforeDecimalPoint() {
+        ensureText();
+        return valueBeforeDecimalPoint;
+    }
+
+    /**
+     * Returns the digits after the decimal point, {@code "0"} if there are none, writing the digits down first
+     * if this number was built from a {@link BigDecimal}.
+     *
+     * @return the fraction digits; never {@code null}
+     */
+    public String getValueAfterDecimalPoint() {
+        ensureText();
+        return valueAfterDecimalPoint;
+    }
+
+    /**
+     * Reports whether the number is marked negative, writing the digits down first if this number was built from
+     * a {@link BigDecimal}.
+     *
+     * @return {@code true} if the sign is minus
+     */
+    public boolean isNegative() {
+        ensureText();
+        return isNegative;
+    }
+
+    /**
+     * Copies the digits and the cached value of another number. The other number is not changed.
+     *
+     * @param source the number to copy from; must not be {@code null}
+     */
+    private void copyDigitsFrom(final BigNumber source) {
+        final String integerDigits = source.valueBeforeDecimalPoint;
+        if (integerDigits == null) {
+            this.decimalValue = source.decimalValue;
+            this.trimPending = source.trimPending;
+            return;
+        }
+        this.valueAfterDecimalPoint = source.valueAfterDecimalPoint;
+        this.isNegative = source.isNegative;
+        this.decimalValue = source.decimalValue;
+        this.valueBeforeDecimalPoint = integerDigits;
+    }
+
+    /**
+     * Writes the digits down if this number holds only a {@link BigDecimal}. The digits are the ones that
+     * {@code new BigNumber(decimal.toPlainString())} has, trimmed if {@link #trim()} was called before. The
+     * method may run on several threads at once for a shared instance; every thread computes the same values, and
+     * the volatile write of {@link #valueBeforeDecimalPoint} publishes the other two fields.
+     */
+    private void ensureText() {
+        if (valueBeforeDecimalPoint != null) {
+            return;
+        }
+
+        final String plain = decimalValue.toPlainString();
+        final boolean negative = plain.charAt(0) == '-';
+        final int start = negative ? 1 : 0;
+        final int point = plain.indexOf('.');
+        String integerDigits = point < 0 ? plain.substring(start) : plain.substring(start, point);
+        String fractionDigits = point < 0 ? "0" : plain.substring(point + 1);
+        if (trimPending) {
+            integerDigits = trimLeadingZeros(integerDigits);
+            fractionDigits = trimTrailingZeros(fractionDigits);
+        }
+
+        valueAfterDecimalPoint = fractionDigits;
+        isNegative = negative;
+        valueBeforeDecimalPoint = integerDigits;
+    }
+
+    /**
+     * Returns the value with the scale that a number parsed from its plain string has: at least zero, and zero for a
+     * value whose only fraction digit is {@code 0}, because the digits {@code "1.0"} are read back as {@code 1}.
+     *
+     * @param value the value; must not be {@code null}
+     * @return {@code value}, or {@code value} with scale 0
+     */
+    private static BigDecimal withNonNegativeScale(final BigDecimal value) {
+        if (value.scale() < 0) {
+            return value.setScale(0);
+        }
+        if (value.scale() == 1 && value.unscaledValue().mod(BigInteger.TEN).signum() == 0) {
+            return value.setScale(0);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value without trailing zeros after the decimal point, with a scale of at least zero, which is
+     * the value of the digits that {@link #trim()} leaves.
+     *
+     * @param value the value; must not be {@code null}
+     * @return the canonical value; zero is {@link BigDecimal#ZERO}
+     */
+    private static BigDecimal withoutTrailingZeros(final BigDecimal value) {
+        if (value.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+        if (value.scale() <= 0) {
+            return withNonNegativeScale(value);
+        }
+        if (value.unscaledValue().bitLength() < Long.SIZE) {
+            return withNonNegativeScale(value.stripTrailingZeros());
+        }
+        return withNonNegativeScale(stripLargeUnscaledValue(value));
+    }
+
+    /**
+     * Strips the trailing zeros of a value with a positive scale and an unscaled value too large for a {@code long}.
+     * {@link BigDecimal#stripTrailingZeros()} divides such a value by ten once per zero. That is cheap for the few
+     * zeros of a product and slow for the many zeros of the exact quotient of two small numbers at a high precision.
+     * A value with fewer than {@value #BULK_STRIP_ZEROS} zeros is left to that method. For more zeros this method
+     * counts them in the digits and divides once.
+     *
+     * @param value the value; must not be {@code null}, not zero and have a positive scale
+     * @return the value without trailing zeros after the decimal point
+     */
+    private static BigDecimal stripLargeUnscaledValue(final BigDecimal value) {
+        final BigInteger unscaled = value.unscaledValue();
+        if (unscaled.testBit(0)) {
+            return value;
+        }
+        if (unscaled.mod(BULK_STRIP_DIVISOR).signum() != 0) {
+            return value.stripTrailingZeros();
+        }
+
+        final String digits = unscaled.abs().toString();
+        int zeros = 0;
+        while (zeros < digits.length() - 1 && digits.charAt(digits.length() - 1 - zeros) == '0') {
+            zeros++;
+        }
+        final int removable = Math.min(zeros, value.scale());
+
+        final BigInteger reduced = new BigInteger(digits.substring(0, digits.length() - removable));
+        return new BigDecimal(value.signum() < 0 ? reduced.negate() : reduced, value.scale() - removable);
+    }
+    /**
+     * Writes the digits down before the serialized form is written, because the form holds the digits and not
+     * the cached value.
+     *
+     * @param stream the stream to write to
+     * @throws IOException if the stream fails
+     */
+    @Serial
+    private void writeObject(final ObjectOutputStream stream) throws IOException {
+        ensureText();
+        stream.defaultWriteObject();
+    }
+
+    /**
+     * Restores the derived state: the cached value and the pending trim are not part of the serialized form.
+     *
+     * @param stream the stream to read from
+     * @throws IOException            if the stream fails
+     * @throws ClassNotFoundException if a class of the stream is not found
+     */
+    @Serial
+    private void readObject(final ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        decimalValue = null;
+        trimPending = false;
+    }
+
+    /**
      * Creates and returns a copy of this BigNumber.
+     *
+     * <p>The clone's lazily-created {@link CalculatorEngine} is detached (reset to {@code null}) so it
+     * builds its own on demand and never shares mutable engine state with the original (audit fix K8).</p>
      *
      * @return a new BigNumber instance with the same value and properties as this one
      */
@@ -3450,8 +3784,6 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     public BigNumber clone() {
         try {
             final BigNumber cloned = (BigNumber) super.clone();
-            // Detach the (lazily created) engine so the clone builds its own on demand and never
-            // shares mutable engine state with the original (audit fix K8).
             cloned.calculatorEngine = null;
             return cloned;
         } catch (final CloneNotSupportedException cloneNotSupportedException) {

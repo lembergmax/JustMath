@@ -30,27 +30,36 @@ import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElements;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility class for performing mathematical series operations with arbitrary precision.
  */
+@UtilityClass
 public final class SeriesMath {
 
-    private SeriesMath() {
-        // Utility class — never instantiated.
-    }
-
+    /**
+     * Upper bound on the number of terms a single {@code summation}/{@code product} may iterate. Each term
+     * parses and evaluates a full sub-expression, so an unbounded range such as
+     * {@code summation(1; 100000000000; k)} would run effectively forever — a denial-of-service reachable
+     * from untrusted input. Ranges larger than this are rejected with a typed "too large" error.
+     */
+    private static final long MAX_SERIES_ITERATIONS = 1_000_000L;
 
     /**
-     * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+     * Evaluates and returns the result of a summation expression over an integer range, similar to the mathematical
      * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
      * <p>
      * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
@@ -84,7 +93,7 @@ public final class SeriesMath {
     }
 
     /**
-     * Evaluates and prints the result of a summation expression over an integer range, similar to the mathematical
+     * Evaluates and returns the result of a summation expression over an integer range, similar to the mathematical
      * sigma notation ∑ (summation sign). The variable {@code k} is used as the iteration variable in the expression.
      * <p>
      * This method takes a start and end value for {@code k}, evaluates the expression {@code kCalculation} for each
@@ -121,20 +130,17 @@ public final class SeriesMath {
 
         final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
 
-        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
         final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(externalVariables);
 
         BigNumber result = BigNumbers.ZERO;
-        // BigNumber.add(...) is non-mutating, so kStart itself is safe — no clone needed.
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            // Use the locale-independent canonical form: {@link BigNumber#toString()} would emit
-            // the iteration index using k's own locale (for instance {@code "1,5"} for DE), which
-            // the calculator engine — that always expects {@code .} as the decimal separator —
-            // would then reject as a syntax error. Plain US-style ASCII digits side-step that.
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
+            if (Thread.interrupted()) {
+                throw new CancellationException("Summation was interrupted before completion");
+            }
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.add(currentCalculation);
@@ -208,7 +214,6 @@ public final class SeriesMath {
      * </ol>
      * <p>
      * If {@code kStart} is greater than {@code kEnd}, the product returns the multiplicative identity {@code 1}.
-     * <p>
      *
      * @param kStart            The start integer value of {@code k} (inclusive).
      * @param kEnd              The end integer value of {@code k} (inclusive).
@@ -288,7 +293,6 @@ public final class SeriesMath {
      * </ol>
      * <p>
      * If {@code kStart} is greater than {@code kEnd}, the product returns the multiplicative identity {@code 1}.
-     * <p>
      *
      * @param kStart            The start integer value of {@code k} (inclusive).
      * @param kEnd              The end integer value of {@code k} (inclusive).
@@ -306,7 +310,6 @@ public final class SeriesMath {
 
         final CalculatorEngine calculatorEngine = BigNumber.sharedEngine(mathContext, trigonometricMode);
 
-        // Allocate the variables map exactly once; per iteration we only overwrite the k entry.
         final Map<String, String> combinedVariables = new HashMap<>(getCurrentVariables());
         combinedVariables.putAll(externalVariables);
 
@@ -314,8 +317,10 @@ public final class SeriesMath {
         BigNumber k = kStart;
 
         while (k.isLessThanOrEqualTo(kEnd)) {
-            // Same canonical-form rationale as {@link #summation}.
-            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, k.toBigDecimal().toPlainString());
+            if (Thread.interrupted()) {
+                throw new CancellationException("Product was interrupted before completion");
+            }
+            combinedVariables.put(ExpressionElements.K_SERIES_MATH_VARIABLE, toEngineDecimalLiteral(k));
 
             BigNumber currentCalculation = calculatorEngine.evaluate(kCalculation, combinedVariables);
             result = result.multiply(currentCalculation);
@@ -323,6 +328,21 @@ public final class SeriesMath {
         }
 
         return new BigNumber(result, locale, mathContext, trigonometricMode);
+    }
+
+    /**
+     * Renders {@code value} as a locale-independent decimal literal for the calculator engine.
+     *
+     * <p>The engine always expects {@code .} as the decimal separator, so {@link BigNumber#toString()}
+     * (which is locale-aware and would emit e.g. {@code "1,5"} under a German locale) cannot be used for
+     * the iteration-variable substitution; the canonical {@link java.math.BigDecimal} plain string is
+     * used instead, which the engine accepts as a syntactically valid number in every locale.
+     *
+     * @param value the iteration value to render; must not be {@code null}
+     * @return the value as a plain US-style decimal string; never {@code null}
+     */
+    private static String toEngineDecimalLiteral(final BigNumber value) {
+        return value.toBigDecimal().toPlainString();
     }
 
     /**
@@ -341,19 +361,23 @@ public final class SeriesMath {
         MathUtils.checkMathContext(mathContext);
 
         if (!containsIterationVariable(kCalculation)) {
-            throw new IllegalArgumentException("Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Expression must include the variable '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
 
         if (kStart.isGreaterThan(kEnd)) {
-            throw new IllegalArgumentException("End value must be greater than or equal to the start value.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "End value must be greater than or equal to the start value.");
         }
 
         if (!kStart.isInteger() || !kEnd.isInteger()) {
-            throw new IllegalArgumentException("Start and end values must be integers.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "Start and end values must be integers.");
+        }
+
+        if (kEnd.subtract(kStart).isGreaterThanOrEqualTo(BigNumber.valueOf(MAX_SERIES_ITERATIONS))) {
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "Series range is too large (maximum " + MAX_SERIES_ITERATIONS + " terms)");
         }
 
         if (externalVariables.containsKey(ExpressionElements.K_SERIES_MATH_VARIABLE)) {
-            throw new IllegalArgumentException("External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "External variables must not use the reserved name '" + ExpressionElements.K_SERIES_MATH_VARIABLE + "'.");
         }
     }
 

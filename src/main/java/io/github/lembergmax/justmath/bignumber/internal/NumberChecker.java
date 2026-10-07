@@ -27,7 +27,7 @@ package io.github.lembergmax.justmath.bignumber.internal;
 import java.util.Locale;
 
 /**
- * High-performance numeric string validator for locale-aware expressions.
+ * Numeric string validator for locale-aware expressions.
  * <p>
  * This utility is optimized for hot paths (e.g. tokenizers/parsers). It avoids the overhead of
  * {@link java.text.NumberFormat} parsing and instead validates the input in a single linear scan.
@@ -62,7 +62,6 @@ public final class NumberChecker {
         int start = 0;
         int end = length;
 
-        // Manual trim without allocating a new String
         while (start < end && isWhitespace(input.charAt(start))) {
             start++;
         }
@@ -79,7 +78,6 @@ public final class NumberChecker {
 
         int i = start;
 
-        // Optional sign
         final char first = input.charAt(i);
         if (first == '+' || first == '-') {
             i++;
@@ -91,7 +89,6 @@ public final class NumberChecker {
         boolean sawDigit = false;
         boolean sawDecimal = false;
 
-        // Mantissa: digits, optional grouping (before decimal), optional decimal separator
         while (i < end) {
             final char charAt = input.charAt(i);
 
@@ -102,8 +99,13 @@ public final class NumberChecker {
             }
 
             if (charAt == groupingSep) {
-                // grouping allowed only after at least one digit and only before decimal
                 if (!sawDigit || sawDecimal) {
+                    return false;
+                }
+                // A grouping separator must be followed by a digit: this rejects a trailing separator
+                // ("1,"), consecutive separators ("1,,234") and a separator adjacent to the decimal
+                // point or exponent ("1,.5", "1,e3").
+                if (i + 1 >= end || !isAsciiDigit(input.charAt(i + 1))) {
                     return false;
                 }
                 i++;
@@ -126,7 +128,6 @@ public final class NumberChecker {
             return false;
         }
 
-        // Optional exponent
         if (i < end && isExponentMarker(input.charAt(i))) {
             i++;
             if (i >= end) {
@@ -154,7 +155,6 @@ public final class NumberChecker {
             return sawExpDigit;
         }
 
-        // No trailing characters allowed
         return i == end;
     }
 

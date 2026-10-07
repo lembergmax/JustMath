@@ -54,42 +54,42 @@ import lombok.Getter;
 @Getter
 public class UnaryOperator extends Operator {
 
-	/**
-	 * Where the operator appears relative to its operand.
-	 */
-	public enum Position {
-		/**
-		 * Operator precedes the operand, e.g. unary {@code -x}, unary {@code +x}.
-		 */
-		PREFIX,
-		/**
-		 * Operator follows the operand, e.g. factorial {@code x!}.
-		 */
-		POSTFIX
-	}
+    /**
+     * Where the operator appears relative to its operand.
+     */
+    public enum Position {
+        /**
+         * Operator precedes the operand, e.g. unary {@code -x}, unary {@code +x}.
+         */
+        PREFIX,
+        /**
+         * Operator follows the operand, e.g. factorial {@code x!}.
+         */
+        POSTFIX
+    }
 
-	private final Position position;
-	private final OneArgumentFunctionOperation operation;
+    private final Position position;
+    private final OneArgumentFunctionOperation operation;
 
-	/**
-	 * Creates a new unary operator.
-	 *
-	 * @param symbol     the token symbol that triggers this operator (e.g. {@code "!"} or {@code "-"})
-	 * @param precedence the operator's precedence in the shunting-yard parser
-	 * @param position   whether the operator sits before ({@link Position#PREFIX}) or after
-	 *                   ({@link Position#POSTFIX}) its operand
-	 * @param operation  the 1-argument operation invoked during evaluation
-	 */
-	public UnaryOperator(final String symbol, final int precedence, final Position position, final OneArgumentFunctionOperation operation) {
-		super(symbol, precedence);
-		this.position = position;
-		this.operation = operation;
-	}
+    /**
+     * Creates a new unary operator.
+     *
+     * @param symbol     the token symbol that triggers this operator (e.g. {@code "!"} or {@code "-"})
+     * @param precedence the operator's precedence in the shunting-yard parser
+     * @param position   whether the operator sits before ({@link Position#PREFIX}) or after
+     *                   ({@link Position#POSTFIX}) its operand
+     * @param operation  the 1-argument operation invoked during evaluation
+     */
+    public UnaryOperator(final String symbol, final int precedence, final Position position, final OneArgumentFunctionOperation operation) {
+        super(symbol, precedence);
+        this.position = position;
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(final Deque<Object> stack, final MathContext mathContext, final TrigonometricMode trigonometricMode, final Locale locale) {
-		final BigNumber value = ensureScalar(stack.pop());
-		stack.push(operation.apply(value, mathContext, locale));
-	}
+    @Override
+    public void apply(final Deque<Object> stack, final MathContext mathContext, final TrigonometricMode trigonometricMode, final Locale locale) {
+        final BigNumber value = ensureScalar(stack.pop());
+        stack.push(operation.apply(value, mathContext, locale));
+    }
 
 }

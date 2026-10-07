@@ -53,6 +53,9 @@ public final class Main {
 
         // A failing evaluation, folded into a localized error string (Text Output API).
         System.out.println("5/0      = " + engine.evaluateToString("5/0"));
+
+        // An abuse-resistance guard: an astronomically large power is rejected, not computed.
+        System.out.println("123456789^987654321 = " + engine.evaluateToString("123456789^987654321"));
     }
 
 }

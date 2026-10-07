@@ -24,6 +24,8 @@
 
 package io.github.lembergmax.justmath.calculator.expression;
 
+import java.util.*;
+
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.calculator.expression.elements.Constant;
@@ -31,15 +33,9 @@ import io.github.lembergmax.justmath.calculator.expression.elements.Parenthesis;
 import io.github.lembergmax.justmath.calculator.expression.elements.Separator;
 import io.github.lembergmax.justmath.calculator.expression.elements.function.*;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.BinaryOperator;
-import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
+import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
 import lombok.Getter;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Utility class for managing all supported mathematical expression elements.
@@ -62,9 +58,9 @@ public class ExpressionElements {
      * Registry for prefix unary operators ({@code -}, {@code +}). Kept separate from
      * the main {@link #registry} so the same ASCII symbols can resolve to a binary
      * operator (precedence 2) or a prefix unary operator (precedence 4,
-     * right-associative) depending on {@link io.github.lembergmax.justmath.calculator.internal.Token.Type}.
-     * The {@link io.github.lembergmax.justmath.calculator.Tokenizer} emits
-     * {@link io.github.lembergmax.justmath.calculator.internal.Token.Type#UNARY_OPERATOR}
+     * right-associative) depending on {@code Token.Type}.
+     * The {@code Tokenizer} emits
+     * {@code Token.Type.UNARY_OPERATOR}
      * tokens in unary context (e.g. {@code -(3+4)}, {@code -sin(0)}, {@code -x}).
      */
     private static final Map<String, ExpressionElement> unaryRegistry = new HashMap<>();
@@ -76,7 +72,7 @@ public class ExpressionElements {
      * Returns the registry of registered {@link ExpressionElement} instances keyed by symbol.
      *
      * <p>The returned view is unmodifiable so that callers cannot poison the global lookup
-     * surface (e.g. the {@link io.github.lembergmax.justmath.calculator.Tokenizer} cached key set).
+     * surface (e.g. the {@code Tokenizer} cached key set).
      * The registry is populated once during static initialization and is not mutated
      * afterwards.</p>
      *
@@ -125,8 +121,6 @@ public class ExpressionElements {
     public static final String FUNC_ACOS = "acos";
     public static final String FUNC_COS_S = "cos⁻¹";
     public static final String FUNC_ACOSH = "acosh";
-    // Surrogate for the inverse hyperbolic cosine. Previously misnamed FUNC_ACOS_S, which
-    // looked like the inverse cosine surrogate but in fact held the {@code cosh⁻¹} symbol.
     public static final String FUNC_ACOSH_S = "cosh⁻¹";
     //
     public static final String FUNC_TAN = "tan";
@@ -172,7 +166,7 @@ public class ExpressionElements {
     public static final String FUNC_BETA_S = "beta";
     //
     public static final String FUNC_ABS = "abs";
-    public static final String SURRFUNC_ABS_S = "|"; // that is special :0
+    public static final String SURRFUNC_ABS_S = "|";
     //
     public static final String FUNC_AVG = "avg";
     public static final String FUNC_AVG_S = "average";
@@ -250,9 +244,9 @@ public class ExpressionElements {
                 new TwoArgumentFunction(FUNC_COMB, 6, BigNumber::combination),
                 //
                 new TwoArgumentFunction(FUNC_LCM, 6, BigNumber::lcm),
-                new TwoArgumentFunction(FUNC_LCM.toLowerCase(), 6, BigNumber::lcm),
+                new TwoArgumentFunction(FUNC_LCM.toLowerCase(Locale.ROOT), 6, BigNumber::lcm),
                 new SimpleTwoArgumentFunction(FUNC_GCD, 6, BigNumber::gcd),
-                new SimpleTwoArgumentFunction(FUNC_GCD.toLowerCase(), 6, BigNumber::gcd),
+                new SimpleTwoArgumentFunction(FUNC_GCD.toLowerCase(Locale.ROOT), 6, BigNumber::gcd),
                 //
                 new CoordinateFunction(FUNC_REC, 6, BigNumber::polarToCartesianCoordinates),
                 new SimpleCoordinateFunction(FUNC_POL, 6, BigNumber::cartesianToPolarCoordinates),
@@ -302,7 +296,7 @@ public class ExpressionElements {
      * Finds a prefix unary {@link ExpressionElement} by its symbol.
      * <p>
      * Lookups must use this method (not {@link #findBySymbol(String)}) when the
-     * token type is {@link io.github.lembergmax.justmath.calculator.internal.Token.Type#UNARY_OPERATOR},
+     * token type is {@code Token.Type.UNARY_OPERATOR},
      * because the same symbol ({@code -} / {@code +}) is also registered as a
      * binary operator with a different precedence in the main registry.
      *
@@ -319,7 +313,7 @@ public class ExpressionElements {
      * <p>Intentionally {@code private}: the registry is populated once during static
      * initialization and is immutable thereafter. Exposing this as a public mutator allowed
      * callers to write into the backing {@link java.util.HashMap} after start-up, racing with
-     * the {@link io.github.lembergmax.justmath.calculator.Tokenizer}'s cached key-set view and
+     * the {@code Tokenizer}'s cached key-set view and
      * shifting {@link #getMaxTokenLength()} mid-tokenization. If runtime extension is ever
      * required, add a properly synchronized, per-engine registry instead of mutating this
      * global one.</p>

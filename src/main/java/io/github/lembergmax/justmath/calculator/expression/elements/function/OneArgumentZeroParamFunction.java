@@ -36,17 +36,17 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class OneArgumentZeroParamFunction extends Function {
 
-	private final OneArgumentZeroParamFunctionOperation operation;
+    private final OneArgumentZeroParamFunctionOperation operation;
 
-	public OneArgumentZeroParamFunction(String symbol, int precedence, OneArgumentZeroParamFunctionOperation operation) {
-		super(symbol, precedence);
-		this.operation = operation;
-	}
+    public OneArgumentZeroParamFunction(String symbol, int precedence, OneArgumentZeroParamFunctionOperation operation) {
+        super(symbol, precedence);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a));
+    }
 
 }

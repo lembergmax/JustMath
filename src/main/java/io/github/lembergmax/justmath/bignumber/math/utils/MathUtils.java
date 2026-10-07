@@ -27,12 +27,16 @@ package io.github.lembergmax.justmath.bignumber.math.utils;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumberCoordinate;
 import io.github.lembergmax.justmath.bignumber.MultiValueResult;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
+import java.util.function.Function;
 
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.pi;
@@ -46,6 +50,15 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.pi;
  * consistent and accurate unit conversions.
  */
 public class MathUtils {
+
+    /**
+     * Upper bound on {@link MathContext} precision accepted by the library. Requesting an astronomically
+     * large precision (e.g. via a crafted untrusted input that reaches a precision-taking operation) would
+     * make a single computation allocate gigabytes and run for minutes, a denial-of-service vector. The
+     * bound is generous — far above any realistic need (the default division precision is 100) — so it never
+     * rejects legitimate use, only absurd requests.
+     */
+    public static final int MAX_MATH_CONTEXT_PRECISION = 1_000_000;
 
     /**
      * Converts the given angle to radians depending on the specified {@link TrigonometricMode}.
@@ -108,6 +121,111 @@ public class MathUtils {
     }
 
     /**
+     * Digits of relative accuracy that {@link #computeWithGuardDigits} lets a result lose to cancellation before it
+     * repeats the computation with more digits.
+     */
+    private static final int ADAPTIVE_SAFETY_DIGITS = 5;
+
+    /**
+     * Largest number of times {@link #computeWithGuardDigits} repeats a computation with more digits.
+     */
+    private static final int MAX_ADAPTIVE_ATTEMPTS = 8;
+
+    /**
+     * Largest number of times {@link #computeWithGuardDigits} evaluates a function again because its result was zero.
+     */
+    private static final int MAX_ZERO_RESULT_RETRIES = 3;
+
+    /**
+     * Factor and offset by which {@link #computeWithGuardDigits} grows the guard digits after a result of zero.
+     */
+    private static final int ZERO_RESULT_GUARD_FACTOR = 4;
+
+    private static final int ZERO_RESULT_GUARD_OFFSET = 50;
+
+    /**
+     * Returns a {@link MathContext} with {@code extraDigits} more digits and the rounding mode of the caller.
+     *
+     * @param mathContext the requested context; must not be {@code null}
+     * @param extraDigits the number of guard digits; must not be negative
+     * @return the working context; never {@code null}
+     */
+    public static MathContext withGuardDigits(@NonNull final MathContext mathContext, final int extraDigits) {
+        return new MathContext(mathContext.getPrecision() + extraDigits, mathContext.getRoundingMode());
+    }
+
+    /**
+     * Counts the digits of a value that lie left of the decimal point.
+     *
+     * @param value the value; must not be {@code null}
+     * @return the number of integer digits; 0 if {@code |value| < 1}
+     */
+    public static int integerDigitCount(@NonNull final BigDecimal value) {
+        return Math.max(0, value.precision() - value.scale());
+    }
+
+    /**
+     * Computes a function value so that the requested number of digits is correct, whatever the size of the result,
+     * and rounds once to the requested precision and rounding mode.
+     *
+     * <p>Libraries such as {@code BigDecimalMath} guarantee the <em>absolute</em> precision of a result near 1.
+     * A result of {@code 1E-20}, for example {@code sin(x)} for an {@code x} near a multiple of pi, {@code acos(x)}
+     * for an {@code x} near 1 or {@code ln(x)} for an {@code x} near 1, has lost 20 of its digits to cancellation.
+     * A result of {@code 1E+20}, such as {@code tan(x)} near a pole, has the same problem. This method evaluates
+     * {@code function} with {@code baseGuardDigits} extra digits and then compares the size of the result with the
+     * guard digits it has. If the result has lost more digits than the guard covers, it evaluates the function again
+     * with enough digits, until the size of the result is stable.</p>
+     *
+     * <p>A result of zero is not trusted: a library returns 0 for a result that is smaller than its absolute
+     * precision, such as {@code atanh(1E-21)} at 5 digits. The function is then evaluated again with more guard
+     * digits, up to {@value #MAX_ZERO_RESULT_RETRIES} times, and zero is returned only if it stays zero. A caller
+     * whose function is exactly zero for some arguments, such as {@code sin(0)} or {@code ln(1)}, returns that
+     * zero itself before it calls this method.</p>
+     *
+     * @param requestedMathContext the precision and rounding mode the caller asked for; must not be {@code null}
+     * @param baseGuardDigits      the guard digits that every evaluation gets, for the rounding noise of the
+     *                             function itself; must not be negative
+     * @param function             evaluates the function at the given working precision; must not be {@code null}
+     * @return the value rounded to {@code requestedMathContext}; never {@code null}
+     * @throws MathArithmeticException with {@code MATH_OVERFLOW} if the working precision would exceed
+     *                                 {@link #MAX_MATH_CONTEXT_PRECISION}, or the result does not stabilize
+     */
+    public static BigDecimal computeWithGuardDigits(
+            @NonNull final MathContext requestedMathContext,
+            final int baseGuardDigits,
+            @NonNull final Function<MathContext, BigDecimal> function
+    ) {
+        int guardDigits = baseGuardDigits;
+        int zeroResultRetries = 0;
+        for (int attempt = 0; attempt < MAX_ADAPTIVE_ATTEMPTS; attempt++) {
+            final MathContext workingContext = withGuardDigits(requestedMathContext, guardDigits);
+            checkMathContext(workingContext);
+
+            final BigDecimal result = function.apply(workingContext);
+            if (result.signum() == 0) {
+                if (zeroResultRetries >= MAX_ZERO_RESULT_RETRIES) {
+                    return result;
+                }
+                zeroResultRetries++;
+                guardDigits = guardDigits * ZERO_RESULT_GUARD_FACTOR + ZERO_RESULT_GUARD_OFFSET;
+                continue;
+            }
+
+            final int requiredGuardDigits = Math.abs(decimalExponent(result)) + ADAPTIVE_SAFETY_DIGITS;
+            if (guardDigits >= requiredGuardDigits) {
+                return result.round(requestedMathContext);
+            }
+            guardDigits = requiredGuardDigits + baseGuardDigits;
+        }
+
+        throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "The result does not stabilize within " + MAX_ADAPTIVE_ATTEMPTS + " attempts");
+    }
+
+    private static int decimalExponent(final BigDecimal value) {
+        return value.precision() - value.scale() - 1;
+    }
+
+    /**
      * Checks that the provided {@link MathContext} has a precision greater than zero.
      * <p>
      * Throws an {@link IllegalArgumentException} if the precision is zero or negative,
@@ -118,7 +236,11 @@ public class MathUtils {
      */
     public static void checkMathContext(@NonNull final MathContext mathContext) {
         if (mathContext.getPrecision() <= 0) {
-            throw new IllegalArgumentException("MathContext precision must be greater than zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "MathContext precision must be greater than zero");
+        }
+        if (mathContext.getPrecision() > MAX_MATH_CONTEXT_PRECISION) {
+            throw new MathArithmeticException(CalculatorErrorCode.MATH_OVERFLOW, "MathContext precision " + mathContext.getPrecision()
+                    + " is too large (maximum " + MAX_MATH_CONTEXT_PRECISION + ")");
         }
     }
 

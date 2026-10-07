@@ -26,9 +26,13 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArgumentException;
+import io.github.lembergmax.justmath.bignumber.math.exceptions.MathArithmeticException;
 import io.github.lembergmax.justmath.bignumber.math.utils.MathUtils;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -57,9 +61,10 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
  * This reduces the number of exponential evaluations from 2 to 1 per hyperbolic call.
  *
  * <h2>Precision strategy</h2>
- * Intermediate operations may lose a few digits due to cancellation (especially around x≈0). Therefore a small
- * number of guard digits is added to the provided {@link MathContext} for internal computation, while the final
- * result is returned with the caller-provided {@link MathContext}.
+ * Intermediate operations may lose digits due to cancellation (especially around x≈0, where
+ * {@code e^x - e^{-x}} is about {@code 2x}). Therefore guard digits are added to the provided {@link MathContext}
+ * for internal computation, and for {@code |x| < 1} their number grows with the leading zeros of {@code x}. The
+ * final result is rounded once with the caller-provided {@link MathContext}.
  */
 public final class HyperbolicTrigonometricMath {
 
@@ -70,6 +75,12 @@ public final class HyperbolicTrigonometricMath {
      * {@code e^x - e^{-x}}.
      */
     private static final int INTERNAL_GUARD_DIGITS = 8;
+
+    /**
+     * Non-instantiable utility class.
+     */
+    private HyperbolicTrigonometricMath() {
+    }
 
     /**
      * Computes the hyperbolic sine {@code sinh(x)} with the given precision.
@@ -93,11 +104,10 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("0", locale);
+            return freshZero(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.subtract(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -128,11 +138,10 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("1", locale);
+            return freshOne(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.add(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -163,11 +172,10 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            // Fresh instance, never the shared constant: the caller may mutate the result.
-            return new BigNumber("0", locale);
+            return freshZero(locale);
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.subtract(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -201,10 +209,10 @@ public final class HyperbolicTrigonometricMath {
         MathUtils.checkMathContext(mathContext);
 
         if (argument.isEqualTo(ZERO)) {
-            throw new IllegalArgumentException("argument cannot be zero");
+            throw new MathArgumentException(CalculatorErrorCode.PROCESSING_DOMAIN_ERROR, "argument cannot be zero");
         }
 
-        final MathContext internalMathContext = createInternalMathContext(mathContext);
+        final MathContext internalMathContext = createInternalMathContext(mathContext, argument);
         final ExponentialPair exponentialPair = computeExponentialPair(argument, internalMathContext, locale);
 
         final BigNumber numerator = BasicMath.add(exponentialPair.expX(), exponentialPair.expNegativeX(), locale);
@@ -226,16 +234,30 @@ public final class HyperbolicTrigonometricMath {
     /**
      * Creates an internal {@link MathContext} that adds guard digits on top of the requested precision.
      *
-     * <p>This reduces the impact of intermediate rounding when subtracting nearly equal numbers
-     * such as {@code e^x - e^{-x}} for small |x|.</p>
+     * <p>This reduces the impact of intermediate rounding when subtracting nearly equal numbers such as
+     * {@code e^x - e^{-x}} for small |x|. For {@code |x| < 1} that difference is about {@code 2x}, so it loses as
+     * many digits as {@code x} has leading zeros. The guard grows by that number, which keeps
+     * {@code sinh(1E-10)} correct in every requested digit.</p>
      *
      * @param requestedMathContext the caller-provided context; must not be {@code null}
+     * @param argument             the argument of the hyperbolic function; must not be {@code null}
      * @return internal context with increased precision
      */
-    private static MathContext createInternalMathContext(final MathContext requestedMathContext) {
+    private static MathContext createInternalMathContext(final MathContext requestedMathContext, final BigNumber argument) {
         final int requestedPrecision = requestedMathContext.getPrecision();
-        final int internalPrecision = Math.max(10, requestedPrecision + INTERNAL_GUARD_DIGITS);
+        final int internalPrecision = Math.max(10, requestedPrecision + INTERNAL_GUARD_DIGITS + digitsLostToCancellation(argument));
         return new MathContext(internalPrecision, requestedMathContext.getRoundingMode());
+    }
+
+    /**
+     * Counts the digits that {@code e^x - e^{-x}} loses to cancellation for a small argument.
+     *
+     * @param argument the argument; must not be {@code null}
+     * @return the number of leading zeros of {@code |x|} behind the decimal point plus one for {@code |x| < 1}; 0 otherwise
+     */
+    private static int digitsLostToCancellation(final BigNumber argument) {
+        final BigDecimal value = argument.toBigDecimal();
+        return Math.max(0, -(value.precision() - value.scale() - 1));
     }
 
     /**
@@ -292,7 +314,7 @@ public final class HyperbolicTrigonometricMath {
      */
     private static BigNumber computeReciprocal(final BigNumber value, final MathContext mathContext, final Locale locale) {
         if (value.isEqualTo(ZERO)) {
-            throw new ArithmeticException("Division by zero");
+            throw new MathArithmeticException(CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO, "Division by zero");
         }
         return BasicMath.divide(BigNumbers.ONE, value, mathContext, locale);
     }
@@ -312,18 +334,48 @@ public final class HyperbolicTrigonometricMath {
     }
 
     /**
-     * Re-wraps an intermediate {@link BigNumber} result with the caller-provided {@link MathContext}.
+     * Rounds an intermediate {@link BigNumber} (computed with extra guard digits) to the precision and
+     * rounding mode requested by the caller.
      *
-     * <p>This method does not change the numeric value; it only ensures the returned {@link BigNumber}
-     * carries the requested context if your {@link BigNumber} type stores/uses it.</p>
+     * <p>The intermediate is computed at {@code requestedPrecision + INTERNAL_GUARD_DIGITS}; this method
+     * performs the single, final rounding back to the caller's {@link MathContext}. Without it the guard
+     * digits would leak to the caller, so the returned value would carry more significant digits than the
+     * caller asked for and the {@link MathContext} contract documented on the public methods would be
+     * violated.</p>
      *
      * @param intermediateResult   intermediate computed result; must not be {@code null}
      * @param locale               locale used for parsing/formatting; must not be {@code null}
-     * @param requestedMathContext context to attach; must not be {@code null}
-     * @return a result BigNumber associated with the requested math context
+     * @param requestedMathContext the caller-provided precision/rounding to round to; must not be {@code null}
+     * @return the result rounded to {@code requestedMathContext}; never {@code null}
      */
     private static BigNumber rewrapWithRequestedMathContext(final BigNumber intermediateResult, final Locale locale, final MathContext requestedMathContext) {
-        return new BigNumber(intermediateResult.toString(), locale, requestedMathContext).trim();
+        return new BigNumber(intermediateResult.toString(), locale).round(requestedMathContext).trim();
+    }
+
+    /**
+     * Returns a fresh {@link BigNumber} equal to zero.
+     *
+     * <p>Always a new instance rather than the shared {@code BigNumbers.ZERO} constant, because the
+     * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+     *
+     * @param locale the locale used for formatting; must not be {@code null}
+     * @return a new {@link BigNumber} equal to {@code 0}; never {@code null}
+     */
+    private static BigNumber freshZero(final Locale locale) {
+        return new BigNumber("0", locale);
+    }
+
+    /**
+     * Returns a fresh {@link BigNumber} equal to one.
+     *
+     * <p>Always a new instance rather than the shared {@code BigNumbers.ONE} constant, because the
+     * returned value flows back to callers that may mutate it (audit fixes K2/H10).
+     *
+     * @param locale the locale used for formatting; must not be {@code null}
+     * @return a new {@link BigNumber} equal to {@code 1}; never {@code null}
+     */
+    private static BigNumber freshOne(final Locale locale) {
+        return new BigNumber("1", locale);
     }
 
 }

@@ -25,14 +25,12 @@
 package io.github.lembergmax.justmath.bignumber.algorithms;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import io.github.lembergmax.justmath.bignumber.algorithms.BubbleSort;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public abstract class AbstractSortAlgorithmTest {
+abstract class AbstractSortAlgorithmTest {
 
     @FunctionalInterface
     public interface BigNumberSortAlgorithm {

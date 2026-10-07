@@ -26,6 +26,7 @@ package io.github.lembergmax.justmath.bignumber.algorithms;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
@@ -71,9 +72,11 @@ public class RadixSort extends SortingAlgorithm {
      * Sorts the list in-place using LSD RadixSort (base 10) for integer values.
      *
      * <p>This implementation supports negative integers by separating values into
-     * negative and non-negative lists. The negative part is sorted by absolute value
-     * and then reversed (because more negative means smaller) before being combined
-     * with the sorted non-negative part.</p>
+     * negative and non-negative lists. The negative part must end up ascending by value
+     * (most negative first) while remaining stable for equal values, so it is sorted with a
+     * reverse → stable-ascending-by-|x| → reverse pass rather than a plain reversal (a plain
+     * reversal would flip the relative order of equal negatives such as {@code "-5"} and
+     * {@code "-5.0"}). The result is combined with the sorted non-negative part.</p>
      *
      * @param numbers list of integer {@link BigNumber} values to sort
      */
@@ -90,14 +93,26 @@ public class RadixSort extends SortingAlgorithm {
         }
 
         lsdRadixSortByAbsValue(nonNegatives);
-        lsdRadixSortByAbsValue(negatives);
+        sortNegativesAscendingByValueStably(negatives);
 
         numbers.clear();
-
-        for (int i = negatives.size() - 1; i >= 0; i--) {
-            numbers.add(negatives.get(i));
-        }
+        numbers.addAll(negatives);
         numbers.addAll(nonNegatives);
+    }
+
+    /**
+     * Sorts {@code negatives} ascending by signed value (descending by absolute value) while keeping
+     * equal elements in their original relative order.
+     *
+     * <p>Stability is achieved by reversing the list, running the stable ascending-by-|x| radix sort,
+     * and reversing again, so equal negatives retain their input order.</p>
+     *
+     * @param negatives the negative values to sort in-place
+     */
+    private void sortNegativesAscendingByValueStably(@NonNull final List<BigNumber> negatives) {
+        Collections.reverse(negatives);
+        lsdRadixSortByAbsValue(negatives);
+        Collections.reverse(negatives);
     }
 
     /**
@@ -117,9 +132,6 @@ public class RadixSort extends SortingAlgorithm {
         BigInteger exp = BigInteger.ONE;
 
         while (maxAbs.compareTo(exp) >= 0) {
-            // Each LSD pass is O(n); the loop count equals the number of digits in the largest
-            // absolute value. Check before every pass so cancellation kicks in at most one pass
-            // late even on very large integer inputs.
             abortIfInterrupted();
             countingSortByDigit(values, exp);
             exp = exp.multiply(BigInteger.TEN);

@@ -77,7 +77,14 @@ class UnitRegistry {
      * This list is the <strong>only</strong> place you need to edit to add or modify units.
      * The rest of the registry is derived from this list and validated at startup.
      * </p>
-     * <a href="https://www.unitconverters.net/length-converter.html">Get the scaleToBase from this website</a>
+     *
+     * <p>
+     * Every value is either derived from a definition (SI, the international yard and pound, US customary and
+     * imperial measures, CODATA, IAU) or listed with a reason in {@code unit-exceptions.tsv}. Use the exact ratio
+     * ({@link #defineFraction}) when the definition is a ratio that has no finite decimal form. The test
+     * {@code UnitDefinitionAuditTest} fails when a unit has neither a definition nor an exception, and the
+     * method and the corrections are written down in {@code docs/unit-audit.md}.
+     * </p>
      */
     private static final List<UnitSpec> BUILT_IN = List.of(
             // =========================
@@ -103,24 +110,24 @@ class UnitRegistry {
             define(Unit.Length.FEMTOMETER, "Femtometer", "fm", "1.0E-15"),
             define(Unit.Length.ATTOMETER, "Attometer", "am", "1.0E-18"),
 
-            define(Unit.Length.PLANCK_LENGTH, "Planck Length", "lP", "1.616049999E-35"),
-            define(Unit.Length.ELECTRON_RADIUS, "Electron Radius", "re", "2.81794092E-15"),
-            define(Unit.Length.BOHR_RADIUS, "Bohr Radius", "a0", "5.29177249E-11"),
-            define(Unit.Length.X_UNIT, "X Unit", "xu", "1.002079999E-13"),
+            define(Unit.Length.PLANCK_LENGTH, "Planck Length", "lP", "1.616255E-35"),
+            define(Unit.Length.ELECTRON_RADIUS, "Electron Radius", "re", "2.8179403205E-15"),
+            define(Unit.Length.BOHR_RADIUS, "Bohr Radius", "a0", "5.29177210544E-11"),
+            define(Unit.Length.X_UNIT, "X Unit", "xu", "1.00207697E-13"),
             define(Unit.Length.FERMI, "Fermi", "fermi", "1.0E-15"),
 
-            define(Unit.Length.SUN_RADIUS, "Sun Radius", "Rsun", "696000000"),
-            define(Unit.Length.EARTH_EQUATORIAL_RADIUS, "Earth Equatorial Radius", "R_earth_eq", "6378160"),
-            define(Unit.Length.EARTH_POLAR_RADIUS, "Earth Polar Radius", "R_earth_p", "6356777"),
-            define(Unit.Length.ASTRONOMICAL_UNIT, "Astronomical Unit", "au", "149597870691"),
+            define(Unit.Length.SUN_RADIUS, "Sun Radius", "Rsun", "695700000"),
+            define(Unit.Length.EARTH_EQUATORIAL_RADIUS, "Earth Equatorial Radius", "R_earth_eq", "6378137"),
+            define(Unit.Length.EARTH_POLAR_RADIUS, "Earth Polar Radius", "R_earth_p", "6356752.314245"),
+            define(Unit.Length.ASTRONOMICAL_UNIT, "Astronomical Unit", "au", "149597870700"),
             define(Unit.Length.EARTH_DISTANCE_FROM_SUN, "Earth Distance from Sun", "AU", "149600000000"),
-            define(Unit.Length.KILOPARSEC, "Kiloparsec", "kpc", "30856775812799588000"),
-            define(Unit.Length.MEGAPARSEC, "Megaparsec", "Mpc", "3.085677581E+22"),
-            define(Unit.Length.PARSEC, "Parsec", "pc", "30856775812799588"),
-            define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580044"),
+            define(Unit.Length.KILOPARSEC, "Kiloparsec", "kpc", "30856775814913672789.1393795779647161073192116"),
+            define(Unit.Length.MEGAPARSEC, "Megaparsec", "Mpc", "30856775814913672789139.3795779647161073192116"),
+            define(Unit.Length.PARSEC, "Parsec", "pc", "30856775814913672.7891393795779647161073192116"),
+            define(Unit.Length.LIGHT_YEAR, "Light Year", "ly", "9460730472580800"),
 
             define(Unit.Length.LEAGUE, "League", "lea", "4828.032"),
-            define(Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL, "Nautical League", "NL", "55565556"),
+            define(Unit.Length.NAUTICAL_LEAGUE_INTERNATIONAL, "Nautical League", "NL", "5556"),
             define(Unit.Length.NAUTICAL_LEAGUE_UK, "Nautical League (UK)", "NL (UK)", "5559.552"),
             define(Unit.Length.NAUTICAL_MILE, "Nautical Mile", "nmi", "1852"),
             define(Unit.Length.NAUTICAL_MILE_UK, "Nautical Mile (UK)", "nmi (UK)", "1853.184"),
@@ -142,7 +149,7 @@ class UnitRegistry {
             define(Unit.Length.FINGER_CLOTH, "Finger (cloth)", "finger", "0.1143"),
             define(Unit.Length.HAND, "Hand", "hand", "0.1016"),
             define(Unit.Length.HANDBREADTH, "Handbreadth", "hb", "0.0762"),
-            define(Unit.Length.NAIL_COTH, "Nail (cloth)", "nail", "0.05715"),
+            define(Unit.Length.NAIL_CLOTH, "Nail (cloth)", "nail", "0.05715"),
             define(Unit.Length.FINGERBREADTH, "Fingerbreadth", "fb", "0.01905"),
             defineFraction(Unit.Length.BARLEYCORN, "Barleycorn", "barleycorn", "0.0254", "3"),
             define(Unit.Length.YARD, "Yard", "yd", "0.9144"),
@@ -154,7 +161,7 @@ class UnitRegistry {
             define(Unit.Length.MICROINCH, "Microinch", "µin", "2.54E-8"),
 
             define(Unit.Length.ARPENT, "Arpent", "arp", "58.5216"),
-            define(Unit.Length.KEN, "Ken", "ken", "2.11836"),
+            defineFraction(Unit.Length.KEN, "Ken", "ken", "20", "11"),
 
             defineFraction(Unit.Length.PIXEL, "Pixel", "px", "0.0254", "96"),
             defineFraction(Unit.Length.POINT, "Point", "pt", "0.0254", "72"),
@@ -179,11 +186,11 @@ class UnitRegistry {
             define(Unit.Area.ARE, "Are", "a", "100"),
 
             define(Unit.Area.BARN, "Barn", "b", "1.E-28"),
-            define(Unit.Area.ELECTRON_CROSS_SECTION, "Thomson Cross Section", "σT", "6.652461599E-29"),
+            define(Unit.Area.ELECTRON_CROSS_SECTION, "Thomson Cross Section", "σT", "6.6524587051E-29"),
 
-            define(Unit.Area.TOWNSHIP, "Township", "twp", "93239571.972"),
+            define(Unit.Area.TOWNSHIP, "Township", "twp", "93239571.972096"),
             define(Unit.Area.SECTION, "Section", "sec", "2589988.110336"),
-            define(Unit.Area.HOMESTEAD, "Homestead", "hstd", "647497.02758"),
+            define(Unit.Area.HOMESTEAD, "Homestead", "hstd", "647497.027584"),
 
             define(Unit.Area.SQUARE_MILE, "Square Mile", "mi^2", "2589988.110336"),
             define(Unit.Area.ACRE, "Acre", "ac", "4046.8564224"),
@@ -286,7 +293,7 @@ class UnitRegistry {
             defineFraction(Unit.Volume.BIBLICAL_CAB, "Cab (Biblical)", "cab_biblical", "0.022", "18"),
             defineFraction(Unit.Volume.BIBLICAL_LOG, "Log (Biblical)", "log_biblical", "0.022", "72"),
 
-            define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.083E+21"),
+            define(Unit.Volume.EARTH_VOLUME, "Earth's Volume", "earth_volume", "1.08321E+21"),
 
             // =========================
             // MASS (base: kilogram)
@@ -314,7 +321,7 @@ class UnitRegistry {
             define(Unit.Mass.FEMTOGRAM, "Femtogram", "fg", "1.0E-18"),
             define(Unit.Mass.ATTOGRAM, "Attogram", "ag", "1.0E-21"),
 
-            define(Unit.Mass.CARRAT, "Carat", "ct", "0.0002"),
+            define(Unit.Mass.CARAT, "Carat", "ct", "0.0002"),
             define(Unit.Mass.GRAIN, "Grain", "gr", "0.00006479891"),
             define(Unit.Mass.PENNYWEIGHT, "Pennyweight", "dwt", "0.00155517384"),
             define(Unit.Mass.SCRUPLE_APOTHECARY, "Scruple (Apothecary)", "℈", "0.0012959782"),
@@ -333,25 +340,25 @@ class UnitRegistry {
             define(Unit.Mass.STONE_UNITED_KINGDOM, "Stone (United Kingdom)", "st(UK)", "6.35029318"),
 
             define(Unit.Mass.KILOGRAM_FORCE_SECOND_SQUARED_PER_METER, "Kilogram-Force Square Second per Meter", "kgf*s^2/m", "9.80665"),
-            define(Unit.Mass.POUND_FORCE_SECOND_SQUARED_PER_FOOT, "Pound-Force Square Second per Foot", "lbf*s^2/ft", "14.5939029372"),
-            define(Unit.Mass.SLUG, "Slug", "slug", "14.5939029372"),
+            defineFraction(Unit.Mass.POUND_FORCE_SECOND_SQUARED_PER_FOOT, "Pound-Force Square Second per Foot", "lbf*s^2/ft", "8896443230521", "609600000000"),
+            defineFraction(Unit.Mass.SLUG, "Slug", "slug", "8896443230521", "609600000000"),
             define(Unit.Mass.KILOPOUND, "Kilopound", "klb", "453.59237"),
 
             defineFraction(Unit.Mass.ASSAY_TON_UNITED_STATES, "Ton (Assay) (United States)", "AT(US)", "0.175", "6"),
             defineFraction(Unit.Mass.ASSAY_TON_UNITED_KINGDOM, "Ton (Assay) (United Kingdom)", "AT(UK)", "0.098", "3"),
 
-            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.6605402E-27"),
-            define(Unit.Mass.DALTON, "Dalton", "Da", "1.6605300000013E-27"),
+            define(Unit.Mass.ATOMIC_MASS_UNIT, "Atomic Mass Unit", "u", "1.66053906892E-27"),
+            define(Unit.Mass.DALTON, "Dalton", "Da", "1.66053906892E-27"),
 
-            define(Unit.Mass.PLANCK_MASS, "Planck Mass", "planck_mass", "2.17671E-8"),
-            define(Unit.Mass.ELECTRON_REST_MASS, "Electron Mass (Rest)", "electron_rest_mass", "9.1093897E-31"),
-            define(Unit.Mass.MUON_MASS, "Muon Mass", "muon_mass", "1.8835327E-28"),
-            define(Unit.Mass.PROTON_MASS, "Proton Mass", "proton_mass", "1.6726231E-27"),
-            define(Unit.Mass.NEUTRON_MASS, "Neutron Mass", "neutron_mass", "1.6749286E-27"),
-            define(Unit.Mass.DEUTERON_MASS, "Deuteron Mass", "deuteron_mass", "3.343586E-27"),
+            define(Unit.Mass.PLANCK_MASS, "Planck Mass", "planck_mass", "2.176434E-8"),
+            define(Unit.Mass.ELECTRON_REST_MASS, "Electron Mass (Rest)", "electron_rest_mass", "9.1093837139E-31"),
+            define(Unit.Mass.MUON_MASS, "Muon Mass", "muon_mass", "1.883531627E-28"),
+            define(Unit.Mass.PROTON_MASS, "Proton Mass", "proton_mass", "1.67262192595E-27"),
+            define(Unit.Mass.NEUTRON_MASS, "Neutron Mass", "neutron_mass", "1.67492750056E-27"),
+            define(Unit.Mass.DEUTERON_MASS, "Deuteron Mass", "deuteron_mass", "3.3435837768E-27"),
 
-            define(Unit.Mass.EARTH_MASS, "Earth's Mass", "earth_mass", "5.976E+24"),
-            define(Unit.Mass.SUN_MASS, "Sun's Mass", "sun_mass", "2.0E+30"),
+            define(Unit.Mass.EARTH_MASS, "Earth's Mass", "earth_mass", "5.9722E+24"),
+            define(Unit.Mass.SUN_MASS, "Sun's Mass", "sun_mass", "1.98841E+30"),
 
             define(Unit.Mass.BIBLICAL_HEBREW_TALENT, "Talent (Biblical Hebrew)", "talent_biblical_hebrew", "34.2"),
             define(Unit.Mass.BIBLICAL_HEBREW_MINA, "Mina (Biblical Hebrew)", "mina_biblical_hebrew", "0.57"),
@@ -375,7 +382,7 @@ class UnitRegistry {
             // =========================
             define(Unit.Temperature.KELVIN, "Kelvin", "K", "1", "-273.15"),
             define(Unit.Temperature.CELSIUS, "Celsius", "°C"),
-            define(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "0.5555555555555555555555555556", "-17.7777777777777777777777777778"),
+            defineAffineFraction(Unit.Temperature.FAHRENHEIT, "Fahrenheit", "°F", "5", "9", "-160", "9"),
 
             // =========================
             // PRESSURE (base: pascal)
@@ -405,9 +412,9 @@ class UnitRegistry {
             define(Unit.Pressure.MICROBAR, "Microbar", "µbar", "0.1"),
             define(Unit.Pressure.STANDARD_ATMOSPHERE, "Standard Atmosphere", "atm", "101325"),
             define(Unit.Pressure.TECHNICAL_ATMOSPHERE, "Atmosphere (Technical)", "at", "98066.5"),
-            define(Unit.Pressure.PSI, "Pounds per Square Inch", "psi", "6894.7572931783"),
-            define(Unit.Pressure.KSI, "Kips per Square Inch", "ksi", "6894757.2931783"),
-            define(Unit.Pressure.TORR, "Torr", "Torr", "133.3223684211"),
+            defineFraction(Unit.Pressure.PSI, "Pounds per Square Inch", "psi", "8896443230521", "1290320000"),
+            defineFraction(Unit.Pressure.KSI, "Kips per Square Inch", "ksi", "8896443230521", "1290320"),
+            defineFraction(Unit.Pressure.TORR, "Torr", "Torr", "20265", "152"),
 
             define(Unit.Pressure.NEWTON_PER_SQUARE_METER, "Newton per Square Meter", "N/m^2", "1"),
             define(Unit.Pressure.NEWTON_PER_SQUARE_CENTIMETER, "Newton per Square Centimeter", "N/cm^2", "10000"),
@@ -420,15 +427,15 @@ class UnitRegistry {
             define(Unit.Pressure.KILOGRAM_FORCE_PER_SQUARE_MILLIMETER, "Kilogram-Force per Square Millimeter", "kgf/mm^2", "9806650"),
             define(Unit.Pressure.GRAM_FORCE_PER_SQUARE_CENTIMETER, "Gram-Force per Square Centimeter", "gf/cm^2", "98.0665"),
 
-            define(Unit.Pressure.SHORT_TON_FORCE_PER_SQUARE_FOOT, "Ton-Force (Short) per Square Foot", "tonf(short)/ft^2", "95760.517960678"),
-            define(Unit.Pressure.SHORT_TON_FORCE_PER_SQUARE_INCH, "Ton-Force (Short) per Square Inch", "tonf(short)/in^2", "13789514.586338"),
-            define(Unit.Pressure.LONG_TON_FORCE_PER_SQUARE_FOOT, "Ton-Force (Long) per Square Foot", "tonf(long)/ft^2", "107251.78011595"),
-            define(Unit.Pressure.LONG_TON_FORCE_PER_SQUARE_INCH, "Ton-Force (Long) per Square Inch", "tonf(long)/in^2", "15444256.336697"),
+            defineFraction(Unit.Pressure.SHORT_TON_FORCE_PER_SQUARE_FOOT, "Ton-Force (Short) per Square Foot", "tonf(short)/ft^2", "8896443230521", "92903040"),
+            defineFraction(Unit.Pressure.SHORT_TON_FORCE_PER_SQUARE_INCH, "Ton-Force (Short) per Square Inch", "tonf(short)/in^2", "8896443230521", "645160"),
+            defineFraction(Unit.Pressure.LONG_TON_FORCE_PER_SQUARE_FOOT, "Ton-Force (Long) per Square Foot", "tonf(long)/ft^2", "62275102613647", "580644000"),
+            defineFraction(Unit.Pressure.LONG_TON_FORCE_PER_SQUARE_INCH, "Ton-Force (Long) per Square Inch", "tonf(long)/in^2", "62275102613647", "4032250"),
 
-            define(Unit.Pressure.KIP_FORCE_PER_SQUARE_INCH, "Kip-Force per Square Inch", "kipf/in^2", "6894757.2931783"),
-            define(Unit.Pressure.POUND_FORCE_PER_SQUARE_FOOT, "Pound-Force per Square Foot", "lbf/ft^2", "47.8802589804"),
-            define(Unit.Pressure.POUND_FORCE_PER_SQUARE_INCH, "Pound-Force per Square Inch", "lbf/in^2", "6894.7572931783"),
-            define(Unit.Pressure.POUNDAL_PER_SQUARE_FOOT, "Poundal per Square Foot", "pdl/ft^2", "1.4881639436"),
+            defineFraction(Unit.Pressure.KIP_FORCE_PER_SQUARE_INCH, "Kip-Force per Square Inch", "kipf/in^2", "8896443230521", "1290320"),
+            defineFraction(Unit.Pressure.POUND_FORCE_PER_SQUARE_FOOT, "Pound-Force per Square Foot", "lbf/ft^2", "8896443230521", "185806080000"),
+            defineFraction(Unit.Pressure.POUND_FORCE_PER_SQUARE_INCH, "Pound-Force per Square Inch", "lbf/in^2", "8896443230521", "1290320000"),
+            defineFraction(Unit.Pressure.POUNDAL_PER_SQUARE_FOOT, "Poundal per Square Foot", "pdl/ft^2", "45359237", "30480000"),
 
             define(Unit.Pressure.CENTIMETER_OF_MERCURY_0C, "Centimeter of Mercury (0°C)", "cmHg", "1333.22"),
             define(Unit.Pressure.MILLIMETER_OF_MERCURY_0C, "Millimeter of Mercury (0°C)", "mmHg", "133.322"),
@@ -470,7 +477,7 @@ class UnitRegistry {
             define(Unit.Energy.CALORIE_TH, "Calorie (th)", "cal(th)", "4.184"),
 
             define(Unit.Energy.BTU_IT, "Btu (IT)", "Btu", "1055.05585262"),
-            define(Unit.Energy.BTU_TH, "Btu (th)", "Btu(th)", "1054.3499999744"),
+            defineFraction(Unit.Energy.BTU_TH, "Btu (th)", "Btu(th)", "23722880951", "22500000"),
             define(Unit.Energy.MEGA_BTU_IT, "Mega Btu (IT)", "MBtu", "1055055852.62"),
 
             define(Unit.Energy.THERM, "Therm", "therm", "105505600"),
@@ -480,14 +487,14 @@ class UnitRegistry {
             define(Unit.Energy.TON_HOUR_REFRIGERATION, "Ton-Hour (Refrigeration)", "ton_ref*h", "12660670.23144"),
 
             define(Unit.Energy.HORSEPOWER_METRIC_HOUR, "Horsepower (Metric) Hour", "hp(metric)*h", "2647795.5"),
-            define(Unit.Energy.HORSEPOWER_HOUR, "Horsepower Hour", "hp*h", "2684519.5368856"),
+            define(Unit.Energy.HORSEPOWER_HOUR, "Horsepower Hour", "hp*h", "2684519.537696172792"),
 
             define(Unit.Energy.MEGAELECTRON_VOLT, "Megaelectron-Volt", "MeV", "1.602176634E-13"),
             define(Unit.Energy.KILOELECTRON_VOLT, "Kiloelectron-Volt", "keV", "1.602176634E-16"),
             define(Unit.Energy.ELECTRON_VOLT, "Electron-Volt", "eV", "1.602176634E-19"),
 
-            define(Unit.Energy.HARTREE_ENERGY, "Hartree Energy", "Eh", "4.3597482E-18"),
-            define(Unit.Energy.RYDBERG_CONSTANT, "Rydberg Constant", "Ry", "2.1798741E-18"),
+            define(Unit.Energy.HARTREE_ENERGY, "Hartree Energy", "Eh", "4.359744722206E-18"),
+            define(Unit.Energy.RYDBERG_CONSTANT, "Rydberg Constant", "Ry", "2.179872361103E-18"),
 
             define(Unit.Energy.ERG, "Erg", "erg", "1.0E-7"),
 
@@ -500,15 +507,15 @@ class UnitRegistry {
             define(Unit.Energy.KILOGRAM_FORCE_METER, "Kilogram-Force Meter", "kgf*m", "9.80665"),
             define(Unit.Energy.KILOPOND_METER, "Kilopond Meter", "kp*m", "9.80665"),
 
-            define(Unit.Energy.POUND_FORCE_FOOT, "Pound-Force Foot", "lbf*ft", "1.3558179483"),
-            define(Unit.Energy.POUND_FORCE_INCH, "Pound-Force Inch", "lbf*in", "0.112984829"),
-            define(Unit.Energy.OUNCE_FORCE_INCH, "Ounce-Force Inch", "ozf*in", "0.0070615518"),
+            define(Unit.Energy.POUND_FORCE_FOOT, "Pound-Force Foot", "lbf*ft", "1.3558179483314004"),
+            define(Unit.Energy.POUND_FORCE_INCH, "Pound-Force Inch", "lbf*in", "0.1129848290276167"),
+            define(Unit.Energy.OUNCE_FORCE_INCH, "Ounce-Force Inch", "ozf*in", "0.00706155181422604375"),
 
-            define(Unit.Energy.FOOT_POUND, "Foot-Pound", "ft*lbf", "1.3558179483"),
-            define(Unit.Energy.INCH_POUND, "Inch-Pound", "in*lbf", "0.112984829"),
-            define(Unit.Energy.INCH_OUNCE, "Inch-Ounce", "in*ozf", "0.0070615518"),
+            define(Unit.Energy.FOOT_POUND, "Foot-Pound", "ft*lbf", "1.3558179483314004"),
+            define(Unit.Energy.INCH_POUND, "Inch-Pound", "in*lbf", "0.1129848290276167"),
+            define(Unit.Energy.INCH_OUNCE, "Inch-Ounce", "in*ozf", "0.00706155181422604375"),
 
-            define(Unit.Energy.POUNDAL_FOOT, "Poundal Foot", "pdl*ft", "0.04214011"),
+            define(Unit.Energy.POUNDAL_FOOT, "Poundal Foot", "pdl*ft", "0.0421401100938048"),
 
             define(Unit.Energy.GIGATON_TNT, "Gigaton (TNT Equivalent)", "Gton", "4.184E+18"),
             define(Unit.Energy.MEGATON_TNT, "Megaton (TNT Equivalent)", "Mton", "4.184E+15"),
@@ -541,8 +548,8 @@ class UnitRegistry {
             define(Unit.Power.FEMTOWATT, "Femtowatt", "fW", "1.0E-15"),
             define(Unit.Power.ATTOWATT, "Attowatt", "aW", "1.0E-18"),
 
-            define(Unit.Power.HORSEPOWER, "Horsepower", "hp", "745.6998715823"),
-            define(Unit.Power.HORSEPOWER_MECHANICAL_550_FTLBF_PER_S, "Horsepower (550 ft*lbf/s)", "hp(550ft*lbf/s)", "745.6998715823"),
+            define(Unit.Power.HORSEPOWER, "Horsepower", "hp", "745.69987158227022"),
+            define(Unit.Power.HORSEPOWER_MECHANICAL_550_FTLBF_PER_S, "Horsepower (550 ft*lbf/s)", "hp(550ft*lbf/s)", "745.69987158227022"),
             define(Unit.Power.HORSEPOWER_METRIC, "Horsepower (Metric)", "hp(metric)", "735.49875"),
             define(Unit.Power.HORSEPOWER_BOILER, "Horsepower (Boiler)", "hp(boiler)", "9809.5"),
             define(Unit.Power.HORSEPOWER_ELECTRIC, "Horsepower (Electric)", "hp(electric)", "746"),
@@ -552,13 +559,13 @@ class UnitRegistry {
             defineFraction(Unit.Power.BTU_IT_PER_HOUR, "Btu (IT) per Hour", "Btu/h", "1055.05585262", "3600"),
             defineFraction(Unit.Power.BTU_IT_PER_MINUTE, "Btu (IT) per Minute", "Btu/min", "1055.05585262", "60"),
             define(Unit.Power.BTU_IT_PER_SECOND, "Btu (IT) per Second", "Btu/s", "1055.05585262"),
-            defineFraction(Unit.Power.BTU_TH_PER_HOUR, "Btu (th) per Hour", "Btu(th)/h", "1054.3499999744", "3600"),
-            defineFraction(Unit.Power.BTU_TH_PER_MINUTE, "Btu (th) per Minute", "Btu(th)/min", "1054.3499999744", "60"),
-            define(Unit.Power.BTU_TH_PER_SECOND, "Btu (th) per Second", "Btu(th)/s", "1054.3499999744"),
+            defineFraction(Unit.Power.BTU_TH_PER_HOUR, "Btu (th) per Hour", "Btu(th)/h", "23722880951", "81000000000"),
+            defineFraction(Unit.Power.BTU_TH_PER_MINUTE, "Btu (th) per Minute", "Btu(th)/min", "23722880951", "1350000000"),
+            defineFraction(Unit.Power.BTU_TH_PER_SECOND, "Btu (th) per Second", "Btu(th)/s", "23722880951", "22500000"),
 
             defineFraction(Unit.Power.MEGA_BTU_IT_PER_HOUR, "Mega Btu (IT) per Hour", "MBtu/h", "1055055852.62", "3600"),
             defineFraction(Unit.Power.MBH, "MBH", "MBH", "1055055.85262", "3600"),
-            define(Unit.Power.TON_REFRIGERATION, "Ton (Refrigeration)", "TR", "3516.8528420667"),
+            defineFraction(Unit.Power.TON_REFRIGERATION, "Ton (Refrigeration)", "TR", "52752792631", "15000000"),
 
             defineFraction(Unit.Power.KILOCALORIE_IT_PER_HOUR, "Kilocalorie (IT) per Hour", "kcal(IT)/h", "4186.8", "3600"),
             defineFraction(Unit.Power.KILOCALORIE_IT_PER_MINUTE, "Kilocalorie (IT) per Minute", "kcal(IT)/min", "4186.8", "60"),
@@ -574,12 +581,12 @@ class UnitRegistry {
             defineFraction(Unit.Power.CALORIE_TH_PER_MINUTE, "Calorie (th) per Minute", "cal(th)/min", "4.184", "60"),
             define(Unit.Power.CALORIE_TH_PER_SECOND, "Calorie (th) per Second", "cal(th)/s", "4.184"),
 
-            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_HOUR, "Foot Pound-Force per Hour", "ft*lbf/h", "1.3558179483", "3600"),
-            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_MINUTE, "Foot Pound-Force per Minute", "ft*lbf/min", "1.3558179483", "60"),
-            define(Unit.Power.FOOT_POUND_FORCE_PER_SECOND, "Foot Pound-Force per Second", "ft*lbf/s", "1.3558179483"),
-            defineFraction(Unit.Power.POUND_FOOT_PER_HOUR, "Pound-Foot per Hour", "lbf*ft/h", "1.3558179483", "3600"),
-            defineFraction(Unit.Power.POUND_FOOT_PER_MINUTE, "Pound-Foot per Minute", "lbf*ft/min", "1.3558179483", "60"),
-            define(Unit.Power.POUND_FOOT_PER_SECOND, "Pound-Foot per Second", "lbf*ft/s", "1.3558179483"),
+            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_HOUR, "Foot Pound-Force per Hour", "ft*lbf/h", "1.3558179483314004", "3600"),
+            defineFraction(Unit.Power.FOOT_POUND_FORCE_PER_MINUTE, "Foot Pound-Force per Minute", "ft*lbf/min", "1.3558179483314004", "60"),
+            define(Unit.Power.FOOT_POUND_FORCE_PER_SECOND, "Foot Pound-Force per Second", "ft*lbf/s", "1.3558179483314004"),
+            defineFraction(Unit.Power.POUND_FOOT_PER_HOUR, "Pound-Foot per Hour", "lbf*ft/h", "1.3558179483314004", "3600"),
+            defineFraction(Unit.Power.POUND_FOOT_PER_MINUTE, "Pound-Foot per Minute", "lbf*ft/min", "1.3558179483314004", "60"),
+            define(Unit.Power.POUND_FOOT_PER_SECOND, "Pound-Foot per Second", "lbf*ft/s", "1.3558179483314004"),
 
             define(Unit.Power.ERG_PER_SECOND, "Erg per Second", "erg/s", "1.0E-7"),
 
@@ -655,7 +662,7 @@ class UnitRegistry {
             define(Unit.Time.QUINDECENNIAL, "Quindecennial", "quindecennial", "473040000"),
             define(Unit.Time.QUINQUENNIAL, "Quinquennial", "quinquennial", "157680000"),
 
-            define(Unit.Time.PLANCK_TIME, "Planck Time", "Planck time", "5.39056E-44"),
+            define(Unit.Time.PLANCK_TIME, "Planck Time", "Planck time", "5.391247E-44"),
 
             // =========================
             // FORCE (base: newton)
@@ -690,16 +697,16 @@ class UnitRegistry {
             define(Unit.Force.TON_FORCE_METRIC, "Ton-Force (Metric)", "tf", "9806.65"),
 
             define(Unit.Force.TON_FORCE_SHORT, "Ton-Force (Short)", "ton-force (short)", "8896.443230521"),
-            define(Unit.Force.TON_FORCE_LONG, "Ton-Force (Long)", "tonf (UK)", "9964.0164181707"),
+            define(Unit.Force.TON_FORCE_LONG, "Ton-Force (Long)", "tonf (UK)", "9964.01641818352"),
 
-            define(Unit.Force.KIP_FORCE, "Kip-Force", "klbf", "4448.2216152548"),
-            define(Unit.Force.KILOPOUND_FORCE, "Kilopound-Force", "kipf", "4448.2216152548"),
+            define(Unit.Force.KIP_FORCE, "Kip-Force", "klbf", "4448.2216152605"),
+            define(Unit.Force.KILOPOUND_FORCE, "Kilopound-Force", "kipf", "4448.2216152605"),
 
-            define(Unit.Force.POUND_FORCE, "Pound-Force", "lbf", "4.4482216153"),
-            define(Unit.Force.OUNCE_FORCE, "Ounce-Force", "ozf", "0.278013851"),
+            define(Unit.Force.POUND_FORCE, "Pound-Force", "lbf", "4.4482216152605"),
+            define(Unit.Force.OUNCE_FORCE, "Ounce-Force", "ozf", "0.27801385095378125"),
 
-            define(Unit.Force.POUNDAL, "Poundal", "pdl", "0.1382549544"),
-            define(Unit.Force.POUND_FOOT_PER_SQUARE_SECOND, "Pound Foot per Square Second", "pound foot/square second", "0.1382549544"),
+            define(Unit.Force.POUNDAL, "Poundal", "pdl", "0.138254954376"),
+            define(Unit.Force.POUND_FOOT_PER_SQUARE_SECOND, "Pound Foot per Square Second", "pound foot/square second", "0.138254954376"),
 
             define(Unit.Force.POND, "Pond", "p", "0.00980665"),
             define(Unit.Force.KILOPOND, "Kilopond", "kp", "9.80665"),
@@ -808,18 +815,18 @@ class UnitRegistry {
             define(Unit.DataStorage.QUADRUPLE_WORD, "Quadruple-Word", "quadruple-word", "64"),
             define(Unit.DataStorage.BLOCK, "Block", "block", "4096"),
 
-            define(Unit.DataStorage.KILOBIT, "Kibibit", "Kibit", "1024"),
-            define(Unit.DataStorage.KILOBYTE, "Kibibyte", "KiB", "8192"),
-            define(Unit.DataStorage.MEGABIT, "Mebibit", "Mibit", "1048576"),
-            define(Unit.DataStorage.MEGABYTE, "Mebibyte", "MiB", "8388608"),
-            define(Unit.DataStorage.GIGABIT, "Gibibit", "Gibit", "1073741824"),
-            define(Unit.DataStorage.GIGABYTE, "Gibibyte", "GiB", "8589934592"),
-            define(Unit.DataStorage.TERABIT, "Tebibit", "Tibit", "1099511627776"),
-            define(Unit.DataStorage.TERABYTE, "Tebibyte", "TiB", "8796093022208"),
-            define(Unit.DataStorage.PETABIT, "Pebibit", "Pibit", "1125899906842624"),
-            define(Unit.DataStorage.PETABYTE, "Pebibyte", "PiB", "9007199254740992"),
-            define(Unit.DataStorage.EXABIT, "Exbibit", "Eibit", "1152921504606846976"),
-            define(Unit.DataStorage.EXABYTE, "Exbibyte", "EiB", "9223372036854775808"),
+            define(Unit.DataStorage.KIBIBIT, "Kibibit", "Kibit", "1024"),
+            define(Unit.DataStorage.KIBIBYTE, "Kibibyte", "KiB", "8192"),
+            define(Unit.DataStorage.MEBIBIT, "Mebibit", "Mibit", "1048576"),
+            define(Unit.DataStorage.MEBIBYTE, "Mebibyte", "MiB", "8388608"),
+            define(Unit.DataStorage.GIBIBIT, "Gibibit", "Gibit", "1073741824"),
+            define(Unit.DataStorage.GIBIBYTE, "Gibibyte", "GiB", "8589934592"),
+            define(Unit.DataStorage.TEBIBIT, "Tebibit", "Tibit", "1099511627776"),
+            define(Unit.DataStorage.TEBIBYTE, "Tebibyte", "TiB", "8796093022208"),
+            define(Unit.DataStorage.PEBIBIT, "Pebibit", "Pibit", "1125899906842624"),
+            define(Unit.DataStorage.PEBIBYTE, "Pebibyte", "PiB", "9007199254740992"),
+            define(Unit.DataStorage.EXBIBIT, "Exbibit", "Eibit", "1152921504606846976"),
+            define(Unit.DataStorage.EXBIBYTE, "Exbibyte", "EiB", "9223372036854775808"),
 
             define(Unit.DataStorage.KILOBYTE_DECIMAL, "Kilobyte (10^3 bytes)", "kB", "8000"),
             define(Unit.DataStorage.MEGABYTE_DECIMAL, "Megabyte (10^6 bytes)", "MB", "8000000"),
@@ -848,10 +855,40 @@ class UnitRegistry {
     );
 
     /**
+     * Deprecated unit constants and the canonical unit each one resolves to.
+     *
+     * <p>
+     * A constant that was renamed (misspelled or misleading) stays in its enum as a deprecated alias so that
+     * existing callers keep working. An alias has no entry of its own in {@link #BUILT_IN}: every lookup
+     * resolves it to the canonical unit first, so it shares that unit's symbol, display name and conversion
+     * formula and never appears in {@link #allUnits()} or in the symbol table. Removal is planned for the
+     * next major version.
+     * </p>
+     */
+    @SuppressWarnings("deprecation")
+    private static final Map<Unit, Unit> DEPRECATED_ALIASES = Map.ofEntries(
+            Map.entry(Unit.Length.NAIL_COTH, Unit.Length.NAIL_CLOTH),
+            Map.entry(Unit.Mass.CARRAT, Unit.Mass.CARAT),
+            Map.entry(Unit.DataStorage.KILOBIT, Unit.DataStorage.KIBIBIT),
+            Map.entry(Unit.DataStorage.KILOBYTE, Unit.DataStorage.KIBIBYTE),
+            Map.entry(Unit.DataStorage.MEGABIT, Unit.DataStorage.MEBIBIT),
+            Map.entry(Unit.DataStorage.MEGABYTE, Unit.DataStorage.MEBIBYTE),
+            Map.entry(Unit.DataStorage.GIGABIT, Unit.DataStorage.GIBIBIT),
+            Map.entry(Unit.DataStorage.GIGABYTE, Unit.DataStorage.GIBIBYTE),
+            Map.entry(Unit.DataStorage.TERABIT, Unit.DataStorage.TEBIBIT),
+            Map.entry(Unit.DataStorage.TERABYTE, Unit.DataStorage.TEBIBYTE),
+            Map.entry(Unit.DataStorage.PETABIT, Unit.DataStorage.PEBIBIT),
+            Map.entry(Unit.DataStorage.PETABYTE, Unit.DataStorage.PEBIBYTE),
+            Map.entry(Unit.DataStorage.EXABIT, Unit.DataStorage.EXBIBIT),
+            Map.entry(Unit.DataStorage.EXABYTE, Unit.DataStorage.EXBIBYTE)
+    );
+
+    /**
      * Map from unit identifier to its immutable {@link UnitDefinition}.
      *
      * <p>
-     * This is the canonical lookup structure used by the public facade.
+     * This is the canonical lookup structure used by the public facade. It is unmodifiable and keeps the order of
+     * {@link #BUILT_IN}; {@code Map.copyOf} would randomize the iteration order per JVM.
      * </p>
      */
     private static final Map<Unit, UnitDefinition> BY_UNIT;
@@ -933,15 +970,46 @@ class UnitRegistry {
             }
         }
 
-        BY_UNIT = Map.copyOf(byUnit);
+        BY_UNIT = Collections.unmodifiableMap(byUnit);
+        validateAliases(byUnit);
         BY_SYMBOL = Map.copyOf(bySymbol);
 
         final Map<Class<? extends Unit>, List<Unit>> immutableGroupMap = new LinkedHashMap<>();
         for (final Map.Entry<Class<? extends Unit>, List<Unit>> entry : byGroup.entrySet()) {
             immutableGroupMap.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
-        BY_GROUP = Map.copyOf(immutableGroupMap);
+        BY_GROUP = Collections.unmodifiableMap(immutableGroupMap);
         BY_GROUP_BASE = Map.copyOf(byGroupBase);
+    }
+
+    /**
+     * Verifies that every deprecated alias points at a defined unit of the same group and is not defined itself.
+     *
+     * @param definitions the definitions built from {@link #BUILT_IN}; must not be {@code null}
+     * @throws IllegalStateException if an alias is itself defined, points at an undefined unit or crosses groups
+     */
+    private static void validateAliases(final Map<Unit, UnitDefinition> definitions) {
+        for (final Map.Entry<Unit, Unit> alias : DEPRECATED_ALIASES.entrySet()) {
+            if (definitions.containsKey(alias.getKey())) {
+                throw new IllegalStateException("Deprecated alias must not have its own definition: " + alias.getKey());
+            }
+            if (!definitions.containsKey(alias.getValue())) {
+                throw new IllegalStateException("Alias " + alias.getKey() + " points at an undefined unit: " + alias.getValue());
+            }
+            if (!groupTypeOf(alias.getKey()).equals(groupTypeOf(alias.getValue()))) {
+                throw new IllegalStateException("Alias " + alias.getKey() + " points at a unit of another group: " + alias.getValue());
+            }
+        }
+    }
+
+    /**
+     * Resolves a deprecated alias to the canonical unit it stands for.
+     *
+     * @param unit the unit identifier, possibly a deprecated alias; must not be {@code null}
+     * @return the canonical unit; {@code unit} itself when it is not an alias; never {@code null}
+     */
+    static Unit canonical(@NonNull final Unit unit) {
+        return DEPRECATED_ALIASES.getOrDefault(unit, unit);
     }
 
     /**
@@ -953,7 +1021,7 @@ class UnitRegistry {
      * @throws IllegalStateException if no definition exists for {@code unit}
      */
     static UnitDefinition requireDefinition(@NonNull final Unit unit) {
-        final UnitDefinition definition = BY_UNIT.get(unit);
+        final UnitDefinition definition = BY_UNIT.get(canonical(unit));
         if (definition == null) {
             throw new IllegalStateException("No unit definition found for unit: " + unit);
         }
@@ -1195,6 +1263,48 @@ class UnitRegistry {
         final BigNumber den = new BigNumber(denominator);
 
         final ConversionFormula formula = ConversionFormulas.linear(num, den);
+        final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
+
+        return new UnitSpec(unit, definition, false);
+    }
+
+    /**
+     * Creates one declarative built-in definition entry whose affine scale <em>and</em> offset are
+     * expressed as exact rationals:
+     *
+     * <pre>
+     * base = value * (scaleNumerator / scaleDenominator) + (offsetNumerator / offsetDenominator)
+     * </pre>
+     *
+     * <p>
+     * Prefer this factory over {@link #define(Unit, String, String, String, String)} for any affine unit
+     * whose scale or offset has no finite decimal representation (e.g. {@code °F}: scale {@code 5/9},
+     * offset {@code -160/9}). Storing the factors as exact ratios and deferring a single division to
+     * conversion time avoids the rounding artifacts of pre-rounded decimal constants, so canonical points
+     * such as {@code 32 °F → 0 °C} are exact.
+     * </p>
+     *
+     * @param unit              the unit identifier; must not be {@code null}
+     * @param displayName       human-readable display name; must not be {@code null}
+     * @param symbol            unit symbol; must not be {@code null}
+     * @param scaleNumerator    numerator of the scale into base unit; must not be {@code null}
+     * @param scaleDenominator  denominator of the scale into base unit; must not be {@code null}
+     * @param offsetNumerator   numerator of the offset into base unit; must not be {@code null}
+     * @param offsetDenominator denominator of the offset into base unit; must not be {@code null}
+     * @return immutable unit spec entry; never {@code null}
+     */
+    private static UnitSpec defineAffineFraction(
+            @NonNull final Unit unit,
+            @NonNull final String displayName,
+            @NonNull final String symbol,
+            @NonNull final String scaleNumerator,
+            @NonNull final String scaleDenominator,
+            @NonNull final String offsetNumerator,
+            @NonNull final String offsetDenominator
+    ) {
+        final ConversionFormula formula = ConversionFormulas.affine(
+                new BigNumber(scaleNumerator), new BigNumber(scaleDenominator),
+                new BigNumber(offsetNumerator), new BigNumber(offsetDenominator));
         final UnitDefinition definition = new UnitDefinition(displayName, symbol, formula);
 
         return new UnitSpec(unit, definition, false);

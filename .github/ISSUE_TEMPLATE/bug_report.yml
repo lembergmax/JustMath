@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work, or a result is wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. If this is a security problem, do not file it here: follow [SECURITY.md](https://github.com/lembergmax/JustMath/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: JustMath version
+      description: The version from your pom.xml or build file, for example 1.7.0.
+    validations:
+      required: true
+  - type: input
+    id: java
+    attributes:
+      label: Java version and operating system
+      placeholder: Temurin 21.0.9, Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The expression or the code, and the settings you used (locale, input locale, math context, trigonometric mode).
+      render: java
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: The result or the error, including the error code or the stack trace.
+    validations:
+      required: true

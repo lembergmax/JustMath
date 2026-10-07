@@ -116,6 +116,35 @@ public class ConversionFormulas {
     }
 
     /**
+     * Creates an exact rational <em>affine</em> conversion formula of the form:
+     *
+     * <pre>
+     * base = value * (scaleNumerator / scaleDenominator) + (offsetNumerator / offsetDenominator)
+     * </pre>
+     *
+     * <p>
+     * Use this factory for affine units whose scale and/or offset have no finite decimal representation —
+     * most notably temperature (e.g. {@code °F}: scale {@code 5/9}, offset {@code -160/9}). Unlike
+     * {@link #affine(BigNumber, BigNumber)} with pre-rounded decimal constants, both directions are
+     * evaluated as a single numerator over a single denominator with exactly one deferred division at the
+     * caller-supplied {@link MathContext}, so canonical points (such as {@code 32 °F → 0 °C}) come out exact.
+     * </p>
+     *
+     * @param scaleNumerator    numerator of the scale into the base unit; must not be {@code null} and must not be zero
+     * @param scaleDenominator  denominator of the scale into the base unit; must not be {@code null} and must not be zero
+     * @param offsetNumerator   numerator of the offset into the base unit; must not be {@code null} (may be zero)
+     * @param offsetDenominator denominator of the offset into the base unit; must not be {@code null} and must not be zero
+     * @return a conversion formula implementing the exact rational affine mapping; never {@code null}
+     * @throws IllegalArgumentException if {@code scaleNumerator}, {@code scaleDenominator}, or {@code offsetDenominator} is zero
+     */
+    public static ConversionFormula affine(@NonNull final BigNumber scaleNumerator,
+                                           @NonNull final BigNumber scaleDenominator,
+                                           @NonNull final BigNumber offsetNumerator,
+                                           @NonNull final BigNumber offsetDenominator) {
+        return new RationalAffineConversionFormula(scaleNumerator, scaleDenominator, offsetNumerator, offsetDenominator);
+    }
+
+    /**
      * Creates a reciprocal conversion formula of the form:
      *
      * <pre>

@@ -25,15 +25,27 @@ package io.github.lembergmax.justmath.bignumber;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Audit fix H5: {@link BigNumberList} implements {@link java.util.List}; the
  * {@code Object}-typed query methods ({@code contains}, {@code indexOf},
  * {@code lastIndexOf}, {@code remove(Object)}) must accept {@code null} and behave
  * per the {@code List} contract instead of throwing {@link NullPointerException}.
+ *
+ * <p>The computed results ({@code sum}, {@code average}, {@code median}, {@code min}, {@code max},
+ * {@code modes}) must be independent instances: mutating a result in place must never change an
+ * element stored in the list (same defect class as audit fixes K2 and H10).</p>
  */
 class BigNumberListContractTest {
 
@@ -58,5 +70,40 @@ class BigNumberListContractTest {
         final BigNumberList list = BigNumberList.of(new BigNumber("1"));
         assertFalse(list.remove(null));
         assertEquals(1, list.size());
+    }
+
+    private static final List<List<String>> ELEMENT_SHAPES = List.of(
+            List.of("5"),
+            List.of("3", "1", "2"),
+            List.of("2", "2", "7")
+    );
+
+    static Stream<Arguments> valueReturningOperations() {
+        return Stream.of(
+                Arguments.of("sum", (Function<BigNumberList, BigNumber>) BigNumberList::sum),
+                Arguments.of("average", (Function<BigNumberList, BigNumber>) BigNumberList::average),
+                Arguments.of("median", (Function<BigNumberList, BigNumber>) BigNumberList::median),
+                Arguments.of("min", (Function<BigNumberList, BigNumber>) BigNumberList::min),
+                Arguments.of("max", (Function<BigNumberList, BigNumber>) BigNumberList::max),
+                Arguments.of("modes", (Function<BigNumberList, BigNumber>) list -> list.modes().iterator().next())
+        );
+    }
+
+    @ParameterizedTest(name = "{0}() returns an instance independent of the stored elements")
+    @MethodSource("valueReturningOperations")
+    @DisplayName("computed results never alias a stored element")
+    void resultIsIndependentOfTheStoredElements(final String operationName, final Function<BigNumberList, BigNumber> operation) {
+        for (final List<String> shape : ELEMENT_SHAPES) {
+            final BigNumberList list = BigNumberList.fromStrings(shape);
+            final List<String> before = list.toStringList();
+
+            final BigNumber result = operation.apply(list);
+            for (final BigNumber element : list) {
+                assertNotSame(element, result, operationName + "() returned a stored element for " + shape);
+            }
+
+            result.negateThis();
+            assertEquals(before, list.toStringList(), "mutating the result of " + operationName + "() changed the list " + shape);
+        }
     }
 }

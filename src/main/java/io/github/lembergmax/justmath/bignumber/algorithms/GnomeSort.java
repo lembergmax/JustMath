@@ -53,9 +53,6 @@ public class GnomeSort extends SortingAlgorithm {
         final List<BigNumber> sortedList = cloneList(bigNumbers);
 
         int index = 1;
-        // Interruption is checked from time to time rather than on every step: the gnome walk
-        // touches every comparison anyway, so checking inside the hot loop on every iteration
-        // would slow it down without delivering a noticeably better cancellation latency.
         int iterationsSinceLastInterruptCheck = 0;
         while (index < sortedList.size()) {
             if (++iterationsSinceLastInterruptCheck >= 1024) {

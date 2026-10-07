@@ -37,42 +37,42 @@ import java.util.Map;
 @Getter
 public abstract class ExpressionElement {
 
-	private final String symbol;
-	private final boolean isFunction;
-	private final int precedence;
+    private final String symbol;
+    private final boolean isFunction;
+    private final int precedence;
 
-	public ExpressionElement(String symbol, boolean isFunction, int precedence) {
-		this.symbol = symbol;
-		this.isFunction = isFunction;
-		this.precedence = precedence;
-	}
+    public ExpressionElement(String symbol, boolean isFunction, int precedence) {
+        this.symbol = symbol;
+        this.isFunction = isFunction;
+        this.precedence = precedence;
+    }
 
-	/**
-	 * Applies this expression element to the given stack using the specified math context,
-	 * trigonometric mode, and locale.
-	 *
-	 * <p>The base implementation throws a typed {@link ProcessingErrorException} with code
-	 * {@link CalculatorErrorCode#PROCESSING_INTERNAL} so that any subclass which is reachable
-	 * by the {@code Evaluator} but does not override this method surfaces as a structured,
-	 * localizable engine error rather than an untyped {@code UnsupportedOperationException}.
-	 * Structural-only subclasses such as {@code Parenthesis} and {@code Separator} are never
-	 * dispatched through this method by the {@code Evaluator}; they may safely inherit the
-	 * default behaviour.</p>
-	 *
-	 * @param stack             the stack to operate on
-	 * @param mathContext       the math context for calculations
-	 * @param trigonometricMode the trigonometric mode to use
-	 * @param locale            the locale for formatting or parsing
-	 *
-	 * @throws ProcessingErrorException with code {@link CalculatorErrorCode#PROCESSING_INTERNAL}
-	 *                                  when the concrete subclass does not provide an
-	 *                                  implementation
-	 */
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		throw new ProcessingErrorException(
-				CalculatorErrorCode.PROCESSING_INTERNAL,
-				Map.of("symbol", symbol),
-				"apply(stack, mathContext, trigonometricMode, locale) not implemented for element: " + symbol);
-	}
+    /**
+     * Applies this expression element to the given stack using the specified math context,
+     * trigonometric mode, and locale.
+     *
+     * <p>The base implementation throws a typed {@link ProcessingErrorException} with code
+     * {@link CalculatorErrorCode#PROCESSING_INTERNAL} so that any subclass which is reachable
+     * by the {@code Evaluator} but does not override this method surfaces as a structured,
+     * localizable engine error rather than an untyped {@code UnsupportedOperationException}.
+     * Structural-only subclasses such as {@code Parenthesis} and {@code Separator} are never
+     * dispatched through this method by the {@code Evaluator}; they may safely inherit the
+     * default behaviour.</p>
+     *
+     * @param stack             the stack to operate on
+     * @param mathContext       the math context for calculations
+     * @param trigonometricMode the trigonometric mode to use
+     * @param locale            the locale for formatting or parsing
+     *
+     * @throws ProcessingErrorException with code {@link CalculatorErrorCode#PROCESSING_INTERNAL}
+     *                                  when the concrete subclass does not provide an
+     *                                  implementation
+     */
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        throw new ProcessingErrorException(
+                CalculatorErrorCode.PROCESSING_INTERNAL,
+                Map.of("symbol", symbol),
+                "apply(stack, mathContext, trigonometricMode, locale) not implemented for element: " + symbol);
+    }
 
 }

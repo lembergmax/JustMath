@@ -37,13 +37,22 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * A mutable, list-like container for {@link BigNumber} instances implementing the full {@link List} interface.
+ * A mutable, list-like container for {@link BigNumber} instances implementing the {@link List} interface
+ * (with a non-null-element policy, see below).
  *
  * <p>
  * This class acts as a domain-specific wrapper around a {@link List} of {@link BigNumber} objects.
  * It delegates core list operations to an internal list and adds convenience methods for
  * numerical and statistical operations that are natural for lists of numbers.
  * </p>
+ *
+ * <p><b>Null-element policy.</b> This is a <em>non-null-element</em> list: the element-inserting methods
+ * ({@code add}, {@code set}, {@code addFirst}, {@code addLast}) reject {@code null} with a
+ * {@link NullPointerException}, because a {@code null} element would break the numeric/statistical
+ * operations (sorting, {@code sum}, {@code average}, …). Consistent with the {@link List} contract, the
+ * <em>query</em> methods ({@code contains}, {@code indexOf}, {@code lastIndexOf}, {@code remove(Object)})
+ * still accept a {@code null} argument and simply report "not found"; they never throw on a {@code null}
+ * query.</p>
  *
  * <p><b>Design notes</b></p>
  * <ul>
@@ -57,7 +66,7 @@ import lombok.NonNull;
  * </ul>
  */
 @Getter
-public class BigNumberList implements List<BigNumber> {
+public class BigNumberList implements List<BigNumber>, Cloneable {
 
     /**
      * Internal storage for the elements of this {@code BigNumberList}.
@@ -171,7 +180,8 @@ public class BigNumberList implements List<BigNumber> {
      * <ul>
      *   <li><b>0..32</b> elements: {@link BubbleSort} (minimal overhead)</li>
      *   <li><b>33..999</b> elements: {@link QuickSort} (fast average case)</li>
-     *   <li><b>1000+</b> elements: {@link MergeSort} (predictable O(n log n))</li>
+     *   <li><b>1000+</b> elements that are all integers: {@link RadixSort}</li>
+     *   <li><b>1000+</b> elements otherwise: {@link MergeSort} (predictable O(n log n))</li>
      * </ul>
      *
      * <p>
@@ -312,7 +322,7 @@ public class BigNumberList implements List<BigNumber> {
      * and the remaining elements are passed as arguments.
      * </p>
      *
-     * @return a new {@link BigNumber} representing the sum of all elements
+     * @return a new {@link BigNumber} representing the sum of all elements (a copy of the element for a one-element list)
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber sum() {
@@ -321,7 +331,7 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         if (values.size() == 1) {
-            return values.getFirst();
+            return values.getFirst().clone();
         }
 
         return values.getFirst().sum(values.subList(1, values.size()));
@@ -345,7 +355,7 @@ public class BigNumberList implements List<BigNumber> {
         }
 
         if (values.size() == 1) {
-            return values.getFirst();
+            return values.getFirst().clone();
         }
 
         return values.getFirst().average(values.subList(1, values.size()));
@@ -379,7 +389,7 @@ public class BigNumberList implements List<BigNumber> {
         final int middleIndex = size / 2;
 
         if (size % 2 == 1) {
-            return sorted.get(middleIndex);
+            return sorted.get(middleIndex).clone();
         }
 
         final BigNumber lower = sorted.get(middleIndex - 1);
@@ -396,16 +406,18 @@ public class BigNumberList implements List<BigNumber> {
      * If the list is empty, an empty {@link Set} is returned.
      * </p>
      *
-     * @return a {@link Set} of {@link BigNumber} values that occur most frequently
+     * <p>Values are grouped by canonical numeric value (trailing zeros stripped, so {@code "1"} and
+     * {@code "1.0"} count as one). First-occurrence order is preserved, so the returned set is stable
+     * across runs.</p>
+     *
+     * @return a {@link Set} of copies of the {@link BigNumber} values that occur most frequently; mutating
+     * a returned value does not change this list
      */
     public Set<BigNumber> modes() {
         if (isEmpty()) {
             return Set.of();
         }
 
-        // Group by numeric value (BigDecimal stripped of trailing zeros) so that "1" and "1.0"
-        // collapse to the same key. A LinkedHashMap preserves first-occurrence order, which
-        // makes the resulting LinkedHashSet stable across runs and easy to test.
         final java.util.LinkedHashMap<BigDecimal, int[]> countsByValue = new java.util.LinkedHashMap<>();
         final java.util.LinkedHashMap<BigDecimal, BigNumber> representativeByValue = new java.util.LinkedHashMap<>();
         for (final BigNumber value : values) {
@@ -427,7 +439,7 @@ public class BigNumberList implements List<BigNumber> {
         final Set<BigNumber> result = new LinkedHashSet<>();
         for (final var entry : countsByValue.entrySet()) {
             if (entry.getValue()[0] == maxCount) {
-                result.add(representativeByValue.get(entry.getKey()));
+                result.add(representativeByValue.get(entry.getKey()).clone());
             }
         }
         return result;
@@ -449,7 +461,7 @@ public class BigNumberList implements List<BigNumber> {
     /**
      * Returns the smallest {@link BigNumber} in this list according to the natural ordering.
      *
-     * @return the minimum value in this list
+     * @return a copy of the minimum value in this list; never an element of this list
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber min() {
@@ -465,13 +477,13 @@ public class BigNumberList implements List<BigNumber> {
             }
         }
 
-        return currentMin;
+        return currentMin.clone();
     }
 
     /**
      * Returns the largest {@link BigNumber} in this list according to the natural ordering.
      *
-     * @return the maximum value in this list
+     * @return a copy of the maximum value in this list; never an element of this list
      * @throws IllegalStateException if this list is empty
      */
     public BigNumber max() {
@@ -487,7 +499,7 @@ public class BigNumberList implements List<BigNumber> {
             }
         }
 
-        return currentMax;
+        return currentMax.clone();
     }
 
     /**
@@ -1089,13 +1101,7 @@ public class BigNumberList implements List<BigNumber> {
      * @return {@code true} if the sequence is monotonically non-decreasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicIncreasing() {
-        for (int i = 1; i < values.size(); i++) {
-            if (values.get(i).isLessThan(values.get(i - 1))) {
-                return false;
-            }
-        }
-
-        return true;
+        return isSortedAscending();
     }
 
     /**
@@ -1105,12 +1111,7 @@ public class BigNumberList implements List<BigNumber> {
      * @return {@code true} if the sequence is monotonically non-increasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicDecreasing() {
-        for (int i = 1; i < values.size(); i++) {
-            if (values.get(i).isGreaterThan(values.get(i - 1))) {
-                return false;
-            }
-        }
-        return true;
+        return isSortedDescending();
     }
 
     /**
@@ -1206,27 +1207,28 @@ public class BigNumberList implements List<BigNumber> {
     }
 
     /**
-     * Creates a new {@code BigNumberList} that <strong>aliases</strong> the internal list storage
-     * of this instance.
+     * Creates a structurally independent copy of this list, honouring the conventional
+     * {@link Cloneable} contract.
      *
-     * <p>This is intentional and asymmetric to {@link #copy()} / {@link #BigNumberList(BigNumberList)},
-     * both of which produce structurally independent lists. The aliasing behaviour exists for
-     * legacy callers (verified by the {@code cloneSharesInternalStorage} regression test); new
-     * code should prefer {@link #copy()} when independence is required, and treat {@code clone()}
-     * as the explicit opt-in to shared storage.</p>
+     * <p>The returned list has its own backing storage, so a structural mutation of one list
+     * ({@code add}/{@code remove}/{@code sort}/{@code clear}/{@code reverse}/…) is not visible on the
+     * other — consistent with {@link #copy()} / {@link #BigNumberList(BigNumberList)} and with every other
+     * {@code clone()} in the library. (Element {@link BigNumber} objects are reference-shared, which is safe
+     * because list operations that change values produce new elements.)</p>
      *
-     * <p>Element objects ({@link BigNumber}) are reference-shared in either case — they are
-     * effectively immutable from the perspective of list semantics.</p>
+     * <p>If a thin aliasing view over the same backing list is genuinely wanted, construct one explicitly
+     * with {@link #BigNumberList(List)} passing {@link #getValues()}.</p>
      *
-     * @return a new {@code BigNumberList} referencing the same internal list as this instance
+     * @return a new {@code BigNumberList} that is structurally independent of this instance
      */
     public BigNumberList clone() {
-        // {@code clone()} intentionally shares the underlying list storage (legacy contract,
-        // exercised by {@code cloneSharesInternalStorage}). The {@code BigNumberList(List)}
-        // constructor assigns the supplied list by reference (no defensive copy), which gives
-        // us the desired aliasing. For an independent copy use {@link #copy()} or the
-        // {@link #BigNumberList(BigNumberList)} copy constructor (which is defensive).
-        return new BigNumberList(this.values);
+        try {
+            final BigNumberList cloned = (BigNumberList) super.clone();
+            cloned.values = new ArrayList<>(values);
+            return cloned;
+        } catch (final CloneNotSupportedException cloneNotSupportedException) {
+            throw new AssertionError(cloneNotSupportedException);
+        }
     }
 
     /**
@@ -1274,11 +1276,15 @@ public class BigNumberList implements List<BigNumber> {
         return values.isEmpty();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The query is deliberately not annotated {@code @NonNull}: the {@link List} contract permits a
+     * {@code null} argument (the backing list returns {@code false} when no {@code null} element is
+     * present), so a non-null annotation would throw and break that contract.</p>
+     */
     @Override
     public boolean contains(final Object object) {
-        // List#contains accepts null per the interface contract; the backing ArrayList
-        // returns false for a null query when no null element is present. Do not annotate
-        // with @NonNull — that would throw NPE and break the List contract.
         return values.contains(object);
     }
 
@@ -1307,9 +1313,14 @@ public class BigNumberList implements List<BigNumber> {
         return values.add(bigNumber);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument.</p>
+     */
     @Override
     public boolean remove(final Object object) {
-        // List#remove(Object) accepts null per the interface contract.
         return values.remove(object);
     }
 
@@ -1378,15 +1389,25 @@ public class BigNumberList implements List<BigNumber> {
         return values.remove(index);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument (returning {@code -1} when absent).</p>
+     */
     @Override
     public int indexOf(final Object object) {
-        // List#indexOf accepts null per the interface contract (returns -1 when absent).
         return values.indexOf(object);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The argument is deliberately not annotated {@code @NonNull}: the {@link List} contract permits
+     * a {@code null} argument (returning {@code -1} when absent).</p>
+     */
     @Override
     public int lastIndexOf(final Object object) {
-        // List#lastIndexOf accepts null per the interface contract (returns -1 when absent).
         return values.lastIndexOf(object);
     }
 

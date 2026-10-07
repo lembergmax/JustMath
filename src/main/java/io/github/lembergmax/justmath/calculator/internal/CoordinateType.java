@@ -43,7 +43,6 @@ package io.github.lembergmax.justmath.calculator.internal;
  */
 public enum CoordinateType {
 
-	CARTESIAN, POLAR
+    CARTESIAN, POLAR
 
 }
-

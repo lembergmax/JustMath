@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.NonNull;
 
@@ -76,6 +78,14 @@ public record CalculatorError(
     public static final String BUNDLE_BASENAME = "i18n.calculator_errors";
 
     /**
+     * Canonical constructor. The parameter map is copied, so later changes to the caller's map do not
+     * affect this error and {@link #params()} never exposes a modifiable map.
+     */
+    public CalculatorError {
+        params = Map.copyOf(params);
+    }
+
+    /**
      * Convenience constructor that creates an error without parameters and without a position.
      *
      * @param code            the structured error code; must not be {@code null}
@@ -107,9 +117,10 @@ public record CalculatorError(
      * In {@link ErrorMode#RAW} the technical detail is returned verbatim (English). In
      * {@link ErrorMode#USER_FRIENDLY} the matching resource bundle is loaded for the given
      * locale and the localized template is filled in via simple named-placeholder
-     * substitution. If the bundle does not contain an entry for {@link #code()}, the method
-     * defensively falls back to the technical detail so that no
-     * {@link MissingResourceException} is propagated to the caller.
+     * substitution. Message resolution is tiered (Casio-style): the most specific key
+     * ({@link #code()}) is tried first, then the mid-tier category key, then the top-level
+     * generic key; if even that is absent the method defensively falls back to the technical
+     * detail so that no {@link MissingResourceException} is propagated to the caller.
      * </p>
      *
      * @param locale target locale for the localized message; must not be {@code null}
@@ -128,10 +139,6 @@ public record CalculatorError(
             return technicalDetail;
         }
 
-        // Casio-style tiered resolution: try the most specific message first, then the
-        // mid-tier category message (e.g. "Math Error"), then the top-level generic
-        // message, and only fall back to the technical English detail if even the
-        // generic key is absent.
         String template = lookup(bundle, code.getBundleKey());
         if (template == null) {
             template = lookup(bundle, code.getCategoryBundleKey());
@@ -177,19 +184,31 @@ public record CalculatorError(
      * @param position optional one-based position, or {@code null} to skip position substitution
      * @return the substituted text
      */
+    /** Matches a single {@code {name}} placeholder (no nested braces). */
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]+)}");
+
     private static String applyNamedParameters(
             @NonNull final String template,
             @NonNull final Map<String, String> params,
             final Integer position
     ) {
-        String result = template;
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+        // Single regex pass so a substituted value that itself contains "{...}" is never re-substituted.
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
+        final StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            final String name = matcher.group(1);
+            final String replacement;
+            if (params.containsKey(name)) {
+                replacement = params.get(name);
+            } else if ("position".equals(name) && position != null) {
+                replacement = Integer.toString(position);
+            } else {
+                replacement = matcher.group(0);
+            }
+            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
-        if (position != null) {
-            result = result.replace("{position}", Integer.toString(position));
-        }
-        return result;
+        matcher.appendTail(result);
+        return result.toString();
     }
 
 }

@@ -24,8 +24,6 @@
 
 package io.github.lembergmax.justmath.calculator;
 
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +43,9 @@ import io.github.lembergmax.justmath.calculator.expression.elements.function.Unl
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.BinaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.SimpleBinaryOperator;
 import io.github.lembergmax.justmath.calculator.expression.elements.operator.UnaryOperator;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import lombok.NonNull;
 
-public class CalculatorEngineUtils {
+class CalculatorEngineUtils {
 
     /**
      * Replaces all occurrences of absolute value signs in a mathematical expression
@@ -62,22 +59,24 @@ public class CalculatorEngineUtils {
      *
      * <p>
      * The replacement follows this rule:
+     * </p>
      * <ul>
      *   <li>The first occurrence of the absolute sign ({@link ExpressionElements#SURRFUNC_ABS_S})
      *       is replaced with {@code abs(} (opening the absolute value function).</li>
      *   <li>The second occurrence is replaced with a closing parenthesis {@code )}.</li>
      *   <li>The third again with {@code abs(}, the fourth with {@code )}, and so forth.</li>
      * </ul>
+     * <p>
      * As a result, an even number of absolute signs is required to form valid pairs.
      * </p>
      *
      * <p>
      * For example:
+     * </p>
      * <ul>
      *   <li>Input: {@code |x+2|} → Output: {@code abs(x+2)}</li>
      *   <li>Input: {@code |x-1| + |y|} → Output: {@code abs(x-1) + abs(y)}</li>
      * </ul>
-     * </p>
      *
      * @param expression the mathematical expression containing absolute value signs
      * @return the expression with all absolute signs replaced by {@code abs(...)} notation
@@ -88,22 +87,12 @@ public class CalculatorEngineUtils {
     public static String replaceAbsSigns(String expression) {
         final char absSignCharacter = ExpressionElements.SURRFUNC_ABS_S.charAt(0);
 
-        // Bail out early if the sign cardinality is already obviously wrong. A correct
-        // expression must have an even number of {@code |} characters because every opening
-        // bar needs a matching closer.
         final int occurrences = countOccurrences(expression, ExpressionElements.SURRFUNC_ABS_S);
         if (occurrences % 2 != 0) {
             throw new IllegalArgumentException(
                     "Expression must contain an even number of abs-sign characters ('|')");
         }
 
-        // Context-aware open/close detection. The previous implementation alternated
-        // open/close purely by position parity, so an input like {@code a|b|c|d|e} (four bars,
-        // even count, all in operator-required positions) was rewritten to
-        // {@code aabs(b)cabs(d)e} — syntactically nonsense that was only caught by downstream
-        // validation with a diffuse error. By tracking whether we currently expect an operand
-        // (so a bar opens an abs) or an operator (so a bar closes one), we both reject
-        // misplaced bars early and produce correctly nested {@code abs(...)} output.
         final StringBuilder result = new StringBuilder(expression.length());
         boolean expectingOperand = true;
         int openAbsDepth = 0;
@@ -115,7 +104,6 @@ public class CalculatorEngineUtils {
                 if (expectingOperand) {
                     result.append(ExpressionElements.FUNC_ABS).append(ExpressionElements.PAR_LEFT);
                     openAbsDepth++;
-                    // Inside an abs, the next character still starts an operand.
                     expectingOperand = true;
                 } else {
                     if (openAbsDepth == 0) {
@@ -167,8 +155,6 @@ public class CalculatorEngineUtils {
             case ')':
                 return false;
             default:
-                // Digits, decimal points, letters, and any registered function/constant text
-                // produce values; after them we are inside an operator-expecting state.
                 return !(Character.isLetterOrDigit(character) || character == '.');
         }
     }
@@ -222,8 +208,7 @@ public class CalculatorEngineUtils {
                     throw new IllegalArgumentException("Variable '" + token.getValue() + "' is not defined.");
                 }
 
-                // Add zero to the evaluated variable value to coerce coordinate-style results into a single numeric value.
-                // Example: evaluated value = "r=5; θ=53.13010235" -> "(r=5; θ=53.13010235) + 0 = 5"
+                // Adding zero collapses a coordinate-style result (e.g. "r=5; θ=...") to its scalar value.
                 final String evaluatedVariableValue = calculatorEngine.evaluate(value, variables).add(BigNumbers.ZERO).toString();
                 tokens.set(i, new Token(Token.Type.NUMBER, evaluatedVariableValue));
             }
@@ -326,19 +311,10 @@ public class CalculatorEngineUtils {
         for (int i = 0; i + 1 < tokens.size(); i++) {
             final Token a = tokens.get(i);
             final Token b = tokens.get(i + 1);
-            // Two number literals with no operator and no implied multiplication
-            // between them — e.g. the whitespace-separated "3 4". (Tokenizer implicit
-            // multiplication already bridges every legitimate juxtaposition, so any
-            // residual NUMBER->NUMBER adjacency is a genuine missing operator.)
-            // Note: a three-argument function (summation/product) is pre-expanded by
-            // the tokenizer to NUMBER NUMBER STRING FUNCTION — that legitimate
-            // NUMBER->NUMBER pair is identified by a following STRING and excluded.
             final boolean threeArgExpansion =
                     i + 2 < tokens.size() && tokens.get(i + 2).getType() == Token.Type.STRING;
             final boolean numberNumber = !threeArgExpansion
                     && a.getType() == Token.Type.NUMBER && b.getType() == Token.Type.NUMBER;
-            // A postfix factorial is value-producing; there is deliberately no implicit
-            // multiplication after '!', so "2!3" / "5!sqrt(4)" are missing an operator.
             final boolean factorialThenOperand =
                     a.getType() == Token.Type.OPERATOR
                             && ExpressionElements.OP_FACTORIAL.equals(a.getValue())
@@ -408,7 +384,7 @@ public class CalculatorEngineUtils {
                     .map(CalculatorEngineUtils::expectedFunctionArity)
                     .orElse(0);
             if (expected <= 0) {
-                continue; // unknown or variadic -> nothing to check here
+                continue;
             }
 
             int depth = 0;
@@ -431,7 +407,7 @@ public class CalculatorEngineUtils {
                 }
             }
             if (!sawContent) {
-                continue; // empty call -> handled by the empty-argument check
+                continue;
             }
             if (arguments != expected) {
                 throw new SyntaxErrorException(
@@ -498,10 +474,8 @@ public class CalculatorEngineUtils {
      * @throws SyntaxErrorException if the token stream cannot reduce to a single value
      */
     static void validatePostfixArity(@NonNull final List<Token> postfix) {
-        // Stack of operand "value hints": the literal int for NUMBER tokens (used to
-        // read the variadic argument-count token the parser injects), {@code null}
-        // otherwise. An ArrayList is used because it tolerates null entries
-        // (ArrayDeque does not).
+        // ArrayList, not ArrayDeque: this operand-hint stack stores null for non-numeric operands,
+        // which ArrayDeque forbids.
         final List<Integer> stack = new java.util.ArrayList<>();
 
         for (final Token token : postfix) {
@@ -601,7 +575,6 @@ public class CalculatorEngineUtils {
         if (element instanceof ThreeArgumentFunction) {
             return 3;
         }
-        // Remaining functions (sqrt, sin, ln, abs, gamma, …) take exactly one argument.
         return 1;
     }
 
@@ -643,16 +616,6 @@ public class CalculatorEngineUtils {
      */
     private static boolean isUnarySignSymbol(final String symbol) {
         return ExpressionElements.OP_PLUS.equals(symbol) || ExpressionElements.OP_MINUS.equals(symbol);
-    }
-
-    /**
-     * Returns a default MathContext with the specified division precision and RoundingMode.HALF_UP.
-     *
-     * @param divisionPrecision the precision for division operations
-     * @return a MathContext instance with the given precision and HALF_UP rounding mode
-     */
-    public static MathContext getDefaultMathContext(int divisionPrecision) {
-        return new MathContext(divisionPrecision, RoundingMode.HALF_UP);
     }
 
 }

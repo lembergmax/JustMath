@@ -101,7 +101,10 @@ public class QuickSort extends SortingAlgorithm {
      *
      * <p>
      * This method assumes the list is valid for sorting (size at least 2).
-     * It uses an explicit stack to store ranges that still need processing.
+     * It uses an explicit stack to store ranges that still need processing: after each partition the
+     * larger sub-range is pushed onto the stack while the loop continues on the smaller one, bounding
+     * the stack depth to {@code O(log n)}. It is cancellation-aware, checking for thread interruption
+     * once per popped range.
      * </p>
      *
      * @param numbers the list to sort in-place
@@ -119,8 +122,6 @@ public class QuickSort extends SortingAlgorithm {
         stackSize = pushRange(leftBounds, rightBounds, stackSize, 0, lastIndex);
 
         while (stackSize > 0) {
-            // Check once per stack frame rather than on every partition step: keeps the inner
-            // loop tight while still giving the caller a chance to cancel a long sort run.
             abortIfInterrupted();
             stackSize--;
 
@@ -140,12 +141,12 @@ public class QuickSort extends SortingAlgorithm {
                     if (isNonTrivialRange(rightStart, rightEnd)) {
                         stackSize = pushRange(leftBounds, rightBounds, stackSize, rightStart, rightEnd);
                     }
-                    rightIndex = leftEnd; // continue with smaller left partition
+                    rightIndex = leftEnd;
                 } else {
                     if (isNonTrivialRange(leftStart, leftEnd)) {
                         stackSize = pushRange(leftBounds, rightBounds, stackSize, leftStart, leftEnd);
                     }
-                    leftIndex = rightStart; // continue with smaller right partition
+                    leftIndex = rightStart;
                 }
             }
 

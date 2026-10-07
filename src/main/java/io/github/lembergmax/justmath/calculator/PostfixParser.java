@@ -34,7 +34,6 @@ import io.github.lembergmax.justmath.calculator.exceptions.SyntaxErrorException;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElement;
 import io.github.lembergmax.justmath.calculator.expression.ExpressionElements;
 import io.github.lembergmax.justmath.calculator.expression.elements.function.UnlimitedArgumentFunction;
-import io.github.lembergmax.justmath.calculator.internal.Token;
 import lombok.NoArgsConstructor;
 
 /**
@@ -42,7 +41,7 @@ import lombok.NoArgsConstructor;
  * Uses Dijkstra's Shunting-Yard algorithm for handling operator precedence and associativity.
  */
 @NoArgsConstructor
-public class PostfixParser {
+class PostfixParser {
 
     /**
      * Checks if the given expression element is a right-associative operator. Only
@@ -77,6 +76,7 @@ public class PostfixParser {
         List<Token> output = new ArrayList<>();
         Deque<Token> operatorStack = new ArrayDeque<>();
         Deque<Integer> argumentCountStack = new ArrayDeque<>();
+        Deque<Boolean> functionCallParenStack = new ArrayDeque<>();
         Token previousToken = null;
 
         for (Token token : tokens) {
@@ -88,21 +88,17 @@ public class PostfixParser {
                 case LEFT_PAREN -> {
                     operatorStack.push(token);
 
-                    boolean isUnlimitedCall = previousToken != null
-                            && previousToken.getType() == Token.Type.FUNCTION
-                            && isUnlimitedArgumentFunction(previousToken);
+                    boolean isFunctionCall = previousToken != null
+                            && previousToken.getType() == Token.Type.FUNCTION;
+                    boolean isUnlimitedCall = isFunctionCall && isUnlimitedArgumentFunction(previousToken);
 
                     argumentCountStack.push(isUnlimitedCall ? 1 : 0);
+                    functionCallParenStack.push(isFunctionCall);
                 }
 
                 case OPERATOR, UNARY_OPERATOR -> {
-                    // Factorial is the only postfix operator in the grammar; it has the same RPN
-                    // form as the input (the value it consumes is already in {@code output}), so
-                    // we emit it directly without running the precedence loop. The previous
-                    // implementation used {@code break;} inside an arrow-form switch arm to skip
-                    // the precedence loop — this still worked but read as if it were exiting the
-                    // outer {@code for}-loop. An explicit {@code if/else} makes the control flow
-                    // obvious to readers.
+                    // Factorial is postfix: its operand is already in the output, so emit it directly
+                    // instead of running the shunting-yard precedence loop.
                     final boolean isFactorial = token.getType() == Token.Type.OPERATOR
                             && token.getValue().equals(ExpressionElements.OP_FACTORIAL);
                     if (isFactorial) {
@@ -122,6 +118,9 @@ public class PostfixParser {
                     operatorStack.pop();
 
                     int argumentCount = argumentCountStack.isEmpty() ? 0 : argumentCountStack.pop();
+                    if (!functionCallParenStack.isEmpty()) {
+                        functionCallParenStack.pop();
+                    }
                     if (!operatorStack.isEmpty() && operatorStack.peek().getType() == Token.Type.FUNCTION) {
                         Token functionToken = operatorStack.pop();
 
@@ -139,6 +138,11 @@ public class PostfixParser {
                     }
                     if (operatorStack.isEmpty()) {
                         throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR, "Misplaced semicolon or mismatched parentheses");
+                    }
+
+                    if (functionCallParenStack.isEmpty() || !functionCallParenStack.peek()) {
+                        throw new SyntaxErrorException(CalculatorErrorCode.SYNTAX_MISPLACED_SEPARATOR,
+                                "Misplaced semicolon: ';' is only valid between function arguments");
                     }
 
                     if (!argumentCountStack.isEmpty()) {

@@ -29,7 +29,7 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.DEFAULT_DIVISIO
 import java.math.MathContext;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import io.github.lembergmax.justmath.calculator.CalculatorEngineUtils;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.converter.exception.UnitConversionException;
 import lombok.Getter;
 import lombok.NonNull;
@@ -71,11 +71,19 @@ public final class UnitConverter {
     private final MathContext mathContext;
 
     /**
+     * Extra working precision used for the intermediate {@code value -> base} step so that a unit→unit
+     * conversion rounds only once (at the end), instead of rounding both at {@code toBase} and at
+     * {@code fromBase}. This avoids the last-place drift that double-rounding can introduce for chained
+     * rational/reciprocal conversions, especially at small caller precisions.
+     */
+    private static final int CONVERSION_GUARD_DIGITS = 10;
+
+    /**
      * Creates a converter using the library's default division precision.
      *
      * <p>
      * The precision is derived from {@link io.github.lembergmax.justmath.bignumber.BigNumbers#DEFAULT_DIVISION_PRECISION} via
-     * {@link CalculatorEngineUtils#getDefaultMathContext(int)}.
+     * {@link BigNumbers#getDefaultMathContext(int)}.
      * </p>
      */
     public UnitConverter() {
@@ -93,7 +101,7 @@ public final class UnitConverter {
      * @param divisionPrecision precision used to build the internal {@link MathContext}
      */
     public UnitConverter(final int divisionPrecision) {
-        this(CalculatorEngineUtils.getDefaultMathContext(divisionPrecision));
+        this(BigNumbers.getDefaultMathContext(divisionPrecision));
     }
 
     /**
@@ -195,8 +203,15 @@ public final class UnitConverter {
             );
         }
 
-        final BigNumber base = UnitElements.toBase(fromUnit, value, mathContext);
-        return UnitElements.fromBase(toUnit, base, mathContext);
+        final int precision = mathContext.getPrecision();
+        if (precision <= 0) {
+            final BigNumber base = UnitElements.toBase(fromUnit, value, mathContext);
+            return UnitElements.fromBase(toUnit, base, mathContext);
+        }
+
+        final MathContext guardContext = new MathContext(precision + CONVERSION_GUARD_DIGITS, mathContext.getRoundingMode());
+        final BigNumber base = UnitElements.toBase(fromUnit, value, guardContext);
+        return UnitElements.fromBase(toUnit, base, guardContext).round(mathContext);
     }
 
     /**

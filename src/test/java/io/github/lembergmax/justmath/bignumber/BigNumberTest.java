@@ -41,7 +41,7 @@ import java.util.Map;
 import io.github.lembergmax.justmath.calculator.CalculatorEngine;
 import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
-public class BigNumberTest {
+class BigNumberTest {
 
     @Nested
     public class BasicMath {
@@ -229,6 +229,32 @@ public class BigNumberTest {
             assertThrows(IllegalArgumentException.class, () -> num1.permutation(num2));
         }
 
+        @ParameterizedTest
+        @CsvSource({
+                "5,-3",
+                "-5,3",
+                "-5,-3"
+        })
+        void combinationRejectsNegativeArguments(String inputN, String inputK) {
+            BigNumber n = new BigNumber(inputN, Locale.US);
+            BigNumber k = new BigNumber(inputK, Locale.US);
+            // C(5, -3) previously slipped past the symmetry logic and wrongly returned 1.
+            assertThrows(IllegalArgumentException.class, () -> n.combination(k));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "5,-1",
+                "-5,1",
+                "-5,-1"
+        })
+        void permutationRejectsNegativeArguments(String inputN, String inputK) {
+            BigNumber n = new BigNumber(inputN, Locale.US);
+            BigNumber k = new BigNumber(inputK, Locale.US);
+            // P(5, -1) previously evaluated to 1/(n+1) instead of raising a domain error.
+            assertThrows(IllegalArgumentException.class, () -> n.permutation(k));
+        }
+
     }
 
     @Nested
@@ -271,11 +297,24 @@ public class BigNumberTest {
         }
 
         @Test
-        void cartesianToPolarCoordinateInvalidTest() {
-            BigNumber num1 = new BigNumber("-1", Locale.US);
-            BigNumber num2 = new BigNumber("0", Locale.US);
+        void cartesianToPolarCoordinateOriginThrows() {
+            // Only the origin (0,0) is undefined.
+            BigNumber zero = new BigNumber("0", Locale.US);
+            assertThrows(IllegalArgumentException.class, () -> zero.cartesianToPolarCoordinates(zero));
+        }
 
-            assertThrows(IllegalArgumentException.class, () -> num1.cartesianToPolarCoordinates(num2));
+        @Test
+        void cartesianToPolarCoordinateOnAxisIsValid() {
+            // Points on an axis (one coordinate zero) are valid: (0,5) -> r=5, θ=90°; (5,0) -> r=5, θ=0°.
+            BigNumberCoordinate onYAxis = new BigNumber("0", Locale.US)
+                    .cartesianToPolarCoordinates(new BigNumber("5", Locale.US), BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
+            assertEquals("5", onYAxis.getX().roundAfterDecimals(6).trim().toString());
+            assertEquals("90", onYAxis.getY().roundAfterDecimals(6).trim().toString());
+
+            BigNumberCoordinate onXAxis = new BigNumber("5", Locale.US)
+                    .cartesianToPolarCoordinates(new BigNumber("0", Locale.US), BigNumbers.DEFAULT_MATH_CONTEXT, Locale.US);
+            assertEquals("5", onXAxis.getX().roundAfterDecimals(6).trim().toString());
+            assertEquals("0", onXAxis.getY().roundAfterDecimals(6).trim().toString());
         }
 
     }
@@ -362,6 +401,18 @@ public class BigNumberTest {
             assertEquals(expectedResult, result.roundAfterDecimals(8).toString());
         }
 
+        @Test
+        void asinhSignIsLocaleIndependent() {
+            // M8: the sign is derived from the numeric value, not from the locale-aware toString().
+            BigNumber result = new BigNumber("-2.5", Locale.GERMANY).asinh();
+            assertTrue(result.isLessThan(new BigNumber("0", Locale.GERMANY)),
+                    "asinh of a negative argument must be negative regardless of locale, was: " + result);
+            BigNumber positive = new BigNumber("2.5", Locale.US).asinh();
+            assertEquals(positive.roundAfterDecimals(8).toString(Locale.US),
+                    result.abs().roundAfterDecimals(8).toString(Locale.US),
+                    "|asinh(-2.5)| must equal asinh(2.5)");
+        }
+
         @ParameterizedTest
         @CsvSource({
                 "1,0",
@@ -442,6 +493,18 @@ public class BigNumberTest {
         void asinTest(String input, TrigonometricMode trigonometricMode, String expectedResult) {
             BigNumber num = new BigNumber(input, trigonometricMode, Locale.US);
             assertEquals(expectedResult, num.asin(BigNumbers.DEFAULT_MATH_CONTEXT, trigonometricMode, Locale.US).round(new MathContext(7)).trim().toString());
+        }
+
+        @Test
+        void asinRetainsSignificantDigitsForTinyArguments() {
+            // Regression: asin previously rounded to mathContext precision as DECIMAL PLACES, which
+            // truncated significant digits for small arguments (unlike acos, which rounds to
+            // significant digits). asin(x) ~= x for tiny x, so 7 significant digits must survive.
+            final MathContext mc = new MathContext(7);
+            BigNumber result = new BigNumber("0.0000012345", Locale.US).asin(mc, TrigonometricMode.RAD, Locale.US);
+            assertNotEquals("0.0000012", result.toString(), "asin must not truncate to 7 decimal places");
+            assertTrue(result.toString().startsWith("0.00000123"),
+                    "asin must retain its significant digits (1234500e-6), was: " + result);
         }
 
         @ParameterizedTest
@@ -526,6 +589,20 @@ public class BigNumberTest {
             BigNumber num = new BigNumber(input, trigonometricMode);
             // assertEquals(expectedResult, num.acot(trigonometricMode).toString());
             assertThrows(ArithmeticException.class, () -> num.acot(trigonometricMode));
+        }
+
+        @Test
+        void acotNoArgUsesInstanceTrigonometricMode() {
+            BigNumber radiansInstance = new BigNumber("1", TrigonometricMode.RAD, Locale.US);
+            BigNumber degreesInstance = new BigNumber("1", TrigonometricMode.DEG, Locale.US);
+
+            // acot() previously hard-coded DEG; it must honor the instance mode like asin/acos/atan.
+            assertEquals(radiansInstance.acot(TrigonometricMode.RAD).toString(), radiansInstance.acot().toString(),
+                    "acot() must use the instance RAD mode");
+            assertEquals(degreesInstance.acot(TrigonometricMode.DEG).toString(), degreesInstance.acot().toString(),
+                    "acot() must use the instance DEG mode");
+            assertNotEquals(radiansInstance.acot().toString(), degreesInstance.acot().toString(),
+                    "RAD and DEG instances must yield different acot() results");
         }
 
     }
@@ -647,6 +724,7 @@ public class BigNumberTest {
                 "5, 3, 15",
                 "0, 7, 0",
                 "7, 0, 0",
+                "0, 0, 0",
                 "-3, 5, 15",
                 "-2, -4, 4"
         })
@@ -748,6 +826,16 @@ public class BigNumberTest {
             BigNumber finalRoot = new BigNumber("4");
             assertThrows(IllegalArgumentException.class, () -> finalNum.nthRoot(finalRoot),
                     "Even root of negative number should throw exception");
+        }
+
+        @Test
+        void nthRootNegativeNonIntegerIndexThrows() {
+            // (-4)^(1/0.5) = 16, not -16: a non-integer index over a negative radicand is undefined as
+            // a real root and was previously mis-signed. It must be rejected.
+            BigNumber radicand = new BigNumber("-4");
+            BigNumber index = new BigNumber("0.5");
+            assertThrows(IllegalArgumentException.class, () -> radicand.nthRoot(index),
+                    "Non-integer index over a negative radicand should throw");
         }
 
     }
@@ -1031,6 +1119,21 @@ public class BigNumberTest {
 
             assertEquals(expected, betaXY);
             assertEquals(expected, betaYX);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "0, 2",
+                "2, 0",
+                "-0.5, 2",
+                "2, -0.5"
+        })
+        void betaRejectsNonPositiveArguments(String xVal, String yVal) {
+            // Beta via Γ(x)Γ(y)/Γ(x+y) is documented for x > 0, y > 0; invalid input must throw
+            // instead of returning a value or leaking a raw Γ-pole exception.
+            BigNumber x = new BigNumber(xVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            BigNumber y = new BigNumber(yVal, Locale.US, MathContext.DECIMAL128, TrigonometricMode.RAD);
+            assertThrows(ArithmeticException.class, () -> x.beta(y, MathContext.DECIMAL128));
         }
 
         @Test
@@ -1457,7 +1560,7 @@ public class BigNumberTest {
             assertEquals(1, new BigNumber("1.123").signum());
             assertEquals(-1, new BigNumber("-0.123").signum());
             assertEquals(-1, new BigNumber("-1").signum());
-            assertEquals(-1, new BigNumber("-1..123").signum());
+            assertEquals(-1, new BigNumber("-1.123").signum());
         }
 
     }

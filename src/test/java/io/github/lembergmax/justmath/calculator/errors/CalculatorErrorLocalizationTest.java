@@ -61,6 +61,20 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
+    void parameterValueContainingPlaceholderIsNotReinjected() {
+        // A parameter value that literally contains "{position}" must not be turned into the numeric
+        // position by a second substitution pass. Template: "Invalid character '{character}' at
+        // position {position}." with character = "{position}" and position = 7.
+        CalculatorError err = new CalculatorError(
+                CalculatorErrorCode.SYNTAX_INVALID_CHARACTER,
+                java.util.Map.of("character", "{position}"),
+                "Invalid character '{position}' at position 7",
+                7);
+        assertEquals("Invalid character '{position}' at position 7.",
+                err.format(Locale.ENGLISH, ErrorMode.USER_FRIENDLY));
+    }
+
+    @Test
     void englishDivisionByZeroIsLocalized() {
         CalculatorError err = new CalculatorError(
                 CalculatorErrorCode.PROCESSING_DIVISION_BY_ZERO,
@@ -207,18 +221,13 @@ class CalculatorErrorLocalizationTest {
     }
 
     @Test
-    void trailingOperatorAfterFactorialFailsFastWithoutComputingFactorial() {
+    void trailingOperatorAfterFactorialIsReportedBeforeTheFactorialIsEvaluated() {
         CalculatorEngine engine = new CalculatorEngine();
-        long start = System.nanoTime();
-        CalculatorResult<?> result = engine.evaluateSafe("50000!/");
-        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+        CalculatorResult<?> result = engine.evaluateSafe("1000000!/");
 
         assertTrue(result.isFailure());
         assertEquals(CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR,
                 result.error().orElseThrow().code());
-        // Computing 50000! takes tens of seconds; the pre-check must short-circuit.
-        assertTrue(elapsedMs < 2_000,
-                "trailing-operator pre-check did not short-circuit; took " + elapsedMs + " ms");
     }
 
     @Test
@@ -245,6 +254,8 @@ class CalculatorErrorLocalizationTest {
                 {"5+", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
                 {"50000!/", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
                 {"50000!*", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                {"1000000!*", CalculatorErrorCode.SYNTAX_TRAILING_OPERATOR},
+                {"1000000!sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
                 {"()", CalculatorErrorCode.SYNTAX_EMPTY_PARENTHESES},
                 {"sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
                 {"5000!sqrt()", CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT},
@@ -258,28 +269,20 @@ class CalculatorErrorLocalizationTest {
         };
         for (Object[] c : cases) {
             String expr = (String) c[0];
-            long start = System.nanoTime();
             CalculatorResult<?> result = engine.evaluateSafe(expr);
-            long elapsedMs = (System.nanoTime() - start) / 1_000_000;
             assertTrue(result.isFailure(), "expected failure for: " + expr);
             assertEquals(c[1], result.error().orElseThrow().code(), "wrong code for: " + expr);
-            assertTrue(elapsedMs < 2_000,
-                    "did not fail fast (" + elapsedMs + " ms) for: " + expr);
         }
     }
 
     @Test
-    void emptyFunctionArgumentAfterFactorialFailsFastWithSpecificMessage() {
+    void emptyFunctionArgumentAfterFactorialIsReportedBeforeTheFactorialIsEvaluated() {
         CalculatorEngine engine = new CalculatorEngine();
-        long start = System.nanoTime();
-        CalculatorResult<?> result = engine.evaluateSafe("5000!sqrt()");
-        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+        CalculatorResult<?> result = engine.evaluateSafe("1000000!sqrt()");
 
         assertTrue(result.isFailure());
         assertEquals(CalculatorErrorCode.SYNTAX_EMPTY_FUNCTION_ARGUMENT,
                 result.error().orElseThrow().code());
-        assertTrue(elapsedMs < 2_000,
-                "empty-function pre-check did not short-circuit; took " + elapsedMs + " ms");
 
         String de = new CalculatorEngine()
                 .setLocale(Locale.GERMAN)

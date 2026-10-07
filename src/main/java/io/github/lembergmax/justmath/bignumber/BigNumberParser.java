@@ -54,13 +54,18 @@ final class BigNumberParser {
      * is preferred if it is supported; otherwise the first supported locale is used as fallback.
      * </p>
      *
+     * <p><strong>Single-separator ambiguity:</strong> a value with a single separator (e.g.
+     * {@code "1,234"}) is read with the separator as the <em>decimal</em> point, so {@code "1,234"}
+     * becomes {@code 1.234}. To parse grouped input deterministically, pass the locale explicitly via
+     * {@link #parse(String, Locale)} — see {@link #resolveBySeparatorHeuristic(String)}.</p>
+     *
      * @param input the raw numeric string to parse
      * @return the parsed {@link BigNumber}
      * @throws IllegalArgumentException if the input is not a valid number in any supported locale
      */
     BigNumber parse(@NonNull final String input) {
         if (input.isBlank()) {
-            return ZERO;
+            return ZERO.clone();
         }
 
         final Locale resolvedLocale = resolveLocale(input);
@@ -81,7 +86,7 @@ final class BigNumberParser {
      */
     BigNumber parse(@NonNull final String input, @NonNull final Locale locale) {
         if (input.isBlank()) {
-            return ZERO;
+            return ZERO.clone();
         }
 
         final String trimmedInput = input.trim();
@@ -90,9 +95,6 @@ final class BigNumberParser {
             return parseScientificNotation(trimmedInput, locale);
         }
 
-        // Reject malformed input loudly. The previous behaviour silently returned ZERO,
-        // which let typos such as {@code new BigNumber("abc")} survive as the number 0 —
-        // a very surprising failure mode for users of an arbitrary-precision math library.
         if (!isNumber(trimmedInput, locale)) {
             throw new IllegalArgumentException(
                     "Input is not a valid number for locale " + locale + ": '" + input + "'");
@@ -113,7 +115,7 @@ final class BigNumberParser {
      */
     public BigNumber parseAndFormat(@NonNull final String input, @NonNull final Locale targetLocale) {
         if (input.isBlank()) {
-            return ZERO;
+            return ZERO.clone();
         }
 
         final Locale sourceLocale = resolveLocale(input);
@@ -178,6 +180,9 @@ final class BigNumberParser {
     /**
      * Normalizes the input by removing grouping separators
      * and converting the decimal separator to '.' (US format).
+     *
+     * <p>When the locale's grouping separator is a non-breaking space ({@code U+00A0}), regular spaces
+     * are stripped as well, because users commonly type a normal space where the locale expects an NBSP.</p>
      */
     private String normalize(@NonNull final String value, @NonNull final Locale fromLocale) {
         final LocaleSeparators localeSeparators = LocaleSeparators.forLocale(fromLocale);
@@ -186,7 +191,6 @@ final class BigNumberParser {
 
         String noGrouping = value.replace(String.valueOf(groupingSeparator), "");
 
-        // Some locales use NBSP for grouping; users often input normal spaces.
         if (groupingSeparator == '\u00A0') {
             noGrouping = noGrouping.replace(" ", "").replace("\u00A0", "");
         }
@@ -244,8 +248,6 @@ final class BigNumberParser {
             final String plainString = decimal.toPlainString();
             return extractParts(plainString, locale);
         } catch (NumberFormatException exception) {
-            // Same rationale as {@link #parse(String, Locale)}: signal malformed scientific
-            // notation instead of silently materialising it as zero.
             throw new IllegalArgumentException(
                     "Input is not a valid scientific-notation number for locale " + locale + ": '" + input + "'",
                     exception);
@@ -291,7 +293,6 @@ final class BigNumberParser {
             }
         }
 
-        // Ambiguous / separator-free numbers: prefer system format locale if supported, else first supported, else US.
         final Locale fallback = resolveFallbackLocale();
         if (scientific ? canParseScientific(trimmed, fallback) : isNumber(trimmed, fallback)) {
             return fallback;
@@ -305,6 +306,14 @@ final class BigNumberParser {
      * - If both '.' and ',' exist in the significand, the last one is assumed to be the decimal separator.
      *   The other is assumed to be the grouping separator.
      * - If only one of them exists, it is assumed to be the decimal separator (grouping remains unknown).
+     *
+     * <p><strong>Known limitation (ambiguity):</strong> when a value contains a <em>single</em>
+     * separator it is irreducibly ambiguous — {@code "1,234"} is {@code 1.234} under a comma-decimal
+     * locale but {@code 1234} (grouped) under a comma-grouping locale. This auto-detection path always
+     * resolves a lone separator to the decimal separator, so {@code "1,234"} parses as {@code 1.234}.
+     * Callers that need grouped input parsed unambiguously must supply the locale explicitly via
+     * {@link #parse(String, Locale)} (or {@code CalculatorEngine.setInputLocale}); with an explicit
+     * locale {@code "1,234"} parses as {@code 1234} under {@link Locale#US}.</p>
      *
      * @param inputTrimmed trimmed input
      * @return a supported locale that matches the heuristic and validates, or null

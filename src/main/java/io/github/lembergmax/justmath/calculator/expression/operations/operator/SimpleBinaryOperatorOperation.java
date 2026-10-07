@@ -31,6 +31,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface SimpleBinaryOperatorOperation {
 
-	BigNumber apply(BigNumber a, BigNumber b, Locale locale);
+    BigNumber apply(BigNumber a, BigNumber b, Locale locale);
 
 }

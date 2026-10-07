@@ -37,18 +37,18 @@ import io.github.lembergmax.justmath.calculator.internal.TrigonometricMode;
 
 public class SimpleBinaryOperator extends ExpressionElement {
 
-	private final SimpleBinaryOperatorOperation operation;
+    private final SimpleBinaryOperatorOperation operation;
 
-	public SimpleBinaryOperator(String symbol, int precedence, SimpleBinaryOperatorOperation operation) {
-		super(symbol, false, precedence);
-		this.operation = operation;
-	}
+    public SimpleBinaryOperator(String symbol, int precedence, SimpleBinaryOperatorOperation operation) {
+        super(symbol, false, precedence);
+        this.operation = operation;
+    }
 
-	@Override
-	public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
-		BigNumber b = ensureScalar(stack.pop());
-		BigNumber a = ensureScalar(stack.pop());
-		stack.push(operation.apply(a, b, locale));
-	}
+    @Override
+    public void apply(Deque<Object> stack, MathContext mathContext, TrigonometricMode trigonometricMode, Locale locale) {
+        BigNumber b = ensureScalar(stack.pop());
+        BigNumber a = ensureScalar(stack.pop());
+        stack.push(operation.apply(a, b, locale));
+    }
 
 }

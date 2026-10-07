@@ -32,6 +32,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 @FunctionalInterface
 public interface ConstantOperation {
 
-	BigNumber apply(MathContext mathContext, Locale locale);
+    BigNumber apply(MathContext mathContext, Locale locale);
 
 }

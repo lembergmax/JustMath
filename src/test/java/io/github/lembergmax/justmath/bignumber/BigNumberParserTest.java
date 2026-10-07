@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 import io.github.lembergmax.justmath.bignumber.internal.LocalesConfig;
@@ -56,8 +55,13 @@ class BigNumberParserTest {
 
         @Test
         void parse_blank_returnsZero() {
-            assertSame(ZERO, parser.parse("", LOCALE_US));
-            assertSame(ZERO, parser.parse("   ", LOCALE_US));
+            // Blank input yields zero, but a fresh instance — never the shared ZERO constant by
+            // reference, which a caller could mutate (setter / negateThis / trim) and corrupt
+            // process-wide.
+            assertNotSame(ZERO, parser.parse("", LOCALE_US));
+            assertNotSame(ZERO, parser.parse("   ", LOCALE_US));
+            assertEquals(ZERO, parser.parse("", LOCALE_US));
+            assertEquals(ZERO, parser.parse("   ", LOCALE_US));
         }
 
         @Test
@@ -172,11 +176,11 @@ class BigNumberParserTest {
         @Test
         void supportedLocales_precondition() {
             assertNotNull(LocalesConfig.SUPPORTED_LOCALES, "SUPPORTED_LOCALES darf nicht null sein.");
-            assertTrue(LocalesConfig.SUPPORTED_LOCALES.length > 0, "SUPPORTED_LOCALES darf nicht leer sein.");
+            assertFalse(LocalesConfig.SUPPORTED_LOCALES.isEmpty(), "SUPPORTED_LOCALES darf nicht leer sein.");
 
-            assertTrue(Arrays.asList(LocalesConfig.SUPPORTED_LOCALES).contains(LOCALE_US),
+            assertTrue(LocalesConfig.SUPPORTED_LOCALES.contains(LOCALE_US),
                     "LocalesConfig.SUPPORTED_LOCALES muss Locale.US enthalten für diese Tests.");
-            assertTrue(Arrays.asList(LocalesConfig.SUPPORTED_LOCALES).contains(LOCALE_DE),
+            assertTrue(LocalesConfig.SUPPORTED_LOCALES.contains(LOCALE_DE),
                     "LocalesConfig.SUPPORTED_LOCALES muss Locale.GERMANY enthalten für diese Tests.");
         }
 

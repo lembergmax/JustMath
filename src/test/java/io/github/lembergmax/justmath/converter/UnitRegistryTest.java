@@ -68,6 +68,28 @@ final class UnitRegistryTest {
     }
 
     /**
+     * Ensures {@link UnitRegistry#allUnits()} keeps the order of the registry list in every JVM: the first unit is the
+     * first definition and the last unit is the last definition.
+     */
+    @Test
+    void allUnitsKeepTheRegistryOrder() {
+        final List<Unit> units = UnitRegistry.allUnits();
+
+        assertEquals(Unit.Length.EXAMETER, units.getFirst());
+        assertEquals(Unit.DataStorage.DVD_2L_2S, units.getLast());
+    }
+
+    /**
+     * Ensures the units of a group appear in {@link UnitRegistry#allUnits()} in the same order as in the group list.
+     */
+    @Test
+    void unitsOfAGroupKeepTheirOrderInAllUnits() {
+        final List<Unit> inAllUnits = UnitRegistry.allUnits().stream().filter(unit -> UnitRegistry.groupOf(unit) == Unit.Mass.class).toList();
+
+        assertEquals(UnitRegistry.unitsOfGroup(Unit.Mass.class), inAllUnits);
+    }
+
+    /**
      * Ensures group unit lists are present and non-empty for known groups.
      */
     @Test
