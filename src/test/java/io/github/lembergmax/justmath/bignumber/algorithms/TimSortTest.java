@@ -24,7 +24,7 @@
 
 package io.github.lembergmax.justmath.bignumber.algorithms;
 
-public class TimSortTest extends AbstractSortAlgorithmTest {
+class TimSortTest extends AbstractSortAlgorithmTest {
 
     @Override
     protected BigNumberSortAlgorithm createAlgorithm() {
