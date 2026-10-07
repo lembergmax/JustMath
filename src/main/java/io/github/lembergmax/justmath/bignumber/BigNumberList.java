@@ -1101,13 +1101,7 @@ public class BigNumberList implements List<BigNumber>, Cloneable {
      * @return {@code true} if the sequence is monotonically non-decreasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicIncreasing() {
-        for (int i = 1; i < values.size(); i++) {
-            if (values.get(i).isLessThan(values.get(i - 1))) {
-                return false;
-            }
-        }
-
-        return true;
+        return isSortedAscending();
     }
 
     /**
@@ -1117,12 +1111,7 @@ public class BigNumberList implements List<BigNumber>, Cloneable {
      * @return {@code true} if the sequence is monotonically non-increasing or has fewer than BigNumbers.TWO elements, {@code false} otherwise
      */
     public boolean isMonotonicDecreasing() {
-        for (int i = 1; i < values.size(); i++) {
-            if (values.get(i).isGreaterThan(values.get(i - 1))) {
-                return false;
-            }
-        }
-        return true;
+        return isSortedDescending();
     }
 
     /**
