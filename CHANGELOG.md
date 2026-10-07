@@ -28,6 +28,7 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 - `BoundedCache`, and the cached values of pi and e in `BigNumbers` are bounded to 32 precisions. (#169)
 - `MathUtils.computeWithGuardDigits`, which evaluates a function with as many guard digits as its result needs and rounds once.
 - `docs/units.md`, generated from the registry and guarded by a test, `docs/unit-audit.md` and the audit files under `src/test/resources/unit-audit`. (#162, #187)
+- JMH benchmarks under `benchmarks/` and `docs/performance.md`. They show that the arithmetic of `BigNumber` is 90 to 2400 times slower than `BigDecimal`. Running the hot paths on `BigDecimal` is planned and changes no result. (#179, #220)
 - `docs/architecture.md`, decision records, a guide for adding a function, an operator, a unit or a sorting algorithm, and `docs/testing.md`. (#188)
 - `CHANGELOG.md`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`, `CODEOWNERS`, issue forms and a pull request template. (#185, #186)
 - Releases carry an SBOM (CycloneDX), SHA-256 checksums and a build provenance attestation, and are published after the maintainer approves them. (#182, #183)
@@ -80,7 +81,7 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 - JaCoCo with a coverage gate, SpotBugs with FindSecBugs, Javadoc as an error, Spotless with `.editorconfig` and `.gitattributes`, and japicmp against the previous release. (#170, #173, #174, #175, #178)
 - jqwik property tests and differential tests against `BigDecimal`, `BigInteger` and `BigDecimalMath`, tests for the unit definitions, the Markdown links and the README, and an architecture test for the package dependencies. About 2900 tests, up from about 1600. (#176)
 - CI on JDK 21, 23 and 25, on Windows, under three default locales, with a reproducibility check. (#180)
-- PIT mutation tests once a week, JMH benchmarks and `docs/performance.md`. (#177, #179)
+- PIT mutation tests once a week. (#177)
 
 ## [1.6.0] - 2026-05-30
 
