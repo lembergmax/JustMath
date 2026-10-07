@@ -516,17 +516,6 @@ public final class BasicMath {
     }
 
     /**
-     * Converts an internal parsed number into a {@link BigNumber} using locale adaptation.
-     *
-     * @param parsedDecimalNumber internal number; must not be {@code null}
-     * @param locale              locale used to adapt the decimal separator; must not be {@code null}
-     * @return a new {@link BigNumber} instance
-     */
-    private static BigNumber toBigNumber(final ParsedDecimalNumber parsedDecimalNumber, final Locale locale) {
-        return new BigNumber(adaptPlainDecimalToLocale(formatPlain(parsedDecimalNumber), locale), locale).trim();
-    }
-
-    /**
      * Converts an internal parsed number into a {@link BigNumber} using locale adaptation and a {@link MathContext}.
      *
      * @param parsedDecimalNumber internal number; must not be {@code null}
@@ -1666,13 +1655,10 @@ public final class BasicMath {
      * Multiplies the integers of the range {@code [startInclusive, endInclusive]} by splitting it in halves.
      *
      * @param startInclusive range start
-     * @param endInclusive   range end
-     * @return the product; {@code 1} for an empty range
+     * @param endInclusive   range end, not below {@code startInclusive}
+     * @return the product
      */
     private static BigInteger productOfRange(final int startInclusive, final int endInclusive) {
-        if (startInclusive > endInclusive) {
-            return BigInteger.ONE;
-        }
         if (startInclusive == endInclusive) {
             return BigInteger.valueOf(startInclusive);
         }
