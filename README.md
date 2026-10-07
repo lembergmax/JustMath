@@ -71,6 +71,7 @@ How precise a result is:
 
 - A division, a negative power, `exp`, a fractional power, a root, a logarithm and a trigonometric or hyperbolic function return a result that is correct to within one unit in the last place of your `MathContext`, rounded once with its rounding mode. A function that loses digits near one of its zeros (`sin` near a multiple of π, `ln` near 1, `sinh` near 0) is evaluated with as many guard digits as it needs. Where the exact result is zero, such as `sin(180°)`, it is zero.
 - `BigNumberList` and `BigNumberMatrix` use the default context of 100 digits and `HALF_UP` for their divisions and their means.
+- Speed is not the strength of `BigNumber`: its arithmetic is 90 to 2400 times slower than `BigDecimal`. If you only need exact decimal arithmetic in a hot loop, use `BigDecimal`. See [docs/performance.md](docs/performance.md).
 
 Mutation:
 
@@ -206,6 +207,7 @@ An input that is small but asks for an enormous result is rejected with a typed 
 | [Decisions](docs/decisions/README.md) | Why the library is built the way it is |
 | [Units](docs/units.md) and [unit audit](docs/unit-audit.md) | All 601 units and where their values come from |
 | [Testing](docs/testing.md) | The kinds of tests and the accuracy contract |
+| [Performance](docs/performance.md) | Benchmarks of `BigNumber` against `BigDecimal`, and what they mean |
 | [Extending](docs/extending.md) | How to add a function, an operator, a unit or a sorting algorithm |
 | [Releasing](docs/releasing.md) | How a release is built, approved and published |
 | [Javadoc](https://javadoc.io/doc/io.github.lembergmax/justmath) | The API |
