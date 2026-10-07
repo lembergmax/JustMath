@@ -88,6 +88,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     private static final long serialVersionUID = 1L;
 
     /**
+     * Number of trailing zeros from which {@link #stripLargeUnscaledValue(BigDecimal)} strips them in one step.
+     */
+    private static final int BULK_STRIP_ZEROS = 8;
+
+    /**
+     * {@code 10^}{@link #BULK_STRIP_ZEROS}, which a value with that many trailing zeros is a multiple of.
+     */
+    private static final BigInteger BULK_STRIP_DIVISOR = BigInteger.TEN.pow(BULK_STRIP_ZEROS);
+
+    /**
      * Shared instance of the parser used to convert input strings into BigNumber objects.
      * This static parser ensures consistent parsing logic across all BigNumber instances.
      */
@@ -3690,9 +3700,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
 
     /**
      * Strips the trailing zeros of a value with a positive scale and an unscaled value too large for a {@code long}.
-     * {@link BigDecimal#stripTrailingZeros()} divides such a value by ten once per zero, which is slow for the
-     * exact quotient of two small numbers at a high precision. This method counts the zeros in the digits and
-     * divides once.
+     * {@link BigDecimal#stripTrailingZeros()} divides such a value by ten once per zero. That is cheap for the few
+     * zeros of a product and slow for the many zeros of the exact quotient of two small numbers at a high precision.
+     * A value with fewer than {@value #BULK_STRIP_ZEROS} zeros is left to that method. For more zeros this method
+     * counts them in the digits and divides once.
      *
      * @param value the value; must not be {@code null}, not zero and have a positive scale
      * @return the value without trailing zeros after the decimal point
@@ -3702,6 +3713,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
         if (unscaled.testBit(0)) {
             return value;
         }
+        if (unscaled.mod(BULK_STRIP_DIVISOR).signum() != 0) {
+            return value.stripTrailingZeros();
+        }
 
         final String digits = unscaled.abs().toString();
         int zeros = 0;
@@ -3709,14 +3723,10 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
             zeros++;
         }
         final int removable = Math.min(zeros, value.scale());
-        if (removable == 0) {
-            return value;
-        }
 
         final BigInteger reduced = new BigInteger(digits.substring(0, digits.length() - removable));
         return new BigDecimal(value.signum() < 0 ? reduced.negate() : reduced, value.scale() - removable);
     }
-
     /**
      * Writes the digits down before the serialized form is written, because the form holds the digits and not
      * the cached value.

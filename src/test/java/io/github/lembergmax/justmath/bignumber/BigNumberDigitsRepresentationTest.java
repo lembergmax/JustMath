@@ -91,7 +91,12 @@ class BigNumberDigitsRepresentationTest {
                 Arguments.of("0.000", "0", "", 0, "0"),
                 Arguments.of("100", "100", "", 0, "100"),
                 Arguments.of("100.100", "100", "1", 1, "100.1"),
-                Arguments.of("-2.50", "2", "5", 1, "-2.5"));
+                Arguments.of("-2.50", "2", "5", 1, "-2.5"),
+                Arguments.of("2.5" + "0".repeat(98), "2", "5", 1, "2.5"),
+                Arguments.of("123456789012345678901234567890.1200000000000", "123456789012345678901234567890", "12", 2, "123456789012345678901234567890.12"),
+                Arguments.of("123456789012345678901234567890.1230", "123456789012345678901234567890", "123", 3, "123456789012345678901234567890.123"),
+                Arguments.of("123456789012345678901234567890.0000000000", "123456789012345678901234567890", "", 0, "123456789012345678901234567890"),
+                Arguments.of("-123456789012345678901234567890.1200000000000", "123456789012345678901234567890", "12", 2, "-123456789012345678901234567890.12"));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -274,6 +279,16 @@ class BigNumberDigitsRepresentationTest {
         assertEquals(tenDigits, quotient.getMathContext());
         assertEquals(tenDigits, power.getMathContext());
         assertEquals(new MathContext(20), factorial.getMathContext());
+    }
+
+    @Test
+    @DisplayName("the exact quotient of two small numbers at a high precision has no trailing zeros")
+    void exactQuotientHasNoTrailingZeros() {
+        final BigNumber quotient = new BigNumber("5").divide(new BigNumber("2"), new MathContext(100, RoundingMode.HALF_EVEN));
+
+        assertDigits(quotient, "2", "5", false);
+        assertEquals(1, quotient.toBigDecimal().scale());
+        assertEquals("2.5", quotient.toString());
     }
 
     @Test
