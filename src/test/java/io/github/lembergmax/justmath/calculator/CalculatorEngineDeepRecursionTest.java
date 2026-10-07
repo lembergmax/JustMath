@@ -21,62 +21,153 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package io.github.lembergmax.justmath.calculator;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import io.github.lembergmax.justmath.calculator.errors.CalculatorErrorCode;
+import io.github.lembergmax.justmath.calculator.errors.CalculatorResult;
+import io.github.lembergmax.justmath.calculator.exceptions.ProcessingErrorException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Regression for H6: a deep, acyclic variable-reference chain ({@code x1=x2+1, x2=x3+1, ...})
- * recurses through both the cycle-detection DFS and the substitution re-entry into
- * {@link CalculatorEngine#evaluate(String, Map)}, eventually raising a {@link StackOverflowError}.
+ * Regression for H6: a deep, acyclic variable-reference chain recurses through both the cycle-detection DFS and the
+ * substitution re-entry into {@link CalculatorEngine#evaluate(String, Map)}, eventually raising a
+ * {@link StackOverflowError}.
  *
- * <p>Because {@code StackOverflowError} is an {@link Error} (not an {@link Exception}), it used to
- * slip past the {@code catch (Exception)} clauses of the Safe / Text Output APIs and escape their
- * documented "never throws" contract. The boundaries now catch it explicitly.</p>
+ * <p>Because {@code StackOverflowError} is an {@link Error} (not an {@link Exception}), it used to slip past the
+ * {@code catch (Exception)} clauses of the Safe / Text Output APIs and escape their documented "never throws"
+ * contract. The boundaries now catch it explicitly.</p>
+ *
+ * <p>A variable name consists of ASCII letters only, so {@code x1} is the product of {@code x} and {@code 1} and not a
+ * name. The chain therefore uses names made of the letters {@code x} and {@code y}, which no function or constant
+ * starts with. The evaluation runs on a thread with a small stack, so that the overflow does not depend on the
+ * default stack size of the JVM.</p>
  */
 class CalculatorEngineDeepRecursionTest {
 
-    /** Deep enough to overflow the recursive cycle-check / substitution on a default JVM stack. */
-    private static final int CHAIN_LENGTH = 15_000;
+    private static final int CHAIN_LENGTH = 6_000;
 
-    private static Map<String, String> deepAcyclicChain() {
-        final Map<String, String> variables = new HashMap<>();
-        for (int i = 1; i < CHAIN_LENGTH; i++) {
-            variables.put("x" + i, "x" + (i + 1) + "+1");
+    private static final int NAME_WIDTH = 13;
+
+    private static final int SMALL_STACK_BYTES = 160 * 1024;
+
+    private static final String DEEPLY_NESTED_DETAIL = "Expression is nested too deeply to evaluate";
+
+    private static final Map<String, String> DEEP_CHAIN = acyclicChain(CHAIN_LENGTH);
+
+    private static String variableName(final int index) {
+        final StringBuilder name = new StringBuilder();
+        for (int bit = NAME_WIDTH - 1; bit >= 0; bit--) {
+            name.append(((index >> bit) & 1) == 0 ? 'x' : 'y');
         }
-        variables.put("x" + CHAIN_LENGTH, "1");
+        return name.toString();
+    }
+
+    private static Map<String, String> acyclicChain(final int length) {
+        final Map<String, String> variables = new HashMap<>();
+        for (int index = 1; index < length; index++) {
+            variables.put(variableName(index), variableName(index + 1) + "+1");
+        }
+        variables.put(variableName(length), "1");
         return variables;
     }
 
-    @Test
-    @DisplayName("evaluateSafe() never escapes with a StackOverflowError on a deep variable chain")
-    void evaluateSafeNeverEscapesOnDeepChain() {
-        final CalculatorEngine engine = new CalculatorEngine();
-        final Map<String, String> variables = deepAcyclicChain();
+    private static <T> T callOnSmallStack(final Supplier<T> action) throws InterruptedException {
+        final AtomicReference<T> result = new AtomicReference<>();
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+        final Thread thread = new Thread(null, () -> {
+            try {
+                result.set(action.get());
+            } catch (final Throwable escaped) {
+                failure.set(escaped);
+            }
+        }, "small-stack-evaluation", SMALL_STACK_BYTES);
+        thread.start();
+        thread.join();
+        assertNull(failure.get(), "the API must not let anything escape, but threw " + failure.get());
+        return result.get();
+    }
 
-        // The Typed Result API must never throw — neither an Exception nor a StackOverflowError.
-        assertDoesNotThrow(() -> {
-            engine.evaluateSafe("x1", variables);
-        }, "evaluateSafe must surface deep recursion as a failure result, not throw");
+    private static String expectedRawMessage() {
+        return new ProcessingErrorException(CalculatorErrorCode.PROCESSING_INTERNAL, DEEPLY_NESTED_DETAIL).getMessage();
+    }
+
+    static Stream<Arguments> safeTextApis() {
+        final String start = variableName(1);
+        return Stream.of(
+                Arguments.of("evaluateSafeToString", (Function<CalculatorEngine, String>) engine -> engine.evaluateSafeToString(start, DEEP_CHAIN)),
+                Arguments.of("evaluateSafeToPrettyString", (Function<CalculatorEngine, String>) engine -> engine.evaluateSafeToPrettyString(start, DEEP_CHAIN)));
+    }
+
+    static Stream<Arguments> textApis() {
+        final String start = variableName(1);
+        return Stream.of(
+                Arguments.of("evaluateToString", (Function<CalculatorEngine, String>) engine -> engine.evaluateToString(start, DEEP_CHAIN)),
+                Arguments.of("evaluateToPrettyString", (Function<CalculatorEngine, String>) engine -> engine.evaluateToPrettyString(start, DEEP_CHAIN)));
+    }
+
+    static Stream<Arguments> typedResultApis() {
+        final String start = variableName(1);
+        return Stream.of(
+                Arguments.of("evaluateSafe", (Function<CalculatorEngine, CalculatorResult<?>>) engine -> engine.evaluateSafe(start, DEEP_CHAIN)),
+                Arguments.of("evaluateToStringResult", (Function<CalculatorEngine, CalculatorResult<?>>) engine -> engine.evaluateToStringResult(start, DEEP_CHAIN)),
+                Arguments.of("evaluateToPrettyStringResult", (Function<CalculatorEngine, CalculatorResult<?>>) engine -> engine.evaluateToPrettyStringResult(start, DEEP_CHAIN)));
     }
 
     @Test
-    @DisplayName("Safe / Text string APIs never escape with a StackOverflowError on a deep variable chain")
-    void safeStringApisNeverEscapeOnDeepChain() {
-        final CalculatorEngine engine = new CalculatorEngine();
-        final Map<String, String> variables = deepAcyclicChain();
+    @DisplayName("a chain of letter-only variable names resolves, so the deep chain really recurses")
+    void shortChainResolves() {
+        final int length = 5;
 
-        assertDoesNotThrow(() -> engine.evaluateSafeToString("x1", variables),
-                "evaluateSafeToString must never throw");
-        assertDoesNotThrow(() -> engine.evaluateSafeToPrettyString("x1", variables),
-                "evaluateSafeToPrettyString must never throw");
-        assertDoesNotThrow(() -> engine.evaluateToString("x1", variables),
-                "evaluateToString must never throw");
+        assertEquals("5", new CalculatorEngine().evaluateToString(variableName(1), acyclicChain(length)));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("typedResultApis")
+    @DisplayName("the typed result APIs report a deep variable chain as PROCESSING_INTERNAL")
+    void typedResultApisNeverEscapeOnDeepChain(final String name, final Function<CalculatorEngine, CalculatorResult<?>> api)
+            throws InterruptedException {
+        final CalculatorEngine engine = new CalculatorEngine();
+
+        final CalculatorResult<?> result = callOnSmallStack(() -> api.apply(engine));
+
+        assertTrue(result.isFailure(), name);
+        assertEquals(CalculatorErrorCode.PROCESSING_INTERNAL, result.error().orElseThrow().code(), name);
+        assertEquals(DEEPLY_NESTED_DETAIL, result.error().orElseThrow().technicalDetail(), name);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("safeTextApis")
+    @DisplayName("the safe text APIs report a deep variable chain as a prefixed error text")
+    void safeStringApisNeverEscapeOnDeepChain(final String name, final Function<CalculatorEngine, String> api)
+            throws InterruptedException {
+        final CalculatorEngine engine = new CalculatorEngine();
+
+        assertEquals("Error: " + expectedRawMessage(), callOnSmallStack(() -> api.apply(engine)), name);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("textApis")
+    @DisplayName("the text APIs report a deep variable chain as an error text")
+    void textApisNeverEscapeOnDeepChain(final String name, final Function<CalculatorEngine, String> api)
+            throws InterruptedException {
+        final CalculatorEngine engine = new CalculatorEngine();
+
+        assertEquals(expectedRawMessage(), callOnSmallStack(() -> api.apply(engine)), name);
     }
 }
