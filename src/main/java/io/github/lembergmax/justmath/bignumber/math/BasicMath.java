@@ -46,7 +46,8 @@ import java.util.Locale;
  * Addition, subtraction, multiplication, division, remainder, modulo, integer powers and the factorial run on
  * {@link BigDecimal} and {@link BigInteger}. A result keeps its value as a {@link BigDecimal} and writes its
  * digits down only when somebody asks for them, so a chain of calculations does not convert to text between the
- * steps. Division rounds once with the {@link MathContext} of the caller, that is with {@link BigDecimal#divide(BigDecimal, MathContext)}.
+ * steps. Division rounds once with the {@link MathContext} of the caller and gives the values of
+ * {@link BigDecimal#divide(BigDecimal, MathContext)}.
  *
  * <p>{@code exp} and the fractional power compute with the internal tuple representation
  * {@code value = sign * digits * 10^{-scale}} on digit strings, with guard digits, and round once.</p>
@@ -1668,30 +1669,6 @@ public final class BasicMath {
 
         final int middle = (startInclusive + endInclusive) >>> 1;
         return productOfRange(startInclusive, middle).multiply(productOfRange(middle + 1, endInclusive));
-    }
-
-    /**
-     * Multiplies the integer range [start, end] using divide-and-conquer (product tree).
-     *
-     * @param startInclusive range start
-     * @param endInclusive   range end
-     * @return product as unsigned digits
-     */
-    private static String multiplyRangeUnsigned(final int startInclusive, final int endInclusive) {
-        if (startInclusive > endInclusive) {
-            return "1";
-        }
-        if (startInclusive == endInclusive) {
-            return Integer.toString(startInclusive);
-        }
-        if (endInclusive - startInclusive == 1) {
-            return multiplyUnsigned(Integer.toString(startInclusive), Integer.toString(endInclusive));
-        }
-
-        final int mid = (startInclusive + endInclusive) >>> 1;
-        final String left = multiplyRangeUnsigned(startInclusive, mid);
-        final String right = multiplyRangeUnsigned(mid + 1, endInclusive);
-        return multiplyUnsigned(left, right);
     }
 
     /**
