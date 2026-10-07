@@ -110,7 +110,14 @@ class BigNumberIllConditionedArgumentsTest {
                 new Case("sinh(1e-10)", ONE_E_MINUS_10, BigNumber::sinh, BigDecimalMath::sinh),
                 new Case("sinh(1e-40)", ONE_E_MINUS_40, BigNumber::sinh, BigDecimalMath::sinh),
                 new Case("tanh(1e-10)", ONE_E_MINUS_10, BigNumber::tanh, BigDecimalMath::tanh),
-                new Case("tanh(1e-40)", ONE_E_MINUS_40, BigNumber::tanh, BigDecimalMath::tanh));
+                new Case("tanh(1e-40)", ONE_E_MINUS_40, BigNumber::tanh, BigDecimalMath::tanh),
+                new Case("asinh(1e-50)", ONE_E_MINUS_50, BigNumber::asinh, BigDecimalMath::asinh),
+                new Case("asinh(1e40)", ONE_E_40, BigNumber::asinh, BigDecimalMath::asinh),
+                new Case("acosh(1 + 1e-19)", ONE_PLUS_1E_MINUS_19, BigNumber::acosh, BigDecimalMath::acosh),
+                new Case("atanh(1e-30)", ONE_E_MINUS_30, BigNumber::atanh, BigDecimalMath::atanh),
+                new Case("atanh(1 - 1e-20)", ONE_MINUS_1E_MINUS_20, BigNumber::atanh, BigDecimalMath::atanh),
+                new Case("acoth(1e30)", ONE_E_30, BigNumber::acoth, BigDecimalMath::acoth),
+                new Case("acoth(1 + 1e-19)", ONE_PLUS_1E_MINUS_19, BigNumber::acoth, BigDecimalMath::acoth));
 
         return cases.stream().flatMap(testCase -> PRECISIONS.stream().flatMap(precision -> ROUNDING_MODES.stream()
                 .map(mode -> Arguments.of(testCase.name(), testCase, new MathContext(precision, mode)))));

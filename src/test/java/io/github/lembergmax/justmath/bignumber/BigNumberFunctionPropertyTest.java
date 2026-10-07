@@ -106,6 +106,14 @@ class BigNumberFunctionPropertyTest {
     }
 
     @Provide
+    Arbitrary<BigDecimal> openUnitIntervalValues() {
+        return Arbitraries.frequencyOf(
+                Tuple.of(3, decimalsBetween(-0.999, 0.999, 15)),
+                Tuple.of(2, nearOne(true)),
+                Tuple.of(1, tinyValues()));
+    }
+
+    @Provide
     Arbitrary<BigDecimal> hyperbolicArguments() {
         return Arbitraries.frequencyOf(
                 Tuple.of(3, decimalsBetween(-50, 50, 10)),
@@ -117,6 +125,21 @@ class BigNumberFunctionPropertyTest {
         return Arbitraries.frequencyOf(
                 Tuple.of(3, decimalsBetween(-100000, 100000, 8)),
                 Tuple.of(1, tinyValues()));
+    }
+
+    @Provide
+    Arbitrary<BigDecimal> valuesAboveOne() {
+        return Arbitraries.frequencyOf(
+                Tuple.of(3, decimalsBetween(1, 100000, 8)),
+                Tuple.of(2, nearOne(false)));
+    }
+
+    @Provide
+    Arbitrary<BigDecimal> valuesBeyondOne() {
+        return withRandomSign(Arbitraries.frequencyOf(
+                Tuple.of(3, decimalsBetween(1.000001, 100000, 8)),
+                Tuple.of(2, nearOne(false)),
+                Tuple.of(1, Arbitraries.integers().between(1, MAX_TINY_EXPONENT).map(exponent -> BigDecimal.TEN.pow(exponent)))));
     }
 
     @Provide
@@ -284,6 +307,26 @@ class BigNumberFunctionPropertyTest {
     @Property(tries = TRIES, seed = SEED)
     void tanh(@ForAll("hyperbolicArguments") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
         check(value, precision, BigNumber::tanh, argument -> BigDecimalMath.tanh(argument, referenceContext(precision)), "tanh");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void asinh(@ForAll("realValues") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(value, precision, BigNumber::asinh, argument -> BigDecimalMath.asinh(argument, referenceContext(precision)), "asinh");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void acosh(@ForAll("valuesAboveOne") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(value, precision, BigNumber::acosh, argument -> BigDecimalMath.acosh(argument, referenceContext(precision)), "acosh");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void atanh(@ForAll("openUnitIntervalValues") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(value, precision, BigNumber::atanh, argument -> BigDecimalMath.atanh(argument, referenceContext(precision)), "atanh");
+    }
+
+    @Property(tries = TRIES, seed = SEED)
+    void acoth(@ForAll("valuesBeyondOne") final BigDecimal value, @ForAll @IntRange(min = MIN_PRECISION, max = MAX_PRECISION) final int precision) {
+        check(value, precision, BigNumber::acoth, argument -> BigDecimalMath.acoth(argument, referenceContext(precision)), "acoth");
     }
 
     @Property(tries = TRIES, seed = SEED)

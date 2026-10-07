@@ -376,6 +376,9 @@
                                  else. -->
                             <exclude>io.github.lembergmax.justmath.bignumber.math.CoordinateConversionMath</exclude>
                             <exclude>io.github.lembergmax.justmath.bignumber.math.NumberTheoryMath</exclude>
+                            <!-- Allowed in 1.7.0: the class got the private constructor that the other
+                                 inverse function classes already have. -->
+                            <exclude>io.github.lembergmax.justmath.bignumber.math.InverseHyperbolicTrigonometricMath#InverseHyperbolicTrigonometricMath()</exclude>
                         </excludes>
                     </parameter>
                 </configuration>
