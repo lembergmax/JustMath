@@ -28,13 +28,15 @@ Versions before 1.5.0 were not documented when they were released. Their entries
 - `BoundedCache`, and the cached values of pi and e in `BigNumbers` are bounded to 32 precisions. (#169)
 - `MathUtils.computeWithGuardDigits`, which evaluates a function with as many guard digits as its result needs and rounds once.
 - `docs/units.md`, generated from the registry and guarded by a test, `docs/unit-audit.md` and the audit files under `src/test/resources/unit-audit`. (#162, #187)
-- JMH benchmarks under `benchmarks/` and `docs/performance.md`. They show that the arithmetic of `BigNumber` is 90 to 2400 times slower than `BigDecimal`. Running the hot paths on `BigDecimal` is planned and changes no result. (#179, #220)
+- JMH benchmarks under `benchmarks/` and `docs/performance.md`. They showed that the arithmetic of `BigNumber` was 90 to 2400 times slower than `BigDecimal`, which is fixed, see Changed. (#179, #220)
 - `docs/architecture.md`, decision records, a guide for adding a function, an operator, a unit or a sorting algorithm, and `docs/testing.md`. (#188)
 - `CHANGELOG.md`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`, `CODEOWNERS`, issue forms and a pull request template. (#185, #186)
 - Releases carry an SBOM (CycloneDX), SHA-256 checksums and a build provenance attestation, and are published after the maintainer approves them. (#182, #183)
 
 ### Changed
 
+- The arithmetic is 9 to 2300 times faster, depending on the operation and the number of digits, and for numbers of 100 digits and more it takes 1.0 to 4.3 times as long as `BigDecimal`. Add, subtract, multiply, divide, remainder, modulo, integer powers and the factorial run on `BigDecimal` and `BigInteger`, and a `BigNumber` holds its value as a `BigDecimal` and writes its digits down only when they are asked for. The results are the same digit for digit, scale for scale and exception for exception. `toBigDecimal()` keeps its value and returns it again, and `getValueBeforeDecimalPoint()`, `getValueAfterDecimalPoint()` and `isNegative()` write the digits down on their first use. See [decision 0008](docs/decisions/0008-bigdecimal-arithmetic-and-lazy-digits.md) and [docs/performance.md](docs/performance.md). (#220)
+- `BigNumberList.isMonotonicIncreasing()` and `isMonotonicDecreasing()` return what `isSortedAscending()` and `isSortedDescending()` return. (#223)
 - Division, negative integer powers, `exp` and fractional powers round once, with the rounding mode of the caller, and keep every digit of a result that has more integer digits than the precision, and every digit of a quotient smaller than `10^-(precision+2)`. `100!/3` was wrong by `10^58`, `2^-1000` and `1/10^200` were `0`. (#202, #203, #204, #205)
 - `sin`, `cos`, `tan`, `cot`, `asin`, `acos`, `atan2`, `ln`, `log2`, `log10`, `sinh` and `tanh` keep every requested digit when the result is close to zero. `sin(3.14159265358979323846264338327950288)` with 20 digits returned `4.6E-26` and not `4.2E-36`. (#207)
 - `acosh` and the other inverse hyperbolic functions are computed with `BigDecimalMath` behind the same guard digits. `acosh(1.00068864)` with 60 digits took longer than ten seconds. (#208)

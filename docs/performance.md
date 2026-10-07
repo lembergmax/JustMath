@@ -1,91 +1,105 @@
 # Performance
 
-`BigNumber` is built for correct results, not for speed. For raw arithmetic it is much slower than `BigDecimal`: 90 to 2400 times for add, multiply, divide and power. This page has the numbers, the method and what follows from them. The follow-up work is tracked in [#220](https://github.com/lembergmax/JustMath/issues/220).
+`BigNumber` computes with `BigDecimal` and `BigInteger`. For numbers of 100 digits and more it is within a factor of 1.0 to 4.3 of `BigDecimal` for one operation, and within 1.2 to 1.6 when reading the operands from text and writing the result as text is counted. For numbers of 10 digits the fixed cost of the object shows, and it is 3 to 9 times slower. Before this version the arithmetic ran on digit strings and was 90 to 2400 times slower; the table shows both. This page has the numbers, the method, what was slow and what remains.
 
 ## What was measured
 
 The JMH benchmarks in `benchmarks/` run the same operation on the same operands with `BigNumber` and with `BigDecimal` (and `BigInteger` for the factorial):
 
-- `ArithmeticBenchmark`: add, multiply, divide, an integer power with exponent 20, and the factorial of `n` equal to the number of digits. The operands are random decimals of 10, 100 and 1000 digits with half of the digits after the decimal point. Division uses a `MathContext` with as many digits as the operands.
+- `ArithmeticBenchmark`: add, multiply, divide, an integer power with exponent 20, and the factorial of `n` equal to the number of digits. The operands are random decimals of 10, 100 and 1000 digits with half of the digits after the decimal point. Division uses a `MathContext` with as many digits as the operands. The benchmarks ending in `FromTextToText` read both operands from text and write the result as text, for both types.
 - `EngineBenchmark`: `CalculatorEngine.evaluate` for a short expression (`2+3*4-5/2`) and a longer one (`sqrt(16)*2^10+sin(30)*cos(60)+10!/8!-summation(1;20;k^2)`), with the expression cache on and off.
 
-Environment of the numbers below: Intel Core Ultra 7 155H, 15.6 GB, Windows 11, Oracle JDK 21.0.9, JMH 1.37, one fork, 3 warm-up and 5 measured iterations of one second each, nothing else running. Times are the average per operation in microseconds with the error of the 99.9 % confidence interval. Absolute numbers depend on the machine; the ratios are what matters.
+Environment of the numbers below: Intel Core Ultra 7 155H, 15.6 GB, Windows 11, Oracle JDK 21.0.9, JMH 1.37, one fork, 3 warm-up and 5 measured iterations of one second each, nothing else running. The expression benchmarks were measured again with 5 warm-up and 8 measured iterations, because the first run had a large error. Times are the average per operation in microseconds with the error of the 99.9 % confidence interval. Absolute numbers depend on the machine; the ratios are what matters. The column "Before" is the digit-string implementation, measured with the same benchmarks on the same machine.
 
 ## Results
 
-Arithmetic:
+### One operation
+
+The operands are numbers that exist already. The result is not written as text: it holds its value as a `BigDecimal` and writes its digits down when somebody asks for them (see [decision 0008](decisions/0008-bigdecimal-arithmetic-and-lazy-digits.md)).
+
+| Operation | Digits | Before (µs) | Now (µs) | BigDecimal (µs) | Faster than before | Slower than BigDecimal |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| add | 10 | 0.979 | 0.011 ± 0.002 | 0.003 ± 0.000 | 92x | 3.2x |
+| add | 100 | 5.955 | 0.024 ± 0.006 | 0.019 ± 0.004 | 246x | 1.3x |
+| add | 1000 | 99.926 | 0.103 ± 0.015 | 0.083 ± 0.014 | 966x | 1.3x |
+| multiply | 10 | 1.185 | 0.049 ± 0.002 | 0.013 ± 0.002 | 24x | 3.7x |
+| multiply | 100 | 27.442 | 0.299 ± 0.049 | 0.069 ± 0.013 | 92x | 4.3x |
+| multiply | 1000 | 2081.246 | 7.413 ± 1.316 | 2.773 ± 0.836 | 281x | 2.7x |
+| divide | 10 | 3.922 | 0.103 ± 0.019 | 0.012 ± 0.002 | 38x | 8.9x |
+| divide | 100 | 184.613 | 0.661 ± 0.100 | 0.523 ± 0.133 | 279x | 1.3x |
+| divide | 1000 | 18242.597 | 22.042 ± 2.407 | 19.119 ± 4.947 | 828x | 1.2x |
+| power (exponent 20) | 10 | 79.911 | 0.484 ± 0.031 | 0.143 ± 0.032 | 165x | 3.4x |
+| power (exponent 20) | 100 | 8121.323 | 6.002 ± 0.281 | 3.633 ± 0.384 | 1353x | 1.7x |
+| power (exponent 20) | 1000 | 748674.730 | 329.357 ± 73.681 | 314.707 ± 59.595 | 2273x | 1.0x |
+| factorial of n = digits | 10 | 0.873 | 0.097 ± 0.010 | 0.127 ± 0.008 | 9.0x | 0.8x |
+| factorial of n = digits | 100 | 31.218 | 1.458 ± 0.134 | 2.215 ± 0.131 | 21x | 0.7x |
+| factorial of n = digits | 1000 | 5820.609 | 20.180 ± 0.960 | 117.282 ± 10.427 | 288x | 0.2x |
+
+The factorial is compared with a plain product of `BigInteger` values, not with a product tree. `BigNumber` uses a product tree, so it is faster.
+
+### From text to text
+
+A caller usually reads numbers from text and writes the result as text. These benchmarks include both for `BigNumber` and for `BigDecimal`.
 
 | Operation | Digits | BigNumber (µs) | BigDecimal (µs) | Ratio |
 | --- | ---: | ---: | ---: | ---: |
-| add | 10 | 0.979 ± 0.018 | 0.003 ± 0.000 | 287x |
-| add | 100 | 5.955 ± 0.243 | 0.020 ± 0.002 | 301x |
-| add | 1000 | 99.926 ± 2.197 | 0.094 ± 0.009 | 1068x |
-| multiply | 10 | 1.185 ± 0.047 | 0.014 ± 0.002 | 87x |
-| multiply | 100 | 27.442 ± 0.383 | 0.071 ± 0.005 | 387x |
-| multiply | 1000 | 2081.246 ± 26.301 | 2.718 ± 0.167 | 766x |
-| divide | 10 | 3.922 ± 0.219 | 0.012 ± 0.001 | 323x |
-| divide | 100 | 184.613 ± 16.270 | 0.521 ± 0.033 | 354x |
-| divide | 1000 | 18242.597 ± 341.869 | 21.312 ± 10.433 | 856x |
-| power (exponent 20) | 10 | 79.911 ± 5.065 | 0.182 ± 0.112 | 440x |
-| power (exponent 20) | 100 | 8121.323 ± 447.852 | 3.615 ± 0.162 | 2246x |
-| power (exponent 20) | 1000 | 748674.730 ± 20865.372 | 313.875 ± 22.516 | 2385x |
-| factorial of n = digits | 10 | 0.873 ± 0.019 | 0.138 ± 0.016 | 6x |
-| factorial of n = digits | 100 | 31.218 ± 2.257 | 2.323 ± 0.218 | 13x |
-| factorial of n = digits | 1000 | 5820.609 ± 755.589 | 115.442 ± 2.480 | 50x |
+| add | 10 | 0.518 ± 0.046 | 0.076 ± 0.016 | 6.8x |
+| add | 100 | 3.401 ± 0.239 | 2.121 ± 0.272 | 1.6x |
+| add | 1000 | 63.114 ± 15.430 | 52.061 ± 2.422 | 1.2x |
+| multiply | 10 | 0.856 ± 0.097 | 0.255 ± 0.021 | 3.4x |
+| multiply | 100 | 5.266 ± 0.764 | 3.756 ± 0.270 | 1.4x |
+| multiply | 1000 | 110.394 ± 11.747 | 92.755 ± 6.070 | 1.2x |
+| divide | 10 | 0.657 ± 0.048 | 0.082 ± 0.005 | 8.0x |
+| divide | 100 | 3.979 ± 0.130 | 2.694 ± 0.179 | 1.5x |
+| divide | 1000 | 90.222 ± 16.900 | 76.768 ± 8.414 | 1.2x |
 
-The factorial is compared with a plain product of `BigInteger` values, not with a product tree.
+From 100 digits on, the conversion between text and numbers is most of the time, and both types pay it. `BigNumber` reads a number with locale detection and validation, which is the difference at 10 digits.
 
-Expression engine:
+### Expression engine
 
-| Expression | Expression cache | Time per evaluation (µs) |
-| --- | --- | ---: |
-| short | on | 3.48 ± 0.08 |
-| short | off | 4.32 ± 0.11 |
-| long | on | 248.90 ± 14.00 |
-| long | off | 255.31 ± 14.57 |
+| Expression | Expression cache | Before (µs) | Now (µs) |
+| --- | --- | ---: | ---: |
+| short | on | 3.48 | 2.59 ± 0.07 |
+| short | off | 4.32 | 3.45 ± 0.09 |
+| long | on | 248.90 | 184.78 ± 6.53 |
+| long | off | 255.31 | 191.27 ± 13.24 |
 
-## Where the time goes
+The expression cache saves the tokenizer: 25 % for the short expression and nothing visible for the long one. In the long expression the time goes into `sin`, `cos`, `sqrt` and the summation, which call big-math with guard digits, and not into the arithmetic.
 
-A profile with JDK Flight Recorder (`-XX:StartFlightRecording=settings=profile`) around a plain loop over one operation, same machine and JVM as above, 6 seconds per operation after a 2 second warm-up:
+## Where the time went
 
-| Operation | Digits | Where the samples are |
+The profile of the digit-string implementation, taken with JDK Flight Recorder around a plain loop over one operation (6 seconds per operation after a 2 second warm-up), named four causes:
+
+| Operation | Digits | Where the samples were |
 | --- | ---: | --- |
-| add | 1000 | 85 % in `BasicMath.parseFromBigNumber`: 58 % in `BigDecimal.toPlainString` (the conversion of a `BigInteger` to text) and 24 % in `new BigDecimal(String)`. The addition of the digits is a small rest. |
+| add | 1000 | 85 % in `BasicMath.parseFromBigNumber`: 58 % in `BigDecimal.toPlainString` (the conversion of a `BigInteger` to text) and 24 % in `new BigDecimal(String)`. |
 | multiply | 100 | 76 % in `BasicMath.multiplyUnsigned`, 12 % in `parseFromBigNumber`, 8 % in `new BigNumber(String, Locale)` for the result. |
-| divide | 100 | 98 % in the long division: 65 % in `estimateQuotientDigit` (47 % of it in `compareDivisorTimesDigitToRemainder`) and 28 % in `subtractProductFromRemainder`. |
-| power | 100 | 99.6 % in `multiplyUnsigned`, called again and again with longer operands. |
+| divide | 100 | 98 % in the long division: 65 % in `estimateQuotientDigit` and 28 % in `subtractProductFromRemainder`. |
+| power | 100 | 99.6 % in `multiplyUnsigned`. |
 
-Four causes follow from this, in the order of how much they cost:
+1. **The operands took a detour through `BigDecimal`.** `parseFromBigNumber` converted a `BigNumber` to `toBigDecimal().toPlainString()` and parsed that text again. Converting between decimal text and a `BigInteger` is quadratic in the number of digits: at 1000 digits `new BigDecimal(String)` takes 13.7 µs and `BigDecimal.toPlainString()` 25.5 µs, while `BigDecimal.add` takes 0.2 µs.
+2. **The multiplication had one decimal digit per step**, with a division and a remainder by 10 in the inner loop.
+3. **The division found one quotient digit per step by trial.**
+4. **A value was two strings.** Every result was built as text and parsed and validated again by the constructor.
 
-1. **The operands take a detour through `BigDecimal`.** `parseFromBigNumber` turns a `BigNumber` into `toBigDecimal().toPlainString()` and parses that text again, although the number already holds its digits as two strings. Converting between decimal text and a `BigInteger` is quadratic in the number of digits: at 1000 digits `new BigDecimal(String)` takes 13.7 µs and `BigDecimal.toPlainString()` 25.5 µs, while `BigDecimal.add` takes 0.22 µs. Every operation pays this for each operand, so it dominates add, subtract and compare, and it is a tenth of a multiplication of 100 digits.
-2. **The multiplication has one decimal digit per step.** `multiplyUnsigned` is the schoolbook algorithm on single decimal digits, with a division and a remainder by 10 in the inner loop. `BigDecimal` works on 32-bit limbs (about ten digits each, so about a hundred times fewer steps for the same numbers) and switches to Karatsuba and Toom-Cook for long operands. A power is a chain of such multiplications.
-3. **The division finds one quotient digit per step by trial.** For each digit of the quotient it estimates a digit, multiplies the divisor by it and compares the product with the remainder, and then subtracts. That is quadratic with a large constant. `BigDecimal` uses Burnikel-Ziegler for long operands.
-4. **A value is two strings.** `BigNumber` stores the digits before and after the decimal point as text. Each result is built as text, parsed and validated again by `new BigNumber(String, Locale)` (number check, locale handling, a second `BigNumber` inside the parser) and trimmed. This is the floor that stays when the first three are fixed: `add` of two numbers of 10 digits still takes about 0.8 µs against 0.003 µs.
+An experiment that fixed only the first two causes and kept the value as text made an addition of 1000 digits six times faster and a multiplication of 1000 digits 17 times faster, and left both far above `BigDecimal` (about 200 and 50 times), because every result was still built as text. That is why the change went further.
 
-An experiment shows how much the first two are worth. In a scratch copy, `parseFromBigNumber` read the two stored digit strings, and `multiplyUnsigned` multiplied with `BigInteger`. Nothing else changed. Time per operation in µs, measured with a plain timing loop (not JMH, so read the ratios, not the digits); the test suite was not run against the experiment:
+## What changed
 
-| Operation | Digits | Today | Direct operands | Direct operands and `BigInteger` multiply | `BigDecimal` |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| add | 10 | 1.25 | 0.79 | | 0.003 |
-| add | 100 | 7.7 | 2.6 | | 0.020 |
-| add | 1000 | 117 | 21 | 18 | 0.094 |
-| multiply | 100 | 29.9 | 27.2 | 7.0 | 0.071 |
-| multiply | 1000 | 2464 | 2217 | 141 | 2.7 |
-| power (exponent 20) | 100 | 8041 | | 555 | 3.6 |
-| power (exponent 20) | 1000 | 869986 | | 22645 | 314 |
-| divide | 100 | 209 | 224 | | 0.52 |
-| divide | 1000 | 21423 | 20495 | | 21.3 |
+- Add, subtract, multiply, divide, remainder, modulo, integer powers and the factorial run on `BigDecimal` and `BigInteger`. The factorial is a product tree.
+- A `BigNumber` holds its value as a `BigDecimal` and writes its digits down only when they are asked for. A chain of calculations never converts to text between the steps, and `toBigDecimal()` keeps its value instead of parsing the digits on every call.
+- Division multiplies the unscaled dividend by a power of ten, divides once, and lets `BigDecimal.round` apply the rounding mode. For two small numbers at a high precision that is faster than `BigDecimal.divide(BigDecimal, MathContext)`, which removes the zeros of an exact quotient one division at a time.
+- The trailing zeros of a result are removed one division at a time when there are few, and in one step when there are many.
+- The results are the same as before, digit for digit, scale for scale and exception for exception. [Decision 0008](decisions/0008-bigdecimal-arithmetic-and-lazy-digits.md) has the reasons and the evidence.
 
-Reading it: the direct operands make add 1.6 times faster at 10 digits and three to six times faster at 100 to 1000 digits, and leave the other operations as they are. The `BigInteger` multiplication makes a multiplication four times faster at 100 digits and 17 times at 1000, and a power 15 to 38 times. Division does not change, because its time is in the digit loop. What stays is the conversion between text and `BigInteger` (141 µs for a multiplication of 1000 digits against 2.7 µs for `BigDecimal`). To get close to `BigDecimal`, `BigNumber` would have to hold a `BigDecimal` and make the text lazy. That touches `trim()` and the other mutators and the public getters `getValueBeforeDecimalPoint()` and `getValueAfterDecimalPoint()`, so it is a design decision and not a speed-up of a method.
+## What is still slower
 
-## Reading the numbers
+- **Small numbers.** At 10 digits an operation costs 3 to 9 times what `BigDecimal` costs: 0.01 to 0.1 µs against 0.003 to 0.012 µs. A `BigNumber` is an object with a locale, a `MathContext` and two views of its value, and a result removes its trailing zeros.
+- **Multiplication.** 2.7 to 4.3 times `BigDecimal`. The product is reduced to the smallest scale, which `BigDecimal` leaves to the caller.
+- **Text.** Reading a number checks and normalizes it for every locale that `BigNumber` understands.
+- **The functions.** `sin`, `cos`, `sqrt` and the other functions run on big-math with the guard digits that the accuracy contract needs. They take 25 to 110 µs at 100 digits.
 
-- The arithmetic of `BigNumber` runs on digit strings. Every operation parses its operands, runs a schoolbook algorithm and formats the result, while `BigDecimal` runs on `BigInteger` with Karatsuba, Toom-Cook and Burnikel-Ziegler algorithms. The gap grows with the number of digits.
-- `BigNumber` also carries a locale, a `MathContext` and a trimmed representation, and `BigDecimal` is a JDK class that the JIT compiler knows. The comparison is what a caller sees when the same step is written with each type, not a comparison of algorithms alone.
-- The expression cache saves the tokenizer: 20 % for a short expression and nothing visible for a longer one, where the time goes into the functions (`sin`, `sqrt`, the factorial and the summation).
-- What `BigNumber` buys for this price: the rounding contract (one rounding step with your `MathContext` and rounding mode for every function), the functions with a tested accuracy, the exact comparison and hashing by value, the locale handling and the engine around it.
-
-If you only need exact decimal arithmetic in a hot loop, use `BigDecimal`. If you need the functions, the engine, the units or the rounding contract, the cost per call is in the range of microseconds to milliseconds for numbers of up to 100 digits.
+If you need exact decimal arithmetic in a tight loop of small numbers, `BigDecimal` is still faster. If you need the functions, the engine, the units or the rounding contract, the cost per call is in the range of tens of nanoseconds to microseconds for numbers of up to 100 digits.
 
 ## Reproduce
 
@@ -96,7 +110,3 @@ java -jar benchmarks/target/benchmarks.jar -rf json -rff results.json
 ```
 
 A single benchmark: `java -jar benchmarks/target/benchmarks.jar ArithmeticBenchmark.bigNumberDivide -p digits=100`. Close other programs first: a build or an IDE that runs in the background changes the numbers.
-
-## What follows
-
-[Decision 0007](decisions/0007-string-based-arithmetic.md) records why the arithmetic is as it is. The plan in [#220](https://github.com/lembergmax/JustMath/issues/220) follows the causes above, cheapest first: read the stored digits directly, multiply and raise to a power with `BigInteger`, divide with `BigInteger` or `BigDecimal`, and last decide whether `BigNumber` should hold a `BigDecimal`. Every step keeps the rounding contract. The differential property tests that compare `BasicMath` with `BigDecimal` for every rounding mode make each step safe, and these benchmarks show whether it helped.
