@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -96,7 +97,9 @@ class BigNumberDigitsRepresentationTest {
                 Arguments.of("123456789012345678901234567890.1200000000000", "123456789012345678901234567890", "12", 2, "123456789012345678901234567890.12"),
                 Arguments.of("123456789012345678901234567890.1230", "123456789012345678901234567890", "123", 3, "123456789012345678901234567890.123"),
                 Arguments.of("123456789012345678901234567890.0000000000", "123456789012345678901234567890", "", 0, "123456789012345678901234567890"),
-                Arguments.of("-123456789012345678901234567890.1200000000000", "123456789012345678901234567890", "12", 2, "-123456789012345678901234567890.12"));
+                Arguments.of("-123456789012345678901234567890.1200000000000", "123456789012345678901234567890", "12", 2, "-123456789012345678901234567890.12"),
+                Arguments.of("123456789012345678901234567890.123", "123456789012345678901234567890", "123", 3, "123456789012345678901234567890.123"),
+                Arguments.of("1E+3", "1000", "", 0, "1000"));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -299,6 +302,23 @@ class BigNumberDigitsRepresentationTest {
         assertEquals(Locale.GERMANY, german.getLocale());
         assertEquals("2,75", german.toString());
         assertEquals("2.75", german.toString(Locale.US));
+    }
+
+    @Test
+    @DisplayName("the BigDecimal constructor rejects null")
+    void constructorRejectsNull() {
+        assertThrows(NullPointerException.class, () -> new BigNumber((BigDecimal) null, Locale.US));
+        assertThrows(NullPointerException.class, () -> new BigNumber(BigDecimal.ONE, (Locale) null));
+    }
+
+    @Test
+    @DisplayName("the trim methods of a number whose digits were not written down yet write them down first")
+    void trimMethodsOnALazyNumber() {
+        assertDigits(fromDecimal("0.050").trimLeadingZerosAfterDecimalPoint(), "0", "50", false);
+        assertDigits(fromDecimal("0.050").trimTrailingZerosAfterDecimalPoint(), "0", "05", false);
+        assertDigits(fromDecimal("100.5").trimTrailingZerosBeforeDecimalPoint(), "1", "5", false);
+        assertDigits(fromDecimal("100.5").trimLeadingZerosBeforeDecimalPoint(), "100", "5", false);
+        assertEquals(new BigDecimal("0.50"), fromDecimal("0.050").trimLeadingZerosAfterDecimalPoint().toBigDecimal());
     }
 
     @Test

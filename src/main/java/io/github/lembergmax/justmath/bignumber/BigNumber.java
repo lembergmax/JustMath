@@ -28,6 +28,7 @@ import static io.github.lembergmax.justmath.bignumber.BigNumbers.DEFAULT_MATH_CO
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ONE_HUNDRED_EIGHTY;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.math.BigDecimal;
@@ -74,6 +75,17 @@ import lombok.Setter;
  * multiple of π, {@code ln} near 1, {@code sinh} near 0, and so on) are evaluated with as many guard digits
  * as the result needs, so the result keeps all requested digits. Where the exact value is zero (for example
  * {@code sin(180°)}) the result is exactly zero.</p>
+ *
+ * <p><strong>Value and digits.</strong> A number has two views of one value: the {@link BigDecimal}
+ * ({@link #toBigDecimal()}) and the digits ({@link #getValueBeforeDecimalPoint()},
+ * {@link #getValueAfterDecimalPoint()}, {@link #isNegative()}). A number that is read from text keeps its digits and
+ * parses its {@code BigDecimal} the first time a calculation needs it. A number that is built from a
+ * {@code BigDecimal}, which is every result of a calculation, holds only the {@code BigDecimal} and writes its
+ * digits down when somebody asks for them, so a chain of calculations does not convert to text between the steps.
+ * The digits, the scale and the sign are the same whichever way a number was built.</p>
+ *
+ * <p><strong>Threads.</strong> Several threads may read one instance, also while its digits are written down for the
+ * first time. None may change it ({@code trim}, {@code negateThis}, the setters) while others use it.</p>
  *
  * <p>Instances of this class are ideal for applications requiring precise decimal arithmetic,
  * such as financial systems, scientific calculations, or custom calculators.</p>
@@ -233,9 +245,9 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      */
     private String valueAfterDecimalPoint;
     /**
-     * Indicates whether the number is negative.
+     * Indicates whether the number is negative. Volatile for the same reason as {@link #valueBeforeDecimalPoint}.
      */
-    private boolean isNegative;
+    private volatile boolean isNegative;
     /**
      * The numeric value as a {@link BigDecimal}, or {@code null} if it has not been needed yet. It is derived
      * from the digits and is always reset when the digits change. For a number whose digits have not been written
@@ -246,7 +258,7 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * {@code true} if {@link #trim()} was called while the digits had not been written down yet, so that
      * {@link #ensureText()} applies the trimming when it creates them.
      */
-    private transient boolean trimPending;
+    private transient volatile boolean trimPending;
     /**
      * Per-instance {@link CalculatorEngine}, created lazily on first {@link #getCalculatorEngine()}
      * access. It is intentionally <em>not</em> built eagerly in the constructors: a
@@ -3738,6 +3750,20 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
     private void writeObject(final ObjectOutputStream stream) throws IOException {
         ensureText();
         stream.defaultWriteObject();
+    }
+
+    /**
+     * Restores the derived state: the cached value and the pending trim are not part of the serialized form.
+     *
+     * @param stream the stream to read from
+     * @throws IOException            if the stream fails
+     * @throws ClassNotFoundException if a class of the stream is not found
+     */
+    @Serial
+    private void readObject(final ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        decimalValue = null;
+        trimPending = false;
     }
 
     /**
