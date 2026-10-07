@@ -26,6 +26,7 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import static io.github.lembergmax.justmath.bignumber.BigNumbers.ZERO;
 
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Locale;
 
@@ -91,14 +92,15 @@ public final class NumberTheoryMath {
      * lcm(a, b) = |a * b| / gcd(a, b)
      * </pre>
      * This method requires that both inputs be integers (no decimal part). If either operand is
-     * zero the result is {@code 0} (by the convention {@code lcm(a, 0) = 0}).
+     * zero the result is {@code 0} (by the convention {@code lcm(a, 0) = 0}). The result is the exact
+     * integer, however many digits it has: it is not rounded to the precision of {@code mathContext}.
      *
      * @param a
      * 	first integer operand
      * @param b
      * 	second integer operand
      * @param mathContext
-     * 	the {@link MathContext} specifying precision and rounding mode for division
+     * 	validated for a positive precision, otherwise unused because the result is exact
      *
      * @return the least common multiple of |a| and |b|; {@code 0} by convention if either {@code a} or
      * 	{@code b} is zero
@@ -117,10 +119,10 @@ public final class NumberTheoryMath {
             return new BigNumber("0", locale);
         }
 
-        BigNumber product = a.multiply(b, locale).abs();
-        BigNumber divisor = gcd(a, b, locale);
+        final BigInteger first = a.toBigDecimal().toBigIntegerExact().abs();
+        final BigInteger second = b.toBigDecimal().toBigIntegerExact().abs();
 
-        return new BigNumber(product.divide(divisor, mathContext, locale).trim());
+        return new BigNumber(first.divide(first.gcd(second)).multiply(second).toString(), locale);
     }
 
 }

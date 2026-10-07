@@ -2546,8 +2546,8 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * </p>
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other) {
         return lcm(other, mathContext);
@@ -2558,13 +2558,13 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * </pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has.
      *
      * @param other the other BigNumber to compute the LCM with
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext) {
         return lcm(other, mathContext, locale);
@@ -2576,15 +2576,16 @@ public class BigNumber extends Number implements Comparable<BigNumber>, Cloneabl
      * <p>
      * The LCM is calculated using the formula:
      * <pre>{@code
-     *     LCM(a, b) = (a * b) / GCD(a, b)
+     *     LCM(a, b) = |a * b| / GCD(a, b)
      * }</pre>
-     * where GCD is the greatest common divisor.
+     * where GCD is the greatest common divisor. The result is the exact integer, however many digits it has, and
+     * {@code mathContext} is only validated.
      *
      * @param other       the other BigNumber to compute the LCM with
      * @param mathContext the context specifying precision and rounding mode
      * @param locale      the locale used for any locale-specific formatting
-     * @return the least common multiple of this and other
-     * @throws ArithmeticException if division by zero occurs (e.g. if either number is zero)
+     * @return the least common multiple of this and other; {@code 0} if either number is zero
+     * @throws IllegalArgumentException if either number is not an integer
      */
     public BigNumber lcm(@NonNull final BigNumber other, @NonNull final MathContext mathContext, @NonNull final Locale locale) {
         return NumberTheoryMath.lcm(this, other, mathContext, locale);
