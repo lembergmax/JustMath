@@ -1,11 +1,10 @@
 # OpenSSF Scorecard: scores the repository against supply-chain security practices and publishes the result.
-# Scheduled workflows only run from the default branch, so this starts working once it is merged into main.
+# Runs on every push to main and when a branch protection rule changes. It has no schedule, so the score is only
+# refreshed by those two events.
 name: Scorecard
 
 on:
   branch_protection_rule:
-  schedule:
-    - cron: '30 5 * * 2'
   push:
     branches: [main]
 

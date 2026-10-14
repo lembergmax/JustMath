@@ -1,11 +1,10 @@
-# Runs PIT mutation tests once a week and on demand, and fails when the mutation score drops below the threshold
-# in pom.xml (pit.mutation.threshold). A mutation run takes far longer than a build, so it does not run on pull
-# requests. See docs/mutation-testing.md for what the score means and how to raise the threshold.
+# Runs PIT mutation tests on demand (Actions -> Mutation tests -> Run workflow), and fails when the mutation score
+# drops below the threshold in pom.xml (pit.mutation.threshold). A mutation run takes far longer than a build, so it
+# does not run on pull requests or pushes. See docs/mutation-testing.md for what the score means and how to raise the
+# threshold.
 name: Mutation tests
 
 on:
-  schedule:
-    - cron: '17 3 * * 0'
   workflow_dispatch:
 
 concurrency:
