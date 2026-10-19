@@ -1,6 +1,6 @@
 <mxfile host="Electron" pages="8">
   <diagram id="page-overview" name="Übersicht">
-    <mxGraphModel dx="2445" dy="1001" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1209" dy="993" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -426,14 +426,14 @@
     </mxGraphModel>
   </diagram>
   <diagram id="page-error" name="error">
-    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="842" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="error" vertex="1">
           <mxGeometry height="240" width="400" x="290" y="375" as="geometry" />
         </mxCell>
-        <mxCell id="exc" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;JustMathException&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot; color=&quot;#0F6E56&quot;&gt;Basisklasse, trägt Fehlernachricht&lt;/font&gt;" vertex="1">
+        <mxCell id="exc" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;JustMathError&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot; color=&quot;#0F6E56&quot;&gt;Basisklasse, trägt Fehlernachricht&lt;/font&gt;" vertex="1">
           <mxGeometry height="56" width="340" x="30" y="50" as="geometry" />
         </mxCell>
         <mxCell id="cat" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;ErrorCategory&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;z. B. Syntax, Mathe, Intern&lt;/font&gt;" vertex="1">
