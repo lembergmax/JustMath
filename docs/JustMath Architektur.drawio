@@ -1,0 +1,458 @@
+<mxfile host="Electron" pages="8">
+  <diagram id="page-overview" name="Übersicht">
+    <mxGraphModel dx="1209" dy="993" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="JustMath" vertex="1">
+          <mxGeometry height="430" width="850" x="65" y="280" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;unit&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Einheiten&lt;/font&gt;" link="data:page/id,page-unit" tooltip="Öffnet die Seite unit" id="unit">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="160" x="170" y="50" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;calculator&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Ausdrücke&lt;/font&gt;" link="data:page/id,page-calculator" tooltip="Öffnet die Seite calculator" id="calculator">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="160" x="350" y="50" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;collection&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;BigNumberList, Matrix&lt;/font&gt;" link="data:page/id,page-collection" tooltip="Öffnet die Seite collection" id="collection">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="160" x="530" y="50" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="660" x="30" y="150" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;function&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Wurzeln, Potenzen, Logarithmen, Trigonometrie&lt;/font&gt;" link="data:page/id,page-function" tooltip="Öffnet die Seite function" id="function">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="570" x="30" y="250" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;core&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Rundung, Limits, Parsing&lt;/font&gt;" link="data:page/id,page-core" tooltip="Öffnet die Seite core" id="core">
+          <mxCell parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" vertex="1">
+            <mxGeometry height="56" width="660" x="30" y="350" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;error&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#534AB7&#39;&gt;Fehlercodes und Exceptions&lt;br&gt;&lt;br&gt;(von allen Paketen genutzt)&lt;/font&gt;" link="data:page/id,page-error" tooltip="Öffnet die Seite error" id="error">
+          <mxCell parent="boundary" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fontSize=14;fillColor=#EEEDFE;strokeColor=#534AB7;fontColor=#3C3489;" vertex="1">
+            <mxGeometry height="356" width="100" x="720" y="50" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="app" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;Anwendung&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;bindet JustMath ein&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="790" x="95" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.101266;exitY=1;exitDx=0;exitDy=0;entryX=0.121212;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.278481;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="unit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.506329;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="calculator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.734177;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="collection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="unit" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.333333;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="calculator" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.606061;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="collection" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.878788;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.578947;entryY=0;entryDx=0;entryDy=0;" target="function">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="function" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.578947;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.924242;exitY=1;exitDx=0;exitDy=0;entryX=0.924242;entryY=0;entryDx=0;entryDy=0;" target="core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-unit" name="unit">
+    <mxGraphModel dx="2934" dy="1201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="unit" vertex="1">
+          <mxGeometry height="430" width="520" x="230" y="237" as="geometry" />
+        </mxCell>
+        <mxCell id="uconv" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;UnitConverter&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;rechnet Werte um&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="220" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uval" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;UnitValue&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Wert mit Einheit, aus Text&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="220" x="270" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ureg" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;UnitRegistry&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Symbol zu Einheit&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="220" x="270" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="unit" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Unit&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Name, Symbol, Gruppe, Formel&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="460" x="30" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="formula" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;ConversionFormula&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Faktor, Offset, Kehrwert&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="460" x="30" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;Anwendung&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;bindet JustMath ein&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="300" x="340" y="147" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="300" x="340" y="697" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uconv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.9;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="uval" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ureg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="uconv" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.23913;entryY=0;entryDx=0;entryDy=0;" target="unit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="ureg" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.76087;entryY=0;entryDx=0;entryDy=0;" target="unit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="unit" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="formula">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="formula" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-calculator" name="calculator">
+    <mxGraphModel dx="2038" dy="834" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="calculator" vertex="1">
+          <mxGeometry height="330" width="640" x="170" y="287" as="geometry" />
+        </mxCell>
+        <mxCell id="engine" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;CalculatorEngine&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Einstieg, Einstellungen, Variablen&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="580" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="tok" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Tokenizer&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Text zu Tokens&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="30" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="parser" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;PostfixParser&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Tokens zu Postfix&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="230" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="eval" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Evaluator&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Postfix zu Ergebnis&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="430" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="registry" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;ExpressionRegistry&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Operatoren, Funktionen, Konstanten&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="580" x="30" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;Anwendung&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;bindet JustMath ein&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="300" x="340" y="197" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="300" x="340" y="647" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="engine" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.155172;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="tok">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="engine" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="parser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="engine" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.844828;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="eval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="tok" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.155172;entryY=0;entryDx=0;entryDy=0;" target="registry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="parser" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="registry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="eval" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.844828;entryY=0;entryDx=0;entryDy=0;" target="registry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="registry" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-collection" name="collection">
+    <mxGraphModel dx="2038" dy="834" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="collection" vertex="1">
+          <mxGeometry height="230" width="640" x="170" y="337" as="geometry" />
+        </mxCell>
+        <mxCell id="list" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;BigNumberList&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Liste mit Statistik und Sortierung&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="380" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="matrix" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;div&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;(erst später geplant)&lt;/font&gt;&lt;/div&gt;&lt;b&gt;BigNumberMatrix&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot; color=&quot;#0F6E56&quot;&gt;Matrix aus BigNumbers&lt;/font&gt;" vertex="1">
+          <mxGeometry height="156" width="180" x="430" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="stats" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Statistics&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Mittel, Median, Varianz&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="30" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="sort" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;SortingAlgorithm&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;austauschbare Verfahren&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="230" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;Anwendung&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;bindet JustMath ein&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="500" x="240" y="247" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="580" x="200" y="597" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.3;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="list">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.9;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="matrix">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="list" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.236842;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="stats">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="list" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.763158;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="sort">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="stats" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.155172;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="sort" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="matrix" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.844828;entryY=0;entryDx=0;entryDy=0;" target="bignumber">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="690" y="543.0000000000002" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-bignumber" name="bignumber">
+    <mxGraphModel dx="2038" dy="834" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="bignumber" vertex="1">
+          <mxGeometry height="230" width="760" x="110" y="337" as="geometry" />
+        </mxCell>
+        <mxCell id="bn" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;BigNumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="700" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fmt" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;NumberFormatter&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Ausgabe mit Locale&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="220" x="270" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;Anwendung&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;bindet JustMath ein&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="160" x="140" y="247" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;unit&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Einheiten&lt;/font&gt;" link="data:page/id,page-unit" tooltip="Öffnet die Seite unit" id="unit">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="160" x="320" y="247" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;calculator&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Ausdrücke&lt;/font&gt;" link="data:page/id,page-calculator" tooltip="Öffnet die Seite calculator" id="calculator">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="160" x="500" y="247" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;collection&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;BigNumberList, Matrix&lt;/font&gt;" link="data:page/id,page-collection" tooltip="Öffnet die Seite collection" id="collection">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="160" x="680" y="247" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;function&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Wurzeln, Potenzen, Logarithmen, Trigonometrie&lt;/font&gt;" link="data:page/id,page-function" tooltip="Öffnet die Seite function" id="function">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="340" x="140" y="597" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;core&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Rundung, Limits, Parsing&lt;/font&gt;" link="data:page/id,page-core" tooltip="Öffnet die Seite core" id="core">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="340" x="500" y="597" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="app" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.114286;entryY=0;entryDx=0;entryDy=0;" target="bn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="unit" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.371429;entryY=0;entryDx=0;entryDy=0;" target="bn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="calculator" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.628571;entryY=0;entryDx=0;entryDy=0;" target="bn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="collection" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.885714;entryY=0;entryDx=0;entryDy=0;" target="bn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="bn" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="fmt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="bn" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.171429;exitY=1;exitDx=0;exitDy=0;entryX=0.352941;entryY=0;entryDx=0;entryDy=0;" target="function">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="bn" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.828571;exitY=1;exitDx=0;exitDy=0;entryX=0.647059;entryY=0;entryDx=0;entryDy=0;" target="core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-function" name="function">
+    <mxGraphModel dx="2934" dy="1201" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="function" vertex="1">
+          <mxGeometry height="230" width="640" x="170" y="337" as="geometry" />
+        </mxCell>
+        <mxCell id="roots" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Roots&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Wurzeln&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="130" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="exp" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Exponential&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;exp, Potenzen&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="130" x="180" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="log" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Logarithms&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;ln, log&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="130" x="330" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="trig" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Trigonometry&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;sin, cos, tan, …&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="130" x="480" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="guard" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;PrecisionGuard&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Schutzstellen, Limits, einmal runden&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="580" x="30" y="150" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="580" x="200" y="247" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;core&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Rundung, Limits, Parsing&lt;/font&gt;" link="data:page/id,page-core" tooltip="Öffnet die Seite core" id="core">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="300" x="340" y="597" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.112069;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="roots">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.37069;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="exp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.62931;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="log">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.887931;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="trig">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="roots" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.112069;entryY=0;entryDx=0;entryDy=0;" target="guard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="exp" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.37069;entryY=0;entryDx=0;entryDy=0;" target="guard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="log" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.62931;entryY=0;entryDx=0;entryDy=0;" target="guard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="trig" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.887931;entryY=0;entryDx=0;entryDy=0;" target="guard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="guard" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-core" name="core">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="core" vertex="1">
+          <mxGeometry height="130" width="640" x="170" y="387" as="geometry" />
+        </mxCell>
+        <mxCell id="parser" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;NumberParser&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Text zu BigDecimal&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rounding" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Rounding&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Genauigkeit, Rundung&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="230" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="limits" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;Limits&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;Schutz vor Riesenzahlen&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="180" x="430" y="50" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;bignumber&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Zahlentyp und Fassade&lt;/font&gt;" link="data:page/id,page-bignumber" tooltip="Öffnet die Seite bignumber" id="bignumber">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="180" x="200" y="297" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;function&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;Wurzeln, Potenzen, Logarithmen, Trigonometrie&lt;/font&gt;" link="data:page/id,page-function" tooltip="Öffnet die Seite function" id="function">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="380" x="400" y="297" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="jdk" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" value="&lt;b&gt;JDK&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot; color=&quot;#5F5E5A&quot;&gt;Java-Klassen und Packages&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="580" x="200" y="547" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="bignumber" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="parser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="function" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.236842;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="rounding">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="function" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.763158;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="limits">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="parser" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.155172;entryY=0;entryDx=0;entryDy=0;" target="jdk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="rounding" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="jdk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="limits" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.844828;entryY=0;entryDx=0;entryDy=0;" target="jdk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-error" name="error">
+    <mxGraphModel dx="842" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;strokeColor=#5F5E5A;verticalAlign=top;align=right;spacingRight=16;spacingTop=6;fontStyle=1;fontSize=14;fontColor=#444441;container=1;collapsible=0;recursiveResize=0;" value="error" vertex="1">
+          <mxGeometry height="240" width="400" x="290" y="375" as="geometry" />
+        </mxCell>
+        <mxCell id="exc" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;JustMathError&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot; color=&quot;#0F6E56&quot;&gt;Basisklasse, trägt Fehlernachricht&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="340" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="cat" parent="boundary" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;" value="&lt;b&gt;ErrorCategory&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#0F6E56&#39;&gt;z. B. Syntax, Mathe, Intern&lt;/font&gt;" vertex="1">
+          <mxGeometry height="56" width="340" x="30" y="147" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="boundary" source="exc" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cat">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <UserObject label="&lt;b&gt;alle Pakete&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:12px&#39; color=&#39;#5F5E5A&#39;&gt;unit bis core&lt;/font&gt;" link="data:page/id,page-overview" tooltip="Öffnet die Seite Übersicht" id="all">
+          <mxCell parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=14;fillColor=#F1EFE8;strokeColor=#5F5E5A;fontColor=#444441;" vertex="1">
+            <mxGeometry height="56" width="300" x="340" y="285" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e1" edge="1" parent="1" source="all" style="html=1;endArrow=open;strokeColor=#5F5E5A;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="exc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
