@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Checks the relative links of the Markdown documents: the target file exists and, for a link into a Markdown file,
  * so does the heading that the anchor names. Links to other sites are not checked here, because a test must not depend
- * on the network; the workflow {@code links.yml} checks them.
+ * on the network.
  */
 class MarkdownLinksTest {
 
