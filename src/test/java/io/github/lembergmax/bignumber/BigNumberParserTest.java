@@ -1,6 +1,5 @@
 package io.github.lembergmax.bignumber;
 
-import io.github.lembergmax.core.BigNumberParser;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
