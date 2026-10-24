@@ -9,8 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BigNumberParserTest {
 
-    private static final BigNumberParser parser = new BigNumberParser();
-
     @Test
     public void numberParsingTest_LanguageGerman() {
         // ohne Komma
