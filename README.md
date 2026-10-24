@@ -2,8 +2,6 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.lembergmax/justmath)](https://central.sonatype.com/artifact/io.github.lembergmax/justmath)
 [![CI](https://github.com/lembergmax/JustMath/actions/workflows/ci.yml/badge.svg?branch=developer)](https://github.com/lembergmax/JustMath/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/lembergmax/JustMath/actions/workflows/codeql.yml/badge.svg?branch=developer)](https://github.com/lembergmax/JustMath/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/lembergmax/JustMath/badge)](https://scorecard.dev/viewer/?uri=github.com/lembergmax/JustMath)
 [![Javadoc](https://javadoc.io/badge2/io.github.lembergmax/justmath/javadoc.svg)](https://javadoc.io/doc/io.github.lembergmax/justmath)
 [![License: MIT](https://img.shields.io/github/license/lembergmax/JustMath)](LICENSE)
 ![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)

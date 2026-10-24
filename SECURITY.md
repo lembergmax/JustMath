@@ -67,4 +67,4 @@ The CycloneDX file `justmath-1.7.0-cyclonedx.json` lists the dependencies of the
 
 ## Dependencies
 
-The only runtime dependency is [big-math](https://github.com/eobermuhlner/big-math). Dependabot watches it and the build tooling, and CodeQL scans the code.
+The only runtime dependency is [big-math](https://github.com/eobermuhlner/big-math). SpotBugs with FindSecBugs scans the code in every build.
