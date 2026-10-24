@@ -30,7 +30,7 @@ Keep a property fast: 150 to 300 tries, operands that are as long as the propert
 
 ## Mutation testing
 
-Coverage shows that a line ran, mutation testing shows that a test would notice if the line were wrong. PIT runs once a week and fails below a threshold for the mutation score. See [mutation-testing.md](mutation-testing.md) for the baseline, what survives and how to kill a mutant.
+Coverage shows that a line ran, mutation testing shows that a test would notice if the line were wrong. PIT runs on demand and fails below a threshold for the mutation score. See [mutation-testing.md](mutation-testing.md) for the baseline, what survives and how to kill a mutant.
 
 ## Rules for every test
 

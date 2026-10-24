@@ -2,7 +2,7 @@
 
 Line coverage says that a test ran a line. It does not say that the test would notice if the line were wrong. [PIT](https://pitest.org) answers the second question: it changes the compiled code in small ways (a `<` becomes `<=`, a `+` becomes `-`, a return value becomes `null`, a method call is removed) and runs the tests against every change. A change that makes a test fail is killed. A change that no test notices has survived, and it points at behavior that is not tested.
 
-The mutation score is the share of mutants that were detected. The weekly workflow [mutation.yml](../.github/workflows/mutation.yml) runs PIT and fails if the score is below the threshold in `pom.xml`.
+The mutation score is the share of mutants that were detected. PIT runs on demand (`./mvnw test-compile org.pitest:pitest-maven:mutationCoverage`) and fails if the score is below the threshold in `pom.xml`.
 
 ## Run it
 
@@ -69,10 +69,10 @@ A mutant is never "wrong" on its own. Read the changed line, decide what a calle
 
 ## Threshold
 
-`pit.mutation.threshold` in `pom.xml` is 81, two points below the baseline. The margin keeps a run on a slower machine, where a different number of mutants times out, from failing the weekly job for no reason.
+`pit.mutation.threshold` in `pom.xml` is 81, two points below the baseline. The margin keeps a run on a slower machine, where a different number of mutants times out, from failing the run for no reason.
 
 - Raise the threshold when a run is three points or more above it, in the same commit that adds the tests.
-- Do not lower it. If a change removes tests or adds code without tests, the weekly job should say so. When the drop is deliberate, the commit message gives the reason.
+- Do not lower it. If a change removes tests or adds code without tests, the run should say so. When the drop is deliberate, the commit message gives the reason.
 
 ## Writing a test that kills a mutant
 
