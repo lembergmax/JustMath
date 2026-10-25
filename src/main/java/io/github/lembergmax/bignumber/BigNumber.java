@@ -54,16 +54,4 @@ public class BigNumber {
         return result.toString();
     }
 
-    @Deprecated
-    public String getBeforeDecimal() {
-        // TODO: remove
-        return beforeDecimal;
-    }
-
-    @Deprecated
-    public String getAfterDecimal() {
-        // TODO: remove
-        return afterDecimal;
-    }
-
 }
