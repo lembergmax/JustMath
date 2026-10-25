@@ -12,7 +12,6 @@ public class BigNumberParserTest {
     public void numberParsingTest_LanguageGerman() {
         // ohne Komma
         assertEquals("0",                   new BigNumber("", Locale.GERMAN).toString());
-
         assertEquals("1",                   new BigNumber("1", Locale.GERMAN).toString());
         assertEquals("12",                  new BigNumber("12", Locale.GERMAN).toString());
         assertEquals("123",                 new BigNumber("123", Locale.GERMAN).toString());
@@ -30,6 +29,11 @@ public class BigNumberParserTest {
         assertEquals("1234567",             new BigNumber("1.234.567", Locale.GERMAN).toString());
 
         // mit Komma
+        assertEquals("0,0001",              new BigNumber("0,0001", Locale.GERMAN).toString());
+        assertEquals("0,001",               new BigNumber("0,001", Locale.GERMAN).toString());
+        assertEquals("0,01",                new BigNumber("0,01", Locale.GERMAN).toString());
+        assertEquals("0,1",                 new BigNumber("0,1", Locale.GERMAN).toString());
+
         assertEquals("1,1",                 new BigNumber("1,1", Locale.GERMAN).toString());
         assertEquals("12,12",               new BigNumber("12,12", Locale.GERMAN).toString());
         assertEquals("123,123",             new BigNumber("123,123", Locale.GERMAN).toString());

@@ -34,11 +34,11 @@ public class BigNumberParser {
             final String decimalSeparator
     ) {
         for(int i = 0; i < number.length(); i++) {
-            final String charAsString = Character.toString(number.charAt(i));
+            final String charAsString = String.valueOf(number.charAt(i));
             if(
-                    !Character.isDigit(number.charAt(i)) ||
-                    !groupingSeparator.equals(Character.toString(number.charAt(i))) ||
-                    !decimalSeparator.equals(Character.toString(number.charAt(i)))
+                    !Character.isDigit(number.charAt(i)) &&
+                    !groupingSeparator.equalsIgnoreCase(charAsString) &&
+                    !decimalSeparator.equalsIgnoreCase(charAsString)
             ) {
                 throw new NotAValidCharacterException("'" + charAsString + "'" + "is not a valid character.");
             }
