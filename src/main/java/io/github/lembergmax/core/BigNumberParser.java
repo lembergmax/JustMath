@@ -33,6 +33,15 @@ public class BigNumberParser {
             final String groupingSeparator,
             final String decimalSeparator
     ) {
+        checkForNotValidCharacters(number, groupingSeparator, decimalSeparator);
+
+        String cleanedNumber;
+        cleanedNumber = number.replace(groupingSeparator, "");
+
+        return cleanedNumber;
+    }
+
+    private void checkForNotValidCharacters(String number, String groupingSeparator, String decimalSeparator) {
         for(int i = 0; i < number.length(); i++) {
             final String charAsString = String.valueOf(number.charAt(i));
             if(
@@ -43,11 +52,6 @@ public class BigNumberParser {
                 throw new NotAValidCharacterException("'" + charAsString + "'" + "is not a valid character.");
             }
         }
-
-        String cleanedNumber;
-        cleanedNumber = number.replace(groupingSeparator, "");
-
-        return cleanedNumber;
     }
 
 }
