@@ -7,28 +7,40 @@ import java.util.Locale;
 public class BigNumberParser {
 
     public ParseResult parse(
-            String number,
+            final String number,
             final Locale locale
     ) {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(locale);
         final String groupingSeparator = NumberFormatLookup.getGroupingSeparatorForLocale(locale);
 
-        number = cleanupInputString(number, groupingSeparator, decimalSeparator);
+        String cleanedNumber = removeGroupingSeparators(number, groupingSeparator, decimalSeparator);
 
-        final String[] splitNumber = number.split(decimalSeparator);
+        return cleanedNumber.contains(decimalSeparator) ?
+                parseWithDecimalSeparator(cleanedNumber, decimalSeparator, locale) :
+                parseWithoutDecimalSeparator(cleanedNumber, locale);
+    }
 
-        final String beforeDecimal = splitNumber[0];
-        final String afterDecimal;
-        if (splitNumber.length == 2) {
-            afterDecimal = splitNumber[1];
-        } else {
-            afterDecimal = "0";
-        }
+    private ParseResult parseWithoutDecimalSeparator(
+            final String number,
+            final Locale locale
+    ) {
+        return new ParseResult(number, "0", locale);
+    }
+
+    private ParseResult parseWithDecimalSeparator(
+            final String number,
+            final String decimalSeparator,
+            final Locale locale
+    ) {
+        final int indexOfDecimalSeparator = decimalSeparator.indexOf(decimalSeparator);
+
+        final String beforeDecimal = number.substring(0, indexOfDecimalSeparator);
+        final String afterDecimal = number.substring(indexOfDecimalSeparator + 1);
 
         return new ParseResult(beforeDecimal, afterDecimal, locale);
     }
 
-    public String cleanupInputString(
+    private String removeGroupingSeparators(
             final String number,
             final String groupingSeparator,
             final String decimalSeparator
@@ -42,12 +54,12 @@ public class BigNumberParser {
     }
 
     private void checkForNotValidCharacters(String number, String groupingSeparator, String decimalSeparator) {
-        for(int i = 0; i < number.length(); i++) {
+        for (int i = 0; i < number.length(); i++) {
             final String charAsString = String.valueOf(number.charAt(i));
-            if(
+            if (
                     !Character.isDigit(number.charAt(i)) &&
-                    !groupingSeparator.equalsIgnoreCase(charAsString) &&
-                    !decimalSeparator.equalsIgnoreCase(charAsString)
+                            !groupingSeparator.equalsIgnoreCase(charAsString) &&
+                            !decimalSeparator.equalsIgnoreCase(charAsString)
             ) {
                 throw new NotAValidCharacterException("'" + charAsString + "'" + "is not a valid character.");
             }

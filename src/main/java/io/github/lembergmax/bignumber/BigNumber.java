@@ -46,7 +46,7 @@ public class BigNumber {
         }
 
         final StringBuilder result = new StringBuilder(beforeDecimal);
-        if(!"0".equals(afterDecimal)) {
+        if(!"0".equals(afterDecimal)) { // TODO: trim trailing and leading zeros
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }

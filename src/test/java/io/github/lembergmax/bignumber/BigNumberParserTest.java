@@ -53,7 +53,45 @@ public class BigNumberParserTest {
 
     @Test
     public void numberParsingTest_LanguageEnglish() {
+        // ohne Komma
+        //assertEquals("0",                   new BigNumber("", Locale.ENGLISH).toString());
+        assertEquals("1",                   new BigNumber("1", Locale.ENGLISH).toString());
+        assertEquals("12",                  new BigNumber("12", Locale.ENGLISH).toString());
+        assertEquals("123",                 new BigNumber("123", Locale.ENGLISH).toString());
 
+        assertEquals("1234",                new BigNumber("1234", Locale.ENGLISH).toString());
+        assertEquals("1234",                new BigNumber("1,234", Locale.ENGLISH).toString());
+
+        assertEquals("12345",               new BigNumber("12345", Locale.ENGLISH).toString());
+        assertEquals("12345",               new BigNumber("12,345", Locale.ENGLISH).toString());
+
+        assertEquals("123456",              new BigNumber("123,456", Locale.ENGLISH).toString());
+        assertEquals("123456",              new BigNumber("123456", Locale.ENGLISH).toString());
+
+        assertEquals("1234567",             new BigNumber("1234567", Locale.ENGLISH).toString());
+        assertEquals("1234567",             new BigNumber("1,234,567", Locale.ENGLISH).toString());
+
+        // mit Komma
+        assertEquals("0.0001",              new BigNumber("0.0001", Locale.ENGLISH).toString());
+        assertEquals("0.001",               new BigNumber("0.001", Locale.ENGLISH).toString());
+        assertEquals("0.01",                new BigNumber("0.01", Locale.ENGLISH).toString());
+        assertEquals("0.1",                 new BigNumber("0.1", Locale.ENGLISH).toString());
+
+        assertEquals("1.1",                 new BigNumber("1.1", Locale.ENGLISH).toString());
+        assertEquals("12.12",               new BigNumber("12.12", Locale.ENGLISH).toString());
+        assertEquals("123.123",             new BigNumber("123.123", Locale.ENGLISH).toString());
+
+        assertEquals("1234.1234",           new BigNumber("1234.1234", Locale.ENGLISH).toString());
+        assertEquals("1234.1234",           new BigNumber("1,234.1234", Locale.ENGLISH).toString());
+
+        assertEquals("12345.12345",         new BigNumber("12345.12345", Locale.ENGLISH).toString());
+        assertEquals("12345.12345",         new BigNumber("12,345.12345", Locale.ENGLISH).toString());
+
+        assertEquals("123456.123456",       new BigNumber("123,456.123456", Locale.ENGLISH).toString());
+        assertEquals("123456.123456",       new BigNumber("123456.123456", Locale.ENGLISH).toString());
+
+        assertEquals("1234567.1234567",     new BigNumber("1234567.1234567", Locale.ENGLISH).toString());
+        assertEquals("1234567.1234567",     new BigNumber("1,234,567.1234567", Locale.ENGLISH).toString());
     }
 
 }
