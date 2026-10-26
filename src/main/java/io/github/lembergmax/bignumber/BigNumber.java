@@ -3,6 +3,7 @@ package io.github.lembergmax.bignumber;
 import io.github.lembergmax.core.BigNumberParser;
 import io.github.lembergmax.core.NumberFormatLookup;
 import io.github.lembergmax.core.ParseResult;
+import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
 
 import java.util.Locale;
 
@@ -46,7 +47,7 @@ public class BigNumber {
         }
 
         final StringBuilder result = new StringBuilder(beforeDecimal);
-        if(!"0".equals(afterDecimal)) { // TODO: trim trailing and leading zeros
+        if(!"0".equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }
