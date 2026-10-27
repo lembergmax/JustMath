@@ -14,11 +14,11 @@ public class MathToolsTest {
     @Test
     public void languageGermanTest() {
         assertEquals(
-                "",
+                "123,12300",
                 MathTools.makeNumbersSameLength(
-                        new BigNumber("", Locale.GERMAN),
-                        new BigNumber("", Locale.GERMAN)
-                )
+                        new BigNumber("123,123", Locale.GERMAN),
+                        new BigNumber("123,12345", Locale.GERMAN)
+                ).toString()
         );
     }
 
