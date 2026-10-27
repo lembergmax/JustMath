@@ -4,6 +4,7 @@ import io.github.lembergmax.core.BigNumberParser;
 import io.github.lembergmax.core.NumberFormatLookup;
 import io.github.lembergmax.core.ParseResult;
 import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
+import lombok.Getter;
 
 import java.util.Locale;
 
@@ -11,8 +12,11 @@ public class BigNumber {
 
     private static final BigNumberParser bigNumberParser = new BigNumberParser();
 
+    @Getter
     private String beforeDecimal;
+    @Getter
     private String afterDecimal;
+    @Getter
     private Locale locale;
 
     public BigNumber(

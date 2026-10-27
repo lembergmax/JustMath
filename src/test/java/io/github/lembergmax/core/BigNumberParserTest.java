@@ -1,5 +1,6 @@
-package io.github.lembergmax.bignumber;
+package io.github.lembergmax.core;
 
+import io.github.lembergmax.bignumber.BigNumber;
 import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
 import org.junit.jupiter.api.Test;
 
