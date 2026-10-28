@@ -39,12 +39,6 @@ public class BigNumber {
         );
     }
 
-    public BigNumber(
-            final BigNumber bigNumber
-    ) {
-
-    }
-
     private BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
@@ -57,11 +51,6 @@ public class BigNumber {
         this.locale = locale;
     }
 
-    public BigNumber abs() {
-        this.isNegative = false;
-        return new BigNumber(this);
-    }
-
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = "0";
@@ -70,10 +59,16 @@ public class BigNumber {
             afterDecimal = "0";
         }
 
+        final String onlyContainsZerosRegex = "^[0]+$";
+        if (("0".equals(beforeDecimal) && "0".equals(afterDecimal)) ||
+                (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
+        ) {
+            this.isNegative = false;
+            return "0";
+        }
+
         final StringBuilder result = new StringBuilder(
-                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") +
-                        beforeDecimal
-        );
+                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") + beforeDecimal);
         if (!"0".equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
