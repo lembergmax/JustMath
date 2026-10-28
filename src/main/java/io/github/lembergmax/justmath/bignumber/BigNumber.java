@@ -5,6 +5,7 @@ import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
+import java.math.BigInteger;
 import java.util.Locale;
 
 public class BigNumber {
@@ -65,10 +66,16 @@ public class BigNumber {
             afterDecimal = "0";
         }
 
+        final String onlyContainsZerosRegex = "^[0]+$";
+        if (("0".equals(beforeDecimal) && "0".equals(afterDecimal)) ||
+                (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
+        ) {
+            this.isNegative = false;
+            return "0";
+        }
+
         final StringBuilder result = new StringBuilder(
-                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") +
-                beforeDecimal
-        );
+                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") + beforeDecimal);
         if (!"0".equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
