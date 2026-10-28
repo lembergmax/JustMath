@@ -18,7 +18,7 @@ public class NumberFormatLookup {
         return String.valueOf(getDecimalFormatSymbols(locale).getGroupingSeparator());
     }
 
-    public static DecimalFormatSymbols getDecimalFormatSymbols(
+    private static DecimalFormatSymbols getDecimalFormatSymbols(
             final Locale locale
     ) {
         final DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
