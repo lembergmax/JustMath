@@ -1,7 +1,6 @@
-package io.github.lembergmax.justmath.core.bignumber.math;
+package io.github.lembergmax.justmath.bignumber.math;
 
-import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.bignumber.math.MathTools;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;

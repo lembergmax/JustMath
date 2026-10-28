@@ -1,7 +1,7 @@
-package io.github.lembergmax.bignumber.math;
+package io.github.lembergmax.justmath.bignumber.math;
 
-import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.core.NumberFormatLookup;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import org.apache.commons.lang3.StringUtils;
 
 public class MathTools {

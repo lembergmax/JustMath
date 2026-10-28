@@ -1,7 +1,7 @@
-package io.github.lembergmax.core;
+package io.github.lembergmax.justmath.core;
 
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
-import io.github.lembergmax.exception.NotAValidCharacterException;
+import io.github.lembergmax.justmath.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.exception.NotAValidCharacterException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Locale;

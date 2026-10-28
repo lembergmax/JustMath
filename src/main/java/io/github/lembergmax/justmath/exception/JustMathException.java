@@ -1,4 +1,4 @@
-package io.github.lembergmax.exception;
+package io.github.lembergmax.justmath.exception;
 
 import java.util.Locale;
 import java.util.Map;

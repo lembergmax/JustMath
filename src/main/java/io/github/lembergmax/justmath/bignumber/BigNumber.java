@@ -1,9 +1,8 @@
-package io.github.lembergmax.bignumber;
+package io.github.lembergmax.justmath.bignumber;
 
-import io.github.lembergmax.core.BigNumberParser;
-import io.github.lembergmax.core.NumberFormatLookup;
-import io.github.lembergmax.core.ParseResult;
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.core.BigNumberParser;
+import io.github.lembergmax.justmath.core.NumberFormatLookup;
+import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
 import java.util.Locale;
