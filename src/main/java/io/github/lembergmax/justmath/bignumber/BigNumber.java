@@ -59,6 +59,10 @@ public class BigNumber {
         String number2 = MathTools.makeNumbersSameLength(other, this);
 
         for (int i = 0; i <= number1.length() - 1; i++) {
+            if (this.isNegative && other.isNegative) {
+                return new BigNumber(this.toString(), this.locale).smallerThan(other);
+            }
+
             if (number1.charAt(i) == number2.charAt(i)) {
                 // TODO Code verbessern, da continue ausgegraut
                 continue;
@@ -75,6 +79,10 @@ public class BigNumber {
         String number2 = MathTools.makeNumbersSameLength(other, this);
 
         for (int i = 0; i <= number1.length() - 1; i++) {
+            if (this.isNegative && other.isNegative) {
+                return new BigNumber(this.toString(), this.locale).greaterThan(other);
+            }
+
             if (number1.charAt(i) == number2.charAt(i)) {
                 // TODO Code verbessern, da continue ausgegraut
                 continue;

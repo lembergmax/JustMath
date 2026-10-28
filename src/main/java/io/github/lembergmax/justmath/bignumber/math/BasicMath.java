@@ -111,14 +111,11 @@ public class BasicMath {
             result.append(resultForCurrentDigit % 10);
         }
 
-        if (new BigNumber(minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendAsString, Locale.GERMAN))) {
+        if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
             result.append(BigNumberParser.POSITIVE_SIGN);
         } else {
-            if (minuend.isNegative() && subtrahend.isNegative() || !minuend.isNegative() && subtrahend.isNegative()) {
-                result.append(BigNumberParser.POSITIVE_SIGN);
-            } else {
-                result.append(BigNumberParser.NEGATIVE_SIGN);
-            }
+            // Quasi minuendAsString smallerThan subtrahendAsString
+            result.append(BigNumberParser.NEGATIVE_SIGN);
         }
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
@@ -127,5 +124,4 @@ public class BasicMath {
     private static String getSignAsString(BigNumber minuend) {
         return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
-
 }
