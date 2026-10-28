@@ -22,25 +22,22 @@ public class BasicMath {
         final StringBuilder result = new StringBuilder();
 
         int carry = 0;
-        for(int i = addend1AsString.length() - 1; i > 0; i--) {
-            if(decimalFormatSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
+        for (int i = addend1AsString.length() - 1; i > 0; i--) {
+            if (decimalFormatSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalFormatSeparator);
                 continue;
             }
 
             final Integer addend1CharAtI = Integer.valueOf(String.valueOf(addend1AsString.charAt(i)));
             final Integer addend2CharAtI = Integer.valueOf(String.valueOf(addend2AsString.charAt(i)));
-
-            // TODO: fix this shi
-            if(i == addend1AsString.length() - 1) {
-                result.append(addend1CharAtI + addend2CharAtI);
-            } else {
-                carry = (addend1CharAtI + addend2CharAtI + carry) % 10;
-                result.append(addend1CharAtI + addend2CharAtI + carry);
+            final int resultForCurrentDigit = addend1CharAtI + addend2CharAtI + carry;
+            if (resultForCurrentDigit >= 10) {
+                carry = (addend1CharAtI + addend2CharAtI) / 10;
             }
+            result.append(resultForCurrentDigit % 10);
         }
 
-        return new BigNumber(result.toString(), addend1.getLocale());
+        return new BigNumber(result.reverse().toString(), addend1.getLocale());
     }
 
 }
