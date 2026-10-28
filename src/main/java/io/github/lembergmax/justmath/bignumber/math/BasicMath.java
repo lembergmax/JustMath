@@ -114,7 +114,7 @@ public class BasicMath {
         if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
             result.append(BigNumberParser.POSITIVE_SIGN);
         } else {
-            // Quasi minuendAsString smallerThan subtrahendAsString
+            // Quasi minuendAsString kleiner als subtrahendAsString
             result.append(BigNumberParser.NEGATIVE_SIGN);
         }
 
