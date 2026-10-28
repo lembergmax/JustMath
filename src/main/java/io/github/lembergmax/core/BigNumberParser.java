@@ -67,10 +67,10 @@ public class BigNumberParser {
         String cleanedBeforeDecimals = removeAllSpaces(trimLeadingZeros(beforeDecimals));
         String cleanedAfterDecimals = removeAllSpaces(trimTrailingZeros(afterDecimals));
 
-        if(cleanedBeforeDecimals.isBlank()) {
+        if (cleanedBeforeDecimals.isBlank()) {
             cleanedBeforeDecimals = "0";
         }
-        if(cleanedAfterDecimals.isBlank()) {
+        if (cleanedAfterDecimals.isBlank()) {
             cleanedAfterDecimals = "0";
         }
 
@@ -105,11 +105,12 @@ public class BigNumberParser {
             final String charAsString = String.valueOf(number.charAt(i));
             if (
                     !Character.isDigit(number.charAt(i)) &&
-                            !groupingSeparator.equalsIgnoreCase(charAsString) &&
-                            !decimalSeparator.equalsIgnoreCase(charAsString)
+                    !groupingSeparator.equalsIgnoreCase(charAsString) &&
+                    !decimalSeparator.equalsIgnoreCase(charAsString) &&
+                    !"-".equals(charAsString)
             ) {
                 throw new NotAValidCharacterException(
-                        "'" + charAsString + "'" + "is not a valid character."
+                        "'" + charAsString + "'" + " is not a valid character."
                 );
             }
         }

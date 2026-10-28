@@ -28,5 +28,4 @@ public class MathTools {
     ) {
         return StringUtils.repeat("0", nTimes);
     }
-
 }
