@@ -1,4 +1,4 @@
-package io.github.lembergmax.justmath.core.core.bignumber.math;
+package io.github.lembergmax.justmath.core.bignumber.math;
 
 import io.github.lembergmax.bignumber.math.BasicMath;
 import org.junit.jupiter.api.Test;

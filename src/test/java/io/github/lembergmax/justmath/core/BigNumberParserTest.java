@@ -1,4 +1,4 @@
-package io.github.lembergmax.justmath.core.core;
+package io.github.lembergmax.justmath.core;
 
 import io.github.lembergmax.bignumber.BigNumber;
 import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
