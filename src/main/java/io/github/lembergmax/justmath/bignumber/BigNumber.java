@@ -55,8 +55,14 @@ public class BigNumber {
             final BigNumber number1,
             final BigNumber number2
     ) {
-        //TODO do this shit
-        return false;
+        return Integer.parseInt(number1.toString()) > Integer.parseInt(number2.toString());
+    }
+
+    public static boolean smallerThan(
+            final BigNumber number1,
+            final BigNumber number2
+    ) {
+        return Integer.parseInt(number1.toString()) < Integer.parseInt(number2.toString());
     }
 
     public String toString() {
