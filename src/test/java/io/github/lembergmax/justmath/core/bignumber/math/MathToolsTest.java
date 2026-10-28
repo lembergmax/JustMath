@@ -1,4 +1,4 @@
-package io.github.lembergmax.core.bignumber.math;
+package io.github.lembergmax.justmath.core.core.bignumber.math;
 
 import io.github.lembergmax.bignumber.BigNumber;
 import io.github.lembergmax.bignumber.math.MathTools;

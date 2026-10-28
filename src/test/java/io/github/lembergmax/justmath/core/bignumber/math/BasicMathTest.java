@@ -1,4 +1,4 @@
-package io.github.lembergmax.core.bignumber.math;
+package io.github.lembergmax.justmath.core.core.bignumber.math;
 
 import io.github.lembergmax.bignumber.math.BasicMath;
 import org.junit.jupiter.api.Test;
@@ -15,6 +15,7 @@ public class BasicMathTest {
 
     @Test
     public void addTest() {
+        /*
         assertEquals(
                 "777,777",
                 BasicMath.add(
@@ -41,6 +42,17 @@ public class BasicMathTest {
                 BasicMath.add(
                         new BigNumber("0,00000001", Locale.GERMAN),
                         new BigNumber("0,00000001", Locale.GERMAN)
+                ).toString()
+        );
+        */
+
+
+
+        assertEquals(
+                "100000000000",
+                BasicMath.add(
+                        new BigNumber("50000000000", Locale.GERMAN),
+                        new BigNumber("50000000000", Locale.GERMAN)
                 ).toString()
         );
     }

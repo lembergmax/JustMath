@@ -13,9 +13,19 @@ public class BigNumberParser {
             final Locale locale
     ) {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(locale);
-        final String groupingSeparator = NumberFormatLookup.getGroupingSeparatorForLocale(locale);
+        final String cleanedNumber;
 
-        String cleanedNumber = cleanupNumberInputString(number, groupingSeparator, decimalSeparator);
+        final ParseResult parseResultToCleanNumber;
+        if (number.contains(decimalSeparator)) {
+            parseResultToCleanNumber = parseWithDecimalSeparator(number, decimalSeparator, locale);
+        } else {
+            parseResultToCleanNumber = parseWithoutDecimalSeparator(number, locale);
+        }
+        cleanedNumber = cleanupNumberInputString(
+                parseResultToCleanNumber.beforeDecimals(),
+                parseResultToCleanNumber.afterDecimals(),
+                locale
+        );
 
         return cleanedNumber.contains(decimalSeparator) ?
                 parseWithDecimalSeparator(cleanedNumber, decimalSeparator, locale) :
@@ -43,23 +53,46 @@ public class BigNumberParser {
     }
 
     private String cleanupNumberInputString(
-            final String number,
-            final String groupingSeparator,
-            final String decimalSeparator
+            final String beforeDecimals,
+            final String afterDecimals,
+            final Locale locale
     ) {
-        checkForNotValidCharacters(number, groupingSeparator, decimalSeparator);
+        final String groupingSeparator = NumberFormatLookup.getGroupingSeparatorForLocale(locale);
+        final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(locale);
 
-        String cleanedNumber;
-        cleanedNumber = number.replace(groupingSeparator, "");
-        cleanedNumber = trimLeadingAndTrailingZeros(cleanedNumber);
+        checkForNotValidCharacters(
+                beforeDecimals + decimalSeparator + afterDecimals,
+                groupingSeparator, decimalSeparator);
 
-        return cleanedNumber;
+        String cleanedBeforeDecimals = removeAllSpaces(trimLeadingZeros(beforeDecimals));
+        String cleanedAfterDecimals = removeAllSpaces(trimTrailingZeros(afterDecimals));
+
+        if(cleanedBeforeDecimals.isBlank()) {
+            cleanedBeforeDecimals = "0";
+        }
+        if(cleanedAfterDecimals.isBlank()) {
+            cleanedAfterDecimals = "0";
+        }
+
+        return (cleanedBeforeDecimals + decimalSeparator + cleanedAfterDecimals).replace(groupingSeparator, "");
     }
 
-    private String trimLeadingAndTrailingZeros(
+    private String trimLeadingZeros(
             final String number
     ) {
-        return number.replaceAll("^0+|0+$", "");
+        return number.replaceAll("^0+", "");
+    }
+
+    private String trimTrailingZeros(
+            final String number
+    ) {
+        return number.replaceAll("0+$", "");
+    }
+
+    private String removeAllSpaces(
+            final String string
+    ) {
+        return string.replace(" ", "");
     }
 
     private void checkForNotValidCharacters(
@@ -72,8 +105,8 @@ public class BigNumberParser {
             final String charAsString = String.valueOf(number.charAt(i));
             if (
                     !Character.isDigit(number.charAt(i)) &&
-                    !groupingSeparator.equalsIgnoreCase(charAsString) &&
-                    !decimalSeparator.equalsIgnoreCase(charAsString)
+                            !groupingSeparator.equalsIgnoreCase(charAsString) &&
+                            !decimalSeparator.equalsIgnoreCase(charAsString)
             ) {
                 throw new NotAValidCharacterException(
                         "'" + charAsString + "'" + "is not a valid character."
@@ -82,7 +115,7 @@ public class BigNumberParser {
         }
 
         // Wenn der Dezimaltrenner mehr als einmal vorkommt
-        if(StringUtils.countMatches(number, decimalSeparator) > 1) {
+        if (StringUtils.countMatches(number, decimalSeparator) > 1) {
             throw new DuplicateDecimalSeparatorException(
                     "The decimal separator '" + decimalSeparator + "' occurrence more than once."
             );

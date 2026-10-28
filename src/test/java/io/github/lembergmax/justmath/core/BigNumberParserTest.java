@@ -1,4 +1,4 @@
-package io.github.lembergmax.core;
+package io.github.lembergmax.justmath.core.core;
 
 import io.github.lembergmax.bignumber.BigNumber;
 import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
@@ -14,6 +14,7 @@ public class BigNumberParserTest {
     @Test
     public void languageGermanTest() {
         // ohne Komma
+
         assertEquals("0", new BigNumber("", Locale.GERMAN).toString());
         assertEquals("1", new BigNumber("1", Locale.GERMAN).toString());
         assertEquals("12", new BigNumber("12", Locale.GERMAN).toString());
@@ -52,6 +53,8 @@ public class BigNumberParserTest {
 
         assertEquals("1234567,1234567", new BigNumber("1234567,1234567", Locale.GERMAN).toString());
         assertEquals("1234567,1234567", new BigNumber("1.234.567,1234567", Locale.GERMAN).toString());
+
+        assertEquals("50000000000", new BigNumber("50000000000", Locale.GERMAN).toString());
     }
 
     @Test
@@ -95,6 +98,8 @@ public class BigNumberParserTest {
 
         assertEquals("1234567.1234567", new BigNumber("1234567.1234567", Locale.ENGLISH).toString());
         assertEquals("1234567.1234567", new BigNumber("1,234,567.1234567", Locale.ENGLISH).toString());
+
+        assertEquals("50000000000", new BigNumber("50000000000", Locale.ENGLISH).toString());
     }
 
     @Test
