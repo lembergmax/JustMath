@@ -14,7 +14,6 @@ public class BigNumberParserTest {
     @Test
     public void languageGermanTest() {
         // ohne Komma
-
         assertEquals("0", new BigNumber("", Locale.GERMAN).toString());
         assertEquals("1", new BigNumber("1", Locale.GERMAN).toString());
         assertEquals("12", new BigNumber("12", Locale.GERMAN).toString());
@@ -126,6 +125,12 @@ public class BigNumberParserTest {
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(",,.", Locale.GERMAN).toString());
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(".,,", Locale.GERMAN).toString());
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(",,,", Locale.GERMAN).toString());
+    }
+
+    @Test
+    public void numbersWithSignTest() {
+        assertEquals("0",  new BigNumber("+0", Locale.GERMAN).toString());
+        assertEquals("-0",  new BigNumber("-0", Locale.GERMAN).toString());
     }
 
 }
