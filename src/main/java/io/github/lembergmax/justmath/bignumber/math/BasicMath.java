@@ -111,6 +111,7 @@ public class BasicMath {
             result.append(resultForCurrentDigit % 10);
         }
 
+        // Vorzeichen anfügen
         if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
             result.append(BigNumberParser.POSITIVE_SIGN);
         } else {
