@@ -9,7 +9,7 @@ import java.util.Locale;
 public class BigNumberParser {
 
     public static final String NEGATIVE_SIGN = "-";
-    private final String POSITIVE_SIGN = "+";
+    public static final String POSITIVE_SIGN = "+";
     private final String ZERO_AS_STRING = "0";
 
     public ParseResult parse(

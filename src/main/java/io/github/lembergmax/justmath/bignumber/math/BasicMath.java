@@ -1,6 +1,7 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
 public class BasicMath {
@@ -43,6 +44,8 @@ public class BasicMath {
             final BigNumber subtrahend
     ) {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(minuend.getLocale());
+        final String minuendSignAsString = getSignAsString(minuend);
+        final String subtrahendSignAsString = getSignAsString(subtrahend);
         final String minuendAsString = MathTools.makeNumbersSameLength(minuend, subtrahend);
         final String subtrahendAsString = MathTools.makeNumbersSameLength(subtrahend, minuend);
 
@@ -78,10 +81,15 @@ public class BasicMath {
                 result.append(resultForCurrentDigit % 10);
             }
         }
+        // TODO remove later if not needed
 //        StringBuilder carryToAppend = new StringBuilder(String.valueOf(currentMinuend - currentSubtrahend - carry));
 //        result.append(carryToAppend.reverse());
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
+    }
+
+    private static String getSignAsString(BigNumber minuend) {
+        return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
 
 }
