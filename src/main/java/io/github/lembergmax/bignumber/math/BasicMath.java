@@ -6,7 +6,6 @@ import io.github.lembergmax.core.NumberFormatLookup;
 public class BasicMath {
 
     public static BigNumber add(
-            // TODO: besseren namen ausdenken (anstatt zahlen)
             final BigNumber addend1,
             final BigNumber addend2
     ) {
@@ -19,7 +18,7 @@ public class BasicMath {
         int carry = 0;
         int addend1CharAtI = 0;
         int addend2CharAtI = 0;
-        for (int i = addend1AsString.length() - 1; i > 0; i--) {
+        for (int i = addend1AsString.length() - 1; i >= 0; i--) {
             if (decimalSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalSeparator);
                 continue;
@@ -33,7 +32,7 @@ public class BasicMath {
             }
             result.append(resultForCurrentDigit % 10);
         }
-        StringBuilder carryToAppend = new StringBuilder(String.valueOf(addend1CharAtI + addend2CharAtI + carry));
+        final StringBuilder carryToAppend = new StringBuilder(String.valueOf(carry));
         result.append(carryToAppend.reverse());
 
         return new BigNumber(result.reverse().toString(), addend1.getLocale());

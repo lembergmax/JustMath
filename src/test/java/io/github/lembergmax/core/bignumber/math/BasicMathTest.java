@@ -22,6 +22,27 @@ public class BasicMathTest {
                         new BigNumber("654,321", Locale.GERMAN)
                 ).toString()
         );
+        assertEquals(
+                "1999,998",
+                BasicMath.add(
+                        new BigNumber("999,999", Locale.GERMAN),
+                        new BigNumber("999,999", Locale.GERMAN)
+                ).toString()
+        );
+        assertEquals(
+                "0",
+                BasicMath.add(
+                        new BigNumber("0", Locale.GERMAN),
+                        new BigNumber("0", Locale.GERMAN)
+                ).toString()
+        );
+        assertEquals(
+                "0,00000002",
+                BasicMath.add(
+                        new BigNumber("0,00000001", Locale.GERMAN),
+                        new BigNumber("0,00000001", Locale.GERMAN)
+                ).toString()
+        );
     }
 
 }
