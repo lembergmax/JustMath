@@ -1,4 +1,4 @@
-package io.github.lembergmax.exception;
+package io.github.lembergmax.justmath.core.exception;
 
 import org.junit.jupiter.api.Test;
 
