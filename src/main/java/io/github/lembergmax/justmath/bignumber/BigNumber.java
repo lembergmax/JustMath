@@ -53,23 +53,23 @@ public class BigNumber {
 
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
-            beforeDecimal = "0";
+            beforeDecimal = BigNumberParser.ZERO_AS_STRING;
         }
         if (afterDecimal == null || afterDecimal.isBlank()) {
-            afterDecimal = "0";
+            afterDecimal = BigNumberParser.ZERO_AS_STRING;
         }
 
-        final String onlyContainsZerosRegex = "^[0]+$";
-        if (("0".equals(beforeDecimal) && "0".equals(afterDecimal)) ||
+        final String onlyContainsZerosRegex = "^[" + BigNumberParser.ZERO_AS_STRING + "]+$";
+        if ((BigNumberParser.ZERO_AS_STRING.equals(beforeDecimal) && BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) ||
                 (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
         ) {
             this.isNegative = false;
-            return "0";
+            return BigNumberParser.ZERO_AS_STRING;
         }
 
         final StringBuilder result = new StringBuilder(
                 (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") + beforeDecimal);
-        if (!"0".equals(afterDecimal)) {
+        if (!BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }
