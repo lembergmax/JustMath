@@ -4,8 +4,6 @@ import io.github.lembergmax.bignumber.math.BasicMath;
 import org.junit.jupiter.api.Test;
 
 import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.bignumber.math.MathTools;
-import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
@@ -14,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BasicMathTest {
 
     @Test
-    public void addTest() {
+    public void addBothPositiveTest() {
         assertEquals(
                 "777,777",
                 BasicMath.add(
@@ -71,6 +69,21 @@ public class BasicMathTest {
                         new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeTest() {
+
+    }
+
+    @Test
+    public void addSecondNegativeTest() {
+
+    }
+
+    @Test
+    public void addBothNegativeTest() {
+
     }
 
 }
