@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BigNumberParserTest {
 
@@ -128,9 +127,19 @@ public class BigNumberParserTest {
     }
 
     @Test
-    public void numbersWithSignTest() {
-        assertEquals("0",  new BigNumber("+0", Locale.GERMAN).toString());
-        assertEquals("-0",  new BigNumber("-0", Locale.GERMAN).toString());
+    public void isNegativeNumberTest() {
+        assertFalse(new BigNumber("+0", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-0", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+0,00000000001", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("10000000", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("1", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-1", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("10", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-10", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-01", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-001", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+01", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+001", Locale.GERMAN).isNegative());
     }
 
 }

@@ -17,6 +17,8 @@ public class BigNumber {
     @Getter
     private String afterDecimal;
     @Getter
+    private boolean isNegative;
+    @Getter
     private Locale locale;
 
     public BigNumber(
@@ -29,29 +31,39 @@ public class BigNumber {
     private BigNumber(
             final ParseResult parseResult
     ) {
-        this(parseResult.beforeDecimals(), parseResult.afterDecimals(), parseResult.locale());
+        this(
+                parseResult.beforeDecimals(),
+                parseResult.afterDecimals(),
+                parseResult.isNegative(),
+                parseResult.locale()
+        );
     }
 
     private BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
+            final boolean isNegative,
             final Locale locale
     ) {
         this.beforeDecimal = beforeDecimal;
         this.afterDecimal = afterDecimal;
+        this.isNegative = isNegative;
         this.locale = locale;
     }
 
     public String toString() {
-        if(beforeDecimal == null || beforeDecimal.isBlank()) {
+        if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = "0";
         }
-        if(afterDecimal == null || afterDecimal.isBlank()) {
+        if (afterDecimal == null || afterDecimal.isBlank()) {
             afterDecimal = "0";
         }
 
-        final StringBuilder result = new StringBuilder(beforeDecimal);
-        if(!"0".equals(afterDecimal)) {
+        final StringBuilder result = new StringBuilder(
+                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") +
+                beforeDecimal
+        );
+        if (!"0".equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }

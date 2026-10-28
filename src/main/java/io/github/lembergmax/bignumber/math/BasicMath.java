@@ -16,8 +16,8 @@ public class BasicMath {
         final StringBuilder result = new StringBuilder();
 
         int carry = 0;
-        int addend1CharAtI = 0;
-        int addend2CharAtI = 0;
+        int addend1CharAtI;
+        int addend2CharAtI;
         for (int i = addend1AsString.length() - 1; i >= 0; i--) {
             if (decimalSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalSeparator);
