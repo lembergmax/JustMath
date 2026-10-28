@@ -15,7 +15,6 @@ public class BasicMathTest {
 
     @Test
     public void addTest() {
-        /*
         assertEquals(
                 "777,777",
                 BasicMath.add(
@@ -44,9 +43,6 @@ public class BasicMathTest {
                         new BigNumber("0,00000001", Locale.GERMAN)
                 ).toString()
         );
-        */
-
-
 
         assertEquals(
                 "100000000000",
