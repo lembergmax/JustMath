@@ -43,12 +43,32 @@ public class BasicMathTest {
                         new BigNumber("0,00000001", Locale.GERMAN)
                 ).toString()
         );
-
         assertEquals(
                 "100000000000",
                 BasicMath.add(
                         new BigNumber("50000000000", Locale.GERMAN),
                         new BigNumber("50000000000", Locale.GERMAN)
+                ).toString()
+        );
+        assertEquals(
+                "123456",
+                BasicMath.add(
+                        new BigNumber("123000", Locale.GERMAN),
+                        new BigNumber("456", Locale.GERMAN)
+                ).toString()
+        );
+        assertEquals(
+                "11111111100",
+                BasicMath.add(
+                        new BigNumber("9876543210", Locale.GERMAN),
+                        new BigNumber("1234567890", Locale.GERMAN)
+                ).toString()
+        );
+        assertEquals(
+                "180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                BasicMath.add(
+                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
+                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
                 ).toString()
         );
     }
