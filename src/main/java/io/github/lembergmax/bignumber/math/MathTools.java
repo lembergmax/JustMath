@@ -18,9 +18,15 @@ public class MathTools {
                 numberToCompareTo.getBeforeDecimal().length() -
                 numberToChangeLength.getBeforeDecimal().length();
 
-        return StringUtils.repeat("0", zerosToAddToBeforeDecimals) + numberToChangeLength.getBeforeDecimal() +
+        return getZeroNTimes(zerosToAddToBeforeDecimals) + numberToChangeLength.getBeforeDecimal() +
                NumberFormatLookup.getDecimalSeparatorForLocale(numberToChangeLength.getLocale()) +
-               numberToChangeLength.getAfterDecimal() + StringUtils.repeat("0", zerosToAddToAfterDecimals);
+               numberToChangeLength.getAfterDecimal() + getZeroNTimes(zerosToAddToAfterDecimals);
+    }
+
+    private static String getZeroNTimes(
+            final int nTimes
+    ) {
+        return StringUtils.repeat("0", nTimes);
     }
 
 }
