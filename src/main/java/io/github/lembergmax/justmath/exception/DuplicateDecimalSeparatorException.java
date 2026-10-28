@@ -1,25 +1,24 @@
-package io.github.lembergmax.exception;
+package io.github.lembergmax.justmath.exception;
 
 import java.util.HashMap;
 import java.util.Locale;
 
-public class NotAValidCharacterException extends JustMathException {
+public class DuplicateDecimalSeparatorException extends JustMathException {
 
     private static final HashMap<Locale, String> TEXT_TRANSLATIONS = new HashMap<>();
     static {
-        TEXT_TRANSLATIONS.put(
-                Locale.ENGLISH,
-                "'{0}' is not a valid character."
+        TEXT_TRANSLATIONS.put(Locale.ENGLISH,
+                "The decimal separator '{0}' occurs more than once."
         );
     }
 
-    public NotAValidCharacterException(
+    public DuplicateDecimalSeparatorException(
             final String... args
     ) {
         this(Locale.ENGLISH, args);
     }
 
-    public NotAValidCharacterException(
+    public DuplicateDecimalSeparatorException(
             final Locale locale,
             final String... args
     ) {

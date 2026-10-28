@@ -1,11 +1,11 @@
-package io.github.lembergmax.bignumber;
+package io.github.lembergmax.justmath.bignumber;
 
-import io.github.lembergmax.core.BigNumberParser;
-import io.github.lembergmax.core.NumberFormatLookup;
-import io.github.lembergmax.core.ParseResult;
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.core.BigNumberParser;
+import io.github.lembergmax.justmath.core.NumberFormatLookup;
+import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
+import java.math.BigInteger;
 import java.util.Locale;
 
 public class BigNumber {
@@ -53,17 +53,23 @@ public class BigNumber {
 
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
-            beforeDecimal = "0";
+            beforeDecimal = BigNumberParser.ZERO_AS_STRING;
         }
         if (afterDecimal == null || afterDecimal.isBlank()) {
-            afterDecimal = "0";
+            afterDecimal = BigNumberParser.ZERO_AS_STRING;
+        }
+
+        final String onlyContainsZerosRegex = "^[" + BigNumberParser.ZERO_AS_STRING + "]+$";
+        if ((BigNumberParser.ZERO_AS_STRING.equals(beforeDecimal) && BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) ||
+                (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
+        ) {
+            this.isNegative = false;
+            return BigNumberParser.ZERO_AS_STRING;
         }
 
         final StringBuilder result = new StringBuilder(
-                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") +
-                beforeDecimal
-        );
-        if (!"0".equals(afterDecimal)) {
+                (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") + beforeDecimal);
+        if (!BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }

@@ -1,7 +1,7 @@
-package io.github.lembergmax.core;
+package io.github.lembergmax.justmath.core;
 
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
-import io.github.lembergmax.exception.NotAValidCharacterException;
+import io.github.lembergmax.justmath.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.exception.NotAValidCharacterException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Locale;
@@ -9,8 +9,8 @@ import java.util.Locale;
 public class BigNumberParser {
 
     public static final String NEGATIVE_SIGN = "-";
-    private final String POSITIVE_SIGN = "+";
-    private final String ZERO_AS_STRING = "0";
+    public static final String POSITIVE_SIGN = "+";
+    public static final String ZERO_AS_STRING = "0";
 
     public ParseResult parse(
             final String number,

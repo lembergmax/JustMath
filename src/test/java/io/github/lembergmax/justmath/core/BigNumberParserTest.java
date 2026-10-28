@@ -1,7 +1,7 @@
 package io.github.lembergmax.justmath.core;
 
-import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.exception.DuplicateDecimalSeparatorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
