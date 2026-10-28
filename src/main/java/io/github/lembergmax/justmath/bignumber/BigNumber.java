@@ -5,6 +5,7 @@ import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
+import java.math.BigInteger;
 import java.util.Locale;
 
 public class BigNumber {
@@ -38,6 +39,12 @@ public class BigNumber {
         );
     }
 
+    public BigNumber(
+            final BigNumber bigNumber
+    ) {
+
+    }
+
     private BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
@@ -50,6 +57,11 @@ public class BigNumber {
         this.locale = locale;
     }
 
+    public BigNumber abs() {
+        this.isNegative = false;
+        return new BigNumber(this);
+    }
+
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = "0";
@@ -60,7 +72,7 @@ public class BigNumber {
 
         final StringBuilder result = new StringBuilder(
                 (this.isNegative ? BigNumberParser.NEGATIVE_SIGN : "") +
-                beforeDecimal
+                        beforeDecimal
         );
         if (!"0".equals(afterDecimal)) {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));

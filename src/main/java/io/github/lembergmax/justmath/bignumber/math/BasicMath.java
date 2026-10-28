@@ -1,6 +1,7 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
 public class BasicMath {
@@ -16,26 +17,44 @@ public class BasicMath {
         final StringBuilder result = new StringBuilder();
 
         int carry = 0;
-        int addend1CharAtI;
-        int addend2CharAtI;
         for (int i = addend1AsString.length() - 1; i >= 0; i--) {
             if (decimalSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalSeparator);
                 continue;
             }
 
-            addend1CharAtI = Integer.parseInt(String.valueOf(addend1AsString.charAt(i)));
-            addend2CharAtI = Integer.parseInt(String.valueOf(addend2AsString.charAt(i)));
+            final int addend1CharAtI = Integer.parseInt(String.valueOf(addend1AsString.charAt(i)));
+            final int addend2CharAtI = Integer.parseInt(String.valueOf(addend2AsString.charAt(i)));
+
             final int resultForCurrentDigit = addend1CharAtI + addend2CharAtI + carry;
-            if (resultForCurrentDigit >= 10) {
-                carry = (addend1CharAtI + addend2CharAtI) / 10;
-            }
+            carry = resultForCurrentDigit / 10;
             result.append(resultForCurrentDigit % 10);
         }
         final StringBuilder carryToAppend = new StringBuilder(String.valueOf(carry));
         result.append(carryToAppend.reverse());
 
-        return new BigNumber(result.reverse().toString(), addend1.getLocale());
+        // + + = +
+        // - - = -
+        // + - / - + = subtract der numbers
+
+        final boolean isAddend1Negative = addend1.isNegative();
+        final boolean isAddend2Negative = addend2.isNegative();
+
+        final boolean isResultPositive;
+        if (!isAddend1Negative && !isAddend2Negative) {
+            isResultPositive = true;
+        } else if (isAddend1Negative && isAddend2Negative) {
+            isResultPositive = false;
+        } else if (!isAddend1Negative) {
+            return subtract(addend1, addend2.abs());
+        } else {
+            return subtract(addend2, addend1.abs());
+        }
+
+        return new BigNumber(
+                (isResultPositive ? BigNumberParser.POSITIVE_SIGN : BigNumberParser.NEGATIVE_SIGN) +
+                        result.reverse(), addend1.getLocale()
+        );
     }
 
 }
