@@ -250,4 +250,25 @@ public class BasicMathTest {
         );
     }
 
+    @Test
+    public void subtractPositiveValuesTest() {
+        assertEquals(
+                "988,96",
+                BasicMath.subtract(
+                        new BigNumber("2512,78", Locale.GERMAN),
+                        new BigNumber("1523,82", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    @Test
+    public void subtractNegativeValues() {
+        assertEquals(
+                "-988,96",
+                BasicMath.subtract(
+                        new BigNumber("-2512,78", Locale.GERMAN),
+                        new BigNumber("-1523,82", Locale.GERMAN)
+                ).toString()
+        );
+    }
 }

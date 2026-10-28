@@ -44,8 +44,8 @@ public class BasicMath {
             final BigNumber subtrahend
     ) {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(minuend.getLocale());
-        final String minuendSignAsString = getSignAsString(minuend);
-        final String subtrahendSignAsString = getSignAsString(subtrahend);
+        final String minuendSign = getSignAsString(minuend);
+        final String subtrahendSign = getSignAsString(subtrahend);
         final String minuendAsString = MathTools.makeNumbersSameLength(minuend, subtrahend);
         final String subtrahendAsString = MathTools.makeNumbersSameLength(subtrahend, minuend);
 
@@ -64,26 +64,24 @@ public class BasicMath {
                 continue;
             }
 
-            if (!"-".equals(String.valueOf(minuendAsString.charAt(i))) && !"-".equals(String.valueOf(subtrahendAsString.charAt(i)))) {
-                currentMinuend = Integer.parseInt(String.valueOf(minuendAsString.charAt(i)));
-                currentSubtrahend = Integer.parseInt(String.valueOf(subtrahendAsString.charAt(i)));
-                resultForCurrentDigit = currentMinuend - currentSubtrahend - carry;
+            currentMinuend = Integer.parseInt(String.valueOf(minuendAsString.charAt(i)));
+            currentSubtrahend = Integer.parseInt(String.valueOf(subtrahendAsString.charAt(i)));
+            resultForCurrentDigit = currentMinuend - currentSubtrahend - carry;
 
-                if (i == 0 && carry == 0) {
-                    resultForCurrentDigit = 0;
-                }
-
-                if (resultForCurrentDigit < 0) {
-                    carry = (currentMinuend - currentSubtrahend) * -1;
-                    resultForCurrentDigit = 10 + resultForCurrentDigit;
-                }
-
-                result.append(resultForCurrentDigit % 10);
+            if (i == 0 && carry == 0) {
+                resultForCurrentDigit = 0;
             }
+
+            if (resultForCurrentDigit < 0) {
+                carry = (currentMinuend - currentSubtrahend) * -1;
+                resultForCurrentDigit = 10 + resultForCurrentDigit;
+            }
+
+            result.append(resultForCurrentDigit % 10);
         }
-        // TODO remove later if not needed
-//        StringBuilder carryToAppend = new StringBuilder(String.valueOf(currentMinuend - currentSubtrahend - carry));
-//        result.append(carryToAppend.reverse());
+
+        // Vorzeichen anhängen
+        if (minuend > subtrahend)
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
     }

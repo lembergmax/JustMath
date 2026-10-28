@@ -50,6 +50,13 @@ public class BigNumber {
         this.locale = locale;
     }
 
+    public static boolean greaterThan(
+            final BigNumber number1,
+            final BigNumber number2
+    ) {
+
+    }
+
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = "0";
