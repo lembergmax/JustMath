@@ -1,20 +1,18 @@
 package io.github.lembergmax.justmath.core;
 
-import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.exception.DuplicateDecimalSeparatorException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BigNumberParserTest {
 
     @Test
     public void languageGermanTest() {
         // ohne Komma
-
         assertEquals("0", new BigNumber("", Locale.GERMAN).toString());
         assertEquals("1", new BigNumber("1", Locale.GERMAN).toString());
         assertEquals("12", new BigNumber("12", Locale.GERMAN).toString());
@@ -126,6 +124,22 @@ public class BigNumberParserTest {
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(",,.", Locale.GERMAN).toString());
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(".,,", Locale.GERMAN).toString());
         assertThrows(DuplicateDecimalSeparatorException.class, () -> new BigNumber(",,,", Locale.GERMAN).toString());
+    }
+
+    @Test
+    public void isNegativeNumberTest() {
+        assertFalse(new BigNumber("+0", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-0", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+0,00000000001", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("10000000", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("1", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-1", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("10", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-10", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-01", Locale.GERMAN).isNegative());
+        assertTrue(new BigNumber("-001", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+01", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("+001", Locale.GERMAN).isNegative());
     }
 
 }

@@ -1,8 +1,7 @@
-package io.github.lembergmax.bignumber.math;
+package io.github.lembergmax.justmath.bignumber.math;
 
-import io.github.lembergmax.bignumber.BigNumber;
-import io.github.lembergmax.core.BigNumberParser;
-import io.github.lembergmax.core.NumberFormatLookup;
+import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
 public class BasicMath {
 
@@ -17,8 +16,8 @@ public class BasicMath {
         final StringBuilder result = new StringBuilder();
 
         int carry = 0;
-        int addend1CharAtI = 0;
-        int addend2CharAtI = 0;
+        int addend1CharAtI;
+        int addend2CharAtI;
         for (int i = addend1AsString.length() - 1; i >= 0; i--) {
             if (decimalSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalSeparator);
