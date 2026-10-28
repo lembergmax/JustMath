@@ -4,6 +4,8 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
+import java.util.Locale;
+
 public class BasicMath {
 
     public static BigNumber add(
@@ -97,8 +99,15 @@ public class BasicMath {
             result.append(resultForCurrentDigit % 10);
         }
 
-        // Vorzeichen anhängen
-        if (minuend > subtrahend)
+        if (new BigNumber(minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendAsString, Locale.GERMAN))) {
+            result.append(BigNumberParser.POSITIVE_SIGN);
+        } else {
+            if (minuend.isNegative() && subtrahend.isNegative() || !minuend.isNegative() && subtrahend.isNegative()) {
+                result.append(BigNumberParser.POSITIVE_SIGN);
+            } else {
+                result.append(BigNumberParser.NEGATIVE_SIGN);
+            }
+        }
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
     }

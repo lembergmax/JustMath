@@ -1,5 +1,6 @@
 package io.github.lembergmax.justmath.bignumber;
 
+import io.github.lembergmax.justmath.bignumber.math.MathTools;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
@@ -51,18 +52,36 @@ public class BigNumber {
         this.locale = locale;
     }
 
-    public static boolean greaterThan(
-            final BigNumber number1,
-            final BigNumber number2
+    public boolean greaterThan(
+            final BigNumber other
     ) {
-        return Integer.parseInt(number1.toString()) > Integer.parseInt(number2.toString());
+        String number1 = MathTools.makeNumbersSameLength(this, other);
+        String number2 = MathTools.makeNumbersSameLength(other, this);
+
+        for (int i = 0; i <= number1.length() - 1; i++) {
+            if (number1.charAt(i) == number2.charAt(i)) {
+                // TODO Code verbessern, da continue ausgegraut
+                continue;
+            } else
+                return Integer.parseInt(String.valueOf(number1.charAt(i))) > Integer.parseInt(String.valueOf(number2.charAt(i)));
+        }
+        return false;
     }
 
-    public static boolean smallerThan(
-            final BigNumber number1,
-            final BigNumber number2
+    public boolean smallerThan(
+            final BigNumber other
     ) {
-        return Integer.parseInt(number1.toString()) < Integer.parseInt(number2.toString());
+        String number1 = MathTools.makeNumbersSameLength(this, other);
+        String number2 = MathTools.makeNumbersSameLength(other, this);
+
+        for (int i = 0; i <= number1.length() - 1; i++) {
+            if (number1.charAt(i) == number2.charAt(i)) {
+                // TODO Code verbessern, da continue ausgegraut
+                continue;
+            } else
+                return Integer.parseInt(String.valueOf(number1.charAt(i))) < Integer.parseInt(String.valueOf(number2.charAt(i)));
+        }
+        return false;
     }
 
     public String toString() {
@@ -87,6 +106,7 @@ public class BigNumber {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }
+
 
         return result.toString();
     }
