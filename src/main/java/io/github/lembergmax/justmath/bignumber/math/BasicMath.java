@@ -29,7 +29,7 @@ public class BasicMath {
 
         final StringBuilder result = new StringBuilder();
 
-        int carry = isSubtraction ? 1 : 0;
+        int carry = 0;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
             if (decimalSeparator.equals(String.valueOf(cleanedAddend1.charAt(i)))) {
                 result.append(decimalSeparator);
@@ -39,13 +39,25 @@ public class BasicMath {
             final int addend1CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend1.charAt(i)));
             final int addend2CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend2.charAt(i)));
 
-            final int resultForCurrentDigit =
-                    addend1CharAtIndex + (isSubtraction ? 9 - addend2CharAtIndex : addend2CharAtIndex) + carry;
-            carry = resultForCurrentDigit / 10;
-            result.append(resultForCurrentDigit % 10);
+            int resultForCurrentDigit =
+                    addend1CharAtIndex + (isSubtraction ? -addend2CharAtIndex : addend2CharAtIndex) + carry;
+
+            // ich weiß selber nicht mehr was ich hier gemacht habe, aber es funktioniert
+            // also bitte nicht anfassen
+            if (resultForCurrentDigit < 0) {
+                resultForCurrentDigit += 10;
+                carry = -1;
+            } else if (resultForCurrentDigit >= 10) {
+                resultForCurrentDigit -= 10;
+                carry = 1;
+            } else {
+                carry = 0;
+            }
+
+            result.append(Math.floorMod(resultForCurrentDigit, 10));
         }
 
-        if (!isSubtraction && carry > 0) {
+        if (carry > 0) {
             result.append(carry);
         }
 
