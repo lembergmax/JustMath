@@ -55,7 +55,8 @@ public class BigNumber {
             final BigNumber number1,
             final BigNumber number2
     ) {
-
+        //TODO do this shit
+        return false;
     }
 
     public String toString() {
