@@ -10,7 +10,7 @@ public class BigNumberParser {
 
     public static final String NEGATIVE_SIGN = "-";
     public static final String POSITIVE_SIGN = "+";
-    private final String ZERO_AS_STRING = "0";
+    public static final String ZERO_AS_STRING = "0";
 
     public ParseResult parse(
             final String number,
