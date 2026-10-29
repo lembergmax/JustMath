@@ -3,8 +3,6 @@ package io.github.lembergmax.justmath.bignumber.math;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
-import java.util.Locale;
-
 public class BasicMath {
 
     public static BigNumber add(
@@ -37,7 +35,7 @@ public class BasicMath {
         }
         result.insert(0, carry);
 
-        return new BigNumber(result.toString(), Locale.GERMAN); // TODO
+        return new BigNumber(result.toString(), addend1.getLocale());
     }
 
     private static int charAsInt(
