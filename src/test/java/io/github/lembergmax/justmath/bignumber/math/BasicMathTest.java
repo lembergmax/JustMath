@@ -264,7 +264,7 @@ public class BasicMathTest {
 
     // - -
     @Test
-    public void subtractNegativeValues() {
+    public void subtractNegativeValuesTest() {
         assertEquals(
                 "-988,96",
                 BasicMath.subtract(
@@ -276,7 +276,7 @@ public class BasicMathTest {
 
     // - +
     @Test
-    public void subtractNegativeWithPositive() {
+    public void subtractNegativeWithPositiveTest() {
         assertEquals(
                 "-4036,6",
                 BasicMath.subtract(
@@ -288,7 +288,7 @@ public class BasicMathTest {
 
     // + -
     @Test
-    public void subtractPositiveWithNegative() {
+    public void subtractPositiveWithNegativeTest() {
         assertEquals(
                 "4036,6",
                 BasicMath.subtract(
@@ -300,7 +300,7 @@ public class BasicMathTest {
 
     // + +
     @Test
-    public void subtractPositiveValuesOtherTest() {
+    public void subtractPositiveValuesAndMinuendSmallerThanSubtrahendTest() {
         assertEquals(
                 "988,96",
                 BasicMath.subtract(
@@ -312,7 +312,7 @@ public class BasicMathTest {
 
     // - -
     @Test
-    public void subtractNegativeOtherValues() {
+    public void subtractNegativeValuesAndMinuendSmallerThanSubtrahendTest() {
         assertEquals(
                 "-988,96",
                 BasicMath.subtract(
@@ -324,7 +324,7 @@ public class BasicMathTest {
 
     // - +
     @Test
-    public void subtractNegativeWithPositiveOther() {
+    public void subtractNegativeWithPositiveAndMinuendSmallerThanSubtrahendTest() {
         assertEquals(
                 "-4036,6",
                 BasicMath.subtract(
@@ -336,7 +336,7 @@ public class BasicMathTest {
 
     // + -
     @Test
-    public void subtractPositiveWithNegativeOther() {
+    public void subtractPositiveWithNegativeAndMinuendSmallerThanSubtrahendTest() {
         assertEquals(
                 "4036,6",
                 BasicMath.subtract(
