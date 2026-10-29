@@ -65,9 +65,9 @@ public class BasicMath {
     ) {
         if (!(minuend.isNegative() && !subtrahend.isNegative()) && !(!minuend.isNegative() && subtrahend.isNegative())) {
             if (minuend.abs().smallerThan(subtrahend.abs())) {
-                BigNumber clonedMinuend = minuend;
+                final BigNumber tmpMinuend = new BigNumber(minuend);
                 minuend = subtrahend;
-                subtrahend = clonedMinuend;
+                subtrahend = tmpMinuend;
             }
         }
 
