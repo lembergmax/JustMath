@@ -32,6 +32,7 @@ public class BasicMath {
             }
             result.append(resultForCurrentDigit % 10);
         }
+
         final StringBuilder carryToAppend = new StringBuilder(String.valueOf(carry));
         result.append(carryToAppend.reverse());
 
