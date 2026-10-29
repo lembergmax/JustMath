@@ -3,6 +3,8 @@ package io.github.lembergmax.justmath.bignumber.math;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
+import java.util.Locale;
+
 public class BasicMath {
 
     public static BigNumber add(
@@ -13,30 +15,35 @@ public class BasicMath {
         final String cleanedAddend1 = MathTools.makeNumbersSameLength(addend2, addend1);
         final String cleanedAddend2 = MathTools.makeNumbersSameLength(addend1, addend2);
 
-        final StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         int carry = 0;
-        int addend1CharAtI;
-        int addend2CharAtI;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
-            if (decimalSeparator.equals(String.valueOf(cleanedAddend1.charAt(i)))) {
-                result.append(decimalSeparator);
+            // Dezimaltrenner überspringen
+            final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
+            if (decimalSeparator.equals(currentCharacter)) {
+                result.insert(0, decimalSeparator);
                 continue;
             }
 
-            addend1CharAtI = Integer.parseInt(String.valueOf(cleanedAddend1.charAt(i)));
-            addend2CharAtI = Integer.parseInt(String.valueOf(cleanedAddend2.charAt(i)));
-            final int resultForCurrentDigit = addend1CharAtI + addend2CharAtI + carry;
-            if (resultForCurrentDigit >= 10) {
-                carry = (addend1CharAtI + addend2CharAtI) / 10;
+            final int currentDigitOfAddend1 = charAsInt(cleanedAddend1.charAt(i));
+            final int currentDigitOfAddend2 = charAsInt(cleanedAddend2.charAt(i));
+            int resultForCurrentDigits = currentDigitOfAddend1 + currentDigitOfAddend2 + carry;
+            carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
+            if (resultForCurrentDigits >= 10) {
+                resultForCurrentDigits = resultForCurrentDigits - 10;
             }
-            result.append(resultForCurrentDigit % 10);
+
+            result.insert(0, resultForCurrentDigits);
         }
+        result.insert(0, carry);
 
-        final StringBuilder carryToAppend = new StringBuilder(String.valueOf(carry));
-        result.append(carryToAppend.reverse());
+        return new BigNumber(result.toString(), Locale.GERMAN); // TODO
+    }
 
-        return new BigNumber(result.reverse().toString(), addend1.getLocale());
+    private static int charAsInt(
+            final char character
+    ) {
+        return Integer.parseInt(String.valueOf(character));
     }
 
 }
