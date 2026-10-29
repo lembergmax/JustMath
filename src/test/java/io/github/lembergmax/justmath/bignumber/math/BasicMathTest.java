@@ -345,4 +345,15 @@ public class BasicMathTest {
                 ).toString()
         );
     }
+
+    @Test
+    public void tempTest() {
+        assertEquals(
+                "-530,865",
+                BasicMath.subtract(
+                        new BigNumber("123,456", Locale.GERMAN),
+                        new BigNumber("654,321", Locale.GERMAN)
+                ).toString()
+        );
+    }
 }
