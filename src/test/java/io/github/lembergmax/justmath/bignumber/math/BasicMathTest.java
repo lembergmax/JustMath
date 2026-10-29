@@ -250,6 +250,7 @@ public class BasicMathTest {
         );
     }
 
+    // + +
     @Test
     public void subtractPositiveValuesTest() {
         assertEquals(
@@ -261,6 +262,7 @@ public class BasicMathTest {
         );
     }
 
+    // - -
     @Test
     public void subtractNegativeValues() {
         assertEquals(
@@ -268,6 +270,78 @@ public class BasicMathTest {
                 BasicMath.subtract(
                         new BigNumber("-2512,78", Locale.GERMAN),
                         new BigNumber("-1523,82", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // - +
+    @Test
+    public void subtractNegativeWithPositive() {
+        assertEquals(
+                "-4036,6",
+                BasicMath.subtract(
+                        new BigNumber("-2512,78", Locale.GERMAN),
+                        new BigNumber("+1523,82", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // + -
+    @Test
+    public void subtractPositiveWithNegative() {
+        assertEquals(
+                "4036,6",
+                BasicMath.subtract(
+                        new BigNumber("2512,78", Locale.GERMAN),
+                        new BigNumber("-1523,82", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // + +
+    @Test
+    public void subtractPositiveValuesOtherTest() {
+        assertEquals(
+                "988,96",
+                BasicMath.subtract(
+                        new BigNumber("1523,82", Locale.GERMAN),
+                        new BigNumber("2512,78", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // - -
+    @Test
+    public void subtractNegativeOtherValues() {
+        assertEquals(
+                "-988,96",
+                BasicMath.subtract(
+                        new BigNumber("-1523,82", Locale.GERMAN),
+                        new BigNumber("-2512,78", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // - +
+    @Test
+    public void subtractNegativeWithPositiveOther() {
+        assertEquals(
+                "-4036,6",
+                BasicMath.subtract(
+                        new BigNumber("-1523,82", Locale.GERMAN),
+                        new BigNumber("+2512,78", Locale.GERMAN)
+                ).toString()
+        );
+    }
+
+    // + -
+    @Test
+    public void subtractPositiveWithNegativeOther() {
+        assertEquals(
+                "4036,6",
+                BasicMath.subtract(
+                        new BigNumber("1523,82", Locale.GERMAN),
+                        new BigNumber("-2512,78", Locale.GERMAN)
                 ).toString()
         );
     }

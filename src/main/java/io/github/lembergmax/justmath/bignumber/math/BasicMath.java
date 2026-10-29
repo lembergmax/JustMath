@@ -97,15 +97,26 @@ public class BasicMath {
 
             currentMinuend = Integer.parseInt(String.valueOf(minuendAsString.charAt(i)));
             currentSubtrahend = Integer.parseInt(String.valueOf(subtrahendAsString.charAt(i)));
-            resultForCurrentDigit = currentMinuend - currentSubtrahend - carry;
+            if ((minuend.isNegative() && !subtrahend.isNegative()) || (!minuend.isNegative() && subtrahend.isNegative())) {
+                resultForCurrentDigit = currentMinuend + currentSubtrahend + carry;
 
-            if (i == 0 && carry == 0) {
-                resultForCurrentDigit = 0;
-            }
+                if (resultForCurrentDigit >= 10) {
+                    resultForCurrentDigit -= 10;
+                    carry = 1;
+                } else {
+                    carry = 0;
+                }
+            } else {
+                resultForCurrentDigit = currentMinuend - currentSubtrahend - carry;
 
-            if (resultForCurrentDigit < 0) {
-                carry = (currentMinuend - currentSubtrahend) * -1;
-                resultForCurrentDigit = 10 + resultForCurrentDigit;
+                if (i == 0 && carry == 0) {
+                    resultForCurrentDigit = 0;
+                }
+
+                if (resultForCurrentDigit < 0) {
+                    carry = (currentMinuend - currentSubtrahend) * -1;
+                    resultForCurrentDigit = 10 + resultForCurrentDigit;
+                }
             }
 
             result.append(resultForCurrentDigit % 10);
@@ -113,10 +124,23 @@ public class BasicMath {
 
         // Vorzeichen anfügen
         if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
-            result.append(BigNumberParser.POSITIVE_SIGN);
+            if (minuend.isNegative() && !subtrahend.isNegative()) {
+                result.append(BigNumberParser.NEGATIVE_SIGN);
+            } else if (!minuend.isNegative() && subtrahend.isNegative()){
+                result.append(BigNumberParser.POSITIVE_SIGN);
+            }
+            else {
+                result.append(BigNumberParser.POSITIVE_SIGN);
+            }
         } else {
-            // Quasi minuendAsString kleiner als subtrahendAsString
-            result.append(BigNumberParser.NEGATIVE_SIGN);
+            if (minuend.isNegative() && !subtrahend.isNegative()) {
+                result.append(BigNumberParser.NEGATIVE_SIGN);
+            } else if (!minuend.isNegative() && subtrahend.isNegative()){
+                result.append(BigNumberParser.POSITIVE_SIGN);
+            }
+            else {
+                result.append(BigNumberParser.NEGATIVE_SIGN);
+            }
         }
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());

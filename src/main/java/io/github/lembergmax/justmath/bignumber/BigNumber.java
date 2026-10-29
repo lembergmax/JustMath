@@ -60,14 +60,12 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (this.isNegative && other.isNegative) {
-                return new BigNumber(this.toString(), this.locale).smallerThan(other);
+                return !new BigNumber(this.toString(), this.locale).smallerThan(other);
             }
 
-            if (number1.charAt(i) == number2.charAt(i)) {
-                // TODO Code verbessern, da continue ausgegraut
-                continue;
-            } else
+            if (number1.charAt(i) != number2.charAt(i)) {
                 return Integer.parseInt(String.valueOf(number1.charAt(i))) > Integer.parseInt(String.valueOf(number2.charAt(i)));
+            }
         }
         return false;
     }
@@ -80,14 +78,12 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (this.isNegative && other.isNegative) {
-                return new BigNumber(this.toString(), this.locale).greaterThan(other);
+                return new BigNumber(number1, this.locale).greaterThan(new BigNumber(number2, this.locale));
             }
 
-            if (number1.charAt(i) == number2.charAt(i)) {
-                // TODO Code verbessern, da continue ausgegraut
-                continue;
-            } else
+            if (number1.charAt(i) != number2.charAt(i)) {
                 return Integer.parseInt(String.valueOf(number1.charAt(i))) < Integer.parseInt(String.valueOf(number2.charAt(i)));
+            }
         }
         return false;
     }
