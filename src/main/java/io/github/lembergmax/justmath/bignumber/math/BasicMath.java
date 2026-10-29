@@ -1,7 +1,6 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
 import java.util.Locale;
@@ -12,63 +11,54 @@ public class BasicMath {
             final BigNumber addend1,
             final BigNumber addend2
     ) {
-        final boolean isAddend1Negative = addend1.isNegative();
-        final boolean isAddend2Negative = addend2.isNegative();
-        final boolean isSubtraction = isAddend1Negative != isAddend2Negative;
-
+        // Dezimaltrenner für die aktuelle Locale holen
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
-        String cleanedAddend1 = MathTools.makeNumbersSameLength(addend1, addend2);
-        String cleanedAddend2 = MathTools.makeNumbersSameLength(addend2, addend1);
+        // Zahlen gleichlang machen um "Schriftlich" zu addieren
+        final String cleanedAddend1 = MathTools.makeNumbersSameLength(addend2, addend1);
+        final String cleanedAddend2 = MathTools.makeNumbersSameLength(addend1, addend2);
 
-        boolean isResultNegative = isAddend1Negative;
-
-        if (isSubtraction && cleanedAddend1.compareTo(cleanedAddend2) < 0) {
-            final String tempAddend1 = cleanedAddend1;
-            cleanedAddend1 = cleanedAddend2;
-            cleanedAddend2 = tempAddend1;
-            isResultNegative = isAddend2Negative;
-        }
-
-        final StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         int carry = 0;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
-            if (decimalSeparator.equals(String.valueOf(cleanedAddend1.charAt(i)))) {
-                result.append(decimalSeparator);
+            // Dezimaltrenner überspringen und in das Ergebnis einfügen
+            final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
+            if (decimalSeparator.equals(currentCharacter)) {
+                result.insert(0, decimalSeparator);
                 continue;
             }
 
-            final int addend1CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend1.charAt(i)));
-            final int addend2CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend2.charAt(i)));
-
-            int resultForCurrentDigit =
-                    addend1CharAtIndex + (isSubtraction ? -addend2CharAtIndex : addend2CharAtIndex) + carry;
-
-            // ich weiß selber nicht mehr was ich hier gemacht habe, aber es funktioniert
-            // also bitte nicht anfassen
-            if (resultForCurrentDigit < 0) {
-                resultForCurrentDigit += 10;
-                carry = -1;
-            } else if (resultForCurrentDigit >= 10) {
-                resultForCurrentDigit -= 10;
-                carry = 1;
-            } else {
-                carry = 0;
+            // aktuelle Zahlen holen
+            final int currentDigitOfAddend1 = charAsInt(cleanedAddend1.charAt(i));
+            final int currentDigitOfAddend2 = charAsInt(cleanedAddend2.charAt(i));
+            // aktuelle Zahlen und carry miteinander verrechnen
+            int resultForCurrentDigits = currentDigitOfAddend1 + currentDigitOfAddend2 + carry;
+            // neuen carry berechnen
+            carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
+            // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
+            if (resultForCurrentDigits >= 10) {
+                resultForCurrentDigits = resultForCurrentDigits - 10;
             }
 
-            result.append(Math.floorMod(resultForCurrentDigit, 10));
+            result.insert(0, resultForCurrentDigits);
         }
+        result.insert(0, carry);
 
-        if (carry > 0) {
-            result.append(carry);
-        }
-
-        final String resultAsString = result.reverse().toString();
-        return new BigNumber(
-                (isResultNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN) +
-                        resultAsString, addend1.getLocale()
-        );
+        return new BigNumber(result.toString(), addend1.getLocale());
     }
+
+    /**
+     * Wandelt einen char in einen int um.
+     *
+     * @param character der char, welcher umgewandelt werden soll
+     * @return der umgewandelte char als int
+     */
+    private static int charAsInt(
+            final char character
+    ) {
+        return Integer.parseInt(String.valueOf(character));
+    }
+
+}
 
     public static BigNumber subtract(
             final BigNumber minuend,
