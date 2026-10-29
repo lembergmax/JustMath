@@ -15,6 +15,8 @@ public class BasicMath {
         final String cleanedAddend1 = MathTools.makeNumbersSameLength(addend2, addend1);
         final String cleanedAddend2 = MathTools.makeNumbersSameLength(addend1, addend2);
 
+        // TODO: die kleinere zahl vom größeren abziehen
+
         StringBuilder result = new StringBuilder();
         int carry = 0;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
