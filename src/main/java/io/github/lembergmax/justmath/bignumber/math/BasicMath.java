@@ -10,62 +10,41 @@ public class BasicMath {
             final BigNumber addend1,
             final BigNumber addend2
     ) {
-        final boolean isAddend1Negative = addend1.isNegative();
-        final boolean isAddend2Negative = addend2.isNegative();
-        final boolean isSubtraction = isAddend1Negative != isAddend2Negative;
-
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
-        String cleanedAddend1 = MathTools.makeNumbersSameLength(addend1, addend2);
-        String cleanedAddend2 = MathTools.makeNumbersSameLength(addend2, addend1);
-
-        boolean isResultNegative = isAddend1Negative;
-
-        if (isSubtraction && cleanedAddend1.compareTo(cleanedAddend2) < 0) {
-            final String tempAddend1 = cleanedAddend1;
-            cleanedAddend1 = cleanedAddend2;
-            cleanedAddend2 = tempAddend1;
-            isResultNegative = isAddend2Negative;
-        }
+        final String addend1AsString = MathTools.makeNumbersSameLength(addend2, addend1);
+        final String addend2AsString = MathTools.makeNumbersSameLength(addend1, addend2);
 
         final StringBuilder result = new StringBuilder();
 
         int carry = 0;
-        for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
-            if (decimalSeparator.equals(String.valueOf(cleanedAddend1.charAt(i)))) {
+        for (int i = addend1AsString.length() - 1; i >= 0; i--) {
+            if (decimalSeparator.equals(String.valueOf(addend1AsString.charAt(i)))) {
                 result.append(decimalSeparator);
                 continue;
             }
 
-            final int addend1CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend1.charAt(i)));
-            final int addend2CharAtIndex = Integer.parseInt(String.valueOf(cleanedAddend2.charAt(i)));
+            final int addend1CharAtI = Integer.parseInt(String.valueOf(addend1AsString.charAt(i)));
+            final int addend2CharAtI = Integer.parseInt(String.valueOf(addend2AsString.charAt(i)));
 
-            int resultForCurrentDigit =
-                    addend1CharAtIndex + (isSubtraction ? -addend2CharAtIndex : addend2CharAtIndex) + carry;
-
-            // ich weiß selber nicht mehr was ich hier gemacht habe, aber es funktioniert
-            // also bitte nicht anfassen
-            if (resultForCurrentDigit < 0) {
-                resultForCurrentDigit += 10;
-                carry = -1;
-            } else if (resultForCurrentDigit >= 10) {
-                resultForCurrentDigit -= 10;
-                carry = 1;
-            } else {
-                carry = 0;
-            }
-
-            result.append(Math.floorMod(resultForCurrentDigit, 10));
+            final int resultForCurrentDigit = addend1CharAtI + addend2CharAtI + carry;
+            carry = resultForCurrentDigit / 10;
+            result.append(resultForCurrentDigit % 10);
         }
+        final StringBuilder carryToAppend = new StringBuilder(String.valueOf(carry));
+        result.append(carryToAppend.reverse());
 
-        if (carry > 0) {
-            result.append(carry);
-        }
-
-        final String resultAsString = result.reverse().toString();
         return new BigNumber(
-                (isResultNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN) +
-                        resultAsString, addend1.getLocale()
+                (isResultPositive(addend1, addend2) ?
+                        BigNumberParser.POSITIVE_SIGN : BigNumberParser.NEGATIVE_SIGN) +
+                        result.reverse(), addend1.getLocale()
         );
+    }
+
+    private static boolean isResultPositive(
+            final BigNumber addend1,
+            final BigNumber addend2
+    ) {
+        return true;
     }
 
 }
