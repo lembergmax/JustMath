@@ -67,6 +67,14 @@ public class BasicMath {
         return new BigNumber(result.toString(), addend1.getLocale());
     }
 
+    /**
+     * Setzt die größte Zahl an den Anfang des Arrays, welcher zurückgegeben wird.
+     * Hier wird der absolute Wert beider Zahlen verglichen.
+     *
+     * @param addend1 eine BigNumber
+     * @param addend2 eine andere BigNumber
+     * @return ein Array mit der größeren BigNumber am Anfang.
+     */
     public static BigNumber[] makeAddend1TheGreatest(
             final BigNumber addend1,
             final BigNumber addend2
