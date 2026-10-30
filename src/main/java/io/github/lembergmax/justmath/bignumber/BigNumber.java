@@ -8,7 +8,6 @@ import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
 import java.util.Locale;
-import java.util.Objects;
 
 public class BigNumber {
 
@@ -69,6 +68,9 @@ public class BigNumber {
         String number1 = MathTools.makeNumbersSameLength(thisNumber, otherNumber);
         String number2 = MathTools.makeNumbersSameLength(otherNumber, thisNumber);
 
+        String number1Sign = BasicMath.getSignAsString(thisNumber);
+        String number2Sign = BasicMath.getSignAsString(otherNumber);
+
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (thisNumber.isNegative && otherNumber.isNegative && !thisNumber.equals(otherNumber)) {
                 if ("0".equals(thisNumber.toString())) {
@@ -77,11 +79,8 @@ public class BigNumber {
                 return !new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
             }
 
-            if (number1.charAt(i) != number2.charAt(i)) {
-                String number1Sign = BasicMath.getSignAsString(thisNumber);
-                String number2Sign = BasicMath.getSignAsString(otherNumber);
-
-                return Integer.parseInt(number1Sign + String.valueOf(number1.charAt(i))) > Integer.parseInt(number2Sign + String.valueOf(number2.charAt(i)));
+            if ((number1.charAt(i) != number2.charAt(i)) || (thisNumber.isNegative != otherNumber.isNegative)) {
+                return Integer.parseInt(number1Sign + number1.charAt(i)) > Integer.parseInt(number2Sign + number2.charAt(i));
             }
         }
         return false;
