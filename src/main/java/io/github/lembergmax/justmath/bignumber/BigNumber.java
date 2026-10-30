@@ -1,5 +1,6 @@
 package io.github.lembergmax.justmath.bignumber;
 
+import io.github.lembergmax.justmath.bignumber.math.BasicMath;
 import io.github.lembergmax.justmath.bignumber.math.MathTools;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
@@ -70,11 +71,17 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (thisNumber.isNegative && otherNumber.isNegative && !thisNumber.equals(otherNumber)) {
+                if ("0".equals(thisNumber.toString())) {
+                    return new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
+                }
                 return !new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
             }
 
             if (number1.charAt(i) != number2.charAt(i)) {
-                return Integer.parseInt(String.valueOf(number1.charAt(i))) > Integer.parseInt(String.valueOf(number2.charAt(i)));
+                String number1Sign = BasicMath.getSignAsString(thisNumber);
+                String number2Sign = BasicMath.getSignAsString(otherNumber);
+
+                return Integer.parseInt(number1Sign + String.valueOf(number1.charAt(i))) > Integer.parseInt(number2Sign + String.valueOf(number2.charAt(i)));
             }
         }
         return false;
