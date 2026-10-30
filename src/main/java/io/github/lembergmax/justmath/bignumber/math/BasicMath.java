@@ -14,11 +14,16 @@ public class BasicMath {
     ) {
         // Dezimaltrenner für die aktuelle Locale holen
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
-        // Zahlen gleichlang machen um "Schriftlich" zu addieren
-        final String cleanedAddend1 = MathTools.makeNumbersSameLength(addend2, addend1);
-        final String cleanedAddend2 = MathTools.makeNumbersSameLength(addend1, addend2);
 
-        final boolean subtract = true;
+        // Zahlen ordnen, also addend1 ist die größte Zahl
+        final BigNumber[] newAddends = makeAddend1TheGreatest(addend1, addend2);
+
+        // Zahlen gleichlang machen um "Schriftlich" zu addieren
+        final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0], newAddends[1]);
+        final String cleanedAddend2 = MathTools.makeNumbersSameLength(newAddends[1], newAddends[0]);
+
+        // Wenn + und - oder - und +
+        final boolean subtract = addend1.isNegative() != addend2.isNegative();
 
         StringBuilder result = new StringBuilder();
         int carry = 0;
@@ -33,28 +38,42 @@ public class BasicMath {
             // aktuelle Zahlen holen
             final int currentDigitOfAddend1 = charAsInt(cleanedAddend1.charAt(i));
             final int currentDigitOfAddend2 = charAsInt(cleanedAddend2.charAt(i));
-            // aktuelle Zahlen und carry miteinander verrechnen
-            int resultForCurrentDigits = currentDigitOfAddend1 + currentDigitOfAddend2 + carry;
-            // neuen carry berechnen
-            carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
-            // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
-            if (resultForCurrentDigits >= 10) {
-                resultForCurrentDigits = resultForCurrentDigits - 10;
+            int resultForCurrentDigits;
+
+            if (subtract) {
+                // aktuelle Zahlen und carry miteinander verrechnen
+                resultForCurrentDigits = (currentDigitOfAddend1 == 0 ? 10 : currentDigitOfAddend1) - currentDigitOfAddend2 - carry;
+                // neuen carry berechnen
+                carry = resultForCurrentDigits < 0 ? 1 : 0;
+                // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
+                if (resultForCurrentDigits < 0) {
+                    resultForCurrentDigits = resultForCurrentDigits + 10;
+                }
+            } else {
+                // aktuelle Zahlen und carry miteinander verrechnen
+                resultForCurrentDigits = currentDigitOfAddend1 + currentDigitOfAddend2 + carry;
+                // neuen carry berechnen
+                carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
+                // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
+                if (resultForCurrentDigits >= 10) {
+                    resultForCurrentDigits = resultForCurrentDigits - 10;
+                }
             }
 
             result.insert(0, resultForCurrentDigits);
         }
         result.insert(0, carry);
 
-        /*
-         abs
-        + > + = + add
-        + > - = - sub
-        - > + = - sub
-        - > - = - add
-         */
-
         return new BigNumber(result.toString(), addend1.getLocale());
+    }
+
+    public static BigNumber[] makeAddend1TheGreatest(
+            final BigNumber addend1,
+            final BigNumber addend2
+    ) {
+        return addend1.abs().greaterThan(addend2.abs()) ?
+                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)} :
+                new BigNumber[]{new BigNumber(addend2), new BigNumber(addend1)};
     }
 
     /**
