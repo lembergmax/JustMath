@@ -2,6 +2,7 @@ package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
+import io.github.lembergmax.justmath.core.BigNumberParser;
 
 import java.util.Locale;
 
