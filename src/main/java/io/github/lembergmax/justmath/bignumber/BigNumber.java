@@ -6,7 +6,6 @@ import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.util.Locale;
 
 public class BigNumber {
@@ -27,6 +26,13 @@ public class BigNumber {
             final Locale locale
     ) {
         this(bigNumberParser.parse(number, locale));
+    }
+
+    public BigNumber(BigNumber bigNumber) {
+        this.beforeDecimal = bigNumber.beforeDecimal;
+        this.afterDecimal = bigNumber.afterDecimal;
+        this.isNegative = bigNumber.isNegative;
+        this.locale = bigNumber.locale;
     }
 
     private BigNumber(
@@ -60,14 +66,12 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (this.isNegative && other.isNegative) {
-                return new BigNumber(this.toString(), this.locale).smallerThan(other);
+                return !new BigNumber(this.toString(), this.locale).smallerThan(other);
             }
 
-            if (number1.charAt(i) == number2.charAt(i)) {
-                // TODO Code verbessern, da continue ausgegraut
-                continue;
-            } else
+            if (number1.charAt(i) != number2.charAt(i)) {
                 return Integer.parseInt(String.valueOf(number1.charAt(i))) > Integer.parseInt(String.valueOf(number2.charAt(i)));
+            }
         }
         return false;
     }
@@ -80,14 +84,12 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (this.isNegative && other.isNegative) {
-                return new BigNumber(this.toString(), this.locale).greaterThan(other);
+                return new BigNumber(number1, this.locale).greaterThan(new BigNumber(number2, this.locale));
             }
 
-            if (number1.charAt(i) == number2.charAt(i)) {
-                // TODO Code verbessern, da continue ausgegraut
-                continue;
-            } else
+            if (number1.charAt(i) != number2.charAt(i)) {
                 return Integer.parseInt(String.valueOf(number1.charAt(i))) < Integer.parseInt(String.valueOf(number2.charAt(i)));
+            }
         }
         return false;
     }
@@ -119,4 +121,9 @@ public class BigNumber {
         return result.toString();
     }
 
+    public BigNumber abs() {
+        BigNumber bigNumber = new BigNumber(this);
+        bigNumber.isNegative = false;
+        return bigNumber;
+    }
 }
