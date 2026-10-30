@@ -72,8 +72,8 @@ public class BigNumberParser {
                 beforeDecimals + decimalSeparator + afterDecimals,
                 groupingSeparator, decimalSeparator);
 
-        String cleanedBeforeDecimals = removePositiveOrNegativeSign(removeAllSpaces(trimLeadingZeros(beforeDecimals)));
-        String cleanedAfterDecimals = removeAllSpaces(trimTrailingZeros(afterDecimals));
+        String cleanedBeforeDecimals = trimLeadingZeros(removePositiveOrNegativeSign(removeAllSpaces(trimLeadingZeros(beforeDecimals))));
+        String cleanedAfterDecimals = trimTrailingZeros(removeAllSpaces(trimTrailingZeros(afterDecimals)));
 
         if (cleanedBeforeDecimals.isBlank()) {
             cleanedBeforeDecimals = ZERO_AS_STRING;
@@ -114,7 +114,6 @@ public class BigNumberParser {
             final String groupingSeparator,
             final String decimalSeparator
     ) {
-        // Alle Zeichen welche nicht eine Zahl und der Dezimaltrenner und Gruppentrenner sind
         for (int i = 0; i < number.length(); i++) {
             final String charAsString = String.valueOf(number.charAt(i));
             if (

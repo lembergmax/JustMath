@@ -1,5 +1,6 @@
 package io.github.lembergmax.justmath.bignumber;
 
+import io.github.lembergmax.justmath.bignumber.math.MathTools;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
@@ -51,6 +52,46 @@ public class BigNumber {
         this.locale = locale;
     }
 
+    public boolean greaterThan(
+            final BigNumber other
+    ) {
+        String number1 = MathTools.makeNumbersSameLength(this, other);
+        String number2 = MathTools.makeNumbersSameLength(other, this);
+
+        for (int i = 0; i <= number1.length() - 1; i++) {
+            if (this.isNegative && other.isNegative) {
+                return new BigNumber(this.toString(), this.locale).smallerThan(other);
+            }
+
+            if (number1.charAt(i) == number2.charAt(i)) {
+                // TODO Code verbessern, da continue ausgegraut
+                continue;
+            } else
+                return Integer.parseInt(String.valueOf(number1.charAt(i))) > Integer.parseInt(String.valueOf(number2.charAt(i)));
+        }
+        return false;
+    }
+
+    public boolean smallerThan(
+            final BigNumber other
+    ) {
+        String number1 = MathTools.makeNumbersSameLength(this, other);
+        String number2 = MathTools.makeNumbersSameLength(other, this);
+
+        for (int i = 0; i <= number1.length() - 1; i++) {
+            if (this.isNegative && other.isNegative) {
+                return new BigNumber(this.toString(), this.locale).greaterThan(other);
+            }
+
+            if (number1.charAt(i) == number2.charAt(i)) {
+                // TODO Code verbessern, da continue ausgegraut
+                continue;
+            } else
+                return Integer.parseInt(String.valueOf(number1.charAt(i))) < Integer.parseInt(String.valueOf(number2.charAt(i)));
+        }
+        return false;
+    }
+
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = BigNumberParser.ZERO_AS_STRING;
@@ -73,6 +114,7 @@ public class BigNumber {
             result.append(NumberFormatLookup.getDecimalSeparatorForLocale(locale));
             result.append(afterDecimal);
         }
+
 
         return result.toString();
     }

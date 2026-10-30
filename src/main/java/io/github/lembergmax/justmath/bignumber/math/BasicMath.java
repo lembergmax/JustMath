@@ -3,6 +3,8 @@ package io.github.lembergmax.justmath.bignumber.math;
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 
+import java.util.Locale;
+
 public class BasicMath {
 
     public static BigNumber add(
@@ -66,4 +68,59 @@ public class BasicMath {
         return Integer.parseInt(String.valueOf(character));
     }
 
+    public static BigNumber subtract(
+            final BigNumber minuend,
+            final BigNumber subtrahend
+    ) {
+        final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(minuend.getLocale());
+        final String minuendSign = getSignAsString(minuend);
+        final String subtrahendSign = getSignAsString(subtrahend);
+        final String minuendAsString = MathTools.makeNumbersSameLength(minuend, subtrahend);
+        final String subtrahendAsString = MathTools.makeNumbersSameLength(subtrahend, minuend);
+
+        final StringBuilder result = new StringBuilder();
+
+        int carry = 0;
+        int currentMinuend = 0;
+        int currentSubtrahend = 0;
+        int resultForCurrentDigit = 0;
+
+        // Loop rückwärts über alle Zeichen und subtrahieren, Rest immer merken und auf nächste Ziffer projezieren
+        for (int i = minuendAsString.length() - 1; i >= 0; i--) {
+            // Wenn Aktuelles Zeichen von Subtrahend1 ist gleich decimalSeperator, dann füge decimalSeperator an das result an.
+            if (decimalSeparator.equals(String.valueOf(minuendAsString.charAt(i)))) {
+                result.append(decimalSeparator);
+                continue;
+            }
+
+            currentMinuend = Integer.parseInt(String.valueOf(minuendAsString.charAt(i)));
+            currentSubtrahend = Integer.parseInt(String.valueOf(subtrahendAsString.charAt(i)));
+            resultForCurrentDigit = currentMinuend - currentSubtrahend - carry;
+
+            if (i == 0 && carry == 0) {
+                resultForCurrentDigit = 0;
+            }
+
+            if (resultForCurrentDigit < 0) {
+                carry = (currentMinuend - currentSubtrahend) * -1;
+                resultForCurrentDigit = 10 + resultForCurrentDigit;
+            }
+
+            result.append(resultForCurrentDigit % 10);
+        }
+
+        // Vorzeichen anfügen
+        if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
+            result.append(BigNumberParser.POSITIVE_SIGN);
+        } else {
+            // Quasi minuendAsString kleiner als subtrahendAsString
+            result.append(BigNumberParser.NEGATIVE_SIGN);
+        }
+
+        return new BigNumber(result.reverse().toString(), minuend.getLocale());
+    }
+
+    private static String getSignAsString(BigNumber minuend) {
+        return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
+    }
 }
