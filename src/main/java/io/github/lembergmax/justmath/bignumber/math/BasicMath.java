@@ -19,8 +19,8 @@ public class BasicMath {
         final BigNumber[] newAddends = makeAddend1TheGreatest(addend1, addend2);
 
         // Zahlen gleichlang machen um "Schriftlich" zu addieren
-        final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0], newAddends[1]);
-        final String cleanedAddend2 = MathTools.makeNumbersSameLength(newAddends[1], newAddends[0]);
+        final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0].abs(), newAddends[1].abs());
+        final String cleanedAddend2 = MathTools.makeNumbersSameLength(newAddends[1].abs(), newAddends[0].abs());
 
         // Wenn + und - oder - und +
         final boolean subtract = addend1.isNegative() != addend2.isNegative();
@@ -64,7 +64,15 @@ public class BasicMath {
         }
         result.insert(0, carry);
 
-        return new BigNumber(result.toString(), addend1.getLocale());
+        final String finalResult = result.toString();
+        return new BigNumber(signForResult(newAddends[0].isNegative()) +
+                finalResult, addend1.getLocale());
+    }
+
+    public static String signForResult(
+            final boolean isFirstAddendNegative
+    ) {
+        return isFirstAddendNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
 
     /**
@@ -80,7 +88,7 @@ public class BasicMath {
             final BigNumber addend2
     ) {
         return addend1.abs().greaterThan(addend2.abs()) ?
-                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)} :
+                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)}:
                 new BigNumber[]{new BigNumber(addend2), new BigNumber(addend1)};
     }
 
