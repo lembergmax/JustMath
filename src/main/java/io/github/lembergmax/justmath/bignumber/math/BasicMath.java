@@ -142,7 +142,7 @@ public class BasicMath {
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
     }
 
-    private static String getSignAsString(BigNumber minuend) {
+    public static String getSignAsString(final BigNumber minuend) {
         return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
 }
