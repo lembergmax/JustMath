@@ -70,6 +70,9 @@ public class BigNumber {
 
         for (int i = 0; i <= number1.length() - 1; i++) {
             if (thisNumber.isNegative && otherNumber.isNegative && !thisNumber.equals(otherNumber)) {
+                if ("0".equals(thisNumber.toString())) {
+                    return new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
+                }
                 return !new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
             }
 
