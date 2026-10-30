@@ -15,7 +15,7 @@ public class BasicMath {
         final String cleanedAddend1 = MathTools.makeNumbersSameLength(addend2, addend1);
         final String cleanedAddend2 = MathTools.makeNumbersSameLength(addend1, addend2);
 
-        // TODO: die kleinere zahl vom größeren abziehen
+        final boolean subtract = true;
 
         StringBuilder result = new StringBuilder();
         int carry = 0;
@@ -42,6 +42,14 @@ public class BasicMath {
             result.insert(0, resultForCurrentDigits);
         }
         result.insert(0, carry);
+
+        /*
+         abs
+        + > + = + add
+        + > - = - sub
+        - > + = - sub
+        - > - = - add
+         */
 
         return new BigNumber(result.toString(), addend1.getLocale());
     }
