@@ -109,8 +109,7 @@ public class BigNumber {
             afterDecimal = BigNumberParser.ZERO_AS_STRING;
         }
 
-        final String onlyContainsZerosRegex = "^[" + BigNumberParser.ZERO_AS_STRING + "]+$";
-        if (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex)
+        if (beforeDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX) && afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
         ) {
             return BigNumberParser.ZERO_AS_STRING;
         }
