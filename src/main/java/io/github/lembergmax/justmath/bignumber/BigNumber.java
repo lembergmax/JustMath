@@ -7,6 +7,7 @@ import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class BigNumber {
 
@@ -61,12 +62,15 @@ public class BigNumber {
     public boolean greaterThan(
             final BigNumber other
     ) {
-        String number1 = MathTools.makeNumbersSameLength(this, other);
-        String number2 = MathTools.makeNumbersSameLength(other, this);
+        BigNumber thisNumber = new BigNumber(this);
+        BigNumber otherNumber = new BigNumber(other);
+
+        String number1 = MathTools.makeNumbersSameLength(thisNumber, otherNumber);
+        String number2 = MathTools.makeNumbersSameLength(otherNumber, thisNumber);
 
         for (int i = 0; i <= number1.length() - 1; i++) {
-            if (this.isNegative && other.isNegative) {
-                return !new BigNumber(this.toString(), this.locale).smallerThan(other);
+            if (thisNumber.isNegative && otherNumber.isNegative && !thisNumber.equals(otherNumber)) {
+                return !new BigNumber(thisNumber.toString(), thisNumber.locale).smallerThan(otherNumber);
             }
 
             if (number1.charAt(i) != number2.charAt(i)) {
@@ -79,12 +83,15 @@ public class BigNumber {
     public boolean smallerThan(
             final BigNumber other
     ) {
-        String number1 = MathTools.makeNumbersSameLength(this, other);
-        String number2 = MathTools.makeNumbersSameLength(other, this);
+        BigNumber thisNumber = new BigNumber(this);
+        BigNumber otherNumber = new BigNumber(other);
+
+        String number1 = MathTools.makeNumbersSameLength(thisNumber, otherNumber);
+        String number2 = MathTools.makeNumbersSameLength(otherNumber, thisNumber);
 
         for (int i = 0; i <= number1.length() - 1; i++) {
-            if (this.isNegative && other.isNegative) {
-                return new BigNumber(number1, this.locale).greaterThan(new BigNumber(number2, this.locale));
+            if (thisNumber.isNegative && otherNumber.isNegative) {
+                return new BigNumber(number1, thisNumber.locale).greaterThan(new BigNumber(number2, thisNumber.locale));
             }
 
             if (number1.charAt(i) != number2.charAt(i)) {
@@ -103,10 +110,8 @@ public class BigNumber {
         }
 
         final String onlyContainsZerosRegex = "^[" + BigNumberParser.ZERO_AS_STRING + "]+$";
-        if ((BigNumberParser.ZERO_AS_STRING.equals(beforeDecimal) && BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) ||
-                (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
+        if (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex)
         ) {
-            this.isNegative = false;
             return BigNumberParser.ZERO_AS_STRING;
         }
 
@@ -125,5 +130,10 @@ public class BigNumber {
         BigNumber bigNumber = new BigNumber(this);
         bigNumber.isNegative = false;
         return bigNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 }
