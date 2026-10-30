@@ -16,7 +16,7 @@ public class BasicMath {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
 
         // Zahlen ordnen, also addend1 ist die größte Zahl
-        final BigNumber[] newAddends = makeAddend1TheGreatest(addend1, addend2);
+        final BigNumber[] newAddends = sortBySizeIgnoreSigns(addend1, addend2);
 
         // Zahlen gleichlang machen um "Schriftlich" zu addieren
         final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0].abs(), newAddends[1].abs());
@@ -47,7 +47,7 @@ public class BasicMath {
                 carry = resultForCurrentDigits < 0 ? 1 : 0;
                 // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
                 if (resultForCurrentDigits < 0) {
-                    resultForCurrentDigits = resultForCurrentDigits + 10;
+                    resultForCurrentDigits += 10;
                 }
             } else {
                 // aktuelle Zahlen und carry miteinander verrechnen
@@ -56,7 +56,7 @@ public class BasicMath {
                 carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
                 // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
                 if (resultForCurrentDigits >= 10) {
-                    resultForCurrentDigits = resultForCurrentDigits - 10;
+                    resultForCurrentDigits -= 10;
                 }
             }
 
@@ -83,12 +83,12 @@ public class BasicMath {
      * @param addend2 eine andere BigNumber
      * @return ein Array mit der größeren BigNumber am Anfang.
      */
-    public static BigNumber[] makeAddend1TheGreatest(
+    public static BigNumber[] sortBySizeIgnoreSigns(
             final BigNumber addend1,
             final BigNumber addend2
     ) {
         return addend1.abs().greaterThan(addend2.abs()) ?
-                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)}:
+                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)} :
                 new BigNumber[]{new BigNumber(addend2), new BigNumber(addend1)};
     }
 
