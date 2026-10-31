@@ -167,8 +167,15 @@ public class BasicMath {
         final int decimalPlacesOfResult = decimalPlacesOfFactor1 + decimalPlacesOfFactor2;
 
         // Dezimaltrenner entfernen, um "schriftlich" zu multiplizieren
-        final String cleanedFactor1 = factor1.getBeforeDecimal() + (decimalPlacesOfFactor1 == 0 ? "" : factor1.getAfterDecimal());
-        final String cleanedFactor2 = factor2.getBeforeDecimal() + (decimalPlacesOfFactor2 == 0 ? "" : factor2.getAfterDecimal());
+        String cleanedFactor1 = factor1.getBeforeDecimal();
+        if (decimalPlacesOfFactor1 > 0) {
+            cleanedFactor1 += factor1.getAfterDecimal();
+        }
+
+        String cleanedFactor2 = factor2.getBeforeDecimal();
+        if (decimalPlacesOfFactor2 > 0) {
+            cleanedFactor2 += factor2.getAfterDecimal();
+        }
 
         BigNumber currentResult = BigNumbers.ZERO;
 
