@@ -9,7 +9,14 @@ import java.util.Locale;
 
 public class BasicMath {
 
-    // TODO: javadoc
+    /**
+     * Adds two numbers, accounting for their signs and decimal separators.
+     *
+     * @param addend1      the first number to add
+     * @param addend2      the second number to add
+     * @param targetLocale the locale used to format the result
+     * @return the sum of the two addends in the target locale
+     */
     public static BigNumber add(
             final BigNumber addend1,
             final BigNumber addend2,
@@ -154,7 +161,14 @@ public class BasicMath {
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
     }
 
-    // TODO: javadoc
+    /**
+     * Multiplies two numbers and formats the result using the target locale.
+     *
+     * @param factor1      the first factor
+     * @param factor2      the second factor
+     * @param targetLocale the locale used to format the result
+     * @return the product of the two factors in the target locale
+     */
     public static BigNumber multiply(
             final BigNumber factor1,
             final BigNumber factor2,
@@ -206,7 +220,7 @@ public class BasicMath {
         // Dezimaltrenner an der richtigen Stelle wieder einfügen
         StringBuilder scaledResult = new StringBuilder(currentResult.toString());
         while (scaledResult.length() <= decimalPlacesOfResult) {
-            scaledResult.insert(0, "0");
+            scaledResult.insert(0, BigNumberParser.ZERO_AS_STRING);
         }
         final int decimalSeparatorIndex = scaledResult.length() - decimalPlacesOfResult;
 
