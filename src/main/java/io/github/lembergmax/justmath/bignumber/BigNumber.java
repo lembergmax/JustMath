@@ -29,7 +29,9 @@ public class BigNumber {
         this(bigNumberParser.parse(number, locale));
     }
 
-    public BigNumber(BigNumber bigNumber) {
+    public BigNumber(
+            final BigNumber bigNumber
+    ) {
         this.beforeDecimal = bigNumber.beforeDecimal;
         this.afterDecimal = bigNumber.afterDecimal;
         this.isNegative = bigNumber.isNegative;
@@ -47,7 +49,7 @@ public class BigNumber {
         );
     }
 
-    private BigNumber(
+    public BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
             final boolean isNegative,
