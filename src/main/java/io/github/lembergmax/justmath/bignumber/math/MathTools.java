@@ -39,7 +39,7 @@ public class MathTools {
      * @param nTimes the number of times a "0" should be returned.
      * @return the string with the zeros.
      */
-    private static String getZeroNTimes(
+    public static String getZeroNTimes(
             final int nTimes
     ) {
         return StringUtils.repeat("0", nTimes);
@@ -55,6 +55,33 @@ public class MathTools {
             final boolean isFirstAddendNegative
     ) {
         return isFirstAddendNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
+    }
+
+    /**
+     * Calculates the sign of the result for a multiplication.
+     *
+     * @param isFirstFactorNegative  whether the first factor is negative
+     * @param isSecondFactorNegative whether the second factor is negative
+     * @return the sign "+" or "-"
+     */
+    public static String signForMultiplicationResult(
+            final boolean isFirstFactorNegative,
+            final boolean isSecondFactorNegative
+    ) {
+        return isFirstFactorNegative == isSecondFactorNegative ? BigNumberParser.POSITIVE_SIGN : BigNumberParser.NEGATIVE_SIGN;
+    }
+
+    /**
+     * Counts the actual number of decimal places of a number, ignoring the convention
+     * that a number without a fractional part still stores "0" as its after-decimal part.
+     *
+     * @param number the BigNumber to inspect
+     * @return the number of decimal places, or 0 if the number has none
+     */
+    public static int countDecimalPlaces(
+            final BigNumber number
+    ) {
+        return BigNumberParser.ZERO_AS_STRING.equals(number.getAfterDecimal()) ? 0 : number.getAfterDecimal().length();
     }
 
     /**

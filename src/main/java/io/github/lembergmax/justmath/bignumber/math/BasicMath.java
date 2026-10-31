@@ -1,6 +1,7 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
+import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 
@@ -151,6 +152,63 @@ public class BasicMath {
         }
 
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
+    }
+
+    // TODO: javadoc
+    public static BigNumber multiply(
+            final BigNumber factor1,
+            final BigNumber factor2,
+            final Locale targetLocale
+    ) {
+        final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
+
+        final int decimalPlacesOfFactor1 = MathTools.countDecimalPlaces(factor1);
+        final int decimalPlacesOfFactor2 = MathTools.countDecimalPlaces(factor2);
+        final int decimalPlacesOfResult = decimalPlacesOfFactor1 + decimalPlacesOfFactor2;
+
+        // Dezimaltrenner entfernen, um "schriftlich" zu multiplizieren
+        final String cleanedFactor1 = factor1.getBeforeDecimal() + (decimalPlacesOfFactor1 == 0 ? "" : factor1.getAfterDecimal());
+        final String cleanedFactor2 = factor2.getBeforeDecimal() + (decimalPlacesOfFactor2 == 0 ? "" : factor2.getAfterDecimal());
+
+        BigNumber currentResult = BigNumbers.ZERO;
+
+        // Für jede Ziffer von factor2 (von hinten) eine Teilzeile berechnen und zum Ergebnis addieren
+        for (int i = cleanedFactor2.length() - 1; i >= 0; i--) {
+            final int currentDigitOfFactor2 = MathTools.charAsInt(cleanedFactor2.charAt(i));
+            final int indentation = cleanedFactor2.length() - 1 - i;
+
+            final StringBuilder currentRow = new StringBuilder();
+            int carry = 0;
+            for (int j = cleanedFactor1.length() - 1; j >= 0; j--) {
+                final int currentDigitOfFactor1 = MathTools.charAsInt(cleanedFactor1.charAt(j));
+
+                final int tempResultForCurrentDigit = currentDigitOfFactor1 * currentDigitOfFactor2 + carry;
+                currentRow.insert(0, tempResultForCurrentDigit % 10);
+                carry = tempResultForCurrentDigit / 10;
+            }
+            if (carry > 0) {
+                currentRow.insert(0, carry);
+            }
+
+            currentRow.append(MathTools.getZeroNTimes(indentation));
+            currentResult = add(currentResult, new BigNumber(currentRow.toString(), Locale.US), Locale.US);
+        }
+
+        // Dezimaltrenner an der richtigen Stelle wieder einfügen
+        StringBuilder scaledResult = new StringBuilder(currentResult.toString());
+        while (scaledResult.length() <= decimalPlacesOfResult) {
+            scaledResult.insert(0, "0");
+        }
+        final int decimalSeparatorIndex = scaledResult.length() - decimalPlacesOfResult;
+
+        final String finalResult = decimalPlacesOfResult == 0 ?
+                scaledResult.toString() :
+                scaledResult.substring(0, decimalSeparatorIndex) + decimalSeparatorOfTargetLocale + scaledResult.substring(decimalSeparatorIndex);
+
+        return new BigNumber(
+                MathTools.signForMultiplicationResult(factor1.isNegative(), factor2.isNegative()) + finalResult,
+                targetLocale
+        );
     }
 
 }
