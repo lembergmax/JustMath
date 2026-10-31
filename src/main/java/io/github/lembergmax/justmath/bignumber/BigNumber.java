@@ -142,4 +142,5 @@ public class BigNumber {
     public boolean equals(Object o) {
         return o instanceof BigNumber && this.toString().equals(o.toString());
     }
+
 }
