@@ -861,12 +861,6 @@ public class BasicMathAddTest {
         );
     }
 
-    // targetLocale steuert bisher nur, welches Trennzeichen beim Aufbau des Ergebnis-Strings
-    // verwendet wird. Beim finalen Parsen wird aber weiterhin addend1.getLocale() verwendet
-    // (siehe TODO in BasicMath.add), sodass ein targetLocale, dessen Trennzeichen von der
-    // addend1-Locale abweicht, aktuell zu einem falschen Ergebnis führt.
-    // Dieser Test dokumentiert das korrekte/erwartete Verhalten und schlägt bewusst fehl,
-    // bis targetLocale auch für das zurückgegebene BigNumber übernommen wird.
     @Test
     public void addWithTargetLocaleDifferentFromBothAddendsTest() {
         assertEquals(

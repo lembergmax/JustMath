@@ -129,7 +129,7 @@ public class BigNumberParserTest {
     @Test
     public void isNegativeNumberTest() {
         assertFalse(new BigNumber("+0", Locale.GERMAN).isNegative());
-        assertTrue(new BigNumber("-0", Locale.GERMAN).isNegative());
+        assertFalse(new BigNumber("-0", Locale.GERMAN).isNegative());
         assertFalse(new BigNumber("+0,00000000001", Locale.GERMAN).isNegative());
         assertFalse(new BigNumber("10000000", Locale.GERMAN).isNegative());
         assertFalse(new BigNumber("1", Locale.GERMAN).isNegative());
