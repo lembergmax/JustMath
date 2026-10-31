@@ -127,7 +127,6 @@ public class BigNumber {
             result.append(afterDecimal);
         }
 
-
         return result.toString();
     }
 
