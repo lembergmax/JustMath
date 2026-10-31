@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: javadoc
 abstract class JustMathException extends RuntimeException {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{(\\d+)}");

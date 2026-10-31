@@ -48,7 +48,7 @@ public class BigNumber {
         );
     }
 
-    public BigNumber(
+    private BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
             final boolean isNegative,
@@ -60,6 +60,7 @@ public class BigNumber {
         this.locale = locale;
     }
 
+    // TODO: javadoc
     public boolean isGreaterThan(
             final BigNumber other
     ) {
@@ -100,12 +101,14 @@ public class BigNumber {
         return false;
     }
 
+    // TODO: javadoc
     public boolean isSmallerThan(
             final BigNumber other
     ) {
         return other.isGreaterThan(this);
     }
 
+    // TODO: javadoc
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = BigNumberParser.ZERO_AS_STRING;
@@ -114,7 +117,8 @@ public class BigNumber {
             afterDecimal = BigNumberParser.ZERO_AS_STRING;
         }
 
-        if (beforeDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX) && afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
+        if (beforeDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX) &&
+                        afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
         ) {
             return BigNumberParser.ZERO_AS_STRING;
         }
@@ -129,12 +133,14 @@ public class BigNumber {
         return result.toString();
     }
 
+    // TODO: javadoc
     public BigNumber abs() {
         BigNumber bigNumber = new BigNumber(this);
         bigNumber.isNegative = false;
         return bigNumber;
     }
 
+    // TODO: javadoc
     @Override
     public boolean equals(Object o) {
         return o instanceof BigNumber && this.toString().equals(o.toString());

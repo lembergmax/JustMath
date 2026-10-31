@@ -13,6 +13,7 @@ public class BigNumberParser {
     public static final String ZERO_AS_STRING = "0";
     public static final String ONLY_CONTAINS_ZEROS_REGEX = "^[" + ZERO_AS_STRING + "]+$";
 
+    // TODO: javadoc
     public ParseResult parse(
             final String number,
             final Locale locale
