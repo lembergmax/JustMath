@@ -8,7 +8,7 @@ import java.util.Locale;
 
 public class BasicMath {
 
-    // TODO: Zahl wird erstmal nur im US-Format zurückgegeben
+    // TODO: javadoc
     public static BigNumber add(
             final BigNumber addend1,
             final BigNumber addend2,
