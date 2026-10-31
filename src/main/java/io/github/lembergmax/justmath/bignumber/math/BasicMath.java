@@ -179,13 +179,14 @@ public class BasicMath {
 
         BigNumber currentResult = BigNumbers.ZERO;
 
-        // Für jede Ziffer von factor2 (von hinten) eine Teilzeile berechnen und zum Ergebnis addieren
+        // Für jede Ziffer von factor2 eine Teilzeile berechnen und zum Ergebnis addieren
         for (int i = cleanedFactor2.length() - 1; i >= 0; i--) {
             final int currentDigitOfFactor2 = MathTools.charAsInt(cleanedFactor2.charAt(i));
             final int indentation = cleanedFactor2.length() - 1 - i;
 
             final StringBuilder currentRow = new StringBuilder();
             int carry = 0;
+
             for (int j = cleanedFactor1.length() - 1; j >= 0; j--) {
                 final int currentDigitOfFactor1 = MathTools.charAsInt(cleanedFactor1.charAt(j));
 
