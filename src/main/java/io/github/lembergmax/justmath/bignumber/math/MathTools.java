@@ -7,6 +7,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MathTools {
 
+    /**
+     * Aligns the digit length of a number with another number by padding it with zeros
+     * on the left of the integer part and on the right of the fractional part as needed.
+     *
+     * @param numberToChangeLength the BigNumber whose length should be adjusted to match the reference value
+     * @param numberToCompareTo    the BigNumber defining the target digit lengths for comparison
+     * @return a string representation of {@code numberToChangeLength} padded so its integer and
+     * fractional parts match the length of {@code numberToCompareTo}
+     */
     public static String makeNumbersSameLength(
             final BigNumber numberToChangeLength,
             final BigNumber numberToCompareTo
@@ -77,6 +86,12 @@ public class MathTools {
         return Integer.parseInt(String.valueOf(character));
     }
 
+    /**
+     * Returns the sign of a number as a string representation.
+     *
+     * @param minuend the BigNumber to inspect
+     * @return "-" if the value is negative, otherwise "+"
+     */
     public static String getSignAsString(final BigNumber minuend) {
         return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
