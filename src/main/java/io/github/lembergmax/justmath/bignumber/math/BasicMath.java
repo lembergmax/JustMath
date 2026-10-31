@@ -8,12 +8,16 @@ import java.util.Locale;
 
 public class BasicMath {
 
+    // TODO: Zahl wird erstmal nur im US-Format zurückgegeben
     public static BigNumber add(
             final BigNumber addend1,
-            final BigNumber addend2
+            final BigNumber addend2,
+            final Locale targetLocale
     ) {
         // Dezimaltrenner für die aktuelle Locale holen
-        final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
+        final String decimalSeparatorOfAddend1 = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
+        final String decimalSeparatorOfAddend2 = NumberFormatLookup.getDecimalSeparatorForLocale(addend2.getLocale());
+        final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
 
         // Zahlen ordnen, also addend1 ist die größte Zahl
         final BigNumber[] newAddends = sortBySizeIgnoreSigns(addend1, addend2);
@@ -26,47 +30,43 @@ public class BasicMath {
         final boolean subtract = addend1.isNegative() != addend2.isNegative();
 
         StringBuilder result = new StringBuilder();
-        int carry = 0;
+        int carryOrBorrow = 0;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
             // Dezimaltrenner überspringen und in das Ergebnis einfügen
             final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
-            if (decimalSeparator.equals(currentCharacter)) {
-                result.insert(0, decimalSeparator);
+            if (decimalSeparatorOfAddend1.equals(currentCharacter) || decimalSeparatorOfAddend2.equals(currentCharacter)) {
+                result.insert(0, decimalSeparatorOfTargetLocale);
                 continue;
             }
 
             // aktuelle Zahlen holen
             final int currentDigitOfAddend1 = charAsInt(cleanedAddend1.charAt(i));
             final int currentDigitOfAddend2 = charAsInt(cleanedAddend2.charAt(i));
-            int resultForCurrentDigits;
+            int resultForCurrentDigit;
 
             if (subtract) {
-                // aktuelle Zahlen und carry miteinander verrechnen
-                resultForCurrentDigits = (currentDigitOfAddend1 == 0 ? 10 : currentDigitOfAddend1) - currentDigitOfAddend2 - carry;
-                // neuen carry berechnen
-                carry = resultForCurrentDigits < 0 ? 1 : 0;
-                // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
-                if (resultForCurrentDigits < 0) {
-                    resultForCurrentDigits += 10;
-                }
+                // kann 0..19 sein
+                final int tempResultForCurrentDigit = currentDigitOfAddend1 - currentDigitOfAddend2 - carryOrBorrow;
+                resultForCurrentDigit = tempResultForCurrentDigit < 0 ? tempResultForCurrentDigit + 10 : tempResultForCurrentDigit;
+                // borrow setzen
+                carryOrBorrow = tempResultForCurrentDigit < 0 ? 1 : 0;
             } else {
-                // aktuelle Zahlen und carry miteinander verrechnen
-                resultForCurrentDigits = currentDigitOfAddend1 + currentDigitOfAddend2 + carry;
-                // neuen carry berechnen
-                carry = resultForCurrentDigits < 10 ? 0 : resultForCurrentDigits / 10;
-                // ergebnis der aktuellen Zahlen anpassen, um die erste Stelle einer zweistelligen zahl zu entfernen
-                if (resultForCurrentDigits >= 10) {
-                    resultForCurrentDigits -= 10;
-                }
+                // kann -10..9 sein
+                final int tempResultForCurrentDigit = currentDigitOfAddend1 + currentDigitOfAddend2 + carryOrBorrow;
+                resultForCurrentDigit = tempResultForCurrentDigit % 10;
+                // carry setzen
+                carryOrBorrow = tempResultForCurrentDigit >= 10 ? 1 : 0;
             }
 
-            result.insert(0, resultForCurrentDigits);
+            result.insert(0, resultForCurrentDigit);
         }
-        result.insert(0, carry);
+        result.insert(0, carryOrBorrow);
 
         final String finalResult = result.toString();
-        return new BigNumber(signForResult(newAddends[0].isNegative()) +
-                finalResult, addend1.getLocale());
+        return new BigNumber(
+                signForResult(newAddends[0].isNegative()) + finalResult,
+                targetLocale
+        );
     }
 
     public static String signForResult(
