@@ -1,11 +1,11 @@
 package io.github.lembergmax.justmath.bignumber;
 
+import io.github.lembergmax.justmath.bignumber.math.MathTools;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.util.Locale;
 
 public class BigNumber {
@@ -26,6 +26,15 @@ public class BigNumber {
             final Locale locale
     ) {
         this(bigNumberParser.parse(number, locale));
+    }
+
+    public BigNumber(
+            final BigNumber bigNumber
+    ) {
+        this.beforeDecimal = bigNumber.beforeDecimal;
+        this.afterDecimal = bigNumber.afterDecimal;
+        this.isNegative = bigNumber.isNegative;
+        this.locale = bigNumber.locale;
     }
 
     private BigNumber(
@@ -51,6 +60,55 @@ public class BigNumber {
         this.locale = locale;
     }
 
+    // TODO: javadoc
+    public boolean isGreaterThan(
+            final BigNumber other
+    ) {
+        final BigNumber thisNumber = new BigNumber(this);
+        final BigNumber otherNumber = new BigNumber(other);
+
+        final String decimalSeparatorOfThisNumber = NumberFormatLookup.getDecimalSeparatorForLocale(thisNumber.getLocale());
+        final String cleanedThisNumber = MathTools.makeNumbersSameLength(thisNumber, otherNumber);
+        final String cleanedOtherNumber = MathTools.makeNumbersSameLength(otherNumber, thisNumber);
+
+        // wenn verschiedene vorzeichen
+        if (this.isNegative() != other.isNegative()) {
+            // wenn die aktuelle positiv ist, dann ist diese größer
+            return !this.isNegative();
+        }
+
+        // gleiche Zahlen
+        if (cleanedThisNumber.equals(cleanedOtherNumber)) {
+            return false;
+        }
+
+        for (int i = 0; i <= cleanedThisNumber.length() - 1; i++) {
+            final String currentCharacterOfThisNumber = String.valueOf(cleanedThisNumber.charAt(i));
+            if (decimalSeparatorOfThisNumber.equals(currentCharacterOfThisNumber)) {
+                continue;
+            }
+
+            final int currentDigitOfThisNumber = MathTools.charAsInt(cleanedThisNumber.charAt(i));
+            final int currentDigitOfOtherNumber = MathTools.charAsInt(cleanedOtherNumber.charAt(i));
+
+            // wenn die zahlen unterschiedlich sind
+            if (currentDigitOfThisNumber != currentDigitOfOtherNumber) {
+                // bei negativen Zahlen ist der Betrag umgekehrt: die kleinere Ziffer bedeutet die größere Zahl
+                return this.isNegative() == (currentDigitOfThisNumber < currentDigitOfOtherNumber);
+            }
+        }
+
+        return false;
+    }
+
+    // TODO: javadoc
+    public boolean isSmallerThan(
+            final BigNumber other
+    ) {
+        return other.isGreaterThan(this);
+    }
+
+    // TODO: javadoc
     public String toString() {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = BigNumberParser.ZERO_AS_STRING;
@@ -59,11 +117,9 @@ public class BigNumber {
             afterDecimal = BigNumberParser.ZERO_AS_STRING;
         }
 
-        final String onlyContainsZerosRegex = "^[" + BigNumberParser.ZERO_AS_STRING + "]+$";
-        if ((BigNumberParser.ZERO_AS_STRING.equals(beforeDecimal) && BigNumberParser.ZERO_AS_STRING.equals(afterDecimal)) ||
-                (beforeDecimal.matches(onlyContainsZerosRegex) && afterDecimal.matches(onlyContainsZerosRegex))
+        if (beforeDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX) &&
+                        afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
         ) {
-            this.isNegative = false;
             return BigNumberParser.ZERO_AS_STRING;
         }
 
@@ -75,6 +131,19 @@ public class BigNumber {
         }
 
         return result.toString();
+    }
+
+    // TODO: javadoc
+    public BigNumber abs() {
+        BigNumber bigNumber = new BigNumber(this);
+        bigNumber.isNegative = false;
+        return bigNumber;
+    }
+
+    // TODO: javadoc
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 
 }

@@ -6,12 +6,14 @@ import java.util.Locale;
 
 public class NumberFormatLookup {
 
+    // TODO: javadoc
     public static String getDecimalSeparatorForLocale(
             final Locale locale
     ) {
         return String.valueOf(getDecimalFormatSymbols(locale).getDecimalSeparator());
     }
 
+    // TODO: javadoc
     public static String getGroupingSeparatorForLocale(
             final Locale locale
     ) {

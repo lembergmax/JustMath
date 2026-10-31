@@ -3,6 +3,7 @@ package io.github.lembergmax.justmath.exception;
 import java.util.HashMap;
 import java.util.Locale;
 
+// TODO: javadoc
 public class DuplicateDecimalSeparatorException extends JustMathException {
 
     private static final HashMap<Locale, String> TEXT_TRANSLATIONS = new HashMap<>();

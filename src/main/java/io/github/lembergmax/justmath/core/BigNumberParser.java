@@ -11,7 +11,9 @@ public class BigNumberParser {
     public static final String NEGATIVE_SIGN = "-";
     public static final String POSITIVE_SIGN = "+";
     public static final String ZERO_AS_STRING = "0";
+    public static final String ONLY_CONTAINS_ZEROS_REGEX = "^[" + ZERO_AS_STRING + "]+$";
 
+    // TODO: javadoc
     public ParseResult parse(
             final String number,
             final Locale locale
@@ -48,7 +50,7 @@ public class BigNumberParser {
 
     private ParseResult parseWithDecimalSeparator(
             final String number,
-            final boolean isNegative,
+            boolean isNegative,
             final String decimalSeparator,
             final Locale locale
     ) {
@@ -56,6 +58,10 @@ public class BigNumberParser {
 
         final String beforeDecimal = number.substring(0, indexOfDecimalSeparator);
         final String afterDecimal = number.substring(indexOfDecimalSeparator + 1);
+
+        if(isOnlyZeros(beforeDecimal) && isOnlyZeros(afterDecimal)) {
+            isNegative = false;
+        }
 
         return new ParseResult(beforeDecimal, afterDecimal, isNegative, locale);
     }
@@ -72,8 +78,8 @@ public class BigNumberParser {
                 beforeDecimals + decimalSeparator + afterDecimals,
                 groupingSeparator, decimalSeparator);
 
-        String cleanedBeforeDecimals = removePositiveOrNegativeSign(removeAllSpaces(trimLeadingZeros(beforeDecimals)));
-        String cleanedAfterDecimals = removeAllSpaces(trimTrailingZeros(afterDecimals));
+        String cleanedBeforeDecimals = trimLeadingZeros(removePositiveOrNegativeSign(removeAllSpaces(trimLeadingZeros(beforeDecimals))));
+        String cleanedAfterDecimals = trimTrailingZeros(removeAllSpaces(trimTrailingZeros(afterDecimals)));
 
         if (cleanedBeforeDecimals.isBlank()) {
             cleanedBeforeDecimals = ZERO_AS_STRING;
@@ -114,7 +120,6 @@ public class BigNumberParser {
             final String groupingSeparator,
             final String decimalSeparator
     ) {
-        // Alle Zeichen welche nicht eine Zahl und der Dezimaltrenner und Gruppentrenner sind
         for (int i = 0; i < number.length(); i++) {
             final String charAsString = String.valueOf(number.charAt(i));
             if (
@@ -132,6 +137,12 @@ public class BigNumberParser {
         if (StringUtils.countMatches(number, decimalSeparator) > 1) {
             throw new DuplicateDecimalSeparatorException(decimalSeparator);
         }
+    }
+
+    private boolean isOnlyZeros(
+            final String number
+    ) {
+        return number.matches(ONLY_CONTAINS_ZEROS_REGEX);
     }
 
 }
