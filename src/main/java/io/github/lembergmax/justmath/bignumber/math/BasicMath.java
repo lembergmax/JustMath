@@ -194,6 +194,7 @@ public class BasicMath {
                 currentRow.insert(0, tempResultForCurrentDigit % 10);
                 carry = tempResultForCurrentDigit / 10;
             }
+
             if (carry > 0) {
                 currentRow.insert(0, carry);
             }
