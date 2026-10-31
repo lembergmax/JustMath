@@ -17,56 +17,64 @@ public class BasicMathAddTest {
                 "777,777",
                 BasicMath.add(
                         new BigNumber("123,456", Locale.GERMAN),
-                        new BigNumber("654,321", Locale.GERMAN)
+                        new BigNumber("654,321", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "1999,998",
                 BasicMath.add(
                         new BigNumber("999,999", Locale.GERMAN),
-                        new BigNumber("999,999", Locale.GERMAN)
+                        new BigNumber("999,999", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("0", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN)
+                        new BigNumber("0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0,00000002",
                 BasicMath.add(
                         new BigNumber("0,00000001", Locale.GERMAN),
-                        new BigNumber("0,00000001", Locale.GERMAN)
+                        new BigNumber("0,00000001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "100000000000",
                 BasicMath.add(
                         new BigNumber("50000000000", Locale.GERMAN),
-                        new BigNumber("50000000000", Locale.GERMAN)
+                        new BigNumber("50000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "123456",
                 BasicMath.add(
                         new BigNumber("123000", Locale.GERMAN),
-                        new BigNumber("456", Locale.GERMAN)
+                        new BigNumber("456", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "11111111100",
                 BasicMath.add(
                         new BigNumber("9876543210", Locale.GERMAN),
-                        new BigNumber("1234567890", Locale.GERMAN)
+                        new BigNumber("1234567890", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 BasicMath.add(
                         new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
-                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
+                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -77,56 +85,64 @@ public class BasicMathAddTest {
                 "530,865",
                 BasicMath.add(
                         new BigNumber("-123,456", Locale.GERMAN),
-                        new BigNumber("654,321", Locale.GERMAN)
+                        new BigNumber("654,321", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-999,999", Locale.GERMAN),
-                        new BigNumber("999,999", Locale.GERMAN)
+                        new BigNumber("999,999", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-0", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN)
+                        new BigNumber("0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-0,00000001", Locale.GERMAN),
-                        new BigNumber("0,00000001", Locale.GERMAN)
+                        new BigNumber("0,00000001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-50000000000", Locale.GERMAN),
-                        new BigNumber("50000000000", Locale.GERMAN)
+                        new BigNumber("50000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-122544",
                 BasicMath.add(
                         new BigNumber("-123000", Locale.GERMAN),
-                        new BigNumber("456", Locale.GERMAN)
+                        new BigNumber("456", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-8641975320",
                 BasicMath.add(
                         new BigNumber("-9876543210", Locale.GERMAN),
-                        new BigNumber("1234567890", Locale.GERMAN)
+                        new BigNumber("1234567890", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
-                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
+                        new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -137,56 +153,64 @@ public class BasicMathAddTest {
                 "-530,865",
                 BasicMath.add(
                         new BigNumber("123,456", Locale.GERMAN),
-                        new BigNumber("-654,321", Locale.GERMAN)
+                        new BigNumber("-654,321", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("999,999", Locale.GERMAN),
-                        new BigNumber("-999,999", Locale.GERMAN)
+                        new BigNumber("-999,999", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("0", Locale.GERMAN),
-                        new BigNumber("-0", Locale.GERMAN)
+                        new BigNumber("-0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("0,00000001", Locale.GERMAN),
-                        new BigNumber("-0,00000001", Locale.GERMAN)
+                        new BigNumber("-0,00000001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("50000000000", Locale.GERMAN),
-                        new BigNumber("-50000000000", Locale.GERMAN)
+                        new BigNumber("-50000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "122544",
                 BasicMath.add(
                         new BigNumber("123000", Locale.GERMAN),
-                        new BigNumber("-456", Locale.GERMAN)
+                        new BigNumber("-456", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "8641975320",
                 BasicMath.add(
                         new BigNumber("9876543210", Locale.GERMAN),
-                        new BigNumber("-1234567890", Locale.GERMAN)
+                        new BigNumber("-1234567890", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
-                        new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
+                        new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -197,56 +221,64 @@ public class BasicMathAddTest {
                 "-777,777",
                 BasicMath.add(
                         new BigNumber("-123,456", Locale.GERMAN),
-                        new BigNumber("-654,321", Locale.GERMAN)
+                        new BigNumber("-654,321", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-1999,998",
                 BasicMath.add(
                         new BigNumber("-999,999", Locale.GERMAN),
-                        new BigNumber("-999,999", Locale.GERMAN)
+                        new BigNumber("-999,999", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "0",
                 BasicMath.add(
                         new BigNumber("-0", Locale.GERMAN),
-                        new BigNumber("-0", Locale.GERMAN)
+                        new BigNumber("-0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-0,00000002",
                 BasicMath.add(
                         new BigNumber("-0,00000001", Locale.GERMAN),
-                        new BigNumber("-0,00000001", Locale.GERMAN)
+                        new BigNumber("-0,00000001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-100000000000",
                 BasicMath.add(
                         new BigNumber("-50000000000", Locale.GERMAN),
-                        new BigNumber("-50000000000", Locale.GERMAN)
+                        new BigNumber("-50000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-123456",
                 BasicMath.add(
                         new BigNumber("-123000", Locale.GERMAN),
-                        new BigNumber("-456", Locale.GERMAN)
+                        new BigNumber("-456", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-11111111100",
                 BasicMath.add(
                         new BigNumber("-9876543210", Locale.GERMAN),
-                        new BigNumber("-1234567890", Locale.GERMAN)
+                        new BigNumber("-1234567890", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
         assertEquals(
                 "-180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 BasicMath.add(
                         new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
-                        new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN)
+                        new BigNumber("-90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -258,7 +290,8 @@ public class BasicMathAddTest {
                 "5",
                 BasicMath.add(
                         new BigNumber("2", Locale.GERMAN),
-                        new BigNumber("3", Locale.GERMAN)
+                        new BigNumber("3", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -270,7 +303,8 @@ public class BasicMathAddTest {
                 "10",
                 BasicMath.add(
                         new BigNumber("9", Locale.GERMAN),
-                        new BigNumber("1", Locale.GERMAN)
+                        new BigNumber("1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -281,7 +315,8 @@ public class BasicMathAddTest {
                 "1000",
                 BasicMath.add(
                         new BigNumber("999", Locale.GERMAN),
-                        new BigNumber("1", Locale.GERMAN)
+                        new BigNumber("1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -292,7 +327,8 @@ public class BasicMathAddTest {
                 "423",
                 BasicMath.add(
                         new BigNumber("105", Locale.GERMAN),
-                        new BigNumber("318", Locale.GERMAN)
+                        new BigNumber("318", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -303,7 +339,8 @@ public class BasicMathAddTest {
                 "10,1",
                 BasicMath.add(
                         new BigNumber("9,9", Locale.GERMAN),
-                        new BigNumber("0,2", Locale.GERMAN)
+                        new BigNumber("0,2", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -314,7 +351,8 @@ public class BasicMathAddTest {
                 "1",
                 BasicMath.add(
                         new BigNumber("0,5", Locale.GERMAN),
-                        new BigNumber("0,5", Locale.GERMAN)
+                        new BigNumber("0,5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -326,7 +364,8 @@ public class BasicMathAddTest {
                 "1,001",
                 BasicMath.add(
                         new BigNumber("1", Locale.GERMAN),
-                        new BigNumber("0,001", Locale.GERMAN)
+                        new BigNumber("0,001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -337,7 +376,8 @@ public class BasicMathAddTest {
                 "1001,25",
                 BasicMath.add(
                         new BigNumber("1000,5", Locale.GERMAN),
-                        new BigNumber("0,75", Locale.GERMAN)
+                        new BigNumber("0,75", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -348,7 +388,8 @@ public class BasicMathAddTest {
                 "1001,25",
                 BasicMath.add(
                         new BigNumber("0,75", Locale.GERMAN),
-                        new BigNumber("1000,5", Locale.GERMAN)
+                        new BigNumber("1000,5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -360,7 +401,8 @@ public class BasicMathAddTest {
                 "3",
                 BasicMath.add(
                         new BigNumber("1,25", Locale.GERMAN),
-                        new BigNumber("1,75", Locale.GERMAN)
+                        new BigNumber("1,75", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -371,7 +413,8 @@ public class BasicMathAddTest {
                 "1,5",
                 BasicMath.add(
                         new BigNumber("1,25", Locale.GERMAN),
-                        new BigNumber("0,25", Locale.GERMAN)
+                        new BigNumber("0,25", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -382,7 +425,8 @@ public class BasicMathAddTest {
                 "0,3",
                 BasicMath.add(
                         new BigNumber("0,1", Locale.GERMAN),
-                        new BigNumber("0,2", Locale.GERMAN)
+                        new BigNumber("0,2", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -394,7 +438,8 @@ public class BasicMathAddTest {
                 "5",
                 BasicMath.add(
                         new BigNumber("5", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN)
+                        new BigNumber("0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -405,7 +450,8 @@ public class BasicMathAddTest {
                 "5",
                 BasicMath.add(
                         new BigNumber("0", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN)
+                        new BigNumber("5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -416,7 +462,8 @@ public class BasicMathAddTest {
                 "-5",
                 BasicMath.add(
                         new BigNumber("-5", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN)
+                        new BigNumber("0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -427,7 +474,8 @@ public class BasicMathAddTest {
                 "-5",
                 BasicMath.add(
                         new BigNumber("0", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN)
+                        new BigNumber("-5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -439,7 +487,8 @@ public class BasicMathAddTest {
                 "5",
                 BasicMath.add(
                         new BigNumber("5", Locale.GERMAN),
-                        new BigNumber("-0", Locale.GERMAN)
+                        new BigNumber("-0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -450,7 +499,8 @@ public class BasicMathAddTest {
                 "5",
                 BasicMath.add(
                         new BigNumber("-0", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN)
+                        new BigNumber("5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -461,7 +511,8 @@ public class BasicMathAddTest {
                 "-5",
                 BasicMath.add(
                         new BigNumber("-5", Locale.GERMAN),
-                        new BigNumber("-0", Locale.GERMAN)
+                        new BigNumber("-0", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -472,7 +523,8 @@ public class BasicMathAddTest {
                 "-5",
                 BasicMath.add(
                         new BigNumber("-0", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN)
+                        new BigNumber("-5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -484,7 +536,8 @@ public class BasicMathAddTest {
         assertFalse(
                 BasicMath.add(
                         new BigNumber("5", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN)
+                        new BigNumber("-5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).isNegative()
         );
     }
@@ -495,7 +548,8 @@ public class BasicMathAddTest {
         assertFalse(
                 BasicMath.add(
                         new BigNumber("-5", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN)
+                        new BigNumber("5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).isNegative()
         );
     }
@@ -508,7 +562,8 @@ public class BasicMathAddTest {
                 "8",
                 BasicMath.add(
                         new BigNumber("+5", Locale.GERMAN),
-                        new BigNumber("+3", Locale.GERMAN)
+                        new BigNumber("+3", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -520,7 +575,8 @@ public class BasicMathAddTest {
                 "2",
                 BasicMath.add(
                         new BigNumber("5", Locale.GERMAN),
-                        new BigNumber("-3", Locale.GERMAN)
+                        new BigNumber("-3", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -532,7 +588,8 @@ public class BasicMathAddTest {
                 "-2",
                 BasicMath.add(
                         new BigNumber("3", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN)
+                        new BigNumber("-5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -544,7 +601,8 @@ public class BasicMathAddTest {
                 "-2",
                 BasicMath.add(
                         new BigNumber("-5", Locale.GERMAN),
-                        new BigNumber("3", Locale.GERMAN)
+                        new BigNumber("3", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -556,7 +614,8 @@ public class BasicMathAddTest {
                 "2",
                 BasicMath.add(
                         new BigNumber("-3", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN)
+                        new BigNumber("5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -568,7 +627,8 @@ public class BasicMathAddTest {
                 "-1000",
                 BasicMath.add(
                         new BigNumber("-999", Locale.GERMAN),
-                        new BigNumber("-1", Locale.GERMAN)
+                        new BigNumber("-1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -580,7 +640,8 @@ public class BasicMathAddTest {
                 "-1",
                 BasicMath.add(
                         new BigNumber("-0,5", Locale.GERMAN),
-                        new BigNumber("-0,5", Locale.GERMAN)
+                        new BigNumber("-0,5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -591,7 +652,8 @@ public class BasicMathAddTest {
                 "-0,1",
                 BasicMath.add(
                         new BigNumber("0,1", Locale.GERMAN),
-                        new BigNumber("-0,2", Locale.GERMAN)
+                        new BigNumber("-0,2", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -604,7 +666,8 @@ public class BasicMathAddTest {
                 "999",
                 BasicMath.add(
                         new BigNumber("1000", Locale.GERMAN),
-                        new BigNumber("-1", Locale.GERMAN)
+                        new BigNumber("-1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -616,7 +679,8 @@ public class BasicMathAddTest {
                 "-999",
                 BasicMath.add(
                         new BigNumber("-1000", Locale.GERMAN),
-                        new BigNumber("1", Locale.GERMAN)
+                        new BigNumber("1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -628,7 +692,8 @@ public class BasicMathAddTest {
                 "-999",
                 BasicMath.add(
                         new BigNumber("1", Locale.GERMAN),
-                        new BigNumber("-1000", Locale.GERMAN)
+                        new BigNumber("-1000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -640,7 +705,8 @@ public class BasicMathAddTest {
                 "999",
                 BasicMath.add(
                         new BigNumber("-1", Locale.GERMAN),
-                        new BigNumber("1000", Locale.GERMAN)
+                        new BigNumber("1000", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -652,7 +718,8 @@ public class BasicMathAddTest {
                 "0,999",
                 BasicMath.add(
                         new BigNumber("1", Locale.GERMAN),
-                        new BigNumber("-0,001", Locale.GERMAN)
+                        new BigNumber("-0,001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -664,7 +731,8 @@ public class BasicMathAddTest {
                 "1000000000000000000000000000000",
                 BasicMath.add(
                         new BigNumber("999999999999999999999999999999", Locale.GERMAN),
-                        new BigNumber("1", Locale.GERMAN)
+                        new BigNumber("1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -675,7 +743,8 @@ public class BasicMathAddTest {
                 "999999999999999999999999999999",
                 BasicMath.add(
                         new BigNumber("1000000000000000000000000000000", Locale.GERMAN),
-                        new BigNumber("-1", Locale.GERMAN)
+                        new BigNumber("-1", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -686,7 +755,8 @@ public class BasicMathAddTest {
                 "90000000000,00000001",
                 BasicMath.add(
                         new BigNumber("90000000000", Locale.GERMAN),
-                        new BigNumber("0,00000001", Locale.GERMAN)
+                        new BigNumber("0,00000001", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -697,7 +767,8 @@ public class BasicMathAddTest {
                 "-0,00000001",
                 BasicMath.add(
                         new BigNumber("0,00000001", Locale.GERMAN),
-                        new BigNumber("-0,00000002", Locale.GERMAN)
+                        new BigNumber("-0,00000002", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -709,7 +780,8 @@ public class BasicMathAddTest {
                 "7.75",
                 BasicMath.add(
                         new BigNumber("5.5", Locale.US),
-                        new BigNumber("2.25", Locale.US)
+                        new BigNumber("2.25", Locale.US),
+                        Locale.US
                 ).toString()
         );
     }
@@ -720,7 +792,8 @@ public class BasicMathAddTest {
                 "-3.25",
                 BasicMath.add(
                         new BigNumber("-5.5", Locale.US),
-                        new BigNumber("2.25", Locale.US)
+                        new BigNumber("2.25", Locale.US),
+                        Locale.US
                 ).toString()
         );
     }
@@ -731,7 +804,8 @@ public class BasicMathAddTest {
                 "1001",
                 BasicMath.add(
                         new BigNumber("1.000,5", Locale.GERMAN),
-                        new BigNumber("0,5", Locale.GERMAN)
+                        new BigNumber("0,5", Locale.GERMAN),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -742,7 +816,8 @@ public class BasicMathAddTest {
                 "1001",
                 BasicMath.add(
                         new BigNumber("1,000.5", Locale.US),
-                        new BigNumber("0.5", Locale.US)
+                        new BigNumber("0.5", Locale.US),
+                        Locale.US
                 ).toString()
         );
     }
@@ -754,7 +829,8 @@ public class BasicMathAddTest {
                 "4,75",
                 BasicMath.add(
                         new BigNumber("3,5", Locale.GERMAN),
-                        new BigNumber("1.25", Locale.US)
+                        new BigNumber("1.25", Locale.US),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -765,7 +841,40 @@ public class BasicMathAddTest {
                 "4.75",
                 BasicMath.add(
                         new BigNumber("1.25", Locale.US),
-                        new BigNumber("3,5", Locale.GERMAN)
+                        new BigNumber("3,5", Locale.GERMAN),
+                        Locale.US
+                ).toString()
+        );
+    }
+
+    // Der größere Summand bestimmt den String-Aufbau vor dem Gleichmachen der Längen,
+    // daher muss auch sein Dezimaltrenner (nicht nur der von addend1) erkannt werden
+    @Test
+    public void addRecognizesDecimalSeparatorOfLargerSecondAddendWithDifferentLocaleTest() {
+        assertEquals(
+                "4.5",
+                BasicMath.add(
+                        new BigNumber("1", Locale.US),
+                        new BigNumber("3,5", Locale.GERMAN),
+                        Locale.US
+                ).toString()
+        );
+    }
+
+    // targetLocale steuert bisher nur, welches Trennzeichen beim Aufbau des Ergebnis-Strings
+    // verwendet wird. Beim finalen Parsen wird aber weiterhin addend1.getLocale() verwendet
+    // (siehe TODO in BasicMath.add), sodass ein targetLocale, dessen Trennzeichen von der
+    // addend1-Locale abweicht, aktuell zu einem falschen Ergebnis führt.
+    // Dieser Test dokumentiert das korrekte/erwartete Verhalten und schlägt bewusst fehl,
+    // bis targetLocale auch für das zurückgegebene BigNumber übernommen wird.
+    @Test
+    public void addWithTargetLocaleDifferentFromBothAddendsTest() {
+        assertEquals(
+                "3.75",
+                BasicMath.add(
+                        new BigNumber("2,5", Locale.GERMAN),
+                        new BigNumber("1,25", Locale.GERMAN),
+                        Locale.US
                 ).toString()
         );
     }
@@ -776,7 +885,8 @@ public class BasicMathAddTest {
                 "0",
                 BasicMath.add(
                         new BigNumber("2,5", Locale.GERMAN),
-                        new BigNumber("-2.5", Locale.US)
+                        new BigNumber("-2.5", Locale.US),
+                        Locale.GERMAN
                 ).toString()
         );
     }
@@ -787,7 +897,7 @@ public class BasicMathAddTest {
         final BigNumber addend1 = new BigNumber("5", Locale.GERMAN);
         final BigNumber addend2 = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.add(addend1, addend2);
+        BasicMath.add(addend1, addend2, addend1.getLocale());
 
         assertEquals("5", addend1.toString());
         assertEquals("-8", addend2.toString());
