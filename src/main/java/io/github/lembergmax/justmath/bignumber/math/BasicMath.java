@@ -20,7 +20,7 @@ public class BasicMath {
         final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
 
         // Zahlen ordnen, also addend1 ist die größte Zahl
-        final BigNumber[] newAddends = sortBySizeIgnoreSigns(addend1, addend2);
+        final BigNumber[] newAddends = MathTools.sortBySizeIgnoreSigns(addend1, addend2);
 
         // Zahlen gleichlang machen um "Schriftlich" zu addieren
         final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0].abs(), newAddends[1].abs());
@@ -32,7 +32,7 @@ public class BasicMath {
         StringBuilder result = new StringBuilder();
         int carryOrBorrow = 0;
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
-            // Dezimaltrenner überspringen und in das Ergebnis einfügen
+            // Dezimaltrenner überspringen und in das Ergebnis einfügen (unter beachtung, dass die beiden zahlen vertauscht worden sein könnten)
             final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
             if (decimalSeparatorOfAddend1.equals(currentCharacter) || decimalSeparatorOfAddend2.equals(currentCharacter)) {
                 result.insert(0, decimalSeparatorOfTargetLocale);
@@ -40,8 +40,8 @@ public class BasicMath {
             }
 
             // aktuelle Zahlen holen
-            final int currentDigitOfAddend1 = charAsInt(cleanedAddend1.charAt(i));
-            final int currentDigitOfAddend2 = charAsInt(cleanedAddend2.charAt(i));
+            final int currentDigitOfAddend1 = MathTools.charAsInt(cleanedAddend1.charAt(i));
+            final int currentDigitOfAddend2 = MathTools.charAsInt(cleanedAddend2.charAt(i));
             int resultForCurrentDigit;
 
             if (subtract) {
@@ -64,44 +64,9 @@ public class BasicMath {
 
         final String finalResult = result.toString();
         return new BigNumber(
-                signForResult(newAddends[0].isNegative()) + finalResult,
+                MathTools.signForAdditionResult(newAddends[0].isNegative()) + finalResult,
                 targetLocale
         );
-    }
-
-    public static String signForResult(
-            final boolean isFirstAddendNegative
-    ) {
-        return isFirstAddendNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
-    }
-
-    /**
-     * Setzt die größte Zahl an den Anfang des Arrays, welcher zurückgegeben wird.
-     * Hier wird der absolute Wert beider Zahlen verglichen.
-     *
-     * @param addend1 eine BigNumber
-     * @param addend2 eine andere BigNumber
-     * @return ein Array mit der größeren BigNumber am Anfang.
-     */
-    public static BigNumber[] sortBySizeIgnoreSigns(
-            final BigNumber addend1,
-            final BigNumber addend2
-    ) {
-        return addend1.abs().greaterThan(addend2.abs()) ?
-                new BigNumber[]{new BigNumber(addend1), new BigNumber(addend2)} :
-                new BigNumber[]{new BigNumber(addend2), new BigNumber(addend1)};
-    }
-
-    /**
-     * Wandelt einen char in einen int um.
-     *
-     * @param character der char, welcher umgewandelt werden soll
-     * @return der umgewandelte char als int
-     */
-    private static int charAsInt(
-            final char character
-    ) {
-        return Integer.parseInt(String.valueOf(character));
     }
 
     public static BigNumber subtract(
@@ -109,7 +74,7 @@ public class BasicMath {
             BigNumber subtrahend
     ) {
         if (!(minuend.isNegative() && !subtrahend.isNegative()) && !(!minuend.isNegative() && subtrahend.isNegative())) {
-            if (minuend.abs().smallerThan(subtrahend.abs())) {
+            if (minuend.abs().isSmallerThan(subtrahend.abs())) {
                 final BigNumber tmpMinuend = new BigNumber(minuend);
                 minuend = subtrahend;
                 subtrahend = tmpMinuend;
@@ -117,8 +82,8 @@ public class BasicMath {
         }
 
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(minuend.getLocale());
-        final String minuendSign = getSignAsString(minuend);
-        final String subtrahendSign = getSignAsString(subtrahend);
+        final String minuendSign = MathTools.getSignAsString(minuend);
+        final String subtrahendSign = MathTools.getSignAsString(subtrahend);
         final String minuendAsString = MathTools.makeNumbersSameLength(minuend, subtrahend);
         final String subtrahendAsString = MathTools.makeNumbersSameLength(subtrahend, minuend);
 
@@ -138,8 +103,8 @@ public class BasicMath {
                 continue;
             }
 
-            currentMinuend = charAsInt(minuendAsString.charAt(i));
-            currentSubtrahend = charAsInt(subtrahendAsString.charAt(i));
+            currentMinuend = MathTools.charAsInt(minuendAsString.charAt(i));
+            currentSubtrahend = MathTools.charAsInt(subtrahendAsString.charAt(i));
             if ((minuend.isNegative() && !subtrahend.isNegative()) || (!minuend.isNegative() && subtrahend.isNegative())) {
                 resultForCurrentDigit = currentMinuend + currentSubtrahend + carry;
 
@@ -166,7 +131,7 @@ public class BasicMath {
         }
 
         // Vorzeichen anfügen
-        if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).greaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
+        if (new BigNumber(minuendSign + minuendAsString, Locale.GERMAN).isGreaterThan(new BigNumber(subtrahendSign + subtrahendAsString, Locale.GERMAN))) {
             if (minuend.isNegative() && !subtrahend.isNegative()) {
                 result.append(BigNumberParser.NEGATIVE_SIGN);
             } else if (!minuend.isNegative() && subtrahend.isNegative()) {
@@ -187,7 +152,4 @@ public class BasicMath {
         return new BigNumber(result.reverse().toString(), minuend.getLocale());
     }
 
-    public static String getSignAsString(final BigNumber minuend) {
-        return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
-    }
 }
