@@ -118,7 +118,7 @@ public class BigNumber {
         }
 
         if (beforeDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX) &&
-                        afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
+                afterDecimal.matches(BigNumberParser.ONLY_CONTAINS_ZEROS_REGEX)
         ) {
             return BigNumberParser.ZERO_AS_STRING;
         }
@@ -146,4 +146,9 @@ public class BigNumber {
         return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 
+    public BigNumber negate() {
+        BigNumber bigNumber = new BigNumber(this);
+        bigNumber.isNegative = !this.isNegative;
+        return bigNumber;
+    }
 }
