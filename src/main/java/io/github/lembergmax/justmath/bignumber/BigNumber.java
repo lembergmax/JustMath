@@ -10,8 +10,8 @@ import java.util.Locale;
 
 public class BigNumber {
 
-    private static final BigNumberParser bigNumberParser = new BigNumberParser();
     public static final Locale INTERNAL_LOCALE = Locale.US;
+    private static final BigNumberParser bigNumberParser = new BigNumberParser();
 
     @Getter
     private String beforeDecimal;
