@@ -122,6 +122,13 @@ public class BigNumber {
     }
 
     // TODO: javadoc
+    public boolean isEqualTo(
+            final BigNumber other
+    ) {
+        return !isGreaterThan(other) && !isSmallerThan(other);
+    }
+
+    // TODO: javadoc
     public boolean isSmallerThan(
             final BigNumber other
     ) {
