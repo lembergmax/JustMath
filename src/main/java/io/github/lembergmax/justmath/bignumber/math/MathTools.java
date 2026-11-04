@@ -76,6 +76,20 @@ public class MathTools {
     }
 
     /**
+     * Calculates the sign of the result for a division.
+     *
+     * @param isDividendNegative  whether the dividend is negative
+     * @param isDivisorNegative whether the divisor is negative
+     * @return the sign "+" or "-"
+     */
+    public static String signForDivisionResult(
+            final boolean isDividendNegative,
+            final boolean isDivisorNegative
+    ) {
+        return isDividendNegative == isDivisorNegative ? BigNumberParser.POSITIVE_SIGN : BigNumberParser.NEGATIVE_SIGN;
+    }
+
+    /**
      * Counts the actual number of decimal places of a number, ignoring the convention
      * that a number without a fractional part still stores "0" as its after-decimal part.
      *

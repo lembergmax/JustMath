@@ -4,6 +4,7 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.BigNumberParser;
+import io.github.lembergmax.justmath.exception.DivisionByZeroException;
 
 public class BasicMath {
 
@@ -168,13 +169,18 @@ public class BasicMath {
             final BigNumber divisor
     ) {
         // 1. Sonderfälle zuerst abfangen
-        //    - Divisor ist 0            -> Exception werfen (vor allem anderen)
-        //    - Dividend ist 0           -> Ergebnis 0 zurückgeben
+        if (divisor.isEqualTo(BigNumbers.ZERO)) {
+            throw new DivisionByZeroException();
+        }
+        if (dividend.isEqualTo(BigNumbers.ZERO)) {
+            return BigNumbers.ZERO;
+        }
 
         // 2. Vorzeichen merken und danach nur noch mit den Beträgen rechnen
         //    - Vorzeichen des Ergebnisses wie bei multiply bestimmen
         //      (MathTools.signForMultiplicationResult)
         //    - dividend.abs() und divisor.abs() verwenden
+
 
         // 3. Beide Zahlen zu ganzen Zahlen machen (Quotient bleibt gleich!)
         //    - beide auf gleich viele Nachkommastellen bringen (hinten 0 anhängen)
