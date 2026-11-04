@@ -165,4 +165,13 @@ public class BasicMath {
         );
     }
 
+    public BigNumber divide(
+            final BigNumber dividend,
+            final BigNumber divisor,
+            final Locale targetLocale
+    ) {
+        final BigNumber quotient = BigNumbers.ZERO;
+        return quotient;
+    }
+
 }
