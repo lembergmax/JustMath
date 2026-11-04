@@ -103,6 +103,20 @@ public class BigNumber {
         return other.isGreaterThan(this);
     }
 
+    // TODO: javadoc
+    public BigNumber abs() {
+        BigNumber bigNumber = new BigNumber(this);
+        bigNumber.isNegative = false;
+        return bigNumber;
+    }
+
+    // TODO: javadoc
+    public BigNumber negate() {
+        BigNumber bigNumber = new BigNumber(this);
+        bigNumber.isNegative = !this.isNegative;
+        return bigNumber;
+    }
+
     @Override
     public String toString() {
         return toString(INTERNAL_LOCALE);
@@ -136,21 +150,10 @@ public class BigNumber {
     }
 
     // TODO: javadoc
-    public BigNumber abs() {
-        BigNumber bigNumber = new BigNumber(this);
-        bigNumber.isNegative = false;
-        return bigNumber;
-    }
-
-    // TODO: javadoc
     @Override
     public boolean equals(Object o) {
         return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 
-    public BigNumber negate() {
-        BigNumber bigNumber = new BigNumber(this);
-        bigNumber.isNegative = !this.isNegative;
-        return bigNumber;
-    }
+
 }
