@@ -42,8 +42,11 @@ jobs:
       run: chmod +x mvnw
 
     # Ab JDK 23 laufen Annotation Processors (Lombok) nur noch, wenn sie explizit aktiviert sind
-    - name: Build and test with Maven
-      run: ./mvnw -B verify --file pom.xml -Dmaven.compiler.proc=full
+    - name: Build with Maven
+      run: ./mvnw -B package -DskipTests --file pom.xml -Dmaven.compiler.proc=full
+
+    - name: Test with Maven
+      run: ./mvnw -B test --file pom.xml -Dmaven.compiler.proc=full
 
     - name: Upload test reports
       if: failure()

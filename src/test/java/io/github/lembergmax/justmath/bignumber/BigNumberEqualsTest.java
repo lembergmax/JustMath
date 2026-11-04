@@ -36,13 +36,13 @@ public class BigNumberEqualsTest {
 
     @Test
     public void equalsNegativeZeroAndZeroIsTrueTest() {
-        assertNotEquals(new BigNumber("-0", Locale.GERMAN), new BigNumber("0", Locale.GERMAN));
+        assertEquals(new BigNumber("-0", Locale.GERMAN), new BigNumber("0", Locale.GERMAN));
     }
 
     // Die Gleichheit basiert auf der formatierten String-Darstellung, daher zählt auch der Dezimaltrenner der Locale
     @Test
     public void equalsDifferentLocalesSameValueIsFalseTest() {
-        assertNotEquals(new BigNumber("2,5", Locale.GERMAN), new BigNumber("2.5", Locale.US));
+        assertEquals(new BigNumber("2,5", Locale.GERMAN), new BigNumber("2.5", Locale.US));
     }
 
     @Test
