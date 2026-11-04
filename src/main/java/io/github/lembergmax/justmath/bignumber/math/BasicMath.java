@@ -181,6 +181,7 @@ public class BasicMath {
         //      (MathTools.signForMultiplicationResult)
         //    - dividend.abs() und divisor.abs() verwenden
 
+        // MathTools.signForDivisionResult();
 
         // 3. Beide Zahlen zu ganzen Zahlen machen (Quotient bleibt gleich!)
         //    - beide auf gleich viele Nachkommastellen bringen (hinten 0 anhängen)
