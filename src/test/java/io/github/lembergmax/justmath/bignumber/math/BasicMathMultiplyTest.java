@@ -16,8 +16,7 @@ public class BasicMathMultiplyTest {
                 "60",
                 BasicMath.multiply(
                         new BigNumber("12", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("5", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -28,8 +27,7 @@ public class BasicMathMultiplyTest {
                 "0",
                 BasicMath.multiply(
                         new BigNumber("12345", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("0", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -40,8 +38,7 @@ public class BasicMathMultiplyTest {
                 "0",
                 BasicMath.multiply(
                         new BigNumber("0", Locale.GERMAN),
-                        new BigNumber("0", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("0", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -52,8 +49,7 @@ public class BasicMathMultiplyTest {
                 "-60",
                 BasicMath.multiply(
                         new BigNumber("-12", Locale.GERMAN),
-                        new BigNumber("5", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("5", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -64,8 +60,7 @@ public class BasicMathMultiplyTest {
                 "-60",
                 BasicMath.multiply(
                         new BigNumber("12", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("-5", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -76,8 +71,7 @@ public class BasicMathMultiplyTest {
                 "60",
                 BasicMath.multiply(
                         new BigNumber("-12", Locale.GERMAN),
-                        new BigNumber("-5", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("-5", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -88,8 +82,7 @@ public class BasicMathMultiplyTest {
                 "2,5",
                 BasicMath.multiply(
                         new BigNumber("1,25", Locale.GERMAN),
-                        new BigNumber("2", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("2", Locale.GERMAN)
                 ).toString(Locale.GERMAN)
         );
     }
@@ -100,8 +93,7 @@ public class BasicMathMultiplyTest {
                 "0,05",
                 BasicMath.multiply(
                         new BigNumber("0,1", Locale.GERMAN),
-                        new BigNumber("0,5", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("0,5", Locale.GERMAN)
                 ).toString(Locale.GERMAN)
         );
     }
@@ -112,8 +104,7 @@ public class BasicMathMultiplyTest {
                 "9876401235",
                 BasicMath.multiply(
                         new BigNumber("99999", Locale.GERMAN),
-                        new BigNumber("98765", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("98765", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -124,8 +115,7 @@ public class BasicMathMultiplyTest {
                 "12345",
                 BasicMath.multiply(
                         new BigNumber("12345", Locale.GERMAN),
-                        new BigNumber("1", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("1", Locale.GERMAN)
                 ).toString()
         );
     }
@@ -135,8 +125,7 @@ public class BasicMathMultiplyTest {
         assertFalse(
                 BasicMath.multiply(
                         new BigNumber("-3", Locale.GERMAN),
-                        new BigNumber("-4", Locale.GERMAN),
-                        Locale.GERMAN
+                        new BigNumber("-4", Locale.GERMAN)
                 ).isNegative()
         );
     }
@@ -147,8 +136,7 @@ public class BasicMathMultiplyTest {
                 "7.5",
                 BasicMath.multiply(
                         new BigNumber("2.5", Locale.US),
-                        new BigNumber("3", Locale.US),
-                        Locale.US
+                        new BigNumber("3", Locale.US)
                 ).toString()
         );
     }
@@ -158,7 +146,7 @@ public class BasicMathMultiplyTest {
         final BigNumber factor1 = new BigNumber("5", Locale.GERMAN);
         final BigNumber factor2 = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.multiply(factor1, factor2, Locale.GERMAN);
+        BasicMath.multiply(factor1, factor2);
 
         assertEquals("5", factor1.toString());
     }
@@ -168,7 +156,7 @@ public class BasicMathMultiplyTest {
         final BigNumber factor1 = new BigNumber("5", Locale.GERMAN);
         final BigNumber factor2 = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.multiply(factor1, factor2, Locale.GERMAN);
+        BasicMath.multiply(factor1, factor2);
 
         assertEquals("-8", factor2.toString());
     }

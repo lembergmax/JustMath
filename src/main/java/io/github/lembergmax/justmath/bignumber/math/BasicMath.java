@@ -5,8 +5,6 @@ import io.github.lembergmax.justmath.bignumber.BigNumbers;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 
-import java.util.Locale;
-
 public class BasicMath {
 
     /**
@@ -14,17 +12,14 @@ public class BasicMath {
      *
      * @param addend1      the first number to add
      * @param addend2      the second number to add
-     * @param targetLocale the locale used to format the result
      * @return the sum of the two addends in the target locale
      */
     public static BigNumber add(
             final BigNumber addend1,
-            final BigNumber addend2,
-            final Locale targetLocale
+            final BigNumber addend2
     ) {
         // Dezimaltrenner für die aktuelle Locale holen
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(BigNumber.INTERNAL_LOCALE);
-        final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
 
         // Zahlen ordnen, also addend1 ist die größte Zahl
         final BigNumber[] newAddends = MathTools.sortBySizeIgnoreSigns(addend1, addend2);
@@ -42,7 +37,7 @@ public class BasicMath {
             // Dezimaltrenner überspringen und in das Ergebnis einfügen (unter beachtung, dass die beiden zahlen vertauscht worden sein könnten)
             final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
             if (decimalSeparator.equals(currentCharacter)) {
-                result.insert(0, decimalSeparatorOfTargetLocale);
+                result.insert(0, decimalSeparator);
                 continue;
             }
 
@@ -72,7 +67,7 @@ public class BasicMath {
         final String finalResult = result.toString();
         return new BigNumber(
                 MathTools.signForAdditionResult(newAddends[0].isNegative()) + finalResult,
-                targetLocale
+                BigNumber.INTERNAL_LOCALE
         );
     }
 
@@ -81,15 +76,13 @@ public class BasicMath {
      *
      * @param minuend      the first number to add
      * @param subtrahend   the second number to add
-     * @param targetLocale the locale used to format the result
      * @return the difference of minuend and subtrahend in the target locale
      */
     public static BigNumber subtract(
             final BigNumber minuend,
-            final BigNumber subtrahend,
-            final Locale targetLocale
+            final BigNumber subtrahend
     ) {
-        return add(minuend, subtrahend.negate(), targetLocale);
+        return add(minuend, subtrahend.negate());
     }
 
     /**
@@ -97,15 +90,13 @@ public class BasicMath {
      *
      * @param factor1      the first factor
      * @param factor2      the second factor
-     * @param targetLocale the locale used to format the result
      * @return the product of the two factors in the target locale
      */
     public static BigNumber multiply(
             final BigNumber factor1,
-            final BigNumber factor2,
-            final Locale targetLocale
+            final BigNumber factor2
     ) {
-        final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
+        final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(BigNumber.INTERNAL_LOCALE);
 
         final int decimalPlacesOfFactor1 = MathTools.countDecimalPlaces(factor1);
         final int decimalPlacesOfFactor2 = MathTools.countDecimalPlaces(factor2);
@@ -145,7 +136,7 @@ public class BasicMath {
             }
 
             currentRow.append(MathTools.getZeroNTimes(indentation));
-            currentResult = add(currentResult, new BigNumber(currentRow.toString(), Locale.US), Locale.US);
+            currentResult = add(currentResult, new BigNumber(currentRow.toString(), BigNumber.INTERNAL_LOCALE));
         }
 
         // Dezimaltrenner an der richtigen Stelle wieder einfügen
@@ -161,15 +152,14 @@ public class BasicMath {
 
         return new BigNumber(
                 MathTools.signForMultiplicationResult(factor1.isNegative(), factor2.isNegative()) + finalResult,
-                targetLocale
+                BigNumber.INTERNAL_LOCALE
         );
     }
 
     // TODO: javadoc
-    public BigNumber divide(
+    public static BigNumber divide(
             final BigNumber dividend,
-            final BigNumber divisor,
-            final Locale targetLocale
+            final BigNumber divisor
     ) {
         final BigNumber quotient = BigNumbers.ZERO;
         return quotient;

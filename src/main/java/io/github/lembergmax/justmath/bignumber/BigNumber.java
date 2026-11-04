@@ -1,5 +1,6 @@
 package io.github.lembergmax.justmath.bignumber;
 
+import io.github.lembergmax.justmath.bignumber.math.BasicMath;
 import io.github.lembergmax.justmath.bignumber.math.MathTools;
 import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
@@ -53,6 +54,30 @@ public class BigNumber {
         this.beforeDecimal = beforeDecimal;
         this.afterDecimal = afterDecimal;
         this.isNegative = isNegative;
+    }
+
+    public BigNumber add(
+            final BigNumber otherAddend
+    ) {
+        return BasicMath.add(this, otherAddend);
+    }
+
+    public BigNumber subtract(
+            final BigNumber subtrahend
+    ) {
+        return BasicMath.subtract(this, subtrahend);
+    }
+
+    public BigNumber multiply(
+            final BigNumber otherFactor
+    ) {
+        return BasicMath.multiply(this, otherFactor);
+    }
+
+    public BigNumber divide(
+            final BigNumber divisor
+    ) {
+        return BasicMath.divide(this, divisor);
     }
 
     // TODO: javadoc
