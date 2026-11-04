@@ -165,6 +165,7 @@ public class BasicMath {
         );
     }
 
+    // TODO: javadoc
     public BigNumber divide(
             final BigNumber dividend,
             final BigNumber divisor,
