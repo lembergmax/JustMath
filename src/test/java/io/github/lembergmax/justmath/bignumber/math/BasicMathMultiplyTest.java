@@ -90,7 +90,7 @@ public class BasicMathMultiplyTest {
                         new BigNumber("1,25", Locale.GERMAN),
                         new BigNumber("2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -102,7 +102,7 @@ public class BasicMathMultiplyTest {
                         new BigNumber("0,1", Locale.GERMAN),
                         new BigNumber("0,5", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -154,13 +154,22 @@ public class BasicMathMultiplyTest {
     }
 
     @Test
-    public void multiplyDoesNotChangeOperandsTest() {
+    public void multiplyDoesNotChangeFirstFactorTest() {
         final BigNumber factor1 = new BigNumber("5", Locale.GERMAN);
         final BigNumber factor2 = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.multiply(factor1, factor2, factor1.getLocale());
+        BasicMath.multiply(factor1, factor2, Locale.GERMAN);
 
         assertEquals("5", factor1.toString());
+    }
+
+    @Test
+    public void multiplyDoesNotChangeSecondFactorTest() {
+        final BigNumber factor1 = new BigNumber("5", Locale.GERMAN);
+        final BigNumber factor2 = new BigNumber("-8", Locale.GERMAN);
+
+        BasicMath.multiply(factor1, factor2, Locale.GERMAN);
+
         assertEquals("-8", factor2.toString());
     }
 

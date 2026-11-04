@@ -37,7 +37,7 @@ public class BigNumberAbsTest {
 
     @Test
     public void absOfDecimalValueTest() {
-        assertEquals("1,25", new BigNumber("-1,25", Locale.GERMAN).abs().toString());
+        assertEquals("1,25", new BigNumber("-1,25", Locale.GERMAN).abs().toString(Locale.GERMAN));
     }
 
     @Test

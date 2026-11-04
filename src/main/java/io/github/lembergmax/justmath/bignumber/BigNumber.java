@@ -11,6 +11,7 @@ import java.util.Locale;
 public class BigNumber {
 
     private static final BigNumberParser bigNumberParser = new BigNumberParser();
+    public static final Locale INTERNAL_LOCALE = Locale.US;
 
     @Getter
     private String beforeDecimal;
@@ -18,8 +19,6 @@ public class BigNumber {
     private String afterDecimal;
     @Getter
     private boolean isNegative;
-    @Getter
-    private Locale locale;
 
     public BigNumber(
             final String number,
@@ -34,7 +33,6 @@ public class BigNumber {
         this.beforeDecimal = bigNumber.beforeDecimal;
         this.afterDecimal = bigNumber.afterDecimal;
         this.isNegative = bigNumber.isNegative;
-        this.locale = bigNumber.locale;
     }
 
     private BigNumber(
@@ -43,21 +41,18 @@ public class BigNumber {
         this(
                 parseResult.beforeDecimals(),
                 parseResult.afterDecimals(),
-                parseResult.isNegative(),
-                parseResult.locale()
+                parseResult.isNegative()
         );
     }
 
     private BigNumber(
             final String beforeDecimal,
             final String afterDecimal,
-            final boolean isNegative,
-            final Locale locale
+            final boolean isNegative
     ) {
         this.beforeDecimal = beforeDecimal;
         this.afterDecimal = afterDecimal;
         this.isNegative = isNegative;
-        this.locale = locale;
     }
 
     // TODO: javadoc
@@ -67,9 +62,9 @@ public class BigNumber {
         final BigNumber thisNumber = new BigNumber(this);
         final BigNumber otherNumber = new BigNumber(other);
 
-        final String decimalSeparatorOfThisNumber = NumberFormatLookup.getDecimalSeparatorForLocale(thisNumber.getLocale());
-        final String cleanedThisNumber = MathTools.makeNumbersSameLength(thisNumber, otherNumber);
-        final String cleanedOtherNumber = MathTools.makeNumbersSameLength(otherNumber, thisNumber);
+        final String decimalSeparatorOfThisNumber = NumberFormatLookup.getDecimalSeparatorForLocale(INTERNAL_LOCALE);
+        final String cleanedThisNumber = MathTools.makeNumbersSameLength(thisNumber, otherNumber, INTERNAL_LOCALE);
+        final String cleanedOtherNumber = MathTools.makeNumbersSameLength(otherNumber, thisNumber, INTERNAL_LOCALE);
 
         // wenn verschiedene vorzeichen
         if (this.isNegative() != other.isNegative()) {
@@ -108,8 +103,15 @@ public class BigNumber {
         return other.isGreaterThan(this);
     }
 
-    // TODO: javadoc
+    @Override
     public String toString() {
+        return toString(INTERNAL_LOCALE);
+    }
+
+    // TODO: javadoc
+    public String toString(
+            final Locale locale
+    ) {
         if (beforeDecimal == null || beforeDecimal.isBlank()) {
             beforeDecimal = BigNumberParser.ZERO_AS_STRING;
         }

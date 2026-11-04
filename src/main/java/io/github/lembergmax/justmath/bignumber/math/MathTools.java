@@ -5,6 +5,8 @@ import io.github.lembergmax.justmath.core.BigNumberParser;
 import io.github.lembergmax.justmath.core.NumberFormatLookup;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
+
 public class MathTools {
 
     /**
@@ -13,12 +15,14 @@ public class MathTools {
      *
      * @param numberToChangeLength the BigNumber whose length should be adjusted to match the reference value
      * @param numberToCompareTo    the BigNumber defining the target digit lengths for comparison
+     * @param targetLocale         the locale in what the result should be in
      * @return a string representation of {@code numberToChangeLength} padded so its integer and
      * fractional parts match the length of {@code numberToCompareTo}
      */
     public static String makeNumbersSameLength(
             final BigNumber numberToChangeLength,
-            final BigNumber numberToCompareTo
+            final BigNumber numberToCompareTo,
+            final Locale targetLocale
     ) {
         final int zerosToAddToAfterDecimals =
                 numberToCompareTo.getAfterDecimal().length() -
@@ -29,7 +33,7 @@ public class MathTools {
                         numberToChangeLength.getBeforeDecimal().length();
 
         return getZeroNTimes(zerosToAddToBeforeDecimals) + numberToChangeLength.getBeforeDecimal() +
-                NumberFormatLookup.getDecimalSeparatorForLocale(numberToChangeLength.getLocale()) +
+                NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale) +
                 numberToChangeLength.getAfterDecimal() + getZeroNTimes(zerosToAddToAfterDecimals);
     }
 

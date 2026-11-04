@@ -19,7 +19,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("2512,78", Locale.GERMAN),
                         new BigNumber("1523,82", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -32,7 +32,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("-2512,78", Locale.GERMAN),
                         new BigNumber("-1523,82", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -45,7 +45,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("-2512,78", Locale.GERMAN),
                         new BigNumber("+1523,82", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -58,7 +58,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("2512,78", Locale.GERMAN),
                         new BigNumber("-1523,82", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -71,7 +71,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("1523,82", Locale.GERMAN),
                         new BigNumber("2512,78", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -84,7 +84,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("-1523,82", Locale.GERMAN),
                         new BigNumber("-2512,78", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -97,7 +97,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("-1523,82", Locale.GERMAN),
                         new BigNumber("+2512,78", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -110,7 +110,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("1523,82", Locale.GERMAN),
                         new BigNumber("-2512,78", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -135,7 +135,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("987,65", Locale.GERMAN),
                         new BigNumber("123,45", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -184,7 +184,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("10,1", Locale.GERMAN),
                         new BigNumber("0,2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -197,7 +197,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("1", Locale.GERMAN),
                         new BigNumber("0,001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -209,7 +209,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("1000,5", Locale.GERMAN),
                         new BigNumber("0,75", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -221,7 +221,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("0,75", Locale.GERMAN),
                         new BigNumber("1000,5", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -246,7 +246,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("1,75", Locale.GERMAN),
                         new BigNumber("0,25", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -492,7 +492,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("0,1", Locale.GERMAN),
                         new BigNumber("0,2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -582,7 +582,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("0,00000002", Locale.GERMAN),
                         new BigNumber("0,00000001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -594,7 +594,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("0,00000001", Locale.GERMAN),
                         new BigNumber("0,00000002", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -606,7 +606,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("90000000000", Locale.GERMAN),
                         new BigNumber("0,00000001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -668,7 +668,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("3,5", Locale.GERMAN),
                         new BigNumber("1.25", Locale.US),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -704,7 +704,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("5.5", Locale.US),
                         new BigNumber("2.25", Locale.US),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -716,7 +716,7 @@ public class BasicMathSubtractTest {
                         new BigNumber("5.5", Locale.US),
                         new BigNumber("2.25", Locale.US),
                         Locale.FRANCE
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -729,18 +729,6 @@ public class BasicMathSubtractTest {
                         new BigNumber("0,5", Locale.GERMAN),
                         Locale.US
                 ).toString()
-        );
-    }
-
-    @Test
-    public void subtractResultHasTargetLocaleTest() {
-        assertEquals(
-                Locale.US,
-                BasicMath.subtract(
-                        new BigNumber("2,5", Locale.GERMAN),
-                        new BigNumber("1,25", Locale.GERMAN),
-                        Locale.US
-                ).getLocale()
         );
     }
 
@@ -778,31 +766,29 @@ public class BasicMathSubtractTest {
                         new BigNumber("2,5", Locale.GERMAN),
                         new BigNumber("-2.5", Locale.US),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
     // Eingabewerte dürfen nicht verändert werden
     @Test
-    public void subtractDoesNotChangeOperandsTest() {
+    public void subtractDoesNotChangeMinuendTest() {
         final BigNumber minuend = new BigNumber("5", Locale.GERMAN);
         final BigNumber subtrahend = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.subtract(minuend, subtrahend, minuend.getLocale());
+        BasicMath.subtract(minuend, subtrahend, Locale.GERMAN);
 
         assertEquals("5", minuend.toString());
-        assertEquals("-8", subtrahend.toString());
     }
 
     @Test
-    public void subtractDoesNotChangeOperandLocalesTest() {
+    public void subtractDoesNotChangeSubtrahendTest() {
         final BigNumber minuend = new BigNumber("5", Locale.GERMAN);
-        final BigNumber subtrahend = new BigNumber("8", Locale.GERMAN);
+        final BigNumber subtrahend = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.subtract(minuend, subtrahend, Locale.US);
+        BasicMath.subtract(minuend, subtrahend, Locale.GERMAN);
 
-        assertEquals(Locale.GERMAN, minuend.getLocale());
-        assertEquals(Locale.GERMAN, subtrahend.getLocale());
+        assertEquals("-8", subtrahend.toString());
     }
 
 }
