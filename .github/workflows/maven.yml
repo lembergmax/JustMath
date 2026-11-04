@@ -45,6 +45,34 @@ jobs:
     - name: Build with Maven
       run: ./mvnw -B package -DskipTests --file pom.xml -Dmaven.compiler.proc=full
 
+    - name: Upload JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: JustMath-jar
+        path: target/*.jar
+        retention-days: 14
+
+  test:
+
+    # Läuft nur, wenn der Build erfolgreich war
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: maven
+
+    # mvnw ist im Repository nicht als ausführbar markiert
+    - name: Make Maven Wrapper executable
+      run: chmod +x mvnw
+
+    # Jeder Job läuft auf einer frischen Maschine, daher wird hier erneut kompiliert
     - name: Test with Maven
       run: ./mvnw -B test --file pom.xml -Dmaven.compiler.proc=full
 
@@ -55,11 +83,3 @@ jobs:
         name: surefire-reports
         path: target/surefire-reports/
         retention-days: 7
-
-    - name: Upload JAR
-      if: success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: JustMath-jar
-        path: target/*.jar
-        retention-days: 14
