@@ -167,9 +167,64 @@ public class BasicMath {
             final BigNumber dividend,
             final BigNumber divisor
     ) {
+        // 1. Sonderfälle zuerst abfangen
+        //    - Divisor ist 0            -> Exception werfen (vor allem anderen)
+        //    - Dividend ist 0           -> Ergebnis 0 zurückgeben
+
+        // 2. Vorzeichen merken und danach nur noch mit den Beträgen rechnen
+        //    - Vorzeichen des Ergebnisses wie bei multiply bestimmen
+        //      (MathTools.signForMultiplicationResult)
+        //    - dividend.abs() und divisor.abs() verwenden
+
+        // 3. Beide Zahlen zu ganzen Zahlen machen (Quotient bleibt gleich!)
+        //    - beide auf gleich viele Nachkommastellen bringen (hinten 0 anhängen)
+        //    - Dezimaltrenner entfernen
+        //    - Beispiel: 1,5 / 0,25  ->  150 / 25
+
+        // 4. Variablen anlegen
+        //    - rest      : BigNumber/String, Startwert 0
+        //    - quotient  : StringBuilder, Startwert leer
+        //    - zähler    : int, wie oft der Divisor abgezogen wurde (immer 0..9)
+
+        // 5. Ganzzahliger Teil: Schleife über jede Ziffer des Dividenden, von links nach rechts
+        //    a) Ziffer hinten an den Rest anhängen
+        //    b) zähler = 0
+        //    c) solange rest NICHT kleiner als divisor ist (>= also "nicht isSmallerThan"):
+        //         rest = subtract(rest, divisor)
+        //         zähler++
+        //    d) zähler hinten an den quotient anhängen
+
+        // 6. Nachkommastellen: nur wenn nach Schritt 5 der Rest nicht 0 ist
+        //    - Dezimaltrenner an den quotient anhängen
+        //    - wiederholen, bis rest == 0 ODER die maximale Anzahl Nachkommastellen erreicht ist
+        //      (sonst läuft z.B. 1 / 3 endlos!):
+        //         statt einer Dividendenziffer eine "0" an den Rest anhängen,
+        //         dann dieselbe Schleife wie in 5 b) bis d)
+        //    - Entscheiden: Maximale Stellenzahl als Konstante oder als Parameter?
+        //      Abschneiden oder runden?
+
+        // 7. Ergebnis aufräumen und zurückgeben
+        //    - führende Nullen im quotient entfernen (aber vor dem Komma mindestens eine 0 lassen)
+        //    - Vorzeichen aus Schritt 2 voranstellen
+        //    - Dezimaltrenner der targetLocale verwenden (siehe multiply)
+        //    - new BigNumber(ergebnis, targetLocale)
+
+        // Hinweise
+        //    - Intern mit Locale.US rechnen, erst am Ende in targetLocale umwandeln
+        //    - Nirgends Integer/Long/Double.parse... auf ganze Zahlen anwenden,
+        //      nur einzelne Ziffern (charAsInt) sind ein int
+        //    - Hat der Rest weniger Stellen als der Divisor, ist er automatisch kleiner
+        //    - subtract kann eine führende 0 liefern: prüfen, ob der Rest dadurch falsch
+        //      verglichen wird oder wächst
+        //    - isGreaterThan ist strikt (gleiche Zahlen -> false), deshalb für "größer oder
+        //      gleich" die Verneinung von isSmallerThan nehmen
+
+        // Tests (in dieser Reihenfolge)
+        //    12 / 12 = 1          144 / 12 = 12        987 / 123 = 8 Rest 3
+        //    7 / 2 = 3,5          1,5 / 0,25 = 6       -8 / 2 = -4
+        //    987654321987654321 / 123456789123456789 = 8,0000000729 (bei 10 Nachkommastellen)
+
         final BigNumber quotient = BigNumbers.ZERO;
-
-
         return quotient;
     }
 
