@@ -8,11 +8,11 @@ import io.github.lembergmax.justmath.core.BigNumberParser;
 public class BasicMath {
 
     /**
-     * Adds two numbers, accounting for their signs and decimal separators.
+     * Adds two numbers.
      *
-     * @param addend1      the first number to add
-     * @param addend2      the second number to add
-     * @return the sum of the two addends in the target locale
+     * @param addend1 the first number to add
+     * @param addend2 the second number to add
+     * @return the sum of the two addends
      */
     public static BigNumber add(
             final BigNumber addend1,
@@ -72,11 +72,11 @@ public class BasicMath {
     }
 
     /**
-     * Subtracts two numbers, accounting for their signs and decimal separators.
+     * Subtracts two numbers.
      *
-     * @param minuend      the first number to add
-     * @param subtrahend   the second number to add
-     * @return the difference of minuend and subtrahend in the target locale
+     * @param minuend    the first number to add
+     * @param subtrahend the second number to add
+     * @return the difference of minuend and subtrahend
      */
     public static BigNumber subtract(
             final BigNumber minuend,
@@ -86,11 +86,11 @@ public class BasicMath {
     }
 
     /**
-     * Multiplies two numbers and formats the result using the target locale.
+     * Multiplies two numbers.
      *
-     * @param factor1      the first factor
-     * @param factor2      the second factor
-     * @return the product of the two factors in the target locale
+     * @param factor1 the first factor
+     * @param factor2 the second factor
+     * @return the product of the two factors
      */
     public static BigNumber multiply(
             final BigNumber factor1,
@@ -156,13 +156,18 @@ public class BasicMath {
         );
     }
 
-    // TODO: javadoc
+    /**
+     * Divides two numbers.
+     *
+     * @param dividend the dividend
+     * @param divisor  the divisor
+     * @return the quotient of dividend and divisor
+     */
     public static BigNumber divide(
             final BigNumber dividend,
             final BigNumber divisor
     ) {
         final BigNumber quotient = BigNumbers.ZERO;
-
 
 
         return quotient;
