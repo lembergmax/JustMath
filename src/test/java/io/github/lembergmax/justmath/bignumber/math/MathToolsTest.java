@@ -15,7 +15,8 @@ public class MathToolsTest {
                 "123,12300",
                 MathTools.makeNumbersSameLength(
                         new BigNumber("123,123", Locale.GERMAN),
-                        new BigNumber("123,12345", Locale.GERMAN)
+                        new BigNumber("123,12345", Locale.GERMAN),
+                        Locale.GERMAN
                 )
         );
     }

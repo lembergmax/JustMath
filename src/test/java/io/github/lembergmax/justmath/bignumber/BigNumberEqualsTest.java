@@ -42,7 +42,7 @@ public class BigNumberEqualsTest {
     // Die Gleichheit basiert auf der formatierten String-Darstellung, daher zählt auch der Dezimaltrenner der Locale
     @Test
     public void equalsDifferentLocalesSameValueIsFalseTest() {
-        assertNotEquals(new BigNumber("2,5", Locale.GERMAN), new BigNumber("2.5", Locale.US));
+        assertEquals(new BigNumber("2,5", Locale.GERMAN), new BigNumber("2.5", Locale.US));
     }
 
     @Test

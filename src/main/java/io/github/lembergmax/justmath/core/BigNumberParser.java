@@ -25,9 +25,9 @@ public class BigNumberParser {
 
         final ParseResult parseResultToCleanNumber;
         if (number.contains(decimalSeparator)) {
-            parseResultToCleanNumber = parseWithDecimalSeparator(number, isNegative, decimalSeparator, locale);
+            parseResultToCleanNumber = parseWithDecimalSeparator(number, isNegative, decimalSeparator);
         } else {
-            parseResultToCleanNumber = parseWithoutDecimalSeparator(number, isNegative, locale);
+            parseResultToCleanNumber = parseWithoutDecimalSeparator(number, isNegative);
         }
         cleanedNumber = cleanupNumberInputString(
                 parseResultToCleanNumber.beforeDecimals(),
@@ -36,34 +36,32 @@ public class BigNumberParser {
         );
 
         return cleanedNumber.contains(decimalSeparator) ?
-                parseWithDecimalSeparator(cleanedNumber, isNegative, decimalSeparator, locale) :
-                parseWithoutDecimalSeparator(cleanedNumber, isNegative, locale);
+                parseWithDecimalSeparator(cleanedNumber, isNegative, decimalSeparator) :
+                parseWithoutDecimalSeparator(cleanedNumber, isNegative);
     }
 
     private ParseResult parseWithoutDecimalSeparator(
             final String number,
-            final boolean isNegative,
-            final Locale locale
+            final boolean isNegative
     ) {
-        return new ParseResult(number, ZERO_AS_STRING, isNegative, locale);
+        return new ParseResult(number, ZERO_AS_STRING, isNegative);
     }
 
     private ParseResult parseWithDecimalSeparator(
             final String number,
             boolean isNegative,
-            final String decimalSeparator,
-            final Locale locale
+            final String decimalSeparator
     ) {
         final int indexOfDecimalSeparator = number.indexOf(decimalSeparator);
 
         final String beforeDecimal = number.substring(0, indexOfDecimalSeparator);
         final String afterDecimal = number.substring(indexOfDecimalSeparator + 1);
 
-        if(isOnlyZeros(beforeDecimal) && isOnlyZeros(afterDecimal)) {
+        if (isOnlyZeros(beforeDecimal) && isOnlyZeros(afterDecimal)) {
             isNegative = false;
         }
 
-        return new ParseResult(beforeDecimal, afterDecimal, isNegative, locale);
+        return new ParseResult(beforeDecimal, afterDecimal, isNegative);
     }
 
     private String cleanupNumberInputString(

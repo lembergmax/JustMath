@@ -1,7 +1,6 @@
 package io.github.lembergmax.justmath.bignumber.math;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -12,23 +11,31 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class BasicMathAddTest {
 
     @Test
-    public void addBothPositiveTest() {
+    public void addBothPositiveSixDigitDecimalsTest() {
         assertEquals(
                 "777,777",
                 BasicMath.add(
                         new BigNumber("123,456", Locale.GERMAN),
                         new BigNumber("654,321", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothPositiveRepeatedNinesTest() {
         assertEquals(
                 "1999,998",
                 BasicMath.add(
                         new BigNumber("999,999", Locale.GERMAN),
                         new BigNumber("999,999", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothPositiveZerosTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -37,14 +44,22 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothPositiveVerySmallDecimalsTest() {
         assertEquals(
                 "0,00000002",
                 BasicMath.add(
                         new BigNumber("0,00000001", Locale.GERMAN),
                         new BigNumber("0,00000001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothPositiveElevenDigitIntegersTest() {
         assertEquals(
                 "100000000000",
                 BasicMath.add(
@@ -53,6 +68,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothPositiveDifferentLengthsTest() {
         assertEquals(
                 "123456",
                 BasicMath.add(
@@ -61,6 +80,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothPositiveTenDigitIntegersTest() {
         assertEquals(
                 "11111111100",
                 BasicMath.add(
@@ -69,6 +92,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothPositiveVeryLargeIntegersTest() {
         assertEquals(
                 "180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 BasicMath.add(
@@ -80,15 +107,19 @@ public class BasicMathAddTest {
     }
 
     @Test
-    public void addFirstNegativeTest() {
+    public void addFirstNegativeSixDigitDecimalsTest() {
         assertEquals(
                 "530,865",
                 BasicMath.add(
                         new BigNumber("-123,456", Locale.GERMAN),
                         new BigNumber("654,321", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addFirstNegativeRepeatedNinesTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -97,6 +128,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeZerosTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -105,6 +140,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeVerySmallDecimalsTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -113,6 +152,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeElevenDigitIntegersTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -121,6 +164,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeDifferentLengthsTest() {
         assertEquals(
                 "-122544",
                 BasicMath.add(
@@ -129,6 +176,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeTenDigitIntegersTest() {
         assertEquals(
                 "-8641975320",
                 BasicMath.add(
@@ -137,6 +188,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addFirstNegativeVeryLargeIntegersTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -148,15 +203,19 @@ public class BasicMathAddTest {
     }
 
     @Test
-    public void addSecondNegativeTest() {
+    public void addSecondNegativeSixDigitDecimalsTest() {
         assertEquals(
                 "-530,865",
                 BasicMath.add(
                         new BigNumber("123,456", Locale.GERMAN),
                         new BigNumber("-654,321", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addSecondNegativeRepeatedNinesTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -165,6 +224,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeZerosTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -173,6 +236,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeVerySmallDecimalsTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -181,6 +248,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeElevenDigitIntegersTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -189,6 +260,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeDifferentLengthsTest() {
         assertEquals(
                 "122544",
                 BasicMath.add(
@@ -197,6 +272,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeTenDigitIntegersTest() {
         assertEquals(
                 "8641975320",
                 BasicMath.add(
@@ -205,6 +284,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addSecondNegativeVeryLargeIntegersTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -216,23 +299,31 @@ public class BasicMathAddTest {
     }
 
     @Test
-    public void addBothNegativeTest() {
+    public void addBothNegativeSixDigitDecimalsTest() {
         assertEquals(
                 "-777,777",
                 BasicMath.add(
                         new BigNumber("-123,456", Locale.GERMAN),
                         new BigNumber("-654,321", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothNegativeRepeatedNinesTest() {
         assertEquals(
                 "-1999,998",
                 BasicMath.add(
                         new BigNumber("-999,999", Locale.GERMAN),
                         new BigNumber("-999,999", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothNegativeZerosTest() {
         assertEquals(
                 "0",
                 BasicMath.add(
@@ -241,14 +332,22 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothNegativeVerySmallDecimalsTest() {
         assertEquals(
                 "-0,00000002",
                 BasicMath.add(
                         new BigNumber("-0,00000001", Locale.GERMAN),
                         new BigNumber("-0,00000001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
+    }
+
+    @Test
+    public void addBothNegativeElevenDigitIntegersTest() {
         assertEquals(
                 "-100000000000",
                 BasicMath.add(
@@ -257,6 +356,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothNegativeDifferentLengthsTest() {
         assertEquals(
                 "-123456",
                 BasicMath.add(
@@ -265,6 +368,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothNegativeTenDigitIntegersTest() {
         assertEquals(
                 "-11111111100",
                 BasicMath.add(
@@ -273,6 +380,10 @@ public class BasicMathAddTest {
                         Locale.GERMAN
                 ).toString()
         );
+    }
+
+    @Test
+    public void addBothNegativeVeryLargeIntegersTest() {
         assertEquals(
                 "-180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
                 BasicMath.add(
@@ -341,7 +452,7 @@ public class BasicMathAddTest {
                         new BigNumber("9,9", Locale.GERMAN),
                         new BigNumber("0,2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -366,7 +477,7 @@ public class BasicMathAddTest {
                         new BigNumber("1", Locale.GERMAN),
                         new BigNumber("0,001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -378,7 +489,7 @@ public class BasicMathAddTest {
                         new BigNumber("1000,5", Locale.GERMAN),
                         new BigNumber("0,75", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -390,7 +501,7 @@ public class BasicMathAddTest {
                         new BigNumber("0,75", Locale.GERMAN),
                         new BigNumber("1000,5", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -415,7 +526,7 @@ public class BasicMathAddTest {
                         new BigNumber("1,25", Locale.GERMAN),
                         new BigNumber("0,25", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -427,7 +538,7 @@ public class BasicMathAddTest {
                         new BigNumber("0,1", Locale.GERMAN),
                         new BigNumber("0,2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -654,7 +765,7 @@ public class BasicMathAddTest {
                         new BigNumber("0,1", Locale.GERMAN),
                         new BigNumber("-0,2", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -720,7 +831,7 @@ public class BasicMathAddTest {
                         new BigNumber("1", Locale.GERMAN),
                         new BigNumber("-0,001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -757,7 +868,7 @@ public class BasicMathAddTest {
                         new BigNumber("90000000000", Locale.GERMAN),
                         new BigNumber("0,00000001", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -769,7 +880,7 @@ public class BasicMathAddTest {
                         new BigNumber("0,00000001", Locale.GERMAN),
                         new BigNumber("-0,00000002", Locale.GERMAN),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -831,7 +942,7 @@ public class BasicMathAddTest {
                         new BigNumber("3,5", Locale.GERMAN),
                         new BigNumber("1.25", Locale.US),
                         Locale.GERMAN
-                ).toString()
+                ).toString(Locale.GERMAN)
         );
     }
 
@@ -887,13 +998,22 @@ public class BasicMathAddTest {
 
     // Eingabewerte dürfen nicht verändert werden
     @Test
-    public void addDoesNotChangeOperandsTest() {
+    public void addDoesNotChangeFirstAddendTest() {
         final BigNumber addend1 = new BigNumber("5", Locale.GERMAN);
         final BigNumber addend2 = new BigNumber("-8", Locale.GERMAN);
 
-        BasicMath.add(addend1, addend2, addend1.getLocale());
+        BasicMath.add(addend1, addend2, Locale.GERMAN);
 
         assertEquals("5", addend1.toString());
+    }
+
+    @Test
+    public void addDoesNotChangeSecondAddendTest() {
+        final BigNumber addend1 = new BigNumber("5", Locale.GERMAN);
+        final BigNumber addend2 = new BigNumber("-8", Locale.GERMAN);
+
+        BasicMath.add(addend1, addend2, Locale.GERMAN);
+
         assertEquals("-8", addend2.toString());
     }
 

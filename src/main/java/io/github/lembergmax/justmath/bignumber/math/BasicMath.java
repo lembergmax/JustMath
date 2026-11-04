@@ -23,16 +23,15 @@ public class BasicMath {
             final Locale targetLocale
     ) {
         // Dezimaltrenner für die aktuelle Locale holen
-        final String decimalSeparatorOfAddend1 = NumberFormatLookup.getDecimalSeparatorForLocale(addend1.getLocale());
-        final String decimalSeparatorOfAddend2 = NumberFormatLookup.getDecimalSeparatorForLocale(addend2.getLocale());
+        final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(BigNumber.INTERNAL_LOCALE);
         final String decimalSeparatorOfTargetLocale = NumberFormatLookup.getDecimalSeparatorForLocale(targetLocale);
 
         // Zahlen ordnen, also addend1 ist die größte Zahl
         final BigNumber[] newAddends = MathTools.sortBySizeIgnoreSigns(addend1, addend2);
 
         // Zahlen gleichlang machen um "Schriftlich" zu addieren
-        final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0].abs(), newAddends[1].abs());
-        final String cleanedAddend2 = MathTools.makeNumbersSameLength(newAddends[1].abs(), newAddends[0].abs());
+        final String cleanedAddend1 = MathTools.makeNumbersSameLength(newAddends[0].abs(), newAddends[1].abs(), BigNumber.INTERNAL_LOCALE);
+        final String cleanedAddend2 = MathTools.makeNumbersSameLength(newAddends[1].abs(), newAddends[0].abs(), BigNumber.INTERNAL_LOCALE);
 
         // Wenn + und - oder - und +
         final boolean subtract = addend1.isNegative() != addend2.isNegative();
@@ -42,7 +41,7 @@ public class BasicMath {
         for (int i = cleanedAddend1.length() - 1; i >= 0; i--) {
             // Dezimaltrenner überspringen und in das Ergebnis einfügen (unter beachtung, dass die beiden zahlen vertauscht worden sein könnten)
             final String currentCharacter = String.valueOf(cleanedAddend1.charAt(i));
-            if (decimalSeparatorOfAddend1.equals(currentCharacter) || decimalSeparatorOfAddend2.equals(currentCharacter)) {
+            if (decimalSeparator.equals(currentCharacter)) {
                 result.insert(0, decimalSeparatorOfTargetLocale);
                 continue;
             }
