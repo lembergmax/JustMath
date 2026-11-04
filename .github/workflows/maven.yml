@@ -10,9 +10,9 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main", "remake" ]
+    branches: [ "main", "remake", "developer", "divide", "subtract" ]
   pull_request:
-    branches: [ "main", "remake" ]
+    branches: [ "main", "remake", "developer", "divide", "subtract" ]
   workflow_dispatch:
 
 permissions:
