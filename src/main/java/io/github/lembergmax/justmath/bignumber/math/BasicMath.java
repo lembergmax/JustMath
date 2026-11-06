@@ -8,6 +8,9 @@ import io.github.lembergmax.justmath.exception.DivisionByZeroException;
 
 public class BasicMath {
 
+    // Ohne Grenze würde z.B. 1 / 3 nie enden
+    private static final int MAX_DECIMAL_PLACES = 10;
+
     /**
      * Adds two numbers.
      *
@@ -158,11 +161,12 @@ public class BasicMath {
     }
 
     /**
-     * Divides two numbers.
+     * Divides two numbers. The result is cut off after 10 decimal places.
      *
      * @param dividend the dividend
      * @param divisor  the divisor
      * @return the quotient of dividend and divisor
+     * @throws DivisionByZeroException if the divisor is zero
      */
     public static BigNumber divide(
             final BigNumber dividend,
@@ -176,63 +180,60 @@ public class BasicMath {
             return BigNumbers.ZERO;
         }
 
-        // 2. Vorzeichen merken und danach nur noch mit den Beträgen rechnen
-        //    - Vorzeichen des Ergebnisses wie bei multiply bestimmen
-        //      (MathTools.signForMultiplicationResult)
-        //    - dividend.abs() und divisor.abs() verwenden
+        final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(BigNumber.INTERNAL_LOCALE);
 
-        // MathTools.signForDivisionResult();
+        // 2. Vorzeichen des Ergebnisses merken, danach nur noch mit den Beträgen rechnen
+        final String resultSign = MathTools.signForDivisionResult(dividend.isNegative(), divisor.isNegative());
 
-        // 3. Beide Zahlen zu ganzen Zahlen machen (Quotient bleibt gleich!)
-        //    - beide auf gleich viele Nachkommastellen bringen (hinten 0 anhängen)
-        //    - Dezimaltrenner entfernen
-        //    - Beispiel: 1,5 / 0,25  ->  150 / 25
+        // 3. Beide Zahlen zu ganzen Zahlen machen
+        //    - Beide werden mit derselben Zehnerpotenz multipliziert, der Quotient bleibt also gleich.
+        //      Beispiel: 1.5 / 0.25  ->  "1.50" / "0.25"  ->  150 / 25
+        //    - Die zusätzlichen Nullen am Dividenden liefern die Nachkommastellen (siehe Schritt 6).
+        //    - Der Divisor ist eine BigNumber, weil subtract und isSmallerThan eine BigNumber brauchen.
+        //      Der Dividend bleibt ein String, weil die Schleife ihn Ziffer für Ziffer durchgeht.
+        final String cleanedDividend = MathTools.makeNumbersSameLength(dividend.abs(), divisor.abs(), BigNumber.INTERNAL_LOCALE)
+                .replace(decimalSeparator, "") + MathTools.getZeroNTimes(MAX_DECIMAL_PLACES);
+        final BigNumber cleanedDivisor = new BigNumber(
+                MathTools.makeNumbersSameLength(divisor.abs(), dividend.abs(), BigNumber.INTERNAL_LOCALE)
+                        .replace(decimalSeparator, ""),
+                BigNumber.INTERNAL_LOCALE
+        );
 
         // 4. Variablen anlegen
-        //    - rest      : BigNumber/String, Startwert 0
-        //    - quotient  : StringBuilder, Startwert leer
-        //    - zähler    : int, wie oft der Divisor abgezogen wurde (immer 0..9)
+        BigNumber rest = BigNumbers.ZERO;
+        final StringBuilder quotient = new StringBuilder();
 
-        // 5. Ganzzahliger Teil: Schleife über jede Ziffer des Dividenden, von links nach rechts
-        //    a) Ziffer hinten an den Rest anhängen
-        //    b) zähler = 0
-        //    c) solange rest NICHT kleiner als divisor ist (>= also "nicht isSmallerThan"):
-        //         rest = subtract(rest, divisor)
-        //         zähler++
-        //    d) zähler hinten an den quotient anhängen
+        // 5. Schriftlich dividieren: Schleife über jede Ziffer des Dividenden, von links nach rechts
+        //    Beispiel 7 / 2  ->  "70" + zehn Nullen geteilt durch 20
+        //      Ziffer 7: rest =   7, 0-mal abziehen, quotient = "0",   rest danach =  7
+        //      Ziffer 0: rest =  70, 3-mal abziehen, quotient = "03",  rest danach = 10
+        //      Ziffer 0: rest = 100, 5-mal abziehen, quotient = "035", rest danach =  0
+        //      restliche Nullen: je 0-mal abziehen, am Ende quotient = "035000000000"
+        for (int i = 0; i < cleanedDividend.length(); i++) {
+            // a) Ziffer hinten an den Rest anhängen ("herunterholen")
+            final int currentDigitOfDividend = MathTools.charAsInt(cleanedDividend.charAt(i));
+            rest = new BigNumber(rest.toString() + currentDigitOfDividend, BigNumber.INTERNAL_LOCALE);
 
-        // 6. Nachkommastellen: nur wenn nach Schritt 5 der Rest nicht 0 ist
-        //    - Dezimaltrenner an den quotient anhängen
-        //    - wiederholen, bis rest == 0 ODER die maximale Anzahl Nachkommastellen erreicht ist
-        //      (sonst läuft z.B. 1 / 3 endlos!):
-        //         statt einer Dividendenziffer eine "0" an den Rest anhängen,
-        //         dann dieselbe Schleife wie in 5 b) bis d)
-        //    - Entscheiden: Maximale Stellenzahl als Konstante oder als Parameter?
-        //      Abschneiden oder runden?
+            // b) Zähler für diese Stelle des Quotienten, am Ende immer 0..9
+            int subtractionCount = 0;
 
-        // 7. Ergebnis aufräumen und zurückgeben
-        //    - führende Nullen im quotient entfernen (aber vor dem Komma mindestens eine 0 lassen)
-        //    - Vorzeichen aus Schritt 2 voranstellen
-        //    - Dezimaltrenner der targetLocale verwenden (siehe multiply)
-        //    - new BigNumber(ergebnis, targetLocale)
+            // TODO 5c) solange rest NICHT kleiner als cleanedDivisor ist:
+            //              rest = subtract(rest, cleanedDivisor)
+            //              subtractionCount++
+
+            // TODO 5d) subtractionCount hinten an quotient anhängen
+        }
+
+        // TODO 6. Dezimaltrenner einfügen, MAX_DECIMAL_PLACES Stellen von rechts (StringBuilder.insert)
+        //         Beispiel: "035000000000"  ->  "03.5000000000"
 
         // Hinweise
-        //    - Intern mit Locale.US rechnen, erst am Ende in targetLocale umwandeln
-        //    - Nirgends Integer/Long/Double.parse... auf ganze Zahlen anwenden,
-        //      nur einzelne Ziffern (charAsInt) sind ein int
-        //    - Hat der Rest weniger Stellen als der Divisor, ist er automatisch kleiner
-        //    - subtract kann eine führende 0 liefern: prüfen, ob der Rest dadurch falsch
-        //      verglichen wird oder wächst
-        //    - isGreaterThan ist strikt (gleiche Zahlen -> false), deshalb für "größer oder
-        //      gleich" die Verneinung von isSmallerThan nehmen
+        //    - Nur einzelne Ziffern (charAsInt) sind ein int, nie ganze Zahlen als Integer/Long/Double parsen
+        //    - isGreaterThan ist strikt (gleiche Zahlen -> false), für "größer oder gleich" also !isSmallerThan
 
-        // Tests (in dieser Reihenfolge)
-        //    12 / 12 = 1          144 / 12 = 12        987 / 123 = 8 Rest 3
-        //    7 / 2 = 3,5          1,5 / 0,25 = 6       -8 / 2 = -4
-        //    987654321987654321 / 123456789123456789 = 8,0000000729 (bei 10 Nachkommastellen)
-
-        final BigNumber quotient = BigNumbers.ZERO;
-        return quotient;
+        // 7. Ergebnis zurückgeben: der Konstruktor entfernt führende und abschließende Nullen
+        //    "+03.5000000000"  ->  3.5
+        return new BigNumber(resultSign + quotient, BigNumber.INTERNAL_LOCALE);
     }
 
 }
