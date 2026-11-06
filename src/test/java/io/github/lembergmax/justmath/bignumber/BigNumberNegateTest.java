@@ -59,27 +59,34 @@ public class BigNumberNegateTest {
         assertEquals("-2,5", new BigNumber("-2,5", Locale.GERMAN).negate().negate().toString(Locale.GERMAN));
     }
 
-    // 0 hat kein Vorzeichen, auch nicht nach negate()
+    // negate() tauscht das Vorzeichen immer, auch bei 0. Der Wert bleibt trotzdem 0.
     @Test
     public void negateOfZeroIsZeroTest() {
         assertEquals("0", new BigNumber("0", Locale.GERMAN).negate().toString());
     }
 
     @Test
-    public void negateOfZeroIsNotNegativeTest() {
-        assertFalse(new BigNumber("0", Locale.GERMAN).negate().isNegative());
+    public void negateOfZeroSwapsSignTest() {
+        assertTrue(new BigNumber("0", Locale.GERMAN).negate().isNegative());
     }
 
     @Test
-    public void negateOfNegativeZeroIsNotNegativeTest() {
-        assertFalse(new BigNumber("-0", Locale.GERMAN).negate().isNegative());
+    public void negateOfZeroWithDecimalsSwapsSignTest() {
+        assertTrue(new BigNumber("0,000", Locale.GERMAN).negate().isNegative());
     }
 
     @Test
-    public void negateOfZeroWithDecimalsIsNotNegativeTest() {
-        assertFalse(new BigNumber("0,000", Locale.GERMAN).negate().isNegative());
+    public void negateOfZeroTwiceIsNotNegativeTest() {
+        assertFalse(new BigNumber("0", Locale.GERMAN).negate().negate().isNegative());
     }
 
+    // Der Parser speichert "-0" ohne Vorzeichen, negate() macht daraus also eine 0 mit Minus
+    @Test
+    public void negateOfParsedNegativeZeroSwapsSignTest() {
+        assertTrue(new BigNumber("-0", Locale.GERMAN).negate().isNegative());
+    }
+
+    // Die negierte 0 hat trotz Minus den Wert 0, Vergleiche müssen sie also wie 0 behandeln
     @Test
     public void negateOfZeroIsEqualToZeroTest() {
         assertTrue(new BigNumber("0", Locale.GERMAN).negate().isEqualTo(new BigNumber("0", Locale.GERMAN)));
