@@ -8,6 +8,7 @@ import io.github.lembergmax.justmath.core.ParseResult;
 import lombok.Getter;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class BigNumber {
 
@@ -187,5 +188,9 @@ public class BigNumber {
         return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(toString());
+    }
 
 }
