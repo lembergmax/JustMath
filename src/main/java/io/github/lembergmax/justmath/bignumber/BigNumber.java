@@ -150,6 +150,7 @@ public class BigNumber {
         return bigNumber;
     }
 
+    // TODO: javadoc
     @Override
     public String toString() {
         return toString(INTERNAL_LOCALE);
@@ -188,6 +189,7 @@ public class BigNumber {
         return o instanceof BigNumber && this.toString().equals(o.toString());
     }
 
+    // TODO: javadoc
     @Override
     public int hashCode() {
         return Objects.hash(toString());
