@@ -916,6 +916,17 @@ public class BasicMathAddTest {
         );
     }
 
+    // Aufruf über BigNumber
+    @Test
+    public void addThroughBigNumberMethodTest() {
+        assertEquals(
+                "3,75",
+                new BigNumber("2,5", Locale.GERMAN)
+                        .add(new BigNumber("1,25", Locale.GERMAN))
+                        .toString(Locale.GERMAN)
+        );
+    }
+
     // Eingabewerte dürfen nicht verändert werden
     @Test
     public void addDoesNotChangeFirstAddendTest() {

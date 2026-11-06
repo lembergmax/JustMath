@@ -4,11 +4,13 @@ import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.exception.DivisionByZeroException;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BasicMathDivideTest {
@@ -1395,6 +1397,33 @@ public class BasicMathDivideTest {
                         new BigNumber("5.5", Locale.US),
                         new BigNumber("0.0", Locale.US)
                 )
+        );
+    }
+
+    // Auch eine mit negate() erzeugte 0 muss als Division durch 0 erkannt werden.
+    // Sonst läuft die Schleife endlos, deshalb bricht der Test nach 5 Sekunden ab.
+    @Test
+    public void divideByNegatedZeroTest() {
+        assertTimeoutPreemptively(
+                Duration.ofSeconds(5),
+                () -> assertThrows(
+                        DivisionByZeroException.class,
+                        () -> BasicMath.divide(
+                                new BigNumber("5", Locale.GERMAN),
+                                new BigNumber("0", Locale.GERMAN).negate()
+                        )
+                )
+        );
+    }
+
+    @Test
+    public void divideNegatedZeroByPositiveTest() {
+        assertEquals(
+                "0",
+                BasicMath.divide(
+                        new BigNumber("0", Locale.GERMAN).negate(),
+                        new BigNumber("5", Locale.GERMAN)
+                ).toString()
         );
     }
 

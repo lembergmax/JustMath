@@ -709,6 +709,17 @@ public class BasicMathSubtractTest {
         );
     }
 
+    // Aufruf über BigNumber
+    @Test
+    public void subtractThroughBigNumberMethodTest() {
+        assertEquals(
+                "1,25",
+                new BigNumber("2,5", Locale.GERMAN)
+                        .subtract(new BigNumber("1,25", Locale.GERMAN))
+                        .toString(Locale.GERMAN)
+        );
+    }
+
     // Eingabewerte dürfen nicht verändert werden
     @Test
     public void subtractDoesNotChangeMinuendTest() {
