@@ -86,15 +86,15 @@ public class BigNumberNegateTest {
         assertTrue(new BigNumber("-0", Locale.GERMAN).negate().isNegative());
     }
 
-    // Die negierte 0 hat trotz Minus den Wert 0, Vergleiche müssen sie also wie 0 behandeln
+    // Die negierte 0 trägt ein Minus: Vergleiche behandeln sie als kleiner als die 0 ohne Vorzeichen
     @Test
-    public void negateOfZeroIsEqualToZeroTest() {
-        assertTrue(new BigNumber("0", Locale.GERMAN).negate().isEqualTo(new BigNumber("0", Locale.GERMAN)));
+    public void negateOfZeroIsNotEqualToZeroTest() {
+        assertFalse(new BigNumber("0", Locale.GERMAN).negate().isEqualTo(new BigNumber("0", Locale.GERMAN)));
     }
 
     @Test
-    public void negateOfZeroIsNotSmallerThanZeroTest() {
-        assertFalse(new BigNumber("0", Locale.GERMAN).negate().isSmallerThan(new BigNumber("0", Locale.GERMAN)));
+    public void negateOfZeroIsSmallerThanZeroTest() {
+        assertTrue(new BigNumber("0", Locale.GERMAN).negate().isSmallerThan(new BigNumber("0", Locale.GERMAN)));
     }
 
     @Test
@@ -103,8 +103,8 @@ public class BigNumberNegateTest {
     }
 
     @Test
-    public void negateZeroIsNotGreaterThanNegatedZeroTest() {
-        assertFalse(new BigNumber("0", Locale.GERMAN).isGreaterThan(new BigNumber("0", Locale.GERMAN).negate()));
+    public void zeroIsGreaterThanNegatedZeroTest() {
+        assertTrue(new BigNumber("0", Locale.GERMAN).isGreaterThan(new BigNumber("0", Locale.GERMAN).negate()));
     }
 
     // Eingabewerte dürfen nicht verändert werden

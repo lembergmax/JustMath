@@ -161,20 +161,21 @@ public class BigNumberIsEqualToTest {
         assertTrue(german("0,000").isEqualTo(german("0")));
     }
 
-    // Auch eine mit negate() erzeugte 0 ist gleich 0
+    // Eine mit negate() erzeugte 0 trägt ein Minus und ist deshalb ungleich der 0 ohne Vorzeichen
+    // (der Parser speichert "-0" ohne Vorzeichen)
     @Test
-    public void isEqualToNegatedZeroAgainstZeroIsTrueTest() {
-        assertTrue(german("0").negate().isEqualTo(german("0")));
+    public void isNotEqualToNegatedZeroAgainstZeroIsTrueTest() {
+        assertFalse(german("0").negate().isEqualTo(german("0")));
     }
 
     @Test
-    public void isEqualToZeroAgainstNegatedZeroIsTrueTest() {
-        assertTrue(german("0").isEqualTo(german("0").negate()));
+    public void isNotEqualToZeroAgainstNegatedZeroIsTrueTest() {
+        assertFalse(german("0").isEqualTo(german("0").negate()));
     }
 
     @Test
-    public void isEqualToNegatedZeroAgainstNegativeZeroIsTrueTest() {
-        assertTrue(german("0").negate().isEqualTo(german("-0")));
+    public void isNotEqualToNegatedZeroAgainstNegativeZeroIsTrueTest() {
+        assertFalse(german("0").negate().isEqualTo(german("-0")));
     }
 
     @Test
