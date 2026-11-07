@@ -5,7 +5,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO: javadoc
+/**
+ * The base class of all exceptions of JustMath. It builds the message from the translation of a locale,
+ * falls back to the language and then to English, and replaces the placeholders {0}, {1} and so on with
+ * the given arguments. It is not part of the public API, so callers catch the concrete exceptions.
+ */
 abstract class JustMathException extends RuntimeException {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{(\\d+)}");
