@@ -13,12 +13,23 @@ public class BigNumberParser {
     public static final String ZERO_AS_STRING = "0";
     public static final String ONLY_CONTAINS_ZEROS_REGEX = "^[" + ZERO_AS_STRING + "]+$";
 
-    // TODO: javadoc
+    /**
+     * Parses a number from text. A sign is only allowed as the very first character. Grouping separators
+     * and leading and trailing zeros are removed, and an empty text is 0. A zero never gets a minus.
+     *
+     * @param number the number as text
+     * @param locale the locale the number is written in, it defines the decimal and grouping separator
+     * @return the sign, the digits before and the digits after the decimal separator
+     * @throws NotAValidCharacterException        if the text contains a character that is neither a digit,
+     *                                            a separator nor a leading sign
+     * @throws DuplicateDecimalSeparatorException if the decimal separator occurs more than once
+     */
     public ParseResult parse(
             final String number,
             final Locale locale
     ) {
         final String decimalSeparator = NumberFormatLookup.getDecimalSeparatorForLocale(locale);
+        checkForMisplacedSigns(number);
         final String cleanedNumber;
 
         final boolean isNegative = number.startsWith(NEGATIVE_SIGN) && !number.startsWith(POSITIVE_SIGN);
@@ -111,6 +122,17 @@ public class BigNumberParser {
             final String string
     ) {
         return string.replace(" ", "");
+    }
+
+    private void checkForMisplacedSigns(
+            final String number
+    ) {
+        for (int i = 1; i < number.length(); i++) {
+            final String charAsString = String.valueOf(number.charAt(i));
+            if (NEGATIVE_SIGN.equals(charAsString) || POSITIVE_SIGN.equals(charAsString)) {
+                throw new NotAValidCharacterException(charAsString);
+            }
+        }
     }
 
     private void checkForNotValidCharacters(

@@ -3,7 +3,11 @@ package io.github.lembergmax.justmath.exception;
 import java.util.HashMap;
 import java.util.Locale;
 
-// TODO: javadoc
+/**
+ * Thrown when the text of a number contains a character that is neither a digit, a decimal or grouping
+ * separator nor a sign at the very first position. The message names the character as {0} and can be
+ * translated with the locale constructor.
+ */
 public class NotAValidCharacterException extends JustMathException {
 
     private static final HashMap<Locale, String> TEXT_TRANSLATIONS = new HashMap<>();
