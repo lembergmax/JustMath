@@ -2,6 +2,7 @@ package io.github.lembergmax.justmath.core;
 
 import io.github.lembergmax.justmath.bignumber.BigNumber;
 import io.github.lembergmax.justmath.exception.DuplicateDecimalSeparatorException;
+import io.github.lembergmax.justmath.exception.NotAValidCharacterException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -421,6 +422,168 @@ public class BigNumberParserTest {
     @Test
     public void isNegativePositiveWithLeadingZerosIsFalseTest() {
         assertFalse(new BigNumber("+001", Locale.GERMAN).isNegative());
+    }
+
+    // Ungültige Zeichen
+    @Test
+    public void onlyLettersThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("abc", Locale.GERMAN));
+    }
+
+    @Test
+    public void letterAtEndThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("12a", Locale.GERMAN));
+    }
+
+    @Test
+    public void letterAtStartThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("a12", Locale.GERMAN));
+    }
+
+    @Test
+    public void letterInMiddleThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1a2", Locale.GERMAN));
+    }
+
+    @Test
+    public void letterInDecimalsThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5,5a", Locale.GERMAN));
+    }
+
+    @Test
+    public void currencySignThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5€", Locale.GERMAN));
+    }
+
+    @Test
+    public void percentSignThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5%", Locale.GERMAN));
+    }
+
+    @Test
+    public void slashThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1/2", Locale.GERMAN));
+    }
+
+    @Test
+    public void asteriskThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("2*3", Locale.GERMAN));
+    }
+
+    @Test
+    public void scientificNotationThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1e5", Locale.GERMAN));
+    }
+
+    @Test
+    public void apostropheInGermanThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1'000", Locale.GERMAN));
+    }
+
+    @Test
+    public void englishLetterThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1x", Locale.US));
+    }
+
+    @Test
+    public void invalidCharacterMessageNamesCharacterTest() {
+        final NotAValidCharacterException exception = assertThrows(
+                NotAValidCharacterException.class,
+                () -> new BigNumber("12a", Locale.GERMAN)
+        );
+
+        assertEquals("'a' is not a valid character.", exception.getMessage());
+    }
+
+    // Ein Vorzeichen ist nur ganz vorne erlaubt
+    @Test
+    public void positiveSignAtStartIsValidTest() {
+        assertEquals("5", new BigNumber("+5", Locale.GERMAN).toString(Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignAtStartWithDecimalsIsValidTest() {
+        assertEquals("-5,5", new BigNumber("-5,5", Locale.GERMAN).toString(Locale.GERMAN));
+    }
+
+    @Test
+    public void positiveSignAtStartWithDecimalsIsValidTest() {
+        assertEquals("0,5", new BigNumber("+0,5", Locale.GERMAN).toString(Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignWithGroupingSeparatorIsValidTest() {
+        assertEquals("-1000,5", new BigNumber("-1.000,5", Locale.GERMAN).toString(Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignInMiddleThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1-2", Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignAtEndThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5-", Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignAfterDecimalsThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5,5-", Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignAfterDecimalSeparatorThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5,-5", Locale.GERMAN));
+    }
+
+    @Test
+    public void positiveSignInMiddleThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1+2", Locale.GERMAN));
+    }
+
+    @Test
+    public void positiveSignAtEndThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("5+", Locale.GERMAN));
+    }
+
+    @Test
+    public void twoNegativeSignsThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("--5", Locale.GERMAN));
+    }
+
+    @Test
+    public void twoPositiveSignsThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("++5", Locale.GERMAN));
+    }
+
+    @Test
+    public void positiveAndNegativeSignThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("+-5", Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeAndPositiveSignThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("-+5", Locale.GERMAN));
+    }
+
+    @Test
+    public void negativeSignAtStartAndEndThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("-5-", Locale.GERMAN));
+    }
+
+    @Test
+    public void englishNegativeSignInMiddleThrowsTest() {
+        assertThrows(NotAValidCharacterException.class, () -> new BigNumber("1-2", Locale.US));
+    }
+
+    @Test
+    public void misplacedSignMessageNamesSignTest() {
+        final NotAValidCharacterException exception = assertThrows(
+                NotAValidCharacterException.class,
+                () -> new BigNumber("1-2", Locale.GERMAN)
+        );
+
+        assertEquals("'-' is not a valid character.", exception.getMessage());
     }
 
 }
