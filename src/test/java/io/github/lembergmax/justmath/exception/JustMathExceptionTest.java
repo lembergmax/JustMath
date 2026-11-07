@@ -82,6 +82,12 @@ public class JustMathExceptionTest {
         assertEquals("'a' is not a valid character.", new NotAValidCharacterException(Locale.GERMAN, "a").getMessage());
     }
 
+    @Test
+    public void roundingNecessaryMessageTest() {
+        assertEquals("The result needs rounding but the rounding mode is UNNECESSARY.", new RoundingIsNecessaryException().getMessage());
+        assertEquals("The result needs rounding but the rounding mode is UNNECESSARY.", new RoundingIsNecessaryException(Locale.GERMAN).getMessage());
+    }
+
     private String translate(
             final Locale locale,
             final String arg
