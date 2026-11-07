@@ -6,14 +6,24 @@ import java.util.Locale;
 
 public class NumberFormatLookup {
 
-    // TODO: javadoc
+    /**
+     * Returns the decimal separator of a locale, for example "," for {@link Locale#GERMAN}.
+     *
+     * @param locale the locale to look up
+     * @return the decimal separator
+     */
     public static String getDecimalSeparatorForLocale(
             final Locale locale
     ) {
         return String.valueOf(getDecimalFormatSymbols(locale).getDecimalSeparator());
     }
 
-    // TODO: javadoc
+    /**
+     * Returns the grouping separator of a locale, for example "." for {@link Locale#GERMAN}.
+     *
+     * @param locale the locale to look up
+     * @return the grouping separator
+     */
     public static String getGroupingSeparatorForLocale(
             final Locale locale
     ) {
