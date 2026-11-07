@@ -19,7 +19,7 @@ public class MathTools {
      * @return a string representation of {@code numberToChangeLength} padded so its integer and
      * fractional parts match the length of {@code numberToCompareTo}
      */
-    public static String makeNumbersSameLength(
+    static String makeNumbersSameLength(
             final BigNumber numberToChangeLength,
             final BigNumber numberToCompareTo,
             final Locale targetLocale
@@ -43,7 +43,7 @@ public class MathTools {
      * @param nTimes the number of times a "0" should be returned.
      * @return the string with the zeros.
      */
-    public static String getZeroNTimes(
+    static String getZeroNTimes(
             final int nTimes
     ) {
         return StringUtils.repeat("0", nTimes);
@@ -55,7 +55,7 @@ public class MathTools {
      * @param isFirstAddendNegative whether the first addend is positive, given that the addends are sorted by size (ignoring their sign)
      * @return the sign "+" or "-"
      */
-    public static String signForAdditionResult(
+    static String signForAdditionResult(
             final boolean isFirstAddendNegative
     ) {
         return isFirstAddendNegative ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
@@ -68,7 +68,7 @@ public class MathTools {
      * @param isSecondFactorNegative whether the second factor is negative
      * @return the sign "+" or "-"
      */
-    public static String signForMultiplicationResult(
+    static String signForMultiplicationResult(
             final boolean isFirstFactorNegative,
             final boolean isSecondFactorNegative
     ) {
@@ -82,7 +82,7 @@ public class MathTools {
      * @param isDivisorNegative whether the divisor is negative
      * @return the sign "+" or "-"
      */
-    public static String signForDivisionResult(
+    static String signForDivisionResult(
             final boolean isDividendNegative,
             final boolean isDivisorNegative
     ) {
@@ -96,7 +96,7 @@ public class MathTools {
      * @param number the BigNumber to inspect
      * @return the number of decimal places, or 0 if the number has none
      */
-    public static int countDecimalPlaces(
+    static int countDecimalPlaces(
             final BigNumber number
     ) {
         return BigNumberParser.ZERO_AS_STRING.equals(number.getAfterDecimal()) ? 0 : number.getAfterDecimal().length();
@@ -110,7 +110,7 @@ public class MathTools {
      * @param addend2 another BigNumber
      * @return an array with the larger BigNumber at the beginning.
      */
-    public static BigNumber[] sortBySizeIgnoreSigns(
+    static BigNumber[] sortBySizeIgnoreSigns(
             final BigNumber addend1,
             final BigNumber addend2
     ) {
@@ -125,7 +125,7 @@ public class MathTools {
      * @param character the char to be converted
      * @return the converted char as an int
      */
-    public static int charAsInt(
+    static int charAsInt(
             final char character
     ) {
         return Integer.parseInt(String.valueOf(character));
@@ -137,7 +137,7 @@ public class MathTools {
      * @param minuend the BigNumber to inspect
      * @return "-" if the value is negative, otherwise "+"
      */
-    public static String getSignAsString(final BigNumber minuend) {
+    static String getSignAsString(final BigNumber minuend) {
         return minuend.isNegative() ? BigNumberParser.NEGATIVE_SIGN : BigNumberParser.POSITIVE_SIGN;
     }
 
